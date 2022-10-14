@@ -6,17 +6,18 @@
 using namespace std;
 
 void decodeFile(vector<int> &newVector, string fileName);
-void encodeFile(vector<int> myVector, string fileName) {
+void encodeFile(vector<int> myVector, string fileName);
 
 
 int main() {
     std::ifstream newFile;
-    string filePath = ("Research\\SRLE\\inputFiles\\test.txt");
-    vector<int> vec;
-    decodeFile(vec, filePath);
-
-    for (int i = 0; i < vec.size(); i++) {
-        std::cout << vec[i] << " ";
+    string filePath = ("inputFiles/test.txt"); //file path will become an argument
+    string fileToEncode = ("inputFiles/testEncode.txt"); //whether or not the file is encoded/decoded will become an argument
+    vector<int> decodeVec;
+    decodeFile(decodeVec, filePath);
+    encodeFile(decodeVec, fileToEncode);
+    for (int i = 0; i < decodeVec.size(); i++) {
+        std::cout << decodeVec[i] << " ";
     }
     std::cout << std::endl;
 
@@ -52,18 +53,31 @@ void decodeFile(vector<int> &newVector, string fileName) {
     newFile.close();
 }
 
-// example: 1 5 10 23 44
-// turns to 1 5 5 13 31
+// example: -1 5 10 23 44... <some negative followed by positive>
+// turns to -1 5 5 13 31... <some negative followed by positive deltas>
 
 void encodeFile(vector<int> myVector, string fileName) {
     ofstream newFile;
     newFile.open(fileName);
-    std::ostream_iterator<int> byteWrite(newFile);
-    std::ostream_iterator<int> end;
+    std::vector<int>::iterator vecRead(myVector.begin());
+    std::vector<int>::iterator end(myVector.end());
     int counter = 0;
-
-    while(byteWrite != end) {
-        
+    int delta = 0;
+    int newValue = 0;
+    while(vecRead != end) {
+        if(*vecRead < 0){
+            if(newValue != *vecRead){
+                newFile << *vecRead << " ";
+                newValue = *vecRead;
+                delta = 0;
+            }
+            newFile << counter - delta << " ";
+            delta += counter - delta;
+            counter = 0;
+        } else {
+            counter++;
+        }
+        vecRead++;
     }
 
     newFile.close();
