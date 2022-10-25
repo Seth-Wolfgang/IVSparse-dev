@@ -39,11 +39,13 @@ using namespace std;
 // Class for our compressed sparse matrix
 class DeBruinesComp {
     public:
-        // TODO: Constructor for the class (needs to compress a raw byte array)
+        // TODO: Constructor for the class (needs to compress an array)
         // May take a level of compression as a parameter
-        // and the raw character array
-        DeBruinesComp(char *raw, int level) {
+        // and the array as is
+        template <typename T>
+        DeBruinesComp(const Eigen::SparseMatrix<T>& data, int level) {
             // Iterate through the raw array and compress it
+
 
         }
         
