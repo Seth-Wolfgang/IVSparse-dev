@@ -3,8 +3,9 @@
 #include <fstream>
 #include <vector>
 #include <iterator>
-#include <string>
-#include <Eigen>
+#include <cstdint>
+//#include "Eigen/Sparse"
+
 
 using namespace std;
 
@@ -38,15 +39,21 @@ using namespace std;
 
 // Class for our compressed sparse matrix
 class DeBruinesComp {
-    public:
-        // TODO: Constructor for the class (needs to compress an array)
-        // May take a level of compression as a parameter
-        // and the array as is
-        template <typename T>
-        DeBruinesComp(const Eigen::SparseMatrix<T>& data, int level) {
-            // Iterate through the raw array and compress it
 
+private:
+    vector<unsigned char> data = {0x36, 0x12, 0x12};
+    int compression_level;
 
+public:
+    // TODO: Constructor for the class (needs to compress an array)
+    template <typename idx_t, typename val_t>
+    DeBruinesComp(const vector<val_t> &idx, const vector<idx_t> &row, const vector<idx_t> &col, const vector<int> &dim) {
+        // Iterate through the raw array and compress it
+
+        
+
+        for (int i = 0; i < data.size(); i++)
+            cout << (uint16_t) data[i] << " ";
         }
         
         // TODO: Iterator for the compressed sparse matrix
@@ -55,7 +62,7 @@ class DeBruinesComp {
         };
 
         //  TODO: Public member function to read in a binary file from disk to a char vector
-        void read(const char *filename, vector<char> &buffer) {
+        void read(const char *filename, vector<uint8_t> &buffer) {
             // Open the file
             ifstream file(filename, ios::binary);
 
@@ -77,7 +84,7 @@ class DeBruinesComp {
 
             // Read the file
             buffer.resize(size);
-            file.read(&data[0], size);
+            //file.read(&data[0], size);
         }
 
         // Public member function to write a char vector to a binary file on disk
@@ -93,7 +100,17 @@ class DeBruinesComp {
 
         // TODO: Wrapper to convert to other sparse matrix types
 
-    private:
-        vector<char> data;
-        int compression_level;
 };
+
+int main() {
+    // Construct a CSC matrix
+    vector<unsigned short int> vals = {1, 9, 1, 3, 6, 2, 5, 3, 1, 4};
+    vector<unsigned int> row = {1, 3, 0, 2, 0, 2, 0, 1, 3, 2};
+    vector<unsigned int> cols = {0, 2, 4, 6, 9, 10};
+
+    // Construct a DeBruinesComp object
+    DeBruinesComp dbc = DeBruinesComp(vals, row, cols, {4, 5});
+
+
+    return 0;
+}
