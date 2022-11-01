@@ -1,54 +1,74 @@
 //create an iterator struct
+#include <stdint.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <iostream>
+#include <iterator>
+#include <cstddef>
+#include <fstream>
 
+using namespace std;
 
 class ByteIterator {
+
     private:
-        uint32_t const magicByteSize;
-        uint32_t const paramType;
-        uint32_t const rowType;
-        uint32_t const nRows;
-        uint32_t const colType;
-        uint32_t const nCols;
-        uint32_t const valueType;
-        uint32_t const oldIndexType;
-        uint8_t const delimitor = 0;
+        std::ifstream fileStream;
+        int dataTypes[4] = {1, 2, 4, 8};
+        uint32_t magicByteSize;
+        uint32_t rowType;
+        uint32_t nRows;
+        uint32_t colType;
+        uint32_t nCols;
+        uint32_t valueType;
+        uint32_t oldIndexType;
+        int newIndexType; //basically how many bytes we read, NOT ACTUALLY THE TYPE
+        streampos start, end;
+        int delimitor = 0;
+        char* ptr; //*current* pointer
         
-
-
     public:
-        char[] data;
     //constructor
     //read in first few bytes for data
     
-    ByteIterator::ByteIterator(string filePath) {
+   ByteIterator(const char* filePath) {
         //read in first few bytes for data
         //set up the iterator
-        uint32_t[] params = new uint32_t[8]
-        std::ifstream fileStream(filePath, ios::in | std::ios::binary);
-        if (fileStream.is_open()) {
-            fileStream.read(data, 4); //assuming all magic numbers are uint32_t
-            for(int i = 0; i < 8; i++) {
-                fileStream.read(data, 4);
-                params[i] = (uint32_t)data;
+        uint32_t params[7];
+        char* buffer;
+        fileStream.open(filePath, ios::binary);
+        
+        //record start and end
+        start = fileStream.tellg();
+        fileStream.seekg(0, ios::end);
+        end = fileStream.tellg();
+        fileStream.seekg(0, ios::beg);
 
-                if(data == delimitor) {
+        //read in the first 28 bytes -> metadata
+        if (fileStream.is_open()) {
+            for(int i = 0; i < 7; i++) {
+                fileStream.read(buffer, 4);
+                fileStream.seekg(4, ios::cur);
+                params[i] = (int) *buffer;
+
+                if(*buffer == delimitor) {
                     break;
                 }
             }
             
-        this.magicByteSize = params[0]; //change
-        this.paramType     = params[1];
-        this.rowType       = params[2];
-        this.nRows         = params[3];
-        this.colType       = params[4];
-        this.nCols         = params[5];
-        this.valueType     = params[6];
-        this.oldIndexType  = params[7];
-        cout << Parameters set << endl;
+        magicByteSize = params[0]; //change later
+        rowType       = params[2];
+        nRows         = params[3];
+        colType       = params[4];
+        nCols         = params[5];
+        valueType     = params[6];
+        oldIndexType  = params[6];
+        std::cout << "Parameters set" << std::endl;
+
 
         }
         else {
-            cout << "File not found" << endl;
+            std::cout << "File not found" << std::endl;
         }
 
     }
@@ -59,31 +79,31 @@ class ByteIterator {
     //https://en.cppreference.com/w/cpp/language/partial_specialization
 
     //constructor
-    ByteIterator(pointer ptr) : ptr(ptr) {}
+    ByteIterator(char* ptr) : ptr(ptr) {}
 
     //returns value or pointer 
-    referance operator* const {return *ptr;} //should return value to char, even if reading a binary file
+    char& operator*() {return *ptr;}; //should return value to char, even if reading a binary file
 
     //prefix increment
+    //template<Typename T> //create a table and way to check data type
     ByteIterator& operator++() {
-        ptr += 4;
-        read(*ptr, 4); //wrong
+        fileStream.seekg(newIndexType);
+        fileStream.read(ptr, newIndexType); 
+        if(*ptr == delimitor) { //delimiter is the size of indices, this is ok since only a couple will be large
+            prepareNextValue();
+            detectDataType();
+
+        }
         //read until delimiter
         //then increment based off of how many bytes are needed to represent the next value
         //incrememnt until next signed bit and read in the column indices
     }
     
-
-
-
     //equality operators -> REPLACE WITH ABILITY TO WORK WITH MANY BYTES
-    bool operator==(const ByteIterator& start, const ByteIterator& end) {return start.ptr == end.ptr;} 
-    bool operator!=(const ByteIterator& start, const ByteIterator& end) {return start.ptr != end.ptr;}
-
-    private:
+    // bool operator==() {return ptr == end;} //closer I want,  error: ‘bool ByteIterator::operator!=()’ must have exactly one argument
+    // bool operator!=() {return ptr != end;}
 
 
-    public:
 
     void detectCompression(){
     //have user input for what kind of compression level they want
@@ -91,11 +111,17 @@ class ByteIterator {
     //COO -> uses n+1 size for col pointer
     //VSE -> 
     //vSRLE -> done (kinda)
+    }
 
+    void prepareNextValue(){
+        fileStream.seekg(1, ios::cur);
+        fileStream.read(ptr, sizeof(valueType));
+        fileStream.seekg(1, ios::cur);
     }
 
     void detectDataType(){
-    //look up negative number in table
-
+       fileStream.read(ptr, sizeof(uint8_t));
+       newIndexType = *ptr;
+       fileStream.seekg(1, ios::cur);
     }
 };
