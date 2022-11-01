@@ -21,7 +21,7 @@ class ByteIterator {
         uint32_t colType;
         uint32_t nCols;
         uint32_t valueType;
-        uint32_t oldIndexType;
+        uint32_t oldIndexType; //should not be set to uint_32t -> store both new and old into one byte
         int newIndexType; //basically how many bytes we read, NOT ACTUALLY THE TYPE
         streampos start, end;
         int delimitor = 0;
@@ -40,8 +40,8 @@ class ByteIterator {
         
         //record start and end
         start = fileStream.tellg();
-        fileStream.seekg(0, ios::end);
-        end = fileStream.tellg();
+        fileStream.seekg(0, ios::end); //keep this, but add a new class that reads a raw memory array
+        end = fileStream.tellg();      //read whole file and append to an array
         fileStream.seekg(0, ios::beg);
 
         //read in the first 28 bytes -> metadata
@@ -78,9 +78,6 @@ class ByteIterator {
     //LOOK INTO 
     //https://en.cppreference.com/w/cpp/language/partial_specialization
 
-    //constructor
-    ByteIterator(char* ptr) : ptr(ptr) {}
-
     //returns value or pointer 
     char& operator*() {return *ptr;}; //should return value to char, even if reading a binary file
 
@@ -92,7 +89,6 @@ class ByteIterator {
         if(*ptr == delimitor) { //delimiter is the size of indices, this is ok since only a couple will be large
             prepareNextValue();
             detectDataType();
-
         }
         //read until delimiter
         //then increment based off of how many bytes are needed to represent the next value
