@@ -12,8 +12,10 @@
 using namespace std;
 
 class const_iterator {
+    //todo:
     //clean the vocabulary
     //**does read seek?**
+    //remove seek from this and refactor reads back into files
     private:
         std::ifstream fileStream;
         int dataTypes[4] = {1, 2, 3, 4, 8};
