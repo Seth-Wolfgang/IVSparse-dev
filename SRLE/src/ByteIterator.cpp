@@ -7,14 +7,16 @@
 #include <iterator>
 #include <cstddef>
 #include <fstream>
+#define DELIMITER 0;
 
 using namespace std;
 
-class ByteIterator {
-
+class const_iterator {
+    //clean the vocabulary
+    //**does read seek?**
     private:
         std::ifstream fileStream;
-        int dataTypes[4] = {1, 2, 4, 8};
+        int dataTypes[4] = {1, 2, 3, 4, 8};
         uint32_t magicByteSize;
         uint32_t rowType;
         uint32_t nRows;
@@ -25,7 +27,7 @@ class ByteIterator {
         int newIndexType; //basically how many bytes we read, NOT ACTUALLY THE TYPE
         streampos start, end;
         int delimitor = 0;
-        char* ptr; //*current* pointer
+        char* ptr; //*current* pointer -> change to current value
         
     public:
     //constructor
@@ -35,7 +37,7 @@ class ByteIterator {
         //read in first few bytes for data
         //set up the iterator
         uint32_t params[7];
-        char* buffer;
+        char* buffer; // allocate some memory (maybe?)
         fileStream.open(filePath, ios::binary);
         
         //record start and end
@@ -78,15 +80,19 @@ class ByteIterator {
     //LOOK INTO 
     //https://en.cppreference.com/w/cpp/language/partial_specialization
 
-    //returns value or pointer 
-    char& operator*() {return *ptr;}; //should return value to char, even if reading a binary file
+    //returns value - need to change this. I want it to return the value we are currently looking at
+    char& operator*() const {return *ptr;}; //should return value to char, even if reading a binary file
+    
+    //create operator for returning current pointer value?
 
     //prefix increment
     //template<Typename T> //create a table and way to check data type
     ByteIterator& operator++() {
         fileStream.seekg(newIndexType);
-        fileStream.read(ptr, newIndexType); 
-        if(*ptr == delimitor) { //delimiter is the size of indices, this is ok since only a couple will be large
+        fileStream.read(ptr, newIndexType); //IMPORTANT -> CHECK IF THIS ITERATES BY ITSELF
+        //cast?
+        //
+        if(*ptr == DELIMITER) { //delimiter is the size of indices, this is ok since only a couple will be large
             prepareNextValue();
             detectDataType();
         }
@@ -96,10 +102,7 @@ class ByteIterator {
     }
     
     //equality operators -> REPLACE WITH ABILITY TO WORK WITH MANY BYTES
-    // bool operator==() {return ptr == end;} //closer I want,  error: ‘bool ByteIterator::operator!=()’ must have exactly one argument
-    // bool operator!=() {return ptr != end;}
-
-
+    // operator bool() const {return ptr < end;} //closer I want,  error: ‘bool ByteIterator::operator!=()’ must have exactly one argument
 
     void detectCompression(){
     //have user input for what kind of compression level they want
