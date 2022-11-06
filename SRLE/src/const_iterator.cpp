@@ -118,14 +118,8 @@ class const_iterator {
     
     
     // equality operator
-    operator bool() const{
-        return fileStream.tellg()< end;
-        // streampos current = fileStream.tellg();
-        // return current < end;
-        // cout << 'setting bool' << endl;
-        // fileStream.seekg(current, ios::cur);
-        // cout << "current: " << current << endl;
-        // return current < end;
+    operator bool() {
+        return fileStream.tellg() < end;
         }
         
 
