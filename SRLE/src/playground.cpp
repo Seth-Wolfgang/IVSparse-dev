@@ -9,12 +9,11 @@ int main(){
     //iter++;
 
    
-    while(iter->atEnd()){
+    while(iter->operator bool()){
         iter->operator++();
     }
 
-    // iter->operator++();
-    // iter->operator++();
+    /
     // iter->operator++();
    // cout << *iter++ << endl;
 
