@@ -121,20 +121,5 @@ class const_iterator {
     operator bool() {
         return fileStream.tellg() < end;
         }
-        
-
-    void prepareNextValue(){
-        // cout << "Preparing next value" << endl;
-        // cout << "Value width: " << valueWidth << endl;
-    }
-
-    void detectDataType(){
-        // cout << "Detecting data type" << endl;
-        fileStream.read(runIndex, 0);
-        // cout << "New index type: " << *runIndex << endl;
-        newIndexWidth = *runIndex;
-        // cout << "set newIndexWidth " << newIndexWidth << endl;
-        //fileStream.seekg(1, ios::cur);
-    }
 
 };
