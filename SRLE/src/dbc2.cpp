@@ -5,15 +5,10 @@
 #include <cstdint>
 #include <typeinfo>
 #include <bits/stdc++.h>
+#include <set>
 
 
 using namespace std;
-
-/* Data Structures Questions (11/2):
-    1. What is COO sparse format?
-    2. How aer we estimating the size of data?
-    3. Can we see your 'hacky' way of type casting?
-*/
 
 // Take in a COO Matrix and Constructor will compress it
 // and store it as a DBC Compressed matrix
@@ -30,6 +25,7 @@ class DeBruinesComp {
     
     size_t num_cols;
     size_t num_rows;
+    size_t num_vals;
 
     // Define number of bytes needed for each type
     uint8_t row_t = 1;
@@ -47,21 +43,20 @@ class DeBruinesComp {
 
     // Function to allocate space for the incoming matrix
     void allocate() {
-        data.reserve(
-            // TODO: Space Estimate Here
-        );
+        data.reserve(num_vals * 4);
     }
 
     // ---- End Private Methods ---- //
 
     public:
     // Constructor for COO Matrix
-    DeBruinesComp(
-        const vector<unsigned int> &vals,
-        const vector<unsigned int> &row,
-        const vector<unsigned int> &col_p,
-        const vector<int> dim) {
+    // ---ASSUMING in column major (sorted by column)--- //
+    DeBruinesComp(const vector<unsigned int> &vals) {
 
+        // Assuming first tuple is num_rows, num_cols, num_vals
+        num_rows = vals[0];
+        num_cols = vals[1];
+        num_vals = vals[2];
 
         // Allocate space for the vector based on estimate
         allocate();
@@ -73,23 +68,63 @@ class DeBruinesComp {
 
         // Construct Vector up to col_ptr
         // <val_t, row_t, col_t, num_rows, num_cols, [HERE]>
+            // put all of these into 1 btye usually only 1-8 so if row and col_t are equal can store in 1 byte 4 bits for val_t and 4 for row/col_t?
+        data.push_back(val_t);
+        data.push_back(row_t);
+        data.push_back(col_t);
+        // Memcopy num_rows and num_cols into data
+        memcpy(con_ptr + 3, &num_rows, row_t);
+        memcpy(con_ptr + 3 + row_t, &num_cols, col_t);
 
-        // Create a buffer for col_ptrs so size of col_ptrs stays constant
+        // Create a buffer for col_ptrs so size of col_ptrs stays constant (iterate con_ptr )
+        con_ptr += 3 + row_t + col_t;
 
         // Create Pointer to start of col_ptr to update during compression
+        uint8_t* col_ptr = con_ptr;
+
+        // Iterate con_ptr num_cols times col_t bytes
+        con_ptr += num_cols * col_t;
 
         // LOOP1: Construct each Column
-            // TODO: Define Data Structure for storing unieuq values sorted
+        for (int i = 0; i < num_cols; i++) {
+            // use a set to store unique values as it imposes uniqueness and automatically sorts by ascending order
+            set<unsigned int> unique_vals;
 
-            // Find first unique value in column (store unique values sorted)
+            // insert all unique values into set
+            for (int j = 3; j < vals.size(); j += 3) {
+                if (vals[j + 1] == i) {
+                    unique_vals.insert(vals[j+2]);
+                }
+            }
 
             // Update col_ptr to match beginning of column
             
 
             // LOOP2: Construct each Run
-                // Find each indicie of the unique value and push to data
+            for (int k = 0; k < unique_vals.size(); k++) {
 
-                // Positive Delta Encode indicies in place
+                // memcopy unique value into data and iterate con_ptr
+                memcpy(con_ptr, &unique_vals[k], val_t);
+                con_ptr += val_t;
+
+                // create pointer to index type
+                uint8_t* index_ptr = con_ptr;
+
+                // memcpy the index type of the run
+                uint8_t index_t = 1;
+                memcpy(con_ptr, &index_t, 1);
+                con_ptr += 1;
+
+                // Find each indicie of the unique value and push to data
+                // -----------more efficient to do find all unique value indicies at once?
+                unsigned int max = 0;
+                for (int j = 3; j < vals.size(); j += 3) {
+                    if (vals[j + 1] == i && vals[j + 2] == unique_vals[k]) {
+                        // Positive delta encode values and insert them into data
+                        memcpy(con_ptr, &vals[j], row_t);
+                        con_ptr += row_t;
+                    }
+                }
 
                 // Determine min byte width of indicies
 
@@ -98,12 +133,15 @@ class DeBruinesComp {
                 // Update index type in data
 
                 // Add delimter to data
+            }
         
         // Continue until no unique values left in column, then loop to next column
+        }
         
         // ---- End Compression ---- //
 
         // Shrink Data to Optimal Size
+        // TODO: probably can't use this after all that memcpys soooo have fun skyler
         data.shrink_to_fit();
     }
 
