@@ -50,10 +50,10 @@ class DeBruinesComp {
 
     public:
     // Constructor for COO Matrix
-    // ---ASSUMING in column major (sorted by column)--- //
+    // * ASSUMING in column major (sorted by column)
     DeBruinesComp(const vector<unsigned int> &vals) {
 
-        // Assuming first tuple is num_rows, num_cols, num_vals
+        // * Assuming first tuple is num_rows, num_cols, num_vals
         num_rows = vals[0];
         num_cols = vals[1];
         num_vals = vals[2];
@@ -68,7 +68,7 @@ class DeBruinesComp {
 
         // Construct Vector up to col_ptr
         // <val_t, row_t, col_t, num_rows, num_cols, [HERE]>
-            // put all of these into 1 btye usually only 1-8 so if row and col_t are equal can store in 1 byte 4 bits for val_t and 4 for row/col_t?
+        // ? put all of these into 1 btye usually only 1-8 so if row and col_t are equal can store in 1 byte 4 bits for val_t and 4 for row/col_t?
         data.push_back(val_t);
         data.push_back(row_t);
         data.push_back(col_t);
@@ -76,7 +76,7 @@ class DeBruinesComp {
         memcpy(con_ptr + 3, &num_rows, row_t);
         memcpy(con_ptr + 3 + row_t, &num_cols, col_t);
 
-        // Create a buffer for col_ptrs so size of col_ptrs stays constant (iterate con_ptr )
+        // Create a buffer for col_ptrs so size of col_ptrs stays constant (iterate con_ptr)
         con_ptr += 3 + row_t + col_t;
 
         // Create Pointer to start of col_ptr to update during compression
@@ -87,6 +87,7 @@ class DeBruinesComp {
 
         // LOOP1: Construct each Column
         for (int i = 0; i < num_cols; i++) {
+
             // use a set to store unique values as it imposes uniqueness and automatically sorts by ascending order
             set<unsigned int> unique_vals;
 
@@ -97,7 +98,7 @@ class DeBruinesComp {
                 }
             }
 
-            // Update col_ptr to match beginning of column
+            // TODO: Update col_ptr to match beginning of column
             
 
             // LOOP2: Construct each Run
@@ -111,22 +112,34 @@ class DeBruinesComp {
                 uint8_t* index_ptr = con_ptr;
 
                 // memcpy the index type of the run
-                uint8_t index_t = 1;
+                uint8_t index_t = 1; // ? change to row type by default?
                 memcpy(con_ptr, &index_t, 1);
                 con_ptr += 1;
 
                 // Find each indicie of the unique value and push to data
-                // -----------more efficient to do find all unique value indicies at once?
+                // ? more efficient to do find all unique value indicies at once?
                 unsigned int max = 0;
                 for (int j = 3; j < vals.size(); j += 3) {
                     if (vals[j + 1] == i && vals[j + 2] == unique_vals[k]) {
-                        // Positive delta encode values and insert them into data
-                        memcpy(con_ptr, &vals[j], row_t);
-                        con_ptr += row_t;
+                        
+                        // if the con_ptr is right after the index_ptr then don't positive delta encode that value
+                        if (con_ptr == index_ptr + 1) {
+                            memcpy(con_ptr, &vals[j], row_t);
+                            con_ptr += row_t;
+                        } else { // else positive delta encode the value
+                            int delta = vals[j] - vals[j - 3];
+                            memcpy(con_ptr, &delta, row_t);
+                            con_ptr += row_t;
+                        }
+                        
+                        // Update max
+                        if (vals[j + 2] > max) {
+                            max = vals[j + 2];
+                        }
                     }
                 }
 
-                // Determine min byte width of indicies
+                // Determine min byte width of indicies using max
 
                 // Overwrite indicies with new byte width indicies
 
