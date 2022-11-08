@@ -67,7 +67,7 @@ int main() {
     vector<uint32_t> params = {1,1,1,1,1,1,1,0};
     vector<char> values = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10};
     vector<char> newIndexWidths = {1, 2, 4, 8};
-    vector<uint8_t> buffer1Byte = {3,5,6,7,2,1,2,4,8,2,6,7,8,7,5,4,2,254,2,0};
+    vector<uint8_t> buffer1Byte = {0,3,5,6,7,2,1,2,4,8,2,6,7,8,7,5,4,2,254,2,0};
     vector<uint16_t> buffer2Byte = {3,5,6,7,2,2,2,4,8,2,6,7,8,7,5,4,2,258,2,0};
     vector<uint32_t> buffer4Byte = {3,5,6,7,2,4,2,4,8,2,6,7,8,7,5,4,2,65530,2,0};
     vector<uint64_t> buffer8Byte = {3,5,6,7,8,2,4,8,2,6,7,8,7,5,4,2,4294963172,2,0};

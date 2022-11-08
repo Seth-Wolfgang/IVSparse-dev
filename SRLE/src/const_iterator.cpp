@@ -25,6 +25,7 @@ class const_iterator {
         uint32_t nCols;
         uint32_t valueWidth;
         uint32_t oldIndexType; //should not be set to uint_32t -> store both new and old into one byte
+        bool zeroIsIndex = false;
         
         int newIndexWidth; //basically how many bytes we read, NOT ACTUALLY THE TYPE
         streampos start, end;
@@ -73,6 +74,10 @@ class const_iterator {
                 value = *fileBuffer;
                 fileStream.read(fileBuffer, 1);
                 newIndexWidth = *fileBuffer;
+
+                if(fileStream.peek() == 0) {
+                    zeroIsIndex = true;
+                }
                 // cout << "value:" << value << endl;
                 // cout << "newIndexWidth:" << newIndexWidth << endl;
             } else {
@@ -97,11 +102,12 @@ class const_iterator {
     //prefix increment
     //template<Typename T> //create a table and way to check data type
     const void operator++() {
+        
         fileStream.read(&fileBuffer[0], newIndexWidth);
         //index += *fileBuffer;
         cout <<  *(uint*)&fileBuffer[0] << " ";
 
-        if((int)*fileBuffer == 0 ) { //delimiter is the size of indices, this is ok since only a couple will be large
+        if((int)*fileBuffer == 0 && !zeroIsIndex) { //delimiter is the size of indices, this is ok since only a couple will be large
             index = 0; //resetting +delta
             //cout << "Found delimiter" << endl;
             fileStream.read(fileBuffer, valueWidth);
@@ -109,13 +115,16 @@ class const_iterator {
             fileStream.read(fileBuffer, 1);
             newIndexWidth = *fileBuffer;
 
-            if(fileStream.peek() == 0){
-                 //something something this is an index something
-            }
-            
+            //if next index is 0
             cout << endl << "value:" << value << endl;
             cout << "newIndexWidth:" << newIndexWidth << endl;
+
+            if(fileStream.peek() == 0){
+                zeroIsIndex = true;
+                return;
+            } 
         }
+        zeroIsIndex = false;
 }
         //read until delimiter
         //then increment based off of how many bytes are needed to represent the next value
