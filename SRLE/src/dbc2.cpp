@@ -72,7 +72,7 @@ class DeBruinesComp {
 
     public:
     // Constructor for COO Matrix
-    // * ASSUMING in column major??
+    // * ASSUMING in column major
     DeBruinesComp(const vector<unsigned int> &vals) {
 
         // * Assuming first tuple is num_rows, num_cols, num_vals
@@ -89,6 +89,31 @@ class DeBruinesComp {
         // ---- Begin Compression ---- //
 
         // Construct Vector up to col_ptr
+
+        // Need to determine types for row, col, val
+
+        // Find the largest row, col, val
+        size_t max_row = 0;
+        size_t max_col = 0;
+        size_t max_val = 0;
+
+        for (size_t i = 3; i < vals.size(); i += 3) {
+            if (vals[i] > max_row) {
+                max_row = vals[i];
+            }
+            if (vals[i + 1] > max_col) {
+                max_col = vals[i + 1];
+            }
+            if (vals[i + 2] > max_val) {
+                max_val = vals[i + 2];
+            }
+        }
+
+        row_t = shrink_to(max_row);
+        col_t = shrink_to(max_col);
+        val_t = shrink_to(max_val);
+
+
         // <val_t, row_t, col_t, num_rows, num_cols, [HERE]>
         // ? put all of these into 1 btye usually only 1-8 so if row and col_t are equal can store in 1 byte 4 bits for val_t and 4 for row/col_t?
         data.push_back(val_t);
@@ -114,7 +139,7 @@ class DeBruinesComp {
             set<unsigned int> unique_vals_set;
 
             // insert all unique values into set
-            for (int j = 3; j < vals.size(); j += 3) {
+            for (size_t j = 3; j < vals.size(); j += 3) {
                 if (vals[j + 1] == i) {
                     unique_vals_set.insert(vals[j+2]);
                 }
@@ -131,7 +156,6 @@ class DeBruinesComp {
             for (unsigned int k = 0; k < unique_vals.size(); k++) {
 
                 // memcopy unique value into data and iterate con_ptr
-                // !! how to grab item from set without [] operator
                 memcpy(con_ptr, &unique_vals[k], val_t);
                 con_ptr += val_t;
 
@@ -139,7 +163,7 @@ class DeBruinesComp {
                 uint8_t* index_ptr = con_ptr;
 
                 // memcpy the index type of the run
-                uint8_t index_t = 1; // ? change to row type by default?
+                uint8_t index_t = row_t;
                 memcpy(con_ptr, &index_t, 1);
                 con_ptr += 1;
 
@@ -149,7 +173,6 @@ class DeBruinesComp {
                 size_t num_indicies = 0;
 
                 for (int j = 3; j < vals.size(); j += 3) {
-                    // !! how to grab item from set without [] operator
                     if (vals[j + 1] == i && vals[j + 2] == unique_vals[k]) {
                         
                         // if the con_ptr is right after the index_ptr then don't positive delta encode that value
@@ -230,6 +253,10 @@ class DeBruinesComp {
 };
 
 int main() {
+
+    // Create a test vector
+
+    
     cout << "Hello, World!" << endl;
     return 0;
 }
