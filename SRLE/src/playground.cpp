@@ -6,19 +6,11 @@
 using namespace std;
 int main(){
     const_iterator* iter = new const_iterator("input.bin");
-    //iter++;
-
    
-    while(iter->operator bool()){
+    while(iter->operator bool()) {
         iter->operator++();
     }
 
-    /
-    // iter->operator++();
-   // cout << *iter++ << endl;
-
-    // while(iter){
-
-    // }
-
+    
+    return 0;
 }
