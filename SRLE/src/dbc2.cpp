@@ -111,14 +111,17 @@ class DeBruinesComp {
         for (int i = 0; i < num_cols; i++) {
 
             // use a set to store unique values as it imposes uniqueness and automatically sorts by ascending order
-            set<unsigned int> unique_vals;
+            set<unsigned int> unique_vals_set;
 
             // insert all unique values into set
             for (int j = 3; j < vals.size(); j += 3) {
                 if (vals[j + 1] == i) {
-                    unique_vals.insert(vals[j+2]);
+                    unique_vals_set.insert(vals[j+2]);
                 }
             }
+
+            // create vector to store unique values
+            vector<unsigned int> unique_vals(unique_vals_set.begin(), unique_vals_set.end());
 
             // TODO: Update col_ptr to match beginning of column
             // ? Store the number of runs until the next column? would be shorter then the number of values in between
@@ -128,6 +131,7 @@ class DeBruinesComp {
             for (unsigned int k = 0; k < unique_vals.size(); k++) {
 
                 // memcopy unique value into data and iterate con_ptr
+                // !! how to grab item from set without [] operator
                 memcpy(con_ptr, &unique_vals[k], val_t);
                 con_ptr += val_t;
 
@@ -143,7 +147,9 @@ class DeBruinesComp {
                 // ? more efficient to do find all unique value indicies at once?
                 size_t max = 0;
                 size_t num_indicies = 0;
+
                 for (int j = 3; j < vals.size(); j += 3) {
+                    // !! how to grab item from set without [] operator
                     if (vals[j + 1] == i && vals[j + 2] == unique_vals[k]) {
                         
                         // if the con_ptr is right after the index_ptr then don't positive delta encode that value
@@ -166,6 +172,7 @@ class DeBruinesComp {
                 }
 
                 // Determine min byte width of indicies using max
+                uint8_t old_index_t = index_t;
                 index_t = shrink_to(max);
 
                 // write indexes to temp vector
@@ -173,36 +180,40 @@ class DeBruinesComp {
                 temp.reserve(num_indicies * index_t);
                 for (int j = 0; j < num_indicies; j++) {
                     uint8_t* temp_ptr = temp.data();
-                    memcpy(temp_ptr + j * index_t, con_ptr - num_indicies * index_t + j * row_t, index_t);
+                    memcpy(temp_ptr + (j * index_t), // Where
+                           con_ptr - (num_indicies * row_t) + (j * row_t), // What (end of indicies -> beginning of indicies -> current index)
+                           index_t); // How much
                 }
 
+                // Overwrite old indexes with new indexes
+                con_ptr -= num_indicies * row_t;
+                memcpy(con_ptr, temp.data(), num_indicies * index_t);
+                con_ptr += num_indicies * index_t;
 
 
+                // Update index_t
                 memcpy(index_ptr, &index_t, 1);
                 
 
-
-
-                // Overwrite indicies with new byte width indicies
-
-                // Update index type in data
-
                 // Add delimter to data
+                uint8_t delim = 0;
+                memcpy(con_ptr, &delim, 1);
 
                 // Update num_runs
                 num_runs++;
             }
 
         // Update col_ptr
+        memcpy(col_ptr, &num_runs, col_t);
+        col_ptr += col_t;
         
         // Continue until no unique values left in column, then loop to next column
         }
         
         // ---- End Compression ---- //
 
-        // Shrink Data to Optimal Size
-        // TODO: probably can't use this after all that memcpys soooo have fun skyler
-        data.shrink_to_fit();
+        // resize vector to actual size
+        data.resize(con_ptr - data.data());
     }
 
     // Read compressed matrix from file
