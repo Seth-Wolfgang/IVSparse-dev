@@ -43,14 +43,36 @@ class DeBruinesComp {
 
     // Function to allocate space for the incoming matrix
     void allocate() {
-        data.reserve(num_vals * 4);
+        data.reserve(num_vals / 4);
+    }
+
+    // Function to return number of bytes to store a given number
+    // SWITCH STATEMENT (OR LOGORITHIM) 
+    uint8_t shrink_to(size_t num) {
+        if (num < 256) {
+            return 1;
+        } else if (num < 65536) {
+            return 2;
+        } else if (num < 16777216) {
+            return 3;
+        } else if (num < 4294967296) {
+            return 4;
+        } else if (num < 1099511627776) {
+            return 5;
+        } else if (num < 281474976710656) {
+            return 6;
+        } else if (num < 72057594037927936) {
+            return 7;
+        } else {
+            return 8;
+        }
     }
 
     // ---- End Private Methods ---- //
 
     public:
     // Constructor for COO Matrix
-    // * ASSUMING in column major (sorted by column)
+    // * ASSUMING in column major??
     DeBruinesComp(const vector<unsigned int> &vals) {
 
         // * Assuming first tuple is num_rows, num_cols, num_vals
@@ -99,10 +121,11 @@ class DeBruinesComp {
             }
 
             // TODO: Update col_ptr to match beginning of column
-            
+            // ? Store the number of runs until the next column? would be shorter then the number of values in between
+            int num_runs = 0;
 
             // LOOP2: Construct each Run
-            for (int k = 0; k < unique_vals.size(); k++) {
+            for (unsigned int k = 0; k < unique_vals.size(); k++) {
 
                 // memcopy unique value into data and iterate con_ptr
                 memcpy(con_ptr, &unique_vals[k], val_t);
@@ -118,7 +141,8 @@ class DeBruinesComp {
 
                 // Find each indicie of the unique value and push to data
                 // ? more efficient to do find all unique value indicies at once?
-                unsigned int max = 0;
+                size_t max = 0;
+                size_t num_indicies = 0;
                 for (int j = 3; j < vals.size(); j += 3) {
                     if (vals[j + 1] == i && vals[j + 2] == unique_vals[k]) {
                         
@@ -126,27 +150,50 @@ class DeBruinesComp {
                         if (con_ptr == index_ptr + 1) {
                             memcpy(con_ptr, &vals[j], row_t);
                             con_ptr += row_t;
+                            max = vals[j];
+                            num_indicies++;
                         } else { // else positive delta encode the value
-                            int delta = vals[j] - vals[j - 3];
+                            size_t delta = vals[j] - vals[j - 3];
                             memcpy(con_ptr, &delta, row_t);
                             con_ptr += row_t;
+                            if (delta > max) {
+                                max = delta;
+                            }
+                            num_indicies++;
                         }
                         
-                        // Update max
-                        if (vals[j + 2] > max) {
-                            max = vals[j + 2];
-                        }
                     }
                 }
 
                 // Determine min byte width of indicies using max
+                index_t = shrink_to(max);
+
+                // write indexes to temp vector
+                vector<uint8_t> temp;
+                temp.reserve(num_indicies * index_t);
+                for (int j = 0; j < num_indicies; j++) {
+                    uint8_t* temp_ptr = temp.data();
+                    memcpy(temp_ptr + j * index_t, con_ptr - num_indicies * index_t + j * row_t, index_t);
+                }
+
+
+
+                memcpy(index_ptr, &index_t, 1);
+                
+
+
 
                 // Overwrite indicies with new byte width indicies
 
                 // Update index type in data
 
                 // Add delimter to data
+
+                // Update num_runs
+                num_runs++;
             }
+
+        // Update col_ptr
         
         // Continue until no unique values left in column, then loop to next column
         }
