@@ -2,11 +2,14 @@
 //     //read in the first 28 bytes -> metadata
 #include <iostream>
 #include <iterator>
-#include "const_iterator.cpp"
+// #include "const_iterator.cpp"
+#include "const_array_iterator.cpp"
 using namespace std;
 int main(){
-    const_iterator* iter = new const_iterator("input.bin");
-   
+    const_array_iterator* iter = new const_array_iterator("input.bin");
+    // iter->operator++();
+
+
     while(iter->operator bool()) {
         iter->operator++();
     }
