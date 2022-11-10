@@ -11,7 +11,7 @@ int main(){
 
 
     while(iter->operator bool()) {
-        cout << iter->operator++() << " ";
+        iter->operator++();
     }
 
     
