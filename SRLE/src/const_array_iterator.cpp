@@ -30,7 +30,7 @@ class const_array_iterator {
         
         int newIndexWidth = 1; //basically how many bytes we read, NOT ACTUALLY THE TYPE
         char* end;
-        int index = 0;
+        uint64_t index = 0;
 
     public:
         int value;
@@ -46,7 +46,7 @@ class const_array_iterator {
         //read in the first 28 bytes -> metadata
         //read first 28 bytes of fileData put it into params
         uint32_t params[7];
-        for(int i = 0; i < 8; i++) {
+        for(int i = 0; i < 7; i++) {
             params[i] = (int) *arrayPointer;
             arrayPointer+=4;
         }
@@ -101,44 +101,34 @@ class const_array_iterator {
     //create operator for returning current pointer value?
 
     //prefix increment
-    //template<Typename T> //create a table and way to check data type
-    const void operator++() {
-        uint index; // good for now
+    //template<Typename T> 
+    const uint64_t operator++() { 
+        //TODO template metaprogramming
+        //todo through an exception if we request something smaller than the size of the index
+
+        uint64_t newIndex = 0; //get rid of in future versions
+
         // cout <<  *(uint*)&arrayPointer[0] << " ";
-        switch (newIndexWidth){
-            case 1:
-                index = *(uint8_t*)&arrayPointer[0];
-                break;
-            case 2:
-                index = *(uint16_t*)&arrayPointer[0];
-                break;
-            case 4:
-                index = *(uint32_t*)&arrayPointer[0];
-                break;
-            case 8:
-                index = *(uint64_t*)&arrayPointer[0];
-                break;
-            default:
-                //cout << "Invalid width" << endl;
-                break;
-        }
-        cout << index << " ";
+        memcpy(&newIndex, arrayPointer, newIndexWidth);
         arrayPointer += newIndexWidth;
 
-        if(index == 0 && !zeroIsIndex){
-            value = arrayPointer[0];
-            arrayPointer++;
+        if(newIndex == 0){ //change that
+            memcpy(&value, arrayPointer, valueWidth);
+            arrayPointer += valueWidth; //todo make valueWidth
             newIndexWidth = arrayPointer[0];
             arrayPointer++;
-            cout << "value: " << value << endl;
+            cout << endl << "value: " << value << endl;
             cout << "newIndexWidth: " << newIndexWidth << endl;
-           
-            if(arrayPointer[0] == 0) {
-                zeroIsIndex = true;
-                return;
-            }
+            memset(&index, 0, 8);
+            memcpy(&index, arrayPointer, newIndexWidth);
+
+            // if(arrayPointer[0] == 0) {
+            //     zeroIsIndex = true;
+            //     return index += newIndex;
+            // }
         }
-        zeroIsIndex = false;
+
+        return index += newIndex;
 
         /*
         if width is 1, 2, 4, or 8
@@ -157,20 +147,11 @@ class const_array_iterator {
     
     
     // equality operator
-    
-    operator bool() {return end - arrayPointer >= 0;}
+    operator bool() {return end >= arrayPointer;} //change to not equal at the end
 
-
-    // template <typename T> 
-    // inline T incrementHelper(T index) { //Todo: TEST TO SEE IF INLINE IS FASTER
-    //     //next value of fileData
-    //     //read in the next value
-                
-    //     return = cast<T>(arrayPointer[0]);    
-    // }
 
     //reads in the file and stores it in a char* 
-    inline void readFile(string filePath){
+    inline void readFile(string filePath){ 
         ifstream fileStream;
         fileStream.open(filePath, ios::binary | ios::out);
         
