@@ -22,7 +22,8 @@ class DeBruinesComp {
     
     // TODO: define file signiture bytes
     int magic = 0x36121236; // File signiture bytes
-    
+    uint8_t delim = 0;
+
     size_t num_cols;
     size_t num_rows;
     size_t num_vals;
@@ -43,28 +44,25 @@ class DeBruinesComp {
 
     // Function to allocate space for the incoming matrix
     void allocate() {
-        data.reserve(num_vals / 4);
+        // * Print Stuff
+        cout << "Allocating space for matrix" << endl;
+        data.reserve(num_vals * 4);
+        cout << num_vals*4 << endl;
     }
 
     // Function to return number of bytes to store a given number
-    // SWITCH STATEMENT (OR LOGORITHIM) 
     uint8_t shrink_to(size_t num) {
-        if (num < 256) {
-            return 1;
-        } else if (num < 65536) {
-            return 2;
-        } else if (num < 16777216) {
-            return 3;
-        } else if (num < 4294967296) {
-            return 4;
-        } else if (num < 1099511627776) {
-            return 5;
-        } else if (num < 281474976710656) {
-            return 6;
-        } else if (num < 72057594037927936) {
-            return 7;
-        } else {
-            return 8;
+        switch (num) {
+            case 0 ... 255:
+                return 1;
+            case 256 ... 65535:
+                return 2;
+            case 65536 ... 16777215:
+                return 3;
+            case 16777216 ... 4294967295:
+                return 4;
+            default:
+                return 8;
         }
     }
 
@@ -72,13 +70,18 @@ class DeBruinesComp {
 
     public:
     // Constructor for COO Matrix
-    // * ASSUMING in column major
+    // ASSUMING in column major
     DeBruinesComp(const vector<unsigned int> &vals) {
 
-        // * Assuming first tuple is num_rows, num_cols, num_vals
+        // Assuming first tuple is num_rows, num_cols, num_vals
         num_rows = vals[0];
         num_cols = vals[1];
         num_vals = vals[2];
+
+        // * Print out metadata
+        cout << "Number of rows: " << num_rows << endl;
+        cout << "Number of cols: " << num_cols << endl;
+        cout << "Number of vals: " << num_vals << endl;
 
         // Allocate space for the vector based on estimate
         allocate();
@@ -113,6 +116,11 @@ class DeBruinesComp {
         col_t = shrink_to(max_col);
         val_t = shrink_to(max_val);
 
+        // * Print Stuff
+        cout << "Row type: " << (int) row_t << endl;
+        cout << "Col type: " << (int) col_t << endl;
+        cout << "Val type: " << (int) val_t << endl;
+
 
         // <val_t, row_t, col_t, num_rows, num_cols, [HERE]>
         // ? put all of these into 1 btye usually only 1-8 so if row and col_t are equal can store in 1 byte 4 bits for val_t and 4 for row/col_t?
@@ -132,6 +140,13 @@ class DeBruinesComp {
         // Iterate con_ptr num_cols times col_t bytes
         con_ptr += num_cols * col_t;
 
+        // * Print Vector up until this point using con_ptr
+        cout << "Vector up until col_ptr" << endl;
+        for (size_t i = 0; i < con_ptr - data.data(); i++) {
+            cout << (int) data[i] << " ";
+        }
+        cout << endl;
+
         // LOOP1: Construct each Column
         for (int i = 0; i < num_cols; i++) {
 
@@ -147,6 +162,13 @@ class DeBruinesComp {
 
             // create vector to store unique values
             vector<unsigned int> unique_vals(unique_vals_set.begin(), unique_vals_set.end());
+
+            // * print out unique values
+            cout << "Unique values for column " << i << ": ";
+            for (size_t j = 0; j < unique_vals.size(); j++) {
+                cout << unique_vals[j] << " ";
+            }
+            cout << endl;
 
             // TODO: Update col_ptr to match beginning of column
             // ? Store the number of runs until the next column? would be shorter then the number of values in between
@@ -166,6 +188,14 @@ class DeBruinesComp {
                 uint8_t index_t = row_t;
                 memcpy(con_ptr, &index_t, 1);
                 con_ptr += 1;
+
+                // * Print out the vector up to this point using con_ptr
+                // cout << "Vector up to index type: " << endl;
+                // for (size_t i = 0; i < con_ptr - data.data(); i++) {
+                //     cout << (int) data[i] << " ";
+                // }
+                // cout << endl;
+
 
                 // Find each indicie of the unique value and push to data
                 // ? more efficient to do find all unique value indicies at once?
@@ -200,30 +230,39 @@ class DeBruinesComp {
 
                 // write indexes to temp vector
                 vector<uint8_t> temp;
-                temp.reserve(num_indicies * index_t);
+                temp.reserve(num_indicies * index_t + 1);
+
                 for (int j = 0; j < num_indicies; j++) {
+                    
                     uint8_t* temp_ptr = temp.data();
+
                     memcpy(temp_ptr + (j * index_t), // Where
                            con_ptr - (num_indicies * row_t) + (j * row_t), // What (end of indicies -> beginning of indicies -> current index)
                            index_t); // How much
+                    
+                    // memcpy a zero to the end of the temp vector
+                    memcpy(temp_ptr + (num_indicies * index_t), &delim, 1);
                 }
 
                 // Overwrite old indexes with new indexes
                 con_ptr -= num_indicies * row_t;
-                memcpy(con_ptr, temp.data(), num_indicies * index_t);
+                memcpy(con_ptr, temp.data(), num_indicies * index_t + 1);
                 con_ptr += num_indicies * index_t;
 
 
                 // Update index_t
                 memcpy(index_ptr, &index_t, 1);
-                
-
-                // Add delimter to data
-                uint8_t delim = 0;
-                memcpy(con_ptr, &delim, 1);
 
                 // Update num_runs
                 num_runs++;
+
+
+                // * Print Vector up until this point using con_ptr
+                cout << "Vector up to run " << k << ": " << endl;
+                for (size_t i = 0; i < con_ptr - data.data(); i++) {
+                    cout << (int) data[i] << " ";
+                }
+                cout << endl;
             }
 
         // Update col_ptr
@@ -255,6 +294,71 @@ class DeBruinesComp {
 int main() {
 
     // Create a test vector
+    vector<unsigned int> test = {36, 3, 58,
+        
+                                 1, 0, 1,
+                                 2, 0, 1, 
+                                 3, 0, 2,
+                                 5, 0, 3,
+                                 7, 0, 1,
+                                 9, 0, 2,
+                                 10, 0, 2,
+                                 11, 0, 1,
+                                 12, 0, 1,
+                                 14, 0, 2,
+                                 15, 0, 3,
+                                 19, 0, 1,
+                                 20, 0, 3,
+                                 23, 0, 1, 
+                                 24, 0, 3,
+                                 25, 0, 1,
+                                 26, 0, 2,
+                                 29, 0, 3,
+                                 30, 0, 2,
+                                 32, 0, 1,
+                                 34, 0, 1,
+                                 
+                                 0, 1, 1,
+                                 9, 1, 1,
+                                 13, 1, 2,
+                                 14, 1, 1,
+                                 15, 1, 1,
+                                 16, 1, 1,
+                                 20, 1, 2,
+                                 21, 1, 1,
+                                 23, 1, 1,
+                                 24, 1, 2,
+                                 25, 1, 2,
+                                 26, 1, 1,
+                                 27, 1, 3,
+                                 29, 1, 3,
+                                 31, 1, 1,
+                                 32, 1, 1,
+                                 35, 1, 1,
+                                 
+                                 0, 2, 2,
+                                 1, 2, 3,
+                                 3, 2, 1,
+                                 4, 2, 3,
+                                 6, 2, 1,
+                                 7, 2, 3,
+                                 9, 2, 4,
+                                 10, 2, 8,
+                                 12, 2, 2,
+                                 13, 2, 1,
+                                 14, 2, 1,
+                                 16, 2, 2,
+                                 17, 2, 3,
+                                 19, 2, 3,
+                                 23, 2, 3,
+                                 24, 2, 3,
+                                 28, 2, 1,
+                                 30, 2, 1,
+                                 31, 2, 1,
+                                 35, 2, 8};
+
+    // Create a DeBruinesComp object
+    DeBruinesComp test_comp(test);
 
     
     cout << "Hello, World!" << endl;
