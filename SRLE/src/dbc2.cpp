@@ -39,6 +39,7 @@ class DeBruinesComp {
     // Eventual home for final compressed data
     vector<uint8_t> data;
     uint8_t* con_ptr;
+    size_t num_runs;
 
     // ---- Private Methods ---- //
 
@@ -48,6 +49,9 @@ class DeBruinesComp {
         cout << "Allocating space for matrix" << endl;
         data.reserve(num_vals * 4);
         cout << num_vals*4 << endl;
+
+        // memset all data to 0
+        memset(&data[0], 0, num_vals*4);
     }
 
     // Function to return number of bytes to store a given number
@@ -136,6 +140,7 @@ class DeBruinesComp {
 
         // Create Pointer to start of col_ptr to update during compression
         uint8_t* col_ptr = con_ptr;
+        col_ptr += col_t;
 
         // Iterate con_ptr num_cols times col_t bytes
         con_ptr += num_cols * col_t;
@@ -172,7 +177,6 @@ class DeBruinesComp {
 
             // TODO: Update col_ptr to match beginning of column
             // ? Store the number of runs until the next column? would be shorter then the number of values in between
-            int num_runs = 0;
 
             // LOOP2: Construct each Run
             for (unsigned int k = 0; k < unique_vals.size(); k++) {
@@ -189,18 +193,11 @@ class DeBruinesComp {
                 memcpy(con_ptr, &index_t, 1);
                 con_ptr += 1;
 
-                // * Print out the vector up to this point using con_ptr
-                // cout << "Vector up to index type: " << endl;
-                // for (size_t i = 0; i < con_ptr - data.data(); i++) {
-                //     cout << (int) data[i] << " ";
-                // }
-                // cout << endl;
-
 
                 // Find each indicie of the unique value and push to data
-                // ? more efficient to do find all unique value indicies at once?
                 size_t max = 0;
                 size_t num_indicies = 0;
+                size_t previous;
 
                 for (int j = 3; j < vals.size(); j += 3) {
                     if (vals[j + 1] == i && vals[j + 2] == unique_vals[k]) {
@@ -208,17 +205,19 @@ class DeBruinesComp {
                         // if the con_ptr is right after the index_ptr then don't positive delta encode that value
                         if (con_ptr == index_ptr + 1) {
                             memcpy(con_ptr, &vals[j], row_t);
+                            previous = vals[j];
                             con_ptr += row_t;
                             max = vals[j];
                             num_indicies++;
                         } else { // else positive delta encode the value
-                            size_t delta = vals[j] - vals[j - 3];
+                            size_t delta = vals[j] - previous;
                             memcpy(con_ptr, &delta, row_t);
                             con_ptr += row_t;
                             if (delta > max) {
                                 max = delta;
                             }
                             num_indicies++;
+                            previous = vals[j];
                         }
                         
                     }
@@ -230,7 +229,7 @@ class DeBruinesComp {
 
                 // write indexes to temp vector
                 vector<uint8_t> temp;
-                temp.reserve(num_indicies * index_t + 1);
+                temp.reserve(num_indicies * index_t);
 
                 for (int j = 0; j < num_indicies; j++) {
                     
@@ -240,8 +239,6 @@ class DeBruinesComp {
                            con_ptr - (num_indicies * row_t) + (j * row_t), // What (end of indicies -> beginning of indicies -> current index)
                            index_t); // How much
                     
-                    // memcpy a zero to the end of the temp vector
-                    memcpy(temp_ptr + (num_indicies * index_t), &delim, 1);
                 }
 
                 // Overwrite old indexes with new indexes
@@ -252,6 +249,10 @@ class DeBruinesComp {
 
                 // Update index_t
                 memcpy(index_ptr, &index_t, 1);
+
+                // Add the delimiter to end of run
+                memcpy(con_ptr, &delim, 1);
+                con_ptr += 1;
 
                 // Update num_runs
                 num_runs++;
@@ -265,17 +266,43 @@ class DeBruinesComp {
                 cout << endl;
             }
 
-        // Update col_ptr
-        memcpy(col_ptr, &num_runs, col_t);
-        col_ptr += col_t;
+        // Update col_ptr if not last column
+        if (i != num_cols - 1) {
+            memcpy(col_ptr, &num_runs, col_t);
+            col_ptr += col_t;
+        }
+
+        
         
         // Continue until no unique values left in column, then loop to next column
         }
+
+        // Delete last element of data (delim) using con_ptr
+        con_ptr -= 1;
         
         // ---- End Compression ---- //
 
+        // * Print Vector using con_ptr
+        cout << endl;
+        cout << "Final Vector: " << endl;
+        for (size_t i = 0; i < con_ptr - data.data(); i++)
+        {
+            cout << (int)data[i] << " ";
+        }
+        cout << endl;
+        cout << endl;
+
         // resize vector to actual size
         data.resize(con_ptr - data.data());
+
+        // * Print Vector using con_ptr
+        cout << endl;
+        cout << "Final Vector: " << endl;
+        for (size_t i = 0; i < con_ptr - data.data(); i++) {
+            cout << (int) data[i] << " ";
+        }
+        cout << endl;
+        cout << endl;
     }
 
     // Read compressed matrix from file
