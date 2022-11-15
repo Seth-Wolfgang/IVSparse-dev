@@ -11,6 +11,7 @@
 using namespace std;
 
 //template<typename T> <- return what user wants https://en.cppreference.com/w/cpp/language/partial_specialization
+template<typename T>
 class const_array_iterator {
     //todo:
     //clean the vocabulary
@@ -27,9 +28,9 @@ class const_array_iterator {
         char* fileData;
         char* arrayPointer;
         uint64_t index = 0;
-
+        T value;
     public:
-        int value;
+      
       
 
    const_array_iterator(const char* filePath) {
@@ -58,20 +59,20 @@ class const_array_iterator {
         // cout << "value: " << value << endl;
         // cout << "newIndexWidth: " << newIndexWidth << endl;
 
-        //for debugging
-        // for(int i = 0; i < 7; i++) {
-        //     cout << params[i] << endl;
-        // }
+        // for debugging
+        for(int i = 0; i < 7; i++) {
+            cout << params[i] << endl;
+        }
 
 
     }//end of constructor
 
 
     //todo make this return type T 
-    char& operator * () const {return *arrayPointer;}; 
+    T& operator * () {return value;}; 
     
 
-    //template<Typename T> 
+    // template<Typename T> 
     const uint64_t operator++() { 
         //TODO template metaprogramming
         //todo through an exception if we request something smaller than the size of the index

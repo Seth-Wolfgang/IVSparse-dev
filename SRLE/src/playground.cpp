@@ -6,12 +6,16 @@
 #include "const_array_iterator.cpp"
 using namespace std;
 int main(){
-    const_array_iterator* iter = new const_array_iterator("input.bin");
+    const_array_iterator<double>* iter = new const_array_iterator<double>("input.bin");
     // iter->operator++();
-
+    double value = 0;
 
     while(iter->operator bool()) {
         iter->operator++();
+        if(iter->operator *() != value){
+            cout << iter->operator *() << endl;
+            value =  iter->operator *();
+        }
     }
 
     
