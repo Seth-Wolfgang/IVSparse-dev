@@ -51,7 +51,7 @@ void writeBinaryFile(const char* filename, vector<T>& buffer)
 }
 
 
-void writeBinaryFile(const char* filename, char& buffer)
+void writeBinaryFile(const char* filename, char buffer)
 {
     // Open the file
     ofstream file(filename, ios::binary | ios::app);
@@ -75,8 +75,16 @@ void writeBinaryFileFloat(const char* filename, double& buffer)
 
 int main() {
     // Read the binary file
+    uint8_t width1 = sizeof(32.432);
+    uint8_t width2 = sizeof(53.35);
+    uint8_t width3 = sizeof(9.32);
+    uint8_t width4 = sizeof(0.001);
+    
 
-    vector<uint32_t> params = {1,1,1,1,1,8,1,0};
+
+
+    
+    vector<uint32_t> params = {1,1,1,1,1,1,1,0};
     vector<double> values = {32.432, 53.35, 9.32, 0.001};
     vector<char> newIndexWidths = {1, 2, 4, 8};
     vector<uint8_t> buffer1Byte = {0,3,5,6,7,2,1,2,4,8,2,6,7,8,7,5,4,2,254,2,0};
@@ -91,16 +99,24 @@ int main() {
 
     
     writeBinaryFile("input.bin", params);
+    writeBinaryFile("input.bin", (char)width1);
     writeBinaryFileFloat("input.bin", values.at(0));
+
     writeBinaryFile("input.bin", newIndexWidths.at(0));
     writeBinaryFile("input.bin", buffer1Byte);
+    writeBinaryFile("input.bin", (char)width2);
     writeBinaryFileFloat("input.bin", values.at(1));
+
     writeBinaryFile("input.bin", newIndexWidths.at(1));
     writeBinaryFile("input.bin", buffer2Byte);
+    writeBinaryFile("input.bin", (char)width3);
     writeBinaryFileFloat("input.bin", values.at(2));
+
     writeBinaryFile("input.bin", newIndexWidths.at(2));
     writeBinaryFile("input.bin", buffer4Byte);
+    writeBinaryFile("input.bin", (char)width4);
     writeBinaryFileFloat("input.bin", values.at(3));
+
     writeBinaryFile("input.bin", newIndexWidths.at(3));
     writeBinaryFile("input.bin", buffer8Byte);
 
