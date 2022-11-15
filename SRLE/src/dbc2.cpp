@@ -46,9 +46,9 @@ class DeBruinesComp {
     // Function to allocate space for the incoming matrix
     void allocate() {
         // * Print Stuff
-        cout << "Allocating space for matrix" << endl;
+        //cout << "Allocating space for matrix" << endl;
         data.reserve(num_vals * 4);
-        cout << num_vals*4 << endl;
+        //cout << num_vals*4 << endl;
 
         // memset all data to 0
         memset(&data[0], 0, num_vals*4);
@@ -83,9 +83,9 @@ class DeBruinesComp {
         num_vals = vals[2];
 
         // * Print out metadata
-        cout << "Number of rows: " << num_rows << endl;
-        cout << "Number of cols: " << num_cols << endl;
-        cout << "Number of vals: " << num_vals << endl;
+        //cout << "Number of rows: " << num_rows << endl;
+        //cout << "Number of cols: " << num_cols << endl;
+        //cout << "Number of vals: " << num_vals << endl;
 
         // Allocate space for the vector based on estimate
         allocate();
@@ -121,9 +121,9 @@ class DeBruinesComp {
         val_t = shrink_to(max_val);
 
         // * Print Stuff
-        cout << "Row type: " << (int) row_t << endl;
-        cout << "Col type: " << (int) col_t << endl;
-        cout << "Val type: " << (int) val_t << endl;
+        //cout << "Row type: " << (int) row_t << endl;
+        //cout << "Col type: " << (int) col_t << endl;
+        //cout << "Val type: " << (int) val_t << endl;
 
 
         // <val_t, row_t, col_t, num_rows, num_cols, [HERE]>
@@ -146,11 +146,11 @@ class DeBruinesComp {
         con_ptr += num_cols * col_t;
 
         // * Print Vector up until this point using con_ptr
-        cout << "Vector up until col_ptr" << endl;
-        for (size_t i = 0; i < con_ptr - data.data(); i++) {
-            cout << (int) data[i] << " ";
-        }
-        cout << endl;
+        // cout << "Vector up until col_ptr" << endl;
+        // for (size_t i = 0; i < con_ptr - data.data(); i++) {
+        //     cout << (int) data[i] << " ";
+        // }
+        // cout << endl;
 
         // LOOP1: Construct each Column
         for (int i = 0; i < num_cols; i++) {
@@ -169,11 +169,11 @@ class DeBruinesComp {
             vector<unsigned int> unique_vals(unique_vals_set.begin(), unique_vals_set.end());
 
             // * print out unique values
-            cout << "Unique values for column " << i << ": ";
-            for (size_t j = 0; j < unique_vals.size(); j++) {
-                cout << unique_vals[j] << " ";
-            }
-            cout << endl;
+            // cout << "Unique values for column " << i << ": ";
+            // for (size_t j = 0; j < unique_vals.size(); j++) {
+            //     cout << unique_vals[j] << " ";
+            // }
+            // cout << endl;
 
             // TODO: Update col_ptr to match beginning of column
             // ? Store the number of runs until the next column? would be shorter then the number of values in between
@@ -258,12 +258,12 @@ class DeBruinesComp {
                 num_runs++;
 
 
-                // * Print Vector up until this point using con_ptr
-                cout << "Vector up to run " << k << ": " << endl;
-                for (size_t i = 0; i < con_ptr - data.data(); i++) {
-                    cout << (int) data[i] << " ";
-                }
-                cout << endl;
+                // // * Print Vector up until this point using con_ptr
+                // cout << "Vector up to run " << k << ": " << endl;
+                // for (size_t i = 0; i < con_ptr - data.data(); i++) {
+                //     cout << (int) data[i] << " ";
+                // }
+                // cout << endl;
             }
 
         // Update col_ptr if not last column
@@ -295,14 +295,14 @@ class DeBruinesComp {
         // resize vector to actual size
         data.resize(con_ptr - data.data());
 
-        // * Print Vector using con_ptr
-        cout << endl;
-        cout << "Final Vector: " << endl;
-        for (size_t i = 0; i < con_ptr - data.data(); i++) {
-            cout << (int) data[i] << " ";
-        }
-        cout << endl;
-        cout << endl;
+        // // * Print Vector using con_ptr
+        // cout << endl;
+        // cout << "Final Vector: " << endl;
+        // for (size_t i = 0; i < con_ptr - data.data(); i++) {
+        //     cout << (int) data[i] << " ";
+        // }
+        // cout << endl;
+        // cout << endl;
     }
 
     // Read compressed matrix from file
