@@ -5,7 +5,7 @@
 #include <iostream>
 #include <cstring>
 
-// Potentially Undeeded Includes
+// Yes I Know - Undeeded Includes
 #include <set>
 
 using namespace std;
@@ -66,12 +66,16 @@ class DeBruinesComp {
         size_t max_val = 0;
 
         for (size_t i = 0; i < vals * 3; i += 3) {
+            // stop
+            
             if (mat[i] > max_row) {
                 max_row = mat[i];
             }
             if (mat[i + 1] > max_col) {
                 max_col = mat[i + 1];
             }
+
+            // Ask about if you need val type from user or compress it myself
             if (mat[i + 2] > max_val) {
                 max_val = mat[i + 2];
             }
@@ -83,6 +87,7 @@ class DeBruinesComp {
 
         allocate();
 
+        // Move to PTR
         uint8_t types[3] = {row_t, col_t, val_t};
 
         memcpy(ptr, &types, 3);
@@ -131,6 +136,8 @@ class DeBruinesComp {
                 size_t num_indicies = 0;
                 size_t previous;
 
+
+                // change to only go through the correct column
                 for (size_t j = 0; j < num_vals * 3; j += 3) {
                     if (mat[j + 1] == i && mat[j + 2] == uniques[k]) {
 
