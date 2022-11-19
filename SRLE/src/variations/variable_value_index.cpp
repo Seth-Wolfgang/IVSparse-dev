@@ -76,14 +76,15 @@ class const_array_iterator {
     T& operator * () {return value;}; 
     
 
-    // template<Typename T> 
+    template<Typename T> 
     const uint64_t operator++() { 
         //TODO template metaprogramming
         //todo through an exception if we request something smaller than the size of the index
 
-        uint64_t newIndex = 0; 
-
-        memcpy(&newIndex, arrayPointer, newIndexWidth);
+        T newIndex = 0; 
+        //memcpy(&newIndex, arrayPointer, newIndexWidth);
+        newIndex = &arrayPointer[0];
+        
         arrayPointer += newIndexWidth;
 
 
@@ -94,16 +95,33 @@ class const_array_iterator {
 
             memcpy(&value, arrayPointer, valueWidth);
             arrayPointer += valueWidth; 
-            
-            memcpy(&newIndexWidth, arrayPointer, 1);
+
+            // memcpy(&newIndexWidth, arrayPointer, 1);
+            newIndexWidth = &arrayPointer[0];
             arrayPointer++;
+
+            switch (newIndexWidth){
+                case 1:
+                    T = uint8_t;
+                case 2:
+                    T = uint16_t;
+                case 4:
+                    T = uint32_t;
+                case 8:
+                    T = uint64_t;
+                default:
+                    cerr << "New index width is invalid\nFile encoded wrong!"
+
+            }
+
+
             
-            // cout << endl << "value: " << value << endl;
-            // cout << "newIndexWidth: " << newIndexWidth << endl;
+            cout << endl << "value: " << value << endl;
+            cout << "newIndexWidth: " << newIndexWidth << endl;
             
             memset(&index, 0, 8);
             memcpy(&index, arrayPointer, newIndexWidth);
-
+            
         }
 
         return index += newIndex;

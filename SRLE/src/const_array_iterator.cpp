@@ -7,6 +7,7 @@
 #include <iterator>
 #include <cstddef>
 #include <fstream>
+#include<algorithm> 
 
 using namespace std;
 
@@ -28,9 +29,11 @@ class const_array_iterator {
         char* fileData;
         char* arrayPointer;
         uint64_t index = 0;
+        // int (*functionPointer)();
         T value;
+        uint64_t sum = 0;
+
     public:
-      
       
 
    const_array_iterator(const char* filePath) {
@@ -40,6 +43,7 @@ class const_array_iterator {
 
         //read first 28 bytes of fileData put it into params -> metadata
         uint32_t params[7];
+        
         memcpy(&params, arrayPointer, 28); //28 is subject to change depending on magic bytes
         arrayPointer+=32; //first delimitor is 4 bytes
 
@@ -55,14 +59,15 @@ class const_array_iterator {
         arrayPointer += valueWidth;
         memcpy(&newIndexWidth, arrayPointer, 1);
         arrayPointer++; //this should make it point to first index
-        
-        // cout << "value: " << value << endl;
-        // cout << "newIndexWidth: " << newIndexWidth << endl;
 
-        // for debugging
-        for(int i = 0; i < 7; i++) {
-            cout << params[i] << endl;
-        }
+        // const_array_iterator* functionPointer = &iterateArray;
+        cout << "value: " << value << endl;
+        cout << "newIndexWidth: " << newIndexWidth << endl;
+
+        //for debugging
+        //  for(int i = 0; i < 7; i++) {
+        //      cout << i << " " << params[i] << endl;
+        // }
 
 
     }//end of constructor
@@ -71,8 +76,9 @@ class const_array_iterator {
     //todo make this return type T 
     T& operator * () {return value;}; 
     
+    uint64_t getSum() {return sum;};
 
-    // template<Typename T> 
+    //template<typename indexType> 
     const uint64_t operator++() { 
         //TODO template metaprogramming
         //todo through an exception if we request something smaller than the size of the index
@@ -81,7 +87,7 @@ class const_array_iterator {
 
         memcpy(&newIndex, arrayPointer, newIndexWidth);
         arrayPointer += newIndexWidth;
-
+        sum += value;
 
         if(newIndex == 0 && index != 0){ //change that
             
@@ -98,7 +104,6 @@ class const_array_iterator {
             memcpy(&index, arrayPointer, newIndexWidth);
 
         }
-
         return index += newIndex;
 
     }
@@ -106,26 +111,44 @@ class const_array_iterator {
 
     // equality operator
     operator bool() {
-        // cout << "end " << &end << endl;
-        // cout << "arr " << &arrayPointer << endl;
-        return end != arrayPointer;} //change to not equal at the end
+        //cout << "end " << &end << endl;
+        //cout << "arr " << &arrayPointer << endl;
+        if( end == arrayPointer) {
+            cout << "Sum: " << sum << endl;
+        }
+        return end >= arrayPointer;} //change to not equal at the end
 
 
     // reads in the file and stores it in a char* 
-    inline void readFile(string filePath){ 
-        ifstream fileStream;
-        fileStream.open(filePath, ios::binary | ios::out);
+    // inline void readFile(string filePath){ 
+    //     ifstream fileStream;
+    //     fileStream.open(filePath, ios::binary | ios::out);
         
-        fileStream.seekg(0, ios::end);
-        int sizeOfFile = fileStream.tellg();
+    //     fileStream.seekg(0, ios::end);
+    //     int sizeOfFile = fileStream.tellg();
+    //     fileData = (char*)malloc(sizeof(char*)*sizeOfFile);
+
+    //     fileStream.seekg(0, ios::beg);
+    //     fileStream.read(fileData, sizeOfFile);
+        
+    //     fileStream.close();
+
+    //     arrayPointer = fileData;
+    //     end = fileData + sizeOfFile;
+    //     }
+
+    //marginally faster 
+    inline void readFile(const char* filePath){
+        //read a file using the C fopen function and store to fileData
+        FILE* file = fopen(filePath, "rb");
+        fseek(file, 0, SEEK_END);
+        int sizeOfFile = ftell(file);
         fileData = (char*)malloc(sizeof(char*)*sizeOfFile);
-
-        fileStream.seekg(0, ios::beg);
-        fileStream.read(fileData, sizeOfFile);
-        
-        fileStream.close();
-
+        fseek(file, 0, SEEK_SET);
+        fread(fileData, sizeOfFile, 1, file);
+        fclose(file);
+        cout << "Size of file: " << sizeOfFile << endl;
         arrayPointer = fileData;
         end = fileData + sizeOfFile;
-        }
+    }
 };
