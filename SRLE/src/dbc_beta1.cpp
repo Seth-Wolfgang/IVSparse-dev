@@ -14,6 +14,7 @@ using namespace std;
 class DeBruinesComp {
     private:
 
+    // ! Magic is currently unused
     int magic = 0x36121236;
     uint8_t delim = 0;
 
@@ -29,6 +30,7 @@ class DeBruinesComp {
     uint8_t* data;
 
     void allocate() {
+        // ! Malloc currently allocates much more than needed
         data = (uint8_t *)malloc(num_vals * 4 * val_t);
         if (!data)
         {
@@ -56,24 +58,38 @@ class DeBruinesComp {
 
     public:
 
+    /* 
+        * Takes in a COO Matrix and converts it to a DeBruinesComp Matrix
+
+        @param *vals: Pointer to the values of the COO Matrix
+        @param *rows: Pointer to the rows of the COO Matrix
+        @param *cols: Pointer to the cols of the COO Matrix
+        @param rows: Number of rows in the COO Matrix
+        @param cols: Number of cols in the COO Matrix
+        @param vals: Number of vals in the COO Matrix
+    */
+
     template <typename values, typename rowcols>
     DeBruinesComp(const values *vals, const rowcols *rows, const rowcols *cols, size_t val_num, size_t row_num, size_t col_num) {
 
         cout << "DeBruinesComp Beta V.1" << endl;
 
+        // Initialize the number of rows, cols, and vals
         num_rows = row_num;
         num_cols = col_num;
         num_vals = val_num;
 
         size_t max_val = 0;
 
-        // Could refactor to be in first loop and construct metadata between making dictionary and building runs
+        // Finds max value in vals to be compressed to val_type
+        // ? Could refactor to be in first loop and construct metadata between making dictionary and building runs
         for (size_t i = 0; i < num_vals; i++) {
             if (vals[i] > max_val) {
                 max_val = vals[i];
             }
         }
 
+        // Finds the smallest type that can hold the max value
         row_t = byte_width(num_rows);
         col_t = byte_width(num_cols);
         val_t = byte_width(max_val);
@@ -94,9 +110,10 @@ class DeBruinesComp {
         memcpy(ptr + row_t, &num_cols, col_t);
         ptr += row_t + col_t;
 
+        // Leave pointer to update col pointers later
         uint64_t *col_ptr = (uint64_t*) ptr;
         col_ptr[0] = 0;
-        col_ptr += 8;
+        col_ptr++;
 
         ptr += num_cols * 8;
 
@@ -108,48 +125,35 @@ class DeBruinesComp {
             map<values, vector<rowcols>> unique_vals;
 
             // move through data (FOR THE COLUMN) and if value is unique, add it to dictionary, if value is not unique, add index to that value in dictionary
-
-            // Refactor to only run through the column being encoded
+            // First val in vector is the previous index (used for positive delta encoding)
+            // TODO Refactor to only run through the column being encoded
             for (size_t j = 0; j < num_vals; j++) {
                 if (unique_vals.count(vals[j]) == 1 && cols[j] == i) {
                     // Val Exists in Dict
 
-                    // print out found value and its index
-                    //cout << "Found Value Again: " << vals[j] << " at index: " << rows[j] << endl;
-
-                    rowcols previous = unique_vals[vals[j]].front();
-                    // calculate delta
-                    for (size_t k = 1; k < unique_vals[vals[j]].size(); k++) {
-                        previous += unique_vals[vals[j]][k];
-                    }
-
-                    rowcols delta = rows[j] - previous;
-
-                    // print delta
-                    //cout << "Delta: " << delta << endl;
+                    size_t delta = rows[j] - unique_vals[vals[j]][0];
 
                     unique_vals[vals[j]].push_back(delta);
+
+                    unique_vals[vals[j]][0] = rows[j];
 
                 } else if (cols[j] == i) {
                     // Val does not Exist in dict
 
-                    // print out found value and its index
-                    //cout << "Found Value: " << vals[j] << " at index: " << rows[j] << endl;
-
-                    vector<rowcols> temp = {rows[j]};
+                    vector<rowcols> temp = {rows[j], rows[j]};
                     unique_vals[vals[j]] = temp;
 
                 }
             }
 
-            // Print out dictionary
-            for (auto const& x : unique_vals) {
-                cout << x.first << ": ";
-                for (auto const& y : x.second) {
-                    cout << y << " ";
-                }
-                cout << endl;
-            }
+            // * Print out dictionary
+            // for (auto const& x : unique_vals) {
+            //     cout << x.first << ": ";
+            //     for (auto const& y : x.second) {
+            //         cout << y << " ";
+            //     }
+            //     cout << endl;
+            // }
 
             // Loop through dictionary and construct compression
             for (auto i : unique_vals) {
@@ -163,8 +167,10 @@ class DeBruinesComp {
 
                 // Construct Run
                 for (auto j : i.second) {
-                    memcpy(ptr, &j, idx_t);
-                    ptr += idx_t;
+                    if (j != i.second[0]) {
+                        memcpy(ptr, &j, idx_t);
+                        ptr += idx_t;
+                    }
                 }
 
                 for (size_t j = 0; j < idx_t; j++) {
@@ -178,14 +184,17 @@ class DeBruinesComp {
             // update col_ptr
             if (i != num_cols - 1) {
                 size_t col_location = ptr - data;
+                // * print out col location
+                //cout << "Col Location: " << col_location << endl;
                 memcpy(col_ptr, &col_location, 8);
-                col_ptr += 8;
+                col_ptr++;
             }
 
         }
 
         ptr -= previous_idx;
 
+        // Resize data to fit actual size
         data = (uint8_t*) realloc(data, ptr-data);
 
         cout << "Final Vector: " << endl;
@@ -200,7 +209,6 @@ class DeBruinesComp {
 
     ~DeBruinesComp() {
         free(data);
-        cout << "Dead" << endl;
     }
 };
 
