@@ -81,33 +81,45 @@ Eigen::SparseMatrix<int> generateMatrix(int numRows, int numCols, double sparsit
 //[[Rcpp::export]]
 void iteratorBenchmark(int numRows, int numCols, double sparsity) {
     // Rcpp::Clock clock;
-    // Rcpp::Rcout << "Flag 1" << std::endl;
     // clock.tick("SRLE");
     //My Iterator test
-    const_array_iterator<int>* iter = new const_array_iterator<int>("input.bin");
-    double value = 0;
-    // Rcpp::Rcout << "Flag 2" << std::endl;
 
-    while(iter->operator bool()) {
-        iter->operator++();
-        if(iter->operator *() != value){
-            // cout << iter->operator *() << endl;
-            value =  iter->operator *();
-        }
-    }
-    // clock.tock("SRLE");
-
-    // Rcpp::Rcout << "Flag 3" << std::endl;
-
-    ////////////////////////////////CSC innerIterator////////////////////////////////
-    //generating a large random eigen sparse
-    // cout << "Testing Eigen" << endl;
+    //TO ENSURE EVERYTHING WORKS, THE TOTAL SUM OF ALL VALUES IS CALUCLATED AND SHOULD PRINT THE SAME NUMBER FOR EACH ITERATOR
     uint64_t total = 0;
 
     Eigen::SparseMatrix<int> myMatrix(numRows, numCols);
     myMatrix.reserve(Eigen::VectorXi::Constant(numRows, numCols));
     myMatrix = generateMatrix<int>(numRows, numCols, sparsity);
-    myMatrix.makeCompressed();
+    myMatrix.makeCompressed(); //This line might give you issues???
+
+
+    
+    /** 
+     * Right here, Skyler 😀
+    */
+
+
+
+
+
+    const_array_iterator<int>* iter = new const_array_iterator<int>("input.bin");
+    
+    while(iter->operator bool()) {
+        iter->operator++();
+        if(iter->operator *() != value){
+            // cout << iter->operator *() << endl;
+            total =  iter->operator *();
+        }
+    }
+    // clock.tock("SRLE");
+    cout << "SRLE Total: " << total << endl;
+
+    ////////////////////////////////CSC innerIterator////////////////////////////////
+    //generating a large random eigen sparse
+    // cout << "Testing Eigen" << endl;
+    total = 0;
+
+
 
     //begin timing
     // clock.tick("Eigen");
@@ -118,7 +130,7 @@ void iteratorBenchmark(int numRows, int numCols, double sparsity) {
         }
     }
     // clock.tock("Eigen");
-    // cout << "Total: " << total << endl;
+    cout << "InnerIterator Total: " << total << endl;
 
 
     ////////////////////////////////GENERIC CSC Iterator////////////////////////////////
@@ -131,7 +143,7 @@ void iteratorBenchmark(int numRows, int numCols, double sparsity) {
         iter2.operator++();
     }
     // clock.tock("CSC");
-    // cout << "Total: " << total << endl;
+    cout << "CSC Total: " << total << endl;
 
     // clock.stop("Iterators");
 
