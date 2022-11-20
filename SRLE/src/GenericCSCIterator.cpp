@@ -1,4 +1,6 @@
-//create an iterator struct
+//[[Rcpp::depends(RcppClock)]]
+//[[Rcpp::depends(RcppEigen)]]
+//[[Rcpp::depends(Rcpp)]]
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -9,7 +11,6 @@
 #include <fstream>
 #include<algorithm> 
 #include <Eigen/Sparse>
-#include <Eigen/Core>
 
 using namespace std;
 
