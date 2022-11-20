@@ -21,6 +21,8 @@ class rng {
         uint64_t x = state ^ (state << 38);
         x ^= x >> 13;
         x ^= x << 23;
+        
+        return x;
     }
 
     uint64_t rand(uint64_t i) {

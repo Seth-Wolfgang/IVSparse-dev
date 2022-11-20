@@ -61,8 +61,8 @@ class const_array_iterator {
         arrayPointer++; //this should make it point to first index
 
         // const_array_iterator* functionPointer = &iterateArray;
-        cout << "value: " << value << endl;
-        cout << "newIndexWidth: " << newIndexWidth << endl;
+        // cout << "value: " << value << endl;
+        // cout << "newIndexWidth: " << newIndexWidth << endl;
 
         //for debugging
         //  for(int i = 0; i < 7; i++) {
@@ -113,9 +113,6 @@ class const_array_iterator {
     operator bool() {
         //cout << "end " << &end << endl;
         //cout << "arr " << &arrayPointer << endl;
-        if( end == arrayPointer) {
-            cout << "Sum: " << sum << endl;
-        }
         return end >= arrayPointer;} //change to not equal at the end
 
 
