@@ -7,10 +7,11 @@
 #include "const_array_iterator.cpp"
 #include "GenericCSCIterator.cpp"
 #include "matrixCreator.cpp"
+#include "DeBruine's_Compressed_Matrix_Name.cpp"
 #include <Eigen/Sparse>
-#include <RcppClock.h>
-#include <Rcpp.h>
-#include <RcppEigen.h>
+//#include <RcppClock.h>
+//#include <Rcpp.h>
+//#include <RcppEigen.h>
 
 using namespace std;
 
@@ -80,31 +81,24 @@ Eigen::SparseMatrix<int> generateMatrix(int numRows, int numCols, double sparsit
 
 //[[Rcpp::export]]
 void iteratorBenchmark(int numRows, int numCols, double sparsity) {
-    Rcpp::Clock clock;
-    clock.tick("SRLE");
+    // Rcpp::Clock clock;
     //My Iterator test
 
     //TO ENSURE EVERYTHING WORKS, THE TOTAL SUM OF ALL VALUES IS CALUCLATED AND SHOULD PRINT THE SAME NUMBER FOR EACH ITERATOR
     uint64_t total = 0;
     int value = 0;
+    string fileName = "input2.bin";
 
     Eigen::SparseMatrix<int> myMatrix(numRows, numCols);
     myMatrix.reserve(Eigen::VectorXi::Constant(numRows, numCols));
     myMatrix = generateMatrix<int>(numRows, numCols, sparsity);
     myMatrix.makeCompressed(); //This line might give you issues???
 
+    DeBruinesComp myCompression(myMatrix);
 
+    const_array_iterator<int>* iter = new const_array_iterator<int>(fileName);
     
-    /** 
-     * Right here, Skyler 😀
-    */
-
-
-
-
-
-    const_array_iterator<int>* iter = new const_array_iterator<int>("input.bin");
-    
+    //clock.tick("SRLE");
     while(iter->operator bool()) {
         iter->operator++();
         if(iter->operator *() != value){
@@ -112,40 +106,40 @@ void iteratorBenchmark(int numRows, int numCols, double sparsity) {
             total =  iter->operator *();
         }
     }
-    clock.tock("SRLE");
+    //clock.tock("SRLE");
     cout << "SRLE Total: " << total << endl;
 
     ////////////////////////////////CSC innerIterator////////////////////////////////
     //generating a large random eigen sparse
-    // cout << "Testing Eigen" << endl;
+    cout << "Testing Eigen" << endl;
     total = 0;
 
 
 
     //begin timing
-    clock.tick("Eigen");
+    //clock.tick("Eigen");
     Eigen::SparseMatrix<int>::InnerIterator it(myMatrix, 0);
     for (int i=0; i<numRows; ++i){
         for (Eigen::SparseMatrix<int>::InnerIterator it(myMatrix, i); it; ++it){
             total += it.value();
         }
     }
-    clock.tock("Eigen");
+    //clock.tock("Eigen");
     cout << "InnerIterator Total: " << total << endl;
 
 
     ////////////////////////////////GENERIC CSC Iterator////////////////////////////////
     cout << "Testing CSC Iterator" << endl;
     total = 0;
-    clock.tick("CSC");
+    //clock.tick("CSC");
     GenericCSCIterator<int> iter2 = GenericCSCIterator<int>(myMatrix);
     while(iter2.operator bool()){
         total += iter2.operator *();
         iter2.operator++();
     }
-    clock.tock("CSC");
+    //clock.tock("CSC");
     cout << "CSC Total: " << total << endl;
 
-    clock.stop("Iterators");
+    //clock.stop("Iterators");
 
 }
