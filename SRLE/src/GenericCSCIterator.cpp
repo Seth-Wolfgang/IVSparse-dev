@@ -1,6 +1,5 @@
-//[[Rcpp::depends(RcppClock)]]
 //[[Rcpp::depends(RcppEigen)]]
-//[[Rcpp::depends(Rcpp)]]
+#include <RcppEigen.h>
 #include <stdint.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -9,8 +8,8 @@
 #include <iterator>
 #include <cstddef>
 #include <fstream>
-#include<algorithm> 
-#include <Eigen/Sparse>
+#include <algorithm> 
+// #include <Eigen/Sparse>
 
 using namespace std;
 
