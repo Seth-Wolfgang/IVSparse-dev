@@ -35,8 +35,8 @@ class const_array_iterator {
 
     public:
       
-
-   const_array_iterator(const char* filePath) {
+    //constructor that takes in a file path containing the data we're going over
+    const_array_iterator(string filePath) {
 
         //set up the iterator
         readFile(filePath);
@@ -71,6 +71,29 @@ class const_array_iterator {
 
 
     }//end of constructor
+
+
+    //constructor that takes in the data rather than reading the file
+    const_array_iterator(char* data){
+        arrayPointer = data;
+        uint32_t params[7];
+        memcpy(&params, arrayPointer, 28); //28 is subject to change depending on magic bytes
+        arrayPointer+=32; //first delimitor is 4 bytes
+
+        magicByteSize = params[0];
+        rowType       = params[1];
+        nRows         = params[2];
+        colType       = params[3];
+        nCols         = params[4];
+        valueWidth    = params[5];
+        oldIndexType  = params[6];
+
+        memcpy(&value, arrayPointer, valueWidth);
+        arrayPointer += valueWidth;
+        memcpy(&newIndexWidth, arrayPointer, 1);
+        arrayPointer++; //this should make it point to first index
+
+    }
 
 
     //todo make this return type T 
