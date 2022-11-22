@@ -80,7 +80,6 @@ class const_array_iterator {
 
     //template<typename indexType> 
     const uint64_t operator++() { 
-        //TODO template metaprogramming
         //todo through an exception if we request something smaller than the size of the index
 
         uint64_t newIndex = 0; //get rid of in future versions
