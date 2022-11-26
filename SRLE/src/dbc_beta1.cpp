@@ -46,7 +46,7 @@ private:
     void allocate()
     {
         // ! Malloc currently allocates much more than needed
-        data = (uint8_t *)malloc(num_vals * 4 * val_t);
+        data = (uint8_t *)malloc(num_vals * 4);
         if (!data)
         {
             cerr << "Malloc Failed" << endl;
@@ -74,42 +74,36 @@ private:
 public:
     // Constructor to take in an eigen sparse matrix
     // ! Is temporary, still gross, just a proof of concept
-    template <typename T>
-    DeBruinesComp(Eigen::SparseMatrix<T> &mat)
+    //template <typename T>
+    DeBruinesComp(Eigen::SparseMatrix<int> &mat)
     {
-        // Find number of non-zero elements
-        num_vals = mat.nonZeros();
+        // Create 3 arrays to store the row, col, and val
+        // ! This is a temporary solution, will be replaced with a more efficient one
 
-        T non_zero[num_vals];
-        T rows_indices[num_vals];
-        T col_indices[num_vals];
+        int *row = new int[mat.nonZeros()];
+        int *col = new int[mat.nonZeros()];
+        int *val = new int[mat.nonZeros()];
 
-        for (size_t k = 0; k < mat.outerSize(); ++k) {
-            for (typename Eigen::SparseMatrix<T>::InnerIterator it(mat, k); it; ++it) {
-                non_zero[k] = it.value();
-                rows_indices[k] = it.row();
-                col_indices[k] = it.col();
+        cout << "START" << endl;
+        for (size_t k = 0; k < mat.outerSize(); k++) {
+            for (typename Eigen::SparseMatrix<int>::InnerIterator it(mat, k); it; ++it) {
+                // push back the row, col, and val
+                row[it.row()] = it.row();
+                col[it.col()] = it.col();
+                val[it.row()] = it.value();
             }
         }
 
-        // print out non_zero, rows_indices, and col_indices
-        cout << "non_zero: " << endl;
-        for (size_t k = 0; k < num_vals; ++k) {
-            cout << non_zero[k] << " ";
+        // print out the arrays
+        for (int i = 0; i < mat.nonZeros(); i++) {
+            cout << row[i] << " " << col[i] << " " << val[i] << endl;
         }
 
-        cout << endl << "rows_indices: " << endl;
-        for (size_t k = 0; k < num_vals; ++k) {
-            cout << rows_indices[k] << " ";
-        }
+        allocate();
 
-        cout << endl << "col_indices: " << endl;
-        for (size_t k = 0; k < num_vals; ++k) {
-            cout << col_indices[k] << " ";
-        }
 
         // Create new debruines compression
-        DeBruinesComp(non_zero, rows_indices, col_indices, mat.rows(), mat.cols(), num_vals);
+        //DeBruinesComp(non_zero_vals_arr, row_indices_arr, col_indices_arr, mat.rows(), mat.cols(), num_vals);
     }
 
     /*  Takes in a COO Matrix and converts it to a DeBruinesComp Matrix
@@ -128,35 +122,24 @@ public:
         num_cols = col_num;
         num_vals = val_num;
 
-        size_t max_val = 0;
-
-        // Finds max value in vals to be compressed to val_type
-        // ? Could refactor to be in first loop and construct metadata between making dictionary and building runs
-        for (size_t i = 0; i < num_vals; i++)
-        {
-            if (vals[i] > max_val)
-            {
-                max_val = vals[i];
-            }
-        }
-
         // Finds the smallest type that can hold the max value
-        row_t = byte_width(num_rows);
-        col_t = byte_width(num_cols);
-        val_t = byte_width(max_val);
+        row_t = 4;
+        col_t = 4;
+        val_t = 4;
 
         allocate();
 
         // Construct Metadata
-        memcpy(ptr, &row_t, 1);
-        ptr++;
+        memcpy(ptr, &row_t, 4);
+        ptr += 4;
 
-        memcpy(ptr, &col_t, 1);
-        ptr++;
+        memcpy(ptr, &col_t, 4);
+        ptr += 4;
 
-        memcpy(ptr, &val_t, 1);
-        ptr++;
+        memcpy(ptr, &val_t, 4);
+        ptr += 4;
 
+        // !! fix later skyler
         memcpy(ptr, &num_rows, row_t);
         memcpy(ptr + row_t, &num_cols, col_t);
         ptr += row_t + col_t;
@@ -315,110 +298,110 @@ public:
         size = ptr - data;
     }
 
-    template <typename T>
-    class const_array_iterator
-    {
-        // todo: clean the vocabulary
-    private:
-        uint32_t magicByteSize; //= params[0];
-        uint32_t rowType;       //= params[1];
-        uint32_t nRows;         //= params[2];
-        uint32_t colType;       //= params[3];
-        uint32_t nCols;         //= params[4];
-        uint32_t valueWidth;    //= params[5];
-        uint32_t oldIndexType;  //= params[6];
-        int newIndexWidth;      // basically how many bytes we read, NOT ACTUALLY THE TYPE
-        char *end;
-        char *fileData;
-        char *arrayPointer;
-        uint64_t index = 0;
-        // int (*functionPointer)();
-        T value;
-        uint64_t sum = 0;
+    // template <typename T>
+    // class const_array_iterator
+    // {
+    //     // todo: clean the vocabulary
+    // private:
+    //     uint32_t magicByteSize; //= params[0];  NOT USED RIGHT NOW
+    //     uint32_t rowType = row_t;       //= params[1];
+    //     uint32_t nRows = num_rows;         //= params[2];
+    //     uint32_t colType = col_t;       //= params[3];
+    //     uint32_t nCols = num_cols;         //= params[4];
+    //     uint32_t valueWidth;    //= params[5]; ----
+    //     uint32_t oldIndexType;  //= params[6];
+    //     int newIndexWidth;      // basically how many bytes we read, NOT ACTUALLY THE TYPE ---
+    //     char *end; //----
+    //     char *fileData; //----
+    //     char *arrayPointer; //----
+    //     uint64_t index = 0; //----
+    //     // int (*functionPointer)();
+    //     T value; //-----
+    //     uint64_t sum = 0; //----
 
-    public:
-        const_array_iterator(const char *filePath)
-        {
+    // public:
+    //     const_array_iterator(const char *filePath)
+    //     {
 
-            // set up the iterator
-            readFile(filePath);
+    //         // set up the iterator
+    //         readFile(filePath);
 
-            // read first 28 bytes of fileData put it into params -> metadata
-            uint32_t params[7];
+    //         // read first 28 bytes of fileData put it into params -> metadata
+    //         uint32_t params[7];
 
-            memcpy(&params, arrayPointer, 28); // 28 is subject to change depending on magic bytes
-            arrayPointer += 32;                // first delimitor is 4 bytes
+    //         memcpy(&params, arrayPointer, 28); // 28 is subject to change depending on magic bytes
+    //         arrayPointer += 32;                // first delimitor is 4 bytes
 
-            magicByteSize = params[0];
-            rowType = params[1];
-            nRows = params[2];
-            colType = params[3];
-            nCols = params[4];
-            valueWidth = params[5];
-            oldIndexType = params[6];
+    //         magicByteSize = params[0];
+    //         rowType = params[1];
+    //         nRows = params[2];
+    //         colType = params[3];
+    //         nCols = params[4];
+    //         valueWidth = params[5];
+    //         oldIndexType = params[6];
 
-            memcpy(&value, arrayPointer, valueWidth);
-            arrayPointer += valueWidth;
-            memcpy(&newIndexWidth, arrayPointer, 1);
-            arrayPointer++; // this should make it point to first index
+    //         memcpy(&value, arrayPointer, valueWidth);
+    //         arrayPointer += valueWidth;
+    //         memcpy(&newIndexWidth, arrayPointer, 1);
+    //         arrayPointer++; // this should make it point to first index
 
 
-        } // end of constructor
+    //     } // end of constructor
 
-        // todo make this return type T
-        T &operator*() { return value; };
+    //     // todo make this return type T
+    //     T &operator*() { return value; };
 
-        uint64_t getSum() { return sum; };
+    //     uint64_t getSum() { return sum; };
 
-        // template<typename indexType>
-        const uint64_t operator++()
-        {
-            // TODO template metaprogramming
-            // todo through an exception if we request something smaller than the size of the index
+    //     // template<typename indexType>
+    //     const uint64_t operator++()
+    //     {
+    //         // TODO template metaprogramming
+    //         // todo through an exception if we request something smaller than the size of the index
 
-            uint64_t newIndex = 0; // get rid of in future versions
+    //         uint64_t newIndex = 0; // get rid of in future versions
 
-            memcpy(&newIndex, arrayPointer, newIndexWidth);
-            arrayPointer += newIndexWidth;
-            sum += value;
+    //         memcpy(&newIndex, arrayPointer, newIndexWidth);
+    //         arrayPointer += newIndexWidth;
+    //         sum += value;
 
-            if (newIndex == 0 && index != 0)
-            { // change that
+    //         if (newIndex == 0 && index != 0)
+    //         { // change that
 
-                memcpy(&value, arrayPointer, valueWidth);
-                arrayPointer += valueWidth;
+    //             memcpy(&value, arrayPointer, valueWidth);
+    //             arrayPointer += valueWidth;
 
-                memcpy(&newIndexWidth, arrayPointer, 1);
-                arrayPointer++;
+    //             memcpy(&newIndexWidth, arrayPointer, 1);
+    //             arrayPointer++;
 
-                memset(&index, 0, 8);
-                memcpy(&index, arrayPointer, newIndexWidth);
-            }
-            return index += newIndex;
-        }
+    //             memset(&index, 0, 8);
+    //             memcpy(&index, arrayPointer, newIndexWidth);
+    //         }
+    //         return index += newIndex;
+    //     }
 
-        // equality operator
-        operator bool()
-        {
-            return end >= arrayPointer;
-        }
+    //     // equality operator
+    //     operator bool()
+    //     {
+    //         return end >= arrayPointer;
+    //     }
 
-        // marginally faster
-        inline void readFile(const char *filePath)
-        {
-            // read a file using the C fopen function and store to fileData
-            FILE *file = fopen(filePath, "rb");
-            fseek(file, 0, SEEK_END);
-            int sizeOfFile = ftell(file);
-            fileData = (char *)malloc(sizeof(char *) * sizeOfFile);
-            fseek(file, 0, SEEK_SET);
-            fread(fileData, sizeOfFile, 1, file);
-            fclose(file);
-            cout << "Size of file: " << sizeOfFile << endl;
-            arrayPointer = fileData;
-            end = fileData + sizeOfFile;
-        }
-    };
+    //     // marginally faster
+    //     inline void readFile(const char *filePath)
+    //     {
+    //         // read a file using the C fopen function and store to fileData
+    //         FILE *file = fopen(filePath, "rb");
+    //         fseek(file, 0, SEEK_END);
+    //         int sizeOfFile = ftell(file);
+    //         fileData = (char *)malloc(sizeof(char *) * sizeOfFile);
+    //         fseek(file, 0, SEEK_SET);
+    //         fread(fileData, sizeOfFile, 1, file);
+    //         fclose(file);
+    //         cout << "Size of file: " << sizeOfFile << endl;
+    //         arrayPointer = fileData;
+    //         end = fileData + sizeOfFile;
+    //     }
+    // };
 };
 
 int main()
@@ -426,7 +409,7 @@ int main()
 
     int cols[58] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2, 2};
     int rows[58] = {1, 2, 3, 5, 7, 9, 10, 11, 12, 14, 15, 19, 20, 23, 24, 25, 26, 29, 30, 32, 34, 0, 9, 13, 14, 15, 16, 20, 21, 23, 24, 25, 26, 27, 29, 31, 32, 35, 0, 1, 3, 4, 6, 7, 9, 10, 12, 13, 14, 16, 17, 19, 23, 24, 28, 30, 31, 35};
-    int vals[58] = {1, 1, 2, 3, 1, 2, 2, 1, 1, 2, 3, 1, 3, 1, 3, 1, 2, 3, 300, 1, 1, 1, 1, 2, 1, 1, 1, 2, 1, 1, 2, 2, 1, 3, 3, 1, 1, 1, 2, 3, 1, 3, 1, 3, 4, 8, 2, 1, 1, 2, 3, 3, 3, 3, 1, 1, 1, 8};
+    int vals[58] = {1, 1, 2, 3, 1, 2, 2, 1, 1, 2, 3, 1, 3, 1, 3, 1, 2, 3, 2, 1, 1, 1, 1, 2, 1, 1, 1, 2, 1, 1, 2, 2, 1, 3, 3, 1, 1, 1, 2, 3, 1, 3, 1, 3, 4, 8, 2, 1, 1, 2, 3, 3, 3, 3, 1, 1, 1, 8};
 
     size_t val_num = 58;
     size_t row_num = 36;
@@ -437,15 +420,30 @@ int main()
 
     temp_comp.write("test2.bin");
 
-    // Create an iterator for temp_comp
-    
-
     //temp_comp.read("test.bin");
 
     // Create an eigen sparse matrix
     cout << "Testing Eigen" << endl;
 
-    
+    // create an eigen triplet vector from the data above
+    vector<Eigen::Triplet<int>> tripletList;
+    tripletList.reserve(val_num);
+    for (int i = 0; i < val_num; i++)
+    {
+        tripletList.push_back(Eigen::Triplet<int>(rows[i], cols[i], vals[i]));
+    }
+
+    // create an eigen sparse matrix from the triplet vector
+    Eigen::SparseMatrix<int> eigen_sparse(row_num, col_num);
+    eigen_sparse.setFromTriplets(tripletList.begin(), tripletList.end());
+
+    // print the eigen sparse matrix
+
+    cout << "Eigen Sparse Matrix" << endl;
+    cout << eigen_sparse << endl;
+
+    // Create a debruinescomp object from the eigen sparse matrix
+    DeBruinesComp eigen_comp(eigen_sparse);
 
     return 0;
 };
