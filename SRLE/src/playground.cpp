@@ -527,12 +527,11 @@ class const_array_iterator {
         uint32_t nCols;         //= params[4];
         uint32_t valueWidth;    //= params[5];
         uint32_t oldIndexType;  //= params[6];        
-        uint8_t newIndexWidth; //basically how many bytes we read, NOT ACTUALLY THE TYPE
+        int newIndexWidth; //basically how many bytes we read, NOT ACTUALLY THE TYPE
         char* end;
         char* fileData;
-        char* arrayPointer;
+        void* arrayPointer;
         uint64_t index = 0;
-        // int (*functionPointer)();
         T value;
         uint64_t sum = 0;
 
@@ -543,7 +542,6 @@ class const_array_iterator {
 
         //set up the iterator
         readFile(filePath);
-
         //read first 28 bytes of fileData put it into params -> metadata
         uint32_t params[7];
         
@@ -560,17 +558,16 @@ class const_array_iterator {
 
         memcpy(&value, arrayPointer, valueWidth);
         arrayPointer += valueWidth;
-        memcpy(&newIndexWidth, arrayPointer, 1);
+        newIndexWidth =  static_cast<int>(*static_cast<uint8_t*>(arrayPointer));
         arrayPointer++; //this should make it point to first index
 
-        // const_array_iterator* functionPointer = &iterateArray;
-        cout << "value: " << value << endl;
-        cout << "newIndexWidth: " << newIndexWidth << endl;
+        // cout << "value: " << value << endl;
+        // cout << "newIndexWidth: " << newIndexWidth << endl;
 
-        //for debugging
-         for(int i = 0; i < 7; i++) {
-             cout << i << " " << params[i] << endl;
-        }
+        // for debugging
+        //  for(int i = 0; i < 7; i++) {
+        //      cout << i << " " << params[i] << endl;
+        // }
 
 
     }//end of constructor
@@ -579,9 +576,48 @@ class const_array_iterator {
     //todo make this return type T 
     T& operator * () {return value;}; 
     
-    uint64_t getSum() {return sum;};
+    //EXPERIMENTAL INCREMENT OPERATOR -> NOT DECREMENT
+    const uint64_t operator --() {
+        uint64_t newIndex = 0; 
 
-    //template<typename indexType> 
+        switch (newIndexWidth){
+            case 1:
+                newIndex = static_cast<uint64_t>(*static_cast<uint8_t*>(arrayPointer));
+                break;
+            case 2:
+                newIndex =  static_cast<uint64_t>(*static_cast<uint8_t*>(arrayPointer));
+                break;
+            case 4:
+                newIndex =  static_cast<uint64_t>(*static_cast<uint8_t*>(arrayPointer));
+                break;
+            case 8:
+                newIndex =  static_cast<uint64_t>(*static_cast<uint8_t*>(arrayPointer));
+                break;
+            default:
+                cerr << "Invalid width" << endl;
+                break;
+        }
+        arrayPointer += newIndexWidth;
+
+        if(newIndex == 0 && index != 0){ //change that
+            
+            memcpy(&value, arrayPointer, valueWidth);
+            arrayPointer += valueWidth; 
+            
+            memcpy(&newIndexWidth, arrayPointer, 1);
+            arrayPointer++;
+            
+            // cout << endl << "value: " << value << endl;
+            // cout << "newIndexWidth: " << newIndexWidth << endl;
+            
+            memset(&index, 0, 8);
+            memcpy(&index, arrayPointer, newIndexWidth);
+
+        }
+        return index += newIndex;
+    }
+
+    // template<typename indexType> 
     const uint64_t operator++() { 
         //TODO template metaprogramming
         //todo through an exception if we request something smaller than the size of the index
@@ -613,13 +649,7 @@ class const_array_iterator {
 
 
     // equality operator
-    operator bool() {
-        //cout << "end " << &end << endl;
-        //cout << "arr " << &arrayPointer << endl;
-        if( end == arrayPointer) {
-            cout << "Sum: " << sum << endl;
-        }
-        return end >= arrayPointer;} //change to not equal at the end
+    operator bool() { return end >= arrayPointer;} //change to not equal at the end
 
 
     // reads in the file and stores it in a char* 
@@ -650,7 +680,7 @@ class const_array_iterator {
         fseek(file, 0, SEEK_SET);
         fread(fileData, sizeOfFile, 1, file);
         fclose(file);
-        cout << "Size of file: " << sizeOfFile << endl;
+        // cout << "Size of file: " << sizeOfFile << endl;
         arrayPointer = fileData;
         end = fileData + sizeOfFile;
     }
@@ -675,32 +705,14 @@ Eigen::SparseMatrix<T> generateMatrix(int numRows, int numCols, double sparsity)
     return myMatrix;
 }
 
-// Eigen::SparseMatrix<int> generateMatrix(int numRows, int numCols, double sparsity){
-//     //generate a random sparse matrix
-//     uint64_t favoriteNumber = 11515616;
-//     rng randMatrixGen = rng(favoriteNumber);
-
-//     Eigen::SparseMatrix<int> myMatrix(numRows, numCols);
-//     myMatrix.reserve(Eigen::VectorXi::Constant(numRows, numCols));
-
-//     for(int i = 0; i < numRows; i++){
-//         for(int j = 0; j < numCols; j++){
-//             if(randMatrixGen.draw<int>(i,j, sparsity)){
-//                 myMatrix.insert(i, j) = 100 * randMatrixGen.uniform<double>(j);
-//             }
-//         }
-//     }
-//     return myMatrix;
-// }
 
 //[[Rcpp::export]]
 void iteratorBenchmark(int numRows, int numCols, double sparsity) {
     Rcpp::Clock clock;
-    //My Iterator test
     //TO ENSURE EVERYTHING WORKS, THE TOTAL SUM OF ALL VALUES IS CALUCLATED AND SHOULD PRINT THE SAME NUMBER FOR EACH ITERATOR
     uint64_t total = 0;
     int value = 0;
-    string fileName = "input.bin";
+    string fileName = "input27MB.bin";
 
 
     Eigen::SparseMatrix<int> myMatrix(numRows, numCols);
@@ -712,24 +724,38 @@ void iteratorBenchmark(int numRows, int numCols, double sparsity) {
     // myCompression.print();
     // myCompression.write("test.bin");
 
-
+    cout << "Testing SRLE" << endl;
     const_array_iterator<int>* iter = new const_array_iterator<int>(fileName.c_str());
-    clock.tick("SRLE");
+    clock.tick("SRLE w/ memcpy");
     while(iter->operator bool()) {
         iter->operator++();
         total += iter->operator*();
         if(iter->operator *() != value){
-            cout << iter->operator *() << endl;
             value =  iter->operator *();
         }
     }
-    clock.tock("SRLE");
-    Rcpp::Rcout << "SRLE Total: " << total << endl;
+    clock.tock("SRLE w/ memcpy");
+    // cout << "SRLE (N) Total: " << total << endl;
     // cout << "SRLE Total: " << total << endl;
+
+    //////////////////////////////Experimental Iterator//////////////////////////////
+    total = 0;
+    cout << "Testing Experimental Iterator" << endl;
+    const_array_iterator<int>* newIter = new const_array_iterator<int>(fileName.c_str());
+    clock.tick("SRLE w/ void*");
+    while(newIter->operator bool()) {
+        newIter->operator--();
+        total += newIter->operator*();
+        if(newIter->operator *() != value){
+            value =  newIter->operator *();
+        }
+    }
+    // cout << "SRLE (E) Total: " << total << endl;
+    clock.tock("SRLE w/ void*");
 
     //////////////////////////////CSC innerIterator////////////////////////////////
     //generating a large random eigen sparse
-    Rcpp::Rcout << "Testing Eigen" << endl;
+    cout << "Testing Eigen" << endl;
     total = 0;
 
 
@@ -743,11 +769,11 @@ void iteratorBenchmark(int numRows, int numCols, double sparsity) {
         }
     }
     clock.tock("Eigen");
-    // Rcpp::Rcout << "InnerIterator Total: " << total << endl;
+    //cout << "InnerIterator Total: " << total << endl;
 
 
     //////////////////////////////GENERIC CSC Iterator////////////////////////////////
-    Rcpp::Rcout << "Testing CSC Iterator" << endl;
+    cout << "Testing CSC Iterator" << endl;
     total = 0;
     clock.tick("CSC");
     GenericCSCIterator<int> iter2 = GenericCSCIterator<int>(myMatrix);
@@ -756,7 +782,7 @@ void iteratorBenchmark(int numRows, int numCols, double sparsity) {
         iter2.operator++();
     }
     clock.tock("CSC");
-    // Rcpp::Rcout << "CSC Total: " << total << endl;
+    //cout << "CSC Total: " << total << endl;
 
     clock.stop("Iterators");
 }
