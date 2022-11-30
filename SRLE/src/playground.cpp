@@ -1,12 +1,21 @@
 //[[Rcpp::depends(RcppEigen)]]
+//[[Rcpp::depends(RcppClock)]]
 #include <RcppEigen.h>
 #include <chrono>
+#include <cstdint>
+#include <cstddef>
+#include <cstdlib>
+#include <iostream>
+#include <cstring>
+#include <bits/stdc++.h>
+#include <map>
+#include <vector>
 // #include "const_array_iterator.cpp"
 // #include "GenericCSCIterator.cpp"
 // #include "matrixCreator.cpp"
 // #include "DeBruine's_Compressed_Matrix_Name.cpp"
 // #include <Eigen/Sparse>
-// #include <Rcpp//clock.h>
+#include <RcppClock.h>
 // #include <Rcpp.h>
 
 using namespace std;
@@ -22,14 +31,26 @@ class rng;
 void iteratorBenchmark(int numRows, int numCols, double sparsity);
 
 
-// int main() {
-//     int numRows = 1000;
-//     int numCols = 1000;
-//     double sparsity = 20;
-//     iteratorBenchmark(numRows, numCols, sparsity);
+int main() {
+    int numRows = 100;
+    int numCols = 100;
+    double sparsity = 20;
+    iteratorBenchmark(numRows, numCols, sparsity);
 
-//     return 0;
-// }
+    // const_array_iterator<int>* iter = new const_array_iterator<int>("input.bin");
+    // int value = 0;
+    // ////clock.tick("SRLE");
+    // while(iter->operator bool()) {
+    //     iter->operator++();
+    //     if(iter->operator *() != value){
+    //         cout << iter->operator *() << endl;
+    //         value =  iter->operator *();
+    //     }
+    // }
+
+
+    return 0;
+}
 
 
 // void calcTime(chrono::steady_//clock::time_point begin, chrono::steady_//clock::time_point end){
@@ -39,7 +60,298 @@ void iteratorBenchmark(int numRows, int numCols, double sparsity);
 
 // }
 
+class DeBruinesComp
+{
+private:
+    // ! Magic is currently unused
+    uint8_t magic = 1;
+    uint8_t delim = 0;
 
+    size_t num_rows;
+    size_t num_cols;
+    size_t num_vals;
+
+    uint8_t row_t;
+    uint8_t col_t;
+    uint8_t val_t;
+
+    uint8_t *ptr;
+    uint8_t *data;
+
+    void allocate()
+    {
+        // ! Malloc currently allocates much more than needed
+        data = (uint8_t *)malloc(num_vals * 4 * val_t);
+        if (!data)
+        {
+            cerr << "Malloc Failed" << endl;
+        }
+        ptr = data;
+    }
+
+    uint8_t byte_width(size_t size)
+    {
+        switch (size)
+        {
+        case 0 ... 255:
+            return 1;
+        case 256 ... 65535:
+            return 2;
+        case 65536 ... 16777215:
+            return 3;
+        case 16777216 ... 4294967295:
+            return 4;
+        default:
+            return 8;
+        }
+    }
+
+public:
+    // Constructor to take in an eigen sparse matrix
+    // ! Is temporary, still gross, just a proof of concept
+    template <typename T>
+    DeBruinesComp(Eigen::SparseMatrix<T> &mat)
+    {
+        // find the amount of non zero elements, rows, and columns
+        num_vals = mat.nonZeros();
+        num_rows = mat.rows();
+        num_cols = mat.cols();
+
+        T *non_zero = new T[num_vals];
+        T *indices = new T[num_rows];
+        T *col_indices = new T[num_vals];
+
+        // get a list of all the non-zero elements
+        for (int k = 0; k < num_vals; ++k)
+        {
+            for (int i = 0; i < num_rows; ++i)
+            {
+                for (int j = 0; j < num_cols; ++j)
+                {
+                    non_zero[k] = mat.coeff(i, j);
+                }
+            }
+        }
+
+        // get a list of the indices of the non-zero elements
+        for (int k = 0; k < num_rows; ++k)
+        {
+            indices[k] = mat.outerIndexPtr()[k];
+        }
+
+        // get a list of the column indices of the non-zero elements
+        for (int k = 0; k < num_vals; ++k)
+        {
+            col_indices[k] = mat.innerIndexPtr()[k];
+        }
+
+        // call the constructor with the lists
+        DeBruinesComp(non_zero, indices, col_indices, num_vals, num_rows, num_cols);
+    }
+
+    /*  Takes in a COO Matrix and converts it to a DeBruinesComp Matrix
+        @param *vals: Pointer to the values of the COO Matrix
+        @param *rows: Pointer to the rows of the COO Matrix
+        @param *cols: Pointer to the cols of the COO Matrix
+        @param val_num: Number of vals in the COO Matrix
+        @param row_num: Number of rows in the COO Matrix
+        @param col_num: Number of cols in the COO Matrix */
+    template <typename values, typename rowcols>
+    DeBruinesComp(const values *vals, const rowcols *rows, const rowcols *cols, size_t val_num, size_t row_num, size_t col_num)
+    {
+
+        // Initialize the number of rows, cols, and vals
+        num_rows = row_num;
+        num_cols = col_num;
+        num_vals = val_num;
+
+        size_t max_val = 0;
+
+        // Finds max value in vals to be compressed to val_type
+        // ? Could refactor to be in first loop and construct metadata between making dictionary and building runs
+        for (size_t i = 0; i < num_vals; i++)
+        {
+            if (vals[i] > max_val)
+            {
+                max_val = vals[i];
+            }
+        }
+
+        // Finds the smallest type that can hold the max value
+        row_t = byte_width(num_rows);
+        col_t = byte_width(num_cols);
+        val_t = byte_width(max_val);
+
+        allocate();
+
+        // Construct Metadata
+        memcpy(ptr, &row_t, 1);
+        ptr++;
+
+        memcpy(ptr, &col_t, 1);
+        ptr++;
+
+        memcpy(ptr, &val_t, 1);
+        ptr++;
+
+        memcpy(ptr, &num_rows, row_t);
+        memcpy(ptr + row_t, &num_cols, col_t);
+        ptr += row_t + col_t;
+
+        // Leave pointer to update col pointers later
+        uint64_t *col_ptr = (uint64_t *)ptr;
+        col_ptr[0] = 0;
+        col_ptr++;
+
+        ptr += num_cols * 8;
+
+        uint8_t previous_idx = 0;
+
+        // Column Loop
+        for (size_t i = 0; i < num_cols; i++)
+        {
+            // Create dictionary with all metadata
+            map<values, vector<rowcols>> unique_vals;
+
+            // move through data (FOR THE COLUMN) and if value is unique, add it to dictionary, if value is not unique, add index to that value in dictionary
+            // First val in vector is the previous index (used for positive delta encoding)
+            // TODO Refactor to only run through the column being encoded
+            for (size_t j = 0; j < num_vals; j++)
+            {
+                if (unique_vals.count(vals[j]) == 1 && cols[j] == i)
+                {
+                    // Val Exists in Dict
+
+                    size_t delta = rows[j] - unique_vals[vals[j]][0];
+
+                    unique_vals[vals[j]].push_back(delta);
+
+                    unique_vals[vals[j]][0] = rows[j];
+                }
+                else if (cols[j] == i)
+                {
+                    // Val does not Exist in dict
+
+                    vector<rowcols> temp = {rows[j], rows[j]};
+                    unique_vals[vals[j]] = temp;
+                }
+            }
+
+            // Loop through dictionary and construct compression
+            for (auto i : unique_vals)
+            {
+                memcpy(ptr, &i.first, val_t);
+                ptr += val_t;
+
+                uint8_t *idx = ptr;
+                uint8_t idx_t = byte_width(*max_element(i.second.begin(), i.second.end()));
+                memcpy(ptr, &idx_t, 1);
+                ptr++;
+
+                // Construct Run
+                for (auto j : i.second)
+                {
+                    if (j != i.second[0])
+                    {
+                        memcpy(ptr, &j, idx_t);
+                        ptr += idx_t;
+                    }
+                }
+
+                for (size_t j = 0; j < idx_t; j++)
+                {
+                    memcpy(ptr, &delim, 1);
+                    ptr++;
+                }
+
+                previous_idx = idx_t;
+            }
+
+            // update col_ptr
+            if (i != num_cols - 1)
+            {
+                size_t col_location = ptr - data;
+                memcpy(col_ptr, &col_location, 8);
+                col_ptr++;
+            }
+        }
+
+        // Chop off end delimiters
+        ptr -= previous_idx;
+
+        // Resize data to fit actual size
+        data = (uint8_t *)realloc(data, ptr - data);
+    }
+
+    char* getData(){
+        return (char*)data;
+    }
+
+    ~DeBruinesComp()
+    {
+        free(data);
+    }
+
+    void print()
+    {
+        cout << "Printing DeBruinesComp Matrix" << endl;
+        cout << "Row Type: " << (int)row_t << endl;
+        cout << "Col Type: " << (int)col_t << endl;
+        cout << "Val Type: " << (int)val_t << endl;
+        cout << "Num Rows: " << num_rows << endl;
+        cout << "Num Cols: " << num_cols << endl;
+        cout << "Num Vals: " << num_vals << endl;
+        cout << "Data: " << endl;
+        for (size_t i = 0; i < ptr - data; i++)
+        {
+            cout << (int)data[i] << " ";
+        }
+        cout << endl;
+        cout << endl;
+    }
+
+    // Write to file
+    void write(string filename)
+    {
+        ofstream file(filename, ios::out | ios::binary);
+        file.write((char *)data, ptr - data);
+        file.close();
+    }
+
+    // Read from file
+    void read(string filename)
+    {
+        // Open file
+        ifstream file(filename, ios::in | ios::binary);
+
+        // Get file size
+        file.seekg(0, ios::end);
+        size_t size = file.tellg();
+        file.seekg(0, ios::beg);
+
+        // Allocate memory
+        data = (uint8_t *)malloc(size);
+
+        // Read data
+        file.read((char *)data, size);
+        file.close();
+
+        // Set pointer and itialize variables
+        ptr = data;
+        row_t = *ptr;
+        ptr++;
+        col_t = *ptr;
+        ptr++;
+        val_t = *ptr;
+        ptr++;
+        memcpy(&num_rows, ptr, row_t);
+        memcpy(&num_cols, ptr + row_t, col_t);
+        ptr += row_t + col_t;
+
+        // Put pointer at end of data
+        ptr += size - (ptr - data);
+    }
+};
 
 
 template<typename T>
@@ -215,74 +527,53 @@ class const_array_iterator {
         uint32_t nCols;         //= params[4];
         uint32_t valueWidth;    //= params[5];
         uint32_t oldIndexType;  //= params[6];        
-        int newIndexWidth; //basically how many bytes we read, NOT ACTUALLY THE TYPE
+        uint8_t newIndexWidth; //basically how many bytes we read, NOT ACTUALLY THE TYPE
         char* end;
         char* fileData;
         char* arrayPointer;
         uint64_t index = 0;
+        // int (*functionPointer)();
         T value;
         uint64_t sum = 0;
 
     public:
       
-    //constructor that takes in a file path containing the data we're going over
-    const_array_iterator(string filePath) {
+
+   const_array_iterator(const char* filePath) {
 
         //set up the iterator
         readFile(filePath);
-        Rcpp::Rcout << "Read file" << endl;
+
         //read first 28 bytes of fileData put it into params -> metadata
         uint32_t params[7];
-        Rcpp::Rcout << "Created params" << endl;
-        memcpy(&params, arrayPointer, 28); //28 is subject to change depending on magic bytes
+        
+        memcpy(&params, arrayPointer, 32); //28 is subject to change depending on magic bytes
         arrayPointer+=32; //first delimitor is 4 bytes
-        Rcpp::Rcout << "Copied params" << endl;
-        // magicByteSize = params[0];
-        // rowType       = params[1];
-        // nRows         = params[2];
-        // colType       = params[3];
-        // nCols         = params[4];
-        // valueWidth    = params[5];
-        // oldIndexType  = params[6];
 
-        // memcpy(&value, arrayPointer, valueWidth);
-        // arrayPointer += valueWidth;
-        // memcpy(&newIndexWidth, arrayPointer, 1);
-        // arrayPointer++; //this should make it point to first index
+        magicByteSize = params[0];
+        rowType       = params[1];
+        nRows         = params[2];
+        colType       = params[3];
+        nCols         = params[4];
+        valueWidth    = params[5];
+        oldIndexType  = params[6];
+
+        memcpy(&value, arrayPointer, valueWidth);
+        arrayPointer += valueWidth;
+        memcpy(&newIndexWidth, arrayPointer, 1);
+        arrayPointer++; //this should make it point to first index
 
         // const_array_iterator* functionPointer = &iterateArray;
-        // cout << "value: " << value << endl;
-        // cout << "newIndexWidth: " << newIndexWidth << endl;
+        cout << "value: " << value << endl;
+        cout << "newIndexWidth: " << newIndexWidth << endl;
 
         //for debugging
-        //  for(int i = 0; i < 7; i++) {
-        //      cout << i << " " << params[i] << endl;
-        // }
-
-    }
+         for(int i = 0; i < 7; i++) {
+             cout << i << " " << params[i] << endl;
+        }
 
 
-    //constructor that takes in the data rather than reading the file
-    // const_array_iterator(char* data){
-    //     arrayPointer = data;
-    //     uint32_t params[7];
-    //     memcpy(&params, arrayPointer, 28); //28 is subject to change depending on magic bytes
-    //     arrayPointer+=32; //first delimitor is 4 bytes
-
-    //     magicByteSize = params[0];
-    //     rowType       = params[1];
-    //     nRows         = params[2];
-    //     colType       = params[3];
-    //     nCols         = params[4];
-    //     valueWidth    = params[5];
-    //     oldIndexType  = params[6];
-
-    //     memcpy(&value, arrayPointer, valueWidth);
-    //     arrayPointer += valueWidth;
-    //     memcpy(&newIndexWidth, arrayPointer, 1);
-    //     arrayPointer++; //this should make it point to first index
-
-    // }
+    }//end of constructor
 
 
     //todo make this return type T 
@@ -292,10 +583,12 @@ class const_array_iterator {
 
     //template<typename indexType> 
     const uint64_t operator++() { 
+        //TODO template metaprogramming
         //todo through an exception if we request something smaller than the size of the index
-        uint64_t newIndex = 0; 
-        memcpy(&newIndex, arrayPointer, newIndexWidth);
 
+        uint64_t newIndex = 0; //get rid of in future versions
+
+        memcpy(&newIndex, arrayPointer, newIndexWidth);
         arrayPointer += newIndexWidth;
         sum += value;
 
@@ -323,6 +616,9 @@ class const_array_iterator {
     operator bool() {
         //cout << "end " << &end << endl;
         //cout << "arr " << &arrayPointer << endl;
+        if( end == arrayPointer) {
+            cout << "Sum: " << sum << endl;
+        }
         return end >= arrayPointer;} //change to not equal at the end
 
 
@@ -342,41 +638,21 @@ class const_array_iterator {
 
     //     arrayPointer = fileData;
     //     end = fileData + sizeOfFile;
+    //     }
 
-    //     // Rcpp::Rcout << "ArrayPointer: " << *(uint8_t*)&arrayPointer[0] << endl;
-    //     Rcpp::Rcout << "File size: " << sizeOfFile << endl;
-    // }
-
-
-
-    // //marginally faster 
-    inline void readFile(string filePath){
+    //marginally faster 
+    inline void readFile(const char* filePath){
         //read a file using the C fopen function and store to fileData
-        FILE* file = fopen(filePath.c_str(), "rb");
-        
-        if (file == nullptr){Rcpp::stop("Cannot open file :c");}
-        //print contents of file as a char using a for loop
-        
-
-        fseek(file, 0, SEEK_END)+1;
-        uint64_t sizeOfFile = ftell(file);
-        if (sizeOfFile == 1 || sizeOfFile == 0){Rcpp::stop("Bad File size");}
-
+        FILE* file = fopen(filePath, "rb");
+        fseek(file, 0, SEEK_END);
+        int sizeOfFile = ftell(file);
         fileData = (char*)malloc(sizeof(char*)*sizeOfFile);
-
         fseek(file, 0, SEEK_SET);
         fread(fileData, sizeOfFile, 1, file);
         fclose(file);
-        
-        // cout << "Size of file: " << sizeOfFile << endl;
-        
+        cout << "Size of file: " << sizeOfFile << endl;
         arrayPointer = fileData;
         end = fileData + sizeOfFile;
-        
-        if(arrayPointer == nullptr){Rcpp::stop("arrayPointer is null");}
-        
-        Rcpp::Rcout << "ArrayPointer: " << *(uint8_t*)&arrayPointer[0] << endl;
-        Rcpp::Rcout << "File size: " << sizeOfFile << endl;
     }
 };
 
@@ -419,13 +695,12 @@ Eigen::SparseMatrix<T> generateMatrix(int numRows, int numCols, double sparsity)
 
 //[[Rcpp::export]]
 void iteratorBenchmark(int numRows, int numCols, double sparsity) {
-    Rcpp::Rcout << "test" << endl;
-    //Rcpp:://clock //clock;
+    Rcpp::Clock clock;
     //My Iterator test
     //TO ENSURE EVERYTHING WORKS, THE TOTAL SUM OF ALL VALUES IS CALUCLATED AND SHOULD PRINT THE SAME NUMBER FOR EACH ITERATOR
     uint64_t total = 0;
     int value = 0;
-    string fileName = "input27MB.bin";
+    string fileName = "input.bin";
 
 
     Eigen::SparseMatrix<int> myMatrix(numRows, numCols);
@@ -434,53 +709,54 @@ void iteratorBenchmark(int numRows, int numCols, double sparsity) {
     myMatrix.makeCompressed(); 
 
     // DeBruinesComp myCompression(myMatrix);
-    Rcpp::Rcout << "test1" << endl;
+    // myCompression.print();
+    // myCompression.write("test.bin");
 
 
-    const_array_iterator<int>* iter = new const_array_iterator<int>(fileName);
-    
-    ////clock.tick("SRLE");
+    const_array_iterator<int>* iter = new const_array_iterator<int>(fileName.c_str());
+    clock.tick("SRLE");
     while(iter->operator bool()) {
         iter->operator++();
+        total += iter->operator*();
         if(iter->operator *() != value){
-            // Rcout << iter->operator *() << endl;
-            total =  iter->operator *();
+            cout << iter->operator *() << endl;
+            value =  iter->operator *();
         }
     }
-    // clock.tock("SRLE");
+    clock.tock("SRLE");
     Rcpp::Rcout << "SRLE Total: " << total << endl;
+    // cout << "SRLE Total: " << total << endl;
 
     //////////////////////////////CSC innerIterator////////////////////////////////
     //generating a large random eigen sparse
-    // Rcout << "Testing Eigen" << endl;
+    Rcpp::Rcout << "Testing Eigen" << endl;
     total = 0;
-    Rcpp::Rcout << "test2" << endl;
 
 
 
     //begin timing
-    //clock.tick("Eigen");
+    clock.tick("Eigen");
     Eigen::SparseMatrix<int>::InnerIterator it(myMatrix, 0);
     for (int i=0; i<numRows; ++i){
         for (Eigen::SparseMatrix<int>::InnerIterator it(myMatrix, i); it; ++it){
             total += it.value();
         }
     }
-    // //clock.tock("Eigen");
-    Rcpp::Rcout << "InnerIterator Total: " << total << endl;
+    clock.tock("Eigen");
+    // Rcpp::Rcout << "InnerIterator Total: " << total << endl;
 
 
     //////////////////////////////GENERIC CSC Iterator////////////////////////////////
     Rcpp::Rcout << "Testing CSC Iterator" << endl;
     total = 0;
-    //clock.tick("CSC");
+    clock.tick("CSC");
     GenericCSCIterator<int> iter2 = GenericCSCIterator<int>(myMatrix);
     while(iter2.operator bool()){
         total += iter2.operator *();
         iter2.operator++();
     }
-    //clock.tock("CSC");
-    Rcpp::Rcout << "CSC Total: " << total << endl;
+    clock.tock("CSC");
+    // Rcpp::Rcout << "CSC Total: " << total << endl;
 
-    //clock.stop("Iterators");
+    clock.stop("Iterators");
 }

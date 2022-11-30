@@ -39,13 +39,13 @@ class const_array_iterator {
 
         //set up the iterator
         readFile(filePath);
-        Rcpp::Rcout << "Read file" << endl;
+        // Rcpp::Rcout << "Read file" << endl;
         //read first 28 bytes of fileData put it into params -> metadata
         uint32_t params[7];
-        Rcpp::Rcout << "Created params" << endl;
-        memcpy(&params, arrayPointer, 28); //28 is subject to change depending on magic bytes
+        // Rcpp::Rcout << "Created params" << endl;
+        memcpy(&params, arrayPointer, 32); //28 is subject to change depending on magic bytes
         arrayPointer+=32; //first delimitor is 4 bytes
-        Rcpp::Rcout << "Copied params" << endl;
+        // Rcpp::Rcout << "Copied params" << endl;
         // magicByteSize = params[0];
         // rowType       = params[1];
         // nRows         = params[2];
@@ -59,7 +59,6 @@ class const_array_iterator {
         // memcpy(&newIndexWidth, arrayPointer, 1);
         // arrayPointer++; //this should make it point to first index
 
-        // const_array_iterator* functionPointer = &iterateArray;
         // cout << "value: " << value << endl;
         // cout << "newIndexWidth: " << newIndexWidth << endl;
 
@@ -160,7 +159,7 @@ class const_array_iterator {
         FILE* file = fopen(filePath.c_str(), "rb");
         fseek(file, 0, SEEK_END);
         int sizeOfFile = ftell(file);
-        Rcpp::Rcout << "Size " << ftell(file) << endl;
+        // Rcpp::Rcout << "Size " << ftell(file) << endl;
         fileData = (char*)malloc(sizeof(char*)*sizeOfFile);
         fseek(file, 0, SEEK_SET);
         fread(fileData, sizeOfFile, 1, file);
