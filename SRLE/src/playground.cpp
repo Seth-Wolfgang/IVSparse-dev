@@ -230,36 +230,36 @@ class const_array_iterator {
 
         //set up the iterator
         readFile(filePath);
-
-        // read first 28 bytes of fileData put it into params -> metadata
+        Rcpp::Rcout << "Read file" << endl;
+        //read first 28 bytes of fileData put it into params -> metadata
         uint32_t params[7];
-        // vector<uint32_t> metaDataForMyIter(8);
-
+        Rcpp::Rcout << "Created params" << endl;
         memcpy(&params, arrayPointer, 28); //28 is subject to change depending on magic bytes
         arrayPointer+=32; //first delimitor is 4 bytes
-        magicByteSize = params[0];
-        rowType       = params[1];
-        nRows         = params[2];
-        colType       = params[3];
-        nCols         = params[4];
-        valueWidth    = params[5];
-        oldIndexType  = params[6];
+        Rcpp::Rcout << "Copied params" << endl;
+        // magicByteSize = params[0];
+        // rowType       = params[1];
+        // nRows         = params[2];
+        // colType       = params[3];
+        // nCols         = params[4];
+        // valueWidth    = params[5];
+        // oldIndexType  = params[6];
 
-        memcpy(&value, arrayPointer, valueWidth);
-        arrayPointer += valueWidth;
-        memcpy(&newIndexWidth, arrayPointer, 1);
-        arrayPointer++; //this should make it point to first index
+        // memcpy(&value, arrayPointer, valueWidth);
+        // arrayPointer += valueWidth;
+        // memcpy(&newIndexWidth, arrayPointer, 1);
+        // arrayPointer++; //this should make it point to first index
 
+        // const_array_iterator* functionPointer = &iterateArray;
         // cout << "value: " << value << endl;
         // cout << "newIndexWidth: " << newIndexWidth << endl;
 
-        // //for debugging
+        //for debugging
         //  for(int i = 0; i < 7; i++) {
         //      cout << i << " " << params[i] << endl;
         // }
 
-
-    }//end of constructor
+    }
 
 
     //constructor that takes in the data rather than reading the file
@@ -327,43 +327,57 @@ class const_array_iterator {
 
 
     // reads in the file and stores it in a char* 
-    inline void readFile(string filePath){ 
-        ifstream fileStream;
-        fileStream.open(filePath, ios::binary | ios::out);
+    // inline void readFile(string filePath){ 
+    //     ifstream fileStream;
+    //     fileStream.open(filePath, ios::binary | ios::out);
         
-        fileStream.seekg(0, ios::end);
-        int sizeOfFile = fileStream.tellg();
-        fileData = (char*)malloc(sizeof(char*)*sizeOfFile);
-
-        fileStream.seekg(0, ios::beg);
-        fileStream.read(fileData, sizeOfFile);
-        
-        fileStream.close();
-
-        arrayPointer = fileData;
-        end = fileData + sizeOfFile;
-        Rcpp::Rcout << "Size: " << sizeOfFile << endl;
-        
-        }
-
-    // // //marginally faster 
-    // inline void readFile(string filePath){
-    //     //read a file using the C fopen function and store to fileData
-    //     FILE* file = fopen(filePath.c_str(), "rb");
-    //     if (file == nullptr){Rcpp::stop("Cannot open file");}
-    //     fseek(file, 0, SEEK_END);
-    //     int sizeOfFile = ftell(file);
+    //     fileStream.seekg(0, ios::end);
+    //     int sizeOfFile = fileStream.tellg();
     //     fileData = (char*)malloc(sizeof(char*)*sizeOfFile);
-    //     fseek(file, 0, SEEK_SET);
-    //     fread(fileData, sizeOfFile, 1, file);
-    //     fclose(file);
-    //     // cout << "Size of file: " << sizeOfFile << endl;
+
+    //     fileStream.seekg(0, ios::beg);
+    //     fileStream.read(fileData, sizeOfFile);
+        
+    //     fileStream.close();
+
     //     arrayPointer = fileData;
     //     end = fileData + sizeOfFile;
-    //     if(arrayPointer == nullptr){Rcpp::stop("arrayPointer is null");}
-    //     Rcpp::Rcout << "ArrayPointer: " << *(char*)&arrayPointer[0] << endl;
-    //     Rcpp::Rcout << "File size: " << sizeof(fileData) << endl;
+
+    //     // Rcpp::Rcout << "ArrayPointer: " << *(uint8_t*)&arrayPointer[0] << endl;
+    //     Rcpp::Rcout << "File size: " << sizeOfFile << endl;
     // }
+
+
+
+    // //marginally faster 
+    inline void readFile(string filePath){
+        //read a file using the C fopen function and store to fileData
+        FILE* file = fopen(filePath.c_str(), "rb");
+        
+        if (file == nullptr){Rcpp::stop("Cannot open file :c");}
+        //print contents of file as a char using a for loop
+        
+
+        fseek(file, 0, SEEK_END)+1;
+        uint64_t sizeOfFile = ftell(file);
+        if (sizeOfFile == 1 || sizeOfFile == 0){Rcpp::stop("Bad File size");}
+
+        fileData = (char*)malloc(sizeof(char*)*sizeOfFile);
+
+        fseek(file, 0, SEEK_SET);
+        fread(fileData, sizeOfFile, 1, file);
+        fclose(file);
+        
+        // cout << "Size of file: " << sizeOfFile << endl;
+        
+        arrayPointer = fileData;
+        end = fileData + sizeOfFile;
+        
+        if(arrayPointer == nullptr){Rcpp::stop("arrayPointer is null");}
+        
+        Rcpp::Rcout << "ArrayPointer: " << *(uint8_t*)&arrayPointer[0] << endl;
+        Rcpp::Rcout << "File size: " << sizeOfFile << endl;
+    }
 };
 
 template <typename T>
@@ -411,7 +425,7 @@ void iteratorBenchmark(int numRows, int numCols, double sparsity) {
     //TO ENSURE EVERYTHING WORKS, THE TOTAL SUM OF ALL VALUES IS CALUCLATED AND SHOULD PRINT THE SAME NUMBER FOR EACH ITERATOR
     uint64_t total = 0;
     int value = 0;
-    string fileName = "input.bin";
+    string fileName = "input27MB.bin";
 
 
     Eigen::SparseMatrix<int> myMatrix(numRows, numCols);
@@ -420,7 +434,7 @@ void iteratorBenchmark(int numRows, int numCols, double sparsity) {
     myMatrix.makeCompressed(); 
 
     // DeBruinesComp myCompression(myMatrix);
-    // Rcpp::Rcout << "test1" << endl;
+    Rcpp::Rcout << "test1" << endl;
 
 
     const_array_iterator<int>* iter = new const_array_iterator<int>(fileName);

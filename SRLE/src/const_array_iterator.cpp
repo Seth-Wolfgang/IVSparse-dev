@@ -34,29 +34,30 @@ class const_array_iterator {
         uint64_t sum = 0;
 
     public:
-      
     //constructor that takes in a file path containing the data we're going over
     const_array_iterator(string filePath) {
 
         //set up the iterator
         readFile(filePath);
+        Rcpp::Rcout << "Read file" << endl;
         //read first 28 bytes of fileData put it into params -> metadata
         uint32_t params[7];
+        Rcpp::Rcout << "Created params" << endl;
         memcpy(&params, arrayPointer, 28); //28 is subject to change depending on magic bytes
         arrayPointer+=32; //first delimitor is 4 bytes
+        Rcpp::Rcout << "Copied params" << endl;
+        // magicByteSize = params[0];
+        // rowType       = params[1];
+        // nRows         = params[2];
+        // colType       = params[3];
+        // nCols         = params[4];
+        // valueWidth    = params[5];
+        // oldIndexType  = params[6];
 
-        magicByteSize = params[0];
-        rowType       = params[1];
-        nRows         = params[2];
-        colType       = params[3];
-        nCols         = params[4];
-        valueWidth    = params[5];
-        oldIndexType  = params[6];
-
-        memcpy(&value, arrayPointer, valueWidth);
-        arrayPointer += valueWidth;
-        memcpy(&newIndexWidth, arrayPointer, 1);
-        arrayPointer++; //this should make it point to first index
+        // memcpy(&value, arrayPointer, valueWidth);
+        // arrayPointer += valueWidth;
+        // memcpy(&newIndexWidth, arrayPointer, 1);
+        // arrayPointer++; //this should make it point to first index
 
         // const_array_iterator* functionPointer = &iterateArray;
         // cout << "value: " << value << endl;
@@ -159,11 +160,11 @@ class const_array_iterator {
         FILE* file = fopen(filePath.c_str(), "rb");
         fseek(file, 0, SEEK_END);
         int sizeOfFile = ftell(file);
+        Rcpp::Rcout << "Size " << ftell(file) << endl;
         fileData = (char*)malloc(sizeof(char*)*sizeOfFile);
         fseek(file, 0, SEEK_SET);
         fread(fileData, sizeOfFile, 1, file);
         fclose(file);
-        cout << "Size of file: " << sizeOfFile << endl;
         arrayPointer = fileData;
         end = fileData + sizeOfFile;
     }
