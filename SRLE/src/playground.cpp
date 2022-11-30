@@ -712,7 +712,7 @@ void iteratorBenchmark(int numRows, int numCols, double sparsity) {
     //TO ENSURE EVERYTHING WORKS, THE TOTAL SUM OF ALL VALUES IS CALUCLATED AND SHOULD PRINT THE SAME NUMBER FOR EACH ITERATOR
     uint64_t total = 0;
     int value = 0;
-    string fileName = "input27MB.bin";
+    string fileName = "input.bin";
 
 
     Eigen::SparseMatrix<int> myMatrix(numRows, numCols);
@@ -724,17 +724,17 @@ void iteratorBenchmark(int numRows, int numCols, double sparsity) {
     // myCompression.print();
     // myCompression.write("test.bin");
 
-    cout << "Testing SRLE" << endl;
-    const_array_iterator<int>* iter = new const_array_iterator<int>(fileName.c_str());
-    clock.tick("SRLE w/ memcpy");
-    while(iter->operator bool()) {
-        iter->operator++();
-        total += iter->operator*();
-        if(iter->operator *() != value){
-            value =  iter->operator *();
-        }
-    }
-    clock.tock("SRLE w/ memcpy");
+    // cout << "Testing SRLE" << endl;
+    // const_array_iterator<int>* iter = new const_array_iterator<int>(fileName.c_str());
+    // clock.tick("SRLE w/ memcpy");
+    // while(iter->operator bool()) {
+    //     iter->operator++();
+    //     total += iter->operator*();
+    //     if(iter->operator *() != value){
+    //         value =  iter->operator *();
+    //     }
+    // }
+    // clock.tock("SRLE w/ memcpy");
     // cout << "SRLE (N) Total: " << total << endl;
     // cout << "SRLE Total: " << total << endl;
 
