@@ -83,27 +83,24 @@ public:
         @param row_num: number of rows in the matrix
         @param col_num: number of columns in the matrix
     */
-    // ! Assumes column major format (how is this different from CSC?)
+    // ! Assumes column major format (Isn't this just CSC?)
     template <typename values, typename idx_type>
     DeBruinesComp(values *x_v, idx_type *i_v, idx_type *c_point, size_t val_num, size_t row_num, size_t col_num)
     {
 
-        // create an array that is a copy of x_v
+        // ! Currently copies data first, should refactor to destroy COO matrix in place
         values x[val_num];
+        idx_type i[val_num];
+        idx_type p[col_num + 1];
+
+        // create an array that is a copy of x_v and i_v
         for (int k = 0; k < val_num; k++)
         {
             x[k] = x_v[k];
-        }
-
-        // create an array that is a copy of i_v
-        idx_type i[val_num];
-        for (int k = 0; k < val_num; k++)
-        {
             i[k] = i_v[k];
         }
 
         // create an array that is a copy of c_point
-        idx_type p[col_num + 1];
         for (int k = 0; k < col_num + 1; k++)
         {
             p[k] = c_point[k];
@@ -120,12 +117,14 @@ public:
 
         allocate();
 
-        // ! Create a copy of data here
+        // ! Create a copy of data here for debugging
         void *debug = data;
 
         // Construct Metadata
         // * <row_t, col_t, val_t, num_rows, num_cols, [col_pointers], {...runs...}>
         *static_cast<uint32_t *>(ptr) = row_t;
+        // ! better way of static casting 
+        *(uint32_t*)(ptr) = row_t;
         ptr = static_cast<uint32_t *>(ptr) + 1;
         *static_cast<uint32_t *>(ptr) = col_t;
         ptr = static_cast<uint32_t *>(ptr) + 1;
@@ -205,6 +204,7 @@ public:
                     // create a void pointer to index_ptr
                     void *reducer_ptr = static_cast<void *>(index_ptr);
 
+                    // ! Get rid of switch statemnt with casting a void pointer to a uint8_t pointer
                     // Write over data with indices of new size
                     switch (byte_width(max))
                     {
@@ -280,6 +280,8 @@ public:
 
         // resize data to fit
         data = realloc(data, size);
+
+        //  ! crunch col pointers
 
         // print out data by byte
         for (int i = 0; i < size; i++)
