@@ -1,6 +1,6 @@
-//[[Rcpp::depends(RcppEigen)]]
-//[[Rcpp::depends(RcppClock)]]
-#include <RcppEigen.h>
+// [[Rcpp::depends(RcppEigen)]]
+// [[Rcpp::depends(RcppClock)]]
+// #include <RcppEigen.h>
 #include <chrono>
 #include <cstdint>
 #include <cstddef>
@@ -14,8 +14,8 @@
 // #include "GenericCSCIterator.cpp"
 // #include "matrixCreator.cpp"
 // #include "DeBruine's_Compressed_Matrix_Name.cpp"
-// #include <Eigen/Sparse>
-#include <RcppClock.h>
+#include <Eigen/Sparse>
+// #include <RcppClock.h>
 // #include <Rcpp.h>
 
 using namespace std;
@@ -34,7 +34,7 @@ void iteratorBenchmark(int numRows, int numCols, double sparsity);
 int main() {
     int numRows = 100;
     int numCols = 100;
-    double sparsity = 20;
+    double sparsity = 50;
     iteratorBenchmark(numRows, numCols, sparsity);
 
     // const_array_iterator<int>* iter = new const_array_iterator<int>("input.bin");
@@ -62,26 +62,28 @@ int main() {
 
 class DeBruinesComp
 {
+
 private:
     // ! Magic is currently unused
-    uint8_t magic = 1;
+    uint32_t magic = 1;
     uint8_t delim = 0;
 
-    size_t num_rows;
-    size_t num_cols;
-    size_t num_vals;
+    uint32_t num_rows;
+    uint32_t num_cols;
+    uint32_t num_vals;
 
-    uint8_t row_t;
-    uint8_t col_t;
-    uint8_t val_t;
+    uint32_t row_t;
+    uint32_t col_t;
+    uint32_t val_t;
 
-    uint8_t *ptr;
-    uint8_t *data;
+    void *ptr;
+    void *data;
+    size_t size;
 
     void allocate()
     {
         // ! Malloc currently allocates much more than needed
-        data = (uint8_t *)malloc(num_vals * 4 * val_t);
+        data = malloc(num_vals * val_t * 2);
         if (!data)
         {
             cerr << "Malloc Failed" << endl;
@@ -97,9 +99,7 @@ private:
             return 1;
         case 256 ... 65535:
             return 2;
-        case 65536 ... 16777215:
-            return 3;
-        case 16777216 ... 4294967295:
+        case 65536 ... 4294967295:
             return 4;
         default:
             return 8;
@@ -107,250 +107,294 @@ private:
     }
 
 public:
-    // Constructor to take in an eigen sparse matrix
-    // ! Is temporary, still gross, just a proof of concept
-    template <typename T>
-    DeBruinesComp(Eigen::SparseMatrix<T> &mat)
-    {
-        // find the amount of non zero elements, rows, and columns
-        num_vals = mat.nonZeros();
-        num_rows = mat.rows();
-        num_cols = mat.cols();
 
-        T *non_zero = new T[num_vals];
-        T *indices = new T[num_rows];
-        T *col_indices = new T[num_vals];
-
-        // get a list of all the non-zero elements
-        for (int k = 0; k < num_vals; ++k)
-        {
-            for (int i = 0; i < num_rows; ++i)
-            {
-                for (int j = 0; j < num_cols; ++j)
-                {
-                    non_zero[k] = mat.coeff(i, j);
-                }
-            }
-        }
-
-        // get a list of the indices of the non-zero elements
-        for (int k = 0; k < num_rows; ++k)
-        {
-            indices[k] = mat.outerIndexPtr()[k];
-        }
-
-        // get a list of the column indices of the non-zero elements
-        for (int k = 0; k < num_vals; ++k)
-        {
-            col_indices[k] = mat.innerIndexPtr()[k];
-        }
-
-        // call the constructor with the lists
-        DeBruinesComp(non_zero, indices, col_indices, num_vals, num_rows, num_cols);
-    }
-
-    /*  Takes in a COO Matrix and converts it to a DeBruinesComp Matrix
-        @param *vals: Pointer to the values of the COO Matrix
-        @param *rows: Pointer to the rows of the COO Matrix
-        @param *cols: Pointer to the cols of the COO Matrix
-        @param val_num: Number of vals in the COO Matrix
-        @param row_num: Number of rows in the COO Matrix
-        @param col_num: Number of cols in the COO Matrix */
-    template <typename values, typename rowcols>
-    DeBruinesComp(const values *vals, const rowcols *rows, const rowcols *cols, size_t val_num, size_t row_num, size_t col_num)
+    /* COO Constructor
+        @param *x: pointer to values of COO Matrix
+        @param *i: pointer to indices of values in COO matrix
+        @param *p: pointer to the column pointers of the COO matrix
+        @param val_num: number of non-zero values
+        @param row_num: number of rows in the matrix
+        @param col_num: number of columns in the matrix
+    */
+    // ! Assumes column major format (Isn't this just CSC?)
+    template <typename values, typename idx_type>
+    DeBruinesComp(values *x_v, idx_type *i_v, idx_type *c_point, size_t val_num, size_t row_num, size_t col_num)
     {
 
-        // Initialize the number of rows, cols, and vals
+        // ! Currently copies data first, should refactor to destroy COO matrix in place
+        values x[val_num];
+        idx_type i[val_num];
+        idx_type p[col_num + 1];
+
+        // create an array that is a copy of x_v and i_v
+        for (int k = 0; k < val_num; k++)
+        {
+            x[k] = x_v[k];
+            i[k] = i_v[k];
+        }
+
+        // create an array that is a copy of c_point
+        for (int k = 0; k < col_num + 1; k++)
+        {
+            p[k] = c_point[k];
+        }
+
+        // Initialize the number of rows, cols, and vals, their types, and allocate space for them
         num_rows = row_num;
         num_cols = col_num;
         num_vals = val_num;
 
-        size_t max_val = 0;
-
-        // Finds max value in vals to be compressed to val_type
-        // ? Could refactor to be in first loop and construct metadata between making dictionary and building runs
-        for (size_t i = 0; i < num_vals; i++)
-        {
-            if (vals[i] > max_val)
-            {
-                max_val = vals[i];
-            }
-        }
-
-        // Finds the smallest type that can hold the max value
         row_t = byte_width(num_rows);
         col_t = byte_width(num_cols);
-        val_t = byte_width(max_val);
+        val_t = sizeof(values);
 
         allocate();
+        cout << "Allocated" << endl;
+        // ! Create a copy of data here for debugging
+        void *debug = data;
 
         // Construct Metadata
-        memcpy(ptr, &row_t, 1);
-        ptr++;
+        // * <row_t, col_t, val_t, num_rows, num_cols, [col_pointers], {...runs...}>
+        *static_cast<uint32_t *>(ptr) = row_t;
+        // ! better way of static casting 
+        *(uint32_t*)(ptr) = row_t;
+        ptr = static_cast<uint32_t *>(ptr) + 1;
+        *static_cast<uint32_t *>(ptr) = col_t;
+        ptr = static_cast<uint32_t *>(ptr) + 1;
+        *static_cast<uint32_t *>(ptr) = val_t;
+        ptr = static_cast<uint32_t *>(ptr) + 1;
+        *static_cast<uint32_t *>(ptr) = num_rows;
+        ptr = static_cast<uint32_t *>(ptr) + 1;
+        *static_cast<uint32_t *>(ptr) = num_cols;
+        ptr = static_cast<uint32_t *>(ptr) + 1;
 
-        memcpy(ptr, &col_t, 1);
-        ptr++;
+        // Create space for col_pointers
+        uint32_t *col_pointers = static_cast<uint32_t *>(ptr);
+        ptr = static_cast<uint32_t *>(ptr) + num_cols;
 
-        memcpy(ptr, &val_t, 1);
-        ptr++;
+        // put a delimiter down at end of metadata
+        *static_cast<uint32_t *>(ptr) = delim;
+        ptr = static_cast<uint32_t *>(ptr) + 1;
 
-        memcpy(ptr, &num_rows, row_t);
-        memcpy(ptr + row_t, &num_cols, col_t);
-        ptr += row_t + col_t;
-
-        // Leave pointer to update col pointers later
-        uint64_t *col_ptr = (uint64_t *)ptr;
-        col_ptr[0] = 0;
-        col_ptr++;
-
-        ptr += num_cols * 8;
-
-        uint8_t previous_idx = 0;
-
-        // Column Loop
-        for (size_t i = 0; i < num_cols; i++)
+        // * Loop through each column and constuct the runs
+        for (int l = 0; l < num_cols; l++)
         {
-            // Create dictionary with all metadata
-            map<values, vector<rowcols>> unique_vals;
 
-            // move through data (FOR THE COLUMN) and if value is unique, add it to dictionary, if value is not unique, add index to that value in dictionary
-            // First val in vector is the previous index (used for positive delta encoding)
-            // TODO Refactor to only run through the column being encoded
-            for (size_t j = 0; j < num_vals; j++)
+            // for each element in the col
+            for (int j = p[l]; j < p[l + 1]; j++)
             {
-                if (unique_vals.count(vals[j]) == 1 && cols[j] == i)
+                if (x[j] != 0)
                 {
-                    // Val Exists in Dict
+                    // found value
 
-                    size_t delta = rows[j] - unique_vals[vals[j]][0];
+                    // add value to run
+                    *static_cast<values *>(ptr) = x[j];
+                    ptr = static_cast<values *>(ptr) + 1;
 
-                    unique_vals[vals[j]].push_back(delta);
+                    // create an index pointer here
+                    uint8_t *index_ptr = static_cast<uint8_t *>(ptr);
+                    index_ptr[0] = (uint8_t)sizeof(idx_type);
+                    ptr = static_cast<uint8_t *>(ptr) + 1;
 
-                    unique_vals[vals[j]][0] = rows[j];
-                }
-                else if (cols[j] == i)
-                {
-                    // Val does not Exist in dict
+                    // add index to run
+                    *static_cast<idx_type *>(ptr) = i[j];
+                    ptr = static_cast<idx_type *>(ptr) + 1;
 
-                    vector<rowcols> temp = {rows[j], rows[j]};
-                    unique_vals[vals[j]] = temp;
-                }
-            }
-
-            // Loop through dictionary and construct compression
-            for (auto i : unique_vals)
-            {
-                memcpy(ptr, &i.first, val_t);
-                ptr += val_t;
-
-                uint8_t *idx = ptr;
-                uint8_t idx_t = byte_width(*max_element(i.second.begin(), i.second.end()));
-                memcpy(ptr, &idx_t, 1);
-                ptr++;
-
-                // Construct Run
-                for (auto j : i.second)
-                {
-                    if (j != i.second[0])
+                    // loop through rest of column and get indices
+                    for (int k = j + 1; k < p[l + 1]; k++)
                     {
-                        memcpy(ptr, &j, idx_t);
-                        ptr += idx_t;
+                        if (x[k] == x[j])
+                        {
+                            // found value again
+
+                            // add index to run
+                            *static_cast<idx_type *>(ptr) = i[k];
+                            ptr = static_cast<idx_type *>(ptr) + 1;
+
+                            // set value to 0
+                            x[k] = 0;
+                        }
                     }
-                }
 
-                for (size_t j = 0; j < idx_t; j++)
-                {
-                    memcpy(ptr, &delim, 1);
-                    ptr++;
-                }
+                    // positive delta encode indices
+                    size_t max = 0;
+                    idx_type *index = reinterpret_cast<idx_type *>(index_ptr + 1);
+                    int num_elements = (int)(static_cast<idx_type *>(ptr) - index);
+                    for (int k = num_elements - 1; k > 0; k--)
+                    {
+                        index[k] = index[k] - index[k - 1];
+                        if (index[k] > max)
+                        {
+                            max = index[k];
+                        }
+                    }
+                    // set index pointer to correct size
+                    index_ptr[0] = byte_width(max);
+                    // move index pointer by one
+                    index_ptr = index_ptr + 1;
 
-                previous_idx = idx_t;
-            }
+                    // create a void pointer to index_ptr
+                    void *reducer_ptr = static_cast<void *>(index_ptr);
 
-            // update col_ptr
-            if (i != num_cols - 1)
-            {
-                size_t col_location = ptr - data;
-                memcpy(col_ptr, &col_location, 8);
-                col_ptr++;
-            }
-        }
+                    // ! Get rid of switch statemnt with casting a void pointer to a uint8_t pointer
+                    // Write over data with indices of new size
+                    switch (byte_width(max))
+                    {
+                    case 1:
+                        // cast reducer_ptr to uint8_t
+                        reducer_ptr = static_cast<uint8_t *>(reducer_ptr);
+                        for (int k = 0; k < num_elements; k++)
+                        {
+                            *static_cast<uint8_t *>(reducer_ptr) = index[k];
+                            reducer_ptr = static_cast<uint8_t *>(reducer_ptr) + 1;
+                        }
+                        // add delimiter
+                        *static_cast<uint8_t *>(reducer_ptr) = delim;
+                        reducer_ptr = static_cast<uint8_t *>(reducer_ptr) + 1;
+                        break;
+                    case 2:
+                        // cast reducer_ptr to uint16_t
+                        reducer_ptr = static_cast<uint16_t *>(reducer_ptr);
+                        for (int k = 0; k < num_elements; k++)
+                        {
+                            *static_cast<uint16_t *>(reducer_ptr) = index[k];
+                            reducer_ptr = static_cast<uint16_t *>(reducer_ptr) + 1;
+                        }
+                        // add delimiter
+                        *static_cast<uint16_t *>(reducer_ptr) = delim;
+                        reducer_ptr = static_cast<uint16_t *>(reducer_ptr) + 1;
+                        break;
+                    case 4:
+                        // cast reducer_ptr to uint32_t
+                        reducer_ptr = static_cast<uint32_t *>(reducer_ptr);
+                        for (int k = 0; k < num_elements; k++)
+                        {
+                            *static_cast<uint32_t *>(reducer_ptr) = index[k];
+                            reducer_ptr = static_cast<uint32_t *>(reducer_ptr) + 1;
+                        }
+                        // add delimiter
+                        *static_cast<uint32_t *>(reducer_ptr) = delim;
+                        reducer_ptr = static_cast<uint32_t *>(reducer_ptr) + 1;
+                        break;
+                    case 8:
+                        // cast reducer_ptr to uint64_t
+                        reducer_ptr = static_cast<uint64_t *>(reducer_ptr);
+                        for (int k = 0; k < num_elements; k++)
+                        {
+                            *static_cast<uint64_t *>(reducer_ptr) = index[k];
+                            reducer_ptr = static_cast<uint64_t *>(reducer_ptr) + 1;
+                        }
+                        // add delimiter
+                        *static_cast<uint64_t *>(reducer_ptr) = delim;
+                        reducer_ptr = static_cast<uint64_t *>(reducer_ptr) + 1;
+                        break;
+                    } // end switch
 
-        // Chop off end delimiters
-        ptr -= previous_idx;
+                    // move ptr to reducer_ptr
+                    ptr = reducer_ptr;
 
-        // Resize data to fit actual size
-        data = (uint8_t *)realloc(data, ptr - data);
-    }
+                } // end if
+            }     // end for (unique value)
 
-    char* getData(){
-        return (char*)data;
-    }
+            // find distance to beginning of compression and set col_pointer
+            col_pointers[l] = static_cast<uint32_t *>(ptr) - static_cast<uint32_t *>(data);
 
-    ~DeBruinesComp()
-    {
-        free(data);
-    }
+        } // end for (cols)
 
-    void print()
-    {
-        cout << "Printing DeBruinesComp Matrix" << endl;
-        cout << "Row Type: " << (int)row_t << endl;
-        cout << "Col Type: " << (int)col_t << endl;
-        cout << "Val Type: " << (int)val_t << endl;
-        cout << "Num Rows: " << num_rows << endl;
-        cout << "Num Cols: " << num_cols << endl;
-        cout << "Num Vals: " << num_vals << endl;
-        cout << "Data: " << endl;
-        for (size_t i = 0; i < ptr - data; i++)
+        // remove ending zeros
+        while (ptr != data && *static_cast<uint8_t *>(ptr) == 0)
         {
-            cout << (int)data[i] << " ";
+            ptr = static_cast<uint8_t *>(ptr) - 1;
         }
-        cout << endl;
-        cout << endl;
+
+        // find size of data in bytes
+        cout << "Sizing" << endl;
+        cout << static_cast<uint8_t *>(ptr) - static_cast<uint8_t *>(data) << endl;
+        // cout << static_cast<uint8_t *>(ptr) - static_cast<uint8_t *>(data) << endl;
+
+        size_t size = static_cast<uint8_t *>(ptr) - static_cast<uint8_t *>(data);
+
+        // resize data to fit
+        data = realloc(data, size);
+
+        //  ! crunch col pointers
+
+        // print out data by byte
+        // for (int i = 0; i < size; i++)
+        // {
+        //     printf("%02x ", *static_cast<uint8_t *>(data + i));
+        // }
+
+        // write data to file
+        cout << "Writing to file..." << endl;
+        //print all of data
+        // for(int i = 0; i < size; i++){
+            // printf("%02x ", *static_cast<uint8_t *>(data + i));
+        // }
+
+
+        FILE *fp = fopen("test.bin", "wb");
+        fwrite(data, size, 1, fp);
+        fclose(fp);
+
+    } // end constructor
+
+    /* Eigen Wrapper Constructor
+        @param &mat: Eigen Sparse Matrix to compress
+    */
+    template <typename T>
+    DeBruinesComp(Eigen::SparseMatrix<T> &mat){
+
+        //convert mat to CSC
+        int* i = new int[mat.nonZeros()]; // rows
+        int* p = new int[mat.outerSize()]; // cols
+        T* x = new T[mat.nonZeros()]; // values
+        
+        for(size_t col = 0; col < mat.outerSize(); ++col){
+            p[col] = mat.outerIndexPtr()[col];
+            for(typename Eigen::SparseMatrix<T>::InnerIterator it(mat, col); it; ++it){
+                i[it.index()] = it.row();
+                x[it.index()] = it.value();
+            }
+        }
+
+
+
+        //print number of values in p
+
+    /* COO Constructor
+        @param *x: pointer to values of COO Matrix
+        @param *i: pointer to indices of values in COO matrix
+        @param *p: pointer to the column pointers of the COO matrix
+        @param val_num: number of non-zero values
+        @param row_num: number of rows in the matrixouterSi
+        @param col_num: number of columns in the matrix
+    */
+
+        //print all of x 
+        // for(int i = 0; i < mat.nonZeros(); i++){
+        //     cout << x[i] << " ";
+        // }
+        // cout << endl << endl;
+        // //print all of i
+        // for(int j = 0; j < mat.nonZeros(); j++){
+        //     cout << i[j] << " ";
+        // }
+        // cout << endl << endl;
+        // //print all of p
+        // for(int i = 0; i < mat.nonZeros(); i++){
+        //     cout << p[i] << " ";
+        // }
+
+        DeBruinesComp(x, i, p, mat.nonZeros(), mat.rows(), mat.cols());
     }
+
+    // ~DeBruinesComp()
+    // {
+    //     free(data);
+    // }
 
     // Write to file
-    void write(string filename)
-    {
-        ofstream file(filename, ios::out | ios::binary);
-        file.write((char *)data, ptr - data);
-        file.close();
-    }
-
-    // Read from file
-    void read(string filename)
-    {
-        // Open file
-        ifstream file(filename, ios::in | ios::binary);
-
-        // Get file size
-        file.seekg(0, ios::end);
-        size_t size = file.tellg();
-        file.seekg(0, ios::beg);
-
-        // Allocate memory
-        data = (uint8_t *)malloc(size);
-
-        // Read data
-        file.read((char *)data, size);
-        file.close();
-
-        // Set pointer and itialize variables
-        ptr = data;
-        row_t = *ptr;
-        ptr++;
-        col_t = *ptr;
-        ptr++;
-        val_t = *ptr;
-        ptr++;
-        memcpy(&num_rows, ptr, row_t);
-        memcpy(&num_cols, ptr + row_t, col_t);
-        ptr += row_t + col_t;
-
-        // Put pointer at end of data
-        ptr += size - (ptr - data);
-    }
 };
 
 
@@ -527,7 +571,7 @@ class const_array_iterator {
         uint32_t nCols;         //= params[4];
         uint32_t valueWidth;    //= params[5];
         uint32_t oldIndexType;  //= params[6];        
-        int newIndexWidth; //basically how many bytes we read, NOT ACTUALLY THE TYPE
+        uint8_t newIndexWidth; //basically how many bytes we read, NOT ACTUALLY THE TYPE
         char* end;
         char* fileData;
         void* arrayPointer;
@@ -689,7 +733,7 @@ class const_array_iterator {
 template <typename T>
 Eigen::SparseMatrix<T> generateMatrix(int numRows, int numCols, double sparsity){
     //generate a random sparse matrix
-    uint64_t favoriteNumber = 11515616;
+    uint64_t favoriteNumber = 515;
     rng randMatrixGen = rng(favoriteNumber);
 
     Eigen::SparseMatrix<T> myMatrix(numRows, numCols);
@@ -698,7 +742,7 @@ Eigen::SparseMatrix<T> generateMatrix(int numRows, int numCols, double sparsity)
     for(int i = 0; i < numRows; i++){
         for(int j = 0; j < numCols; j++){
             if(randMatrixGen.draw<int>(i,j, sparsity)){
-                myMatrix.insert(i, j) = 100 * randMatrixGen.uniform<double>(j);
+                myMatrix.insert(i, j) = 10 * randMatrixGen.uniform<double>(j);
             }
         }
     }
@@ -708,7 +752,7 @@ Eigen::SparseMatrix<T> generateMatrix(int numRows, int numCols, double sparsity)
 
 //[[Rcpp::export]]
 void iteratorBenchmark(int numRows, int numCols, double sparsity) {
-    Rcpp::Clock clock;
+    // Rcpp::Clock clock;
     //TO ENSURE EVERYTHING WORKS, THE TOTAL SUM OF ALL VALUES IS CALUCLATED AND SHOULD PRINT THE SAME NUMBER FOR EACH ITERATOR
     uint64_t total = 0;
     int value = 0;
@@ -720,7 +764,7 @@ void iteratorBenchmark(int numRows, int numCols, double sparsity) {
     myMatrix = generateMatrix<int>(numRows, numCols, sparsity);
     myMatrix.makeCompressed(); 
 
-    // DeBruinesComp myCompression(myMatrix);
+    DeBruinesComp myCompression(myMatrix);
     // myCompression.print();
     // myCompression.write("test.bin");
 
@@ -742,7 +786,7 @@ void iteratorBenchmark(int numRows, int numCols, double sparsity) {
     total = 0;
     cout << "Testing Experimental Iterator" << endl;
     const_array_iterator<int>* newIter = new const_array_iterator<int>(fileName.c_str());
-    clock.tick("SRLE w/ void*");
+    // clock.tick("SRLE w/ void*");
     while(newIter->operator bool()) {
         newIter->operator--();
         total += newIter->operator*();
@@ -750,8 +794,8 @@ void iteratorBenchmark(int numRows, int numCols, double sparsity) {
             value =  newIter->operator *();
         }
     }
-    // cout << "SRLE (E) Total: " << total << endl;
-    clock.tock("SRLE w/ void*");
+    cout << "SRLE (E) Total: " << total << endl;
+    // clock.tock("SRLE w/ void*");
 
     //////////////////////////////CSC innerIterator////////////////////////////////
     //generating a large random eigen sparse
@@ -761,28 +805,28 @@ void iteratorBenchmark(int numRows, int numCols, double sparsity) {
 
 
     //begin timing
-    clock.tick("Eigen");
+    // clock.tick("Eigen");
     Eigen::SparseMatrix<int>::InnerIterator it(myMatrix, 0);
     for (int i=0; i<numRows; ++i){
         for (Eigen::SparseMatrix<int>::InnerIterator it(myMatrix, i); it; ++it){
             total += it.value();
         }
     }
-    clock.tock("Eigen");
-    //cout << "InnerIterator Total: " << total << endl;
+    // clock.tock("Eigen");
+    cout << "InnerIterator Total: " << total << endl;
 
 
     //////////////////////////////GENERIC CSC Iterator////////////////////////////////
     cout << "Testing CSC Iterator" << endl;
     total = 0;
-    clock.tick("CSC");
+    // clock.tick("CSC");
     GenericCSCIterator<int> iter2 = GenericCSCIterator<int>(myMatrix);
     while(iter2.operator bool()){
         total += iter2.operator *();
         iter2.operator++();
     }
-    clock.tock("CSC");
-    //cout << "CSC Total: " << total << endl;
+    // clock.tock("CSC");
+    cout << "CSC Total: " << total << endl;
 
-    clock.stop("Iterators");
+    // clock.stop("Iterators");
 }
