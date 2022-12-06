@@ -52,14 +52,6 @@ int main() {
     return 0;
 }
 
-
-// void calcTime(chrono::steady_//clock::time_point begin, chrono::steady_//clock::time_point end){
-//     std::Rcout << "Time difference = " << std::chrono::duration_cast<std::chrono::microseconds>(end - begin).count() << "[µs]" << std::endl;
-//     std::Rcout << "Time difference = " << std::chrono::duration_cast<std::chrono::nanoseconds> (end - begin).count() << "[ns]" << std::endl;
-//     std::Rcout << "Time difference = " << std::chrono::duration_cast<std::chrono::milliseconds> (end - begin).count() << "[ms]" << std::endl;
-
-// }
-
 class DeBruinesComp
 {
 
@@ -83,7 +75,7 @@ private:
     void allocate()
     {
         // ! Malloc currently allocates much more than needed
-        data = malloc(num_vals * val_t * 2);
+        data = malloc(num_vals * val_t * 1.3);
         if (!data)
         {
             cerr << "Malloc Failed" << endl;
@@ -154,26 +146,33 @@ public:
         void *debug = data;
 
         // Construct Metadata
+        // rowType       = params[0];
+        // nRows         = params[1];
+        // colType       = params[2];
+        // nCols         = params[3];
+        // valueWidth    = params[4];
         // * <row_t, col_t, val_t, num_rows, num_cols, [col_pointers], {...runs...}>
         *static_cast<uint32_t *>(ptr) = row_t;
         // ! better way of static casting 
         *(uint32_t*)(ptr) = row_t;
         ptr = static_cast<uint32_t *>(ptr) + 1;
-        *static_cast<uint32_t *>(ptr) = col_t;
-        ptr = static_cast<uint32_t *>(ptr) + 1;
-        *static_cast<uint32_t *>(ptr) = val_t;
-        ptr = static_cast<uint32_t *>(ptr) + 1;
         *static_cast<uint32_t *>(ptr) = num_rows;
+        ptr = static_cast<uint32_t *>(ptr) + 1;
+        *static_cast<uint32_t *>(ptr) = col_t;
         ptr = static_cast<uint32_t *>(ptr) + 1;
         *static_cast<uint32_t *>(ptr) = num_cols;
         ptr = static_cast<uint32_t *>(ptr) + 1;
+        *static_cast<uint32_t *>(ptr) = val_t;
+        ptr = static_cast<uint32_t *>(ptr) + 1;     
+
+
 
         // Create space for col_pointers
-        uint32_t *col_pointers = static_cast<uint32_t *>(ptr);
-        ptr = static_cast<uint32_t *>(ptr) + num_cols;
+        // uint32_t *col_pointers = static_cast<uint32_t *>(ptr);
+        // ptr = static_cast<uint32_t *>(ptr) + num_cols;
 
         // put a delimiter down at end of metadata
-        *static_cast<uint32_t *>(ptr) = delim;
+        *static_cast<uint32_t *>(ptr) = 0;
         ptr = static_cast<uint32_t *>(ptr) + 1;
 
         // * Loop through each column and constuct the runs
@@ -297,7 +296,7 @@ public:
             }     // end for (unique value)
 
             // find distance to beginning of compression and set col_pointer
-            col_pointers[l] = static_cast<uint32_t *>(ptr) - static_cast<uint32_t *>(data);
+            // col_pointers[l] = static_cast<uint32_t *>(ptr) - static_cast<uint32_t *>(data);
 
         } // end for (cols)
 
@@ -329,7 +328,7 @@ public:
         cout << "Writing to file..." << endl;
         //print all of data
         // for(int i = 0; i < size; i++){
-            // printf("%02x ", *static_cast<uint8_t *>(data + i));
+        //     printf("%02x ", *static_cast<uint8_t *>(data + i));
         // }
 
 
@@ -370,29 +369,20 @@ public:
         @param row_num: number of rows in the matrixouterSi
         @param col_num: number of columns in the matrix
     */
+ 
+        for(int j = 0; j < mat.nonZeros(); j++){
+            cout << "value: "  << x[j] << " row: " << i[j] << " col: " << p[j] << endl;
+        }
+        cout << endl << endl;
 
-        //print all of x 
-        // for(int i = 0; i < mat.nonZeros(); i++){
-        //     cout << x[i] << " ";
-        // }
-        // cout << endl << endl;
-        // //print all of i
-        // for(int j = 0; j < mat.nonZeros(); j++){
-        //     cout << i[j] << " ";
-        // }
-        // cout << endl << endl;
-        // //print all of p
-        // for(int i = 0; i < mat.nonZeros(); i++){
-        //     cout << p[i] << " ";
-        // }
 
         DeBruinesComp(x, i, p, mat.nonZeros(), mat.rows(), mat.cols());
     }
 
-    // ~DeBruinesComp()
-    // {
-    //     free(data);
-    // }
+    ~DeBruinesComp()
+    {
+        free(data);
+    }
 
     // Write to file
 };
@@ -564,13 +554,11 @@ class const_array_iterator {
     //todo:
     //clean the vocabulary
     private:
-        uint32_t magicByteSize; //= params[0];
         uint32_t rowType;       //= params[1];
         uint32_t nRows;         //= params[2];
         uint32_t colType;       //= params[3];
         uint32_t nCols;         //= params[4];
         uint32_t valueWidth;    //= params[5];
-        uint32_t oldIndexType;  //= params[6];        
         uint8_t newIndexWidth; //basically how many bytes we read, NOT ACTUALLY THE TYPE
         char* end;
         char* fileData;
@@ -589,29 +577,28 @@ class const_array_iterator {
         //read first 28 bytes of fileData put it into params -> metadata
         uint32_t params[7];
         
-        memcpy(&params, arrayPointer, 32); //28 is subject to change depending on magic bytes
-        arrayPointer+=32; //first delimitor is 4 bytes
+        memcpy(&params, arrayPointer, 24); //28 is subject to change depending on magic bytes
+        arrayPointer+=24; //first delimitor is 4 bytes
 
-        magicByteSize = params[0];
-        rowType       = params[1];
-        nRows         = params[2];
-        colType       = params[3];
-        nCols         = params[4];
-        valueWidth    = params[5];
-        oldIndexType  = params[6];
+        rowType       = params[0];
+        nRows         = params[1];
+        colType       = params[2];
+        nCols         = params[3];
+        valueWidth    = params[4];
+        cout << "valueWidth: " << valueWidth << endl;
 
         memcpy(&value, arrayPointer, valueWidth);
         arrayPointer += valueWidth;
         newIndexWidth =  static_cast<int>(*static_cast<uint8_t*>(arrayPointer));
         arrayPointer++; //this should make it point to first index
 
-        // cout << "value: " << value << endl;
-        // cout << "newIndexWidth: " << newIndexWidth << endl;
+        cout << "value: " << value << endl;
+        cout << "newIndexWidth: " << newIndexWidth << endl;
 
         // for debugging
-        //  for(int i = 0; i < 7; i++) {
-        //      cout << i << " " << params[i] << endl;
-        // }
+         for(int i = 0; i < 5; i++) {
+             cout << i << " " << params[i] << endl;
+        }
 
 
     }//end of constructor
@@ -638,7 +625,9 @@ class const_array_iterator {
                 newIndex =  static_cast<uint64_t>(*static_cast<uint8_t*>(arrayPointer));
                 break;
             default:
+                cout << static_cast<int>(*static_cast<uint8_t*>(arrayPointer)) << endl;
                 cerr << "Invalid width" << endl;
+                exit(-1);
                 break;
         }
         arrayPointer += newIndexWidth;
@@ -756,7 +745,7 @@ void iteratorBenchmark(int numRows, int numCols, double sparsity) {
     //TO ENSURE EVERYTHING WORKS, THE TOTAL SUM OF ALL VALUES IS CALUCLATED AND SHOULD PRINT THE SAME NUMBER FOR EACH ITERATOR
     uint64_t total = 0;
     int value = 0;
-    string fileName = "input.bin";
+    string fileName = "test.bin";
 
 
     Eigen::SparseMatrix<int> myMatrix(numRows, numCols);
