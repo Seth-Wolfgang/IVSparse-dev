@@ -553,6 +553,7 @@ template<typename T>
 class const_array_iterator {
     //todo:
     //clean the vocabulary
+    //turn into a sub class of skyler's constructor
     private:
         uint32_t rowType;       //= params[1];
         uint32_t nRows;         //= params[2];
@@ -610,6 +611,7 @@ class const_array_iterator {
     //EXPERIMENTAL INCREMENT OPERATOR -> NOT DECREMENT
     const uint64_t operator --() {
         uint64_t newIndex = 0; 
+        printf("newIndexWidth: %d\n", newIndexWidth);
 
         switch (newIndexWidth){
             case 1:
@@ -630,9 +632,14 @@ class const_array_iterator {
                 exit(-1);
                 break;
         }
+        cout << "arrayPointer position: " <<  ((char*)arrayPointer - fileData) << endl; 
+        cout << "arrayPointer value: " << *(uint8_t*)arrayPointer << endl;
+        cout << "valueWidth " << valueWidth << endl;
+
+
         arrayPointer += newIndexWidth;
 
-        if(newIndex == 0 && index != 0){ //change that
+        if(newIndex == 0 && index != 0){ //todo change that
             
             memcpy(&value, arrayPointer, valueWidth);
             arrayPointer += valueWidth; 
@@ -640,8 +647,8 @@ class const_array_iterator {
             memcpy(&newIndexWidth, arrayPointer, 1);
             arrayPointer++;
             
-            // cout << endl << "value: " << value << endl;
-            // cout << "newIndexWidth: " << newIndexWidth << endl;
+            cout << endl << "value: " << value << endl;
+            cout << "newIndexWidth: " << newIndexWidth << endl;
             
             memset(&index, 0, 8);
             memcpy(&index, arrayPointer, newIndexWidth);
@@ -669,8 +676,8 @@ class const_array_iterator {
             memcpy(&newIndexWidth, arrayPointer, 1);
             arrayPointer++;
             
-            // cout << endl << "value: " << value << endl;
-            // cout << "newIndexWidth: " << newIndexWidth << endl;
+            cout << endl << "value: " << value << endl;
+            cout << "newIndexWidth: " << *(uint8_t*)newIndexWidth << endl;
             
             memset(&index, 0, 8);
             memcpy(&index, arrayPointer, newIndexWidth);
@@ -707,10 +714,13 @@ class const_array_iterator {
     inline void readFile(const char* filePath){
         //read a file using the C fopen function and store to fileData
         FILE* file = fopen(filePath, "rb");
+        
         fseek(file, 0, SEEK_END);
         int sizeOfFile = ftell(file);
         fileData = (char*)malloc(sizeof(char*)*sizeOfFile);
+
         fseek(file, 0, SEEK_SET);
+
         fread(fileData, sizeOfFile, 1, file);
         fclose(file);
         // cout << "Size of file: " << sizeOfFile << endl;
