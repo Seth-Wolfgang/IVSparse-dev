@@ -576,7 +576,7 @@ class const_array_iterator {
         //set up the iterator
         readFile(filePath);
         //read first 28 bytes of fileData put it into params -> metadata
-        uint32_t params[7];
+        uint32_t params[5];
         
         memcpy(&params, arrayPointer, 24); //28 is subject to change depending on magic bytes
         arrayPointer+=24; //first delimitor is 4 bytes
@@ -592,7 +592,7 @@ class const_array_iterator {
         arrayPointer += valueWidth;
         newIndexWidth =  static_cast<int>(*static_cast<uint8_t*>(arrayPointer));
         arrayPointer++; //this should make it point to first index
-
+        
         cout << "value: " << value << endl;
         cout << "newIndexWidth: " << newIndexWidth << endl;
 
@@ -633,27 +633,37 @@ class const_array_iterator {
                 break;
         }
         cout << "arrayPointer position: " <<  ((char*)arrayPointer - fileData) << endl; 
-        cout << "arrayPointer value: " << *(uint8_t*)arrayPointer << endl;
-        cout << "valueWidth " << valueWidth << endl;
+        printf("Array Pointer Value: %d\n", *static_cast<uint8_t*>(arrayPointer));
+        printf("Prev Array Pointer Value: %d\n", *static_cast<uint8_t*>(arrayPointer--));
+
+        // cout << "valueWidth " << valueWidth << endl;
+        cout << "Value: " << value << endl;
+        cout << "newIndex: " << newIndex << endl << endl;
 
 
+        cout << "arrayPointer position: " <<  ((char*)arrayPointer - fileData) << endl; 
         arrayPointer += newIndexWidth;
+        cout << "arrayPointer position: " <<  ((char*)arrayPointer - fileData) << endl; 
 
-        if(newIndex == 0 && index != 0){ //todo change that
-            
+
+        if(newIndex == 0 && (index != 0)){ //todo change that
+            cout << " flag !" << endl;
             memcpy(&value, arrayPointer, valueWidth);
             arrayPointer += valueWidth; 
-            
+            cout << "arrayPointer position: " <<  ((char*)arrayPointer - fileData) << endl; 
+
             memcpy(&newIndexWidth, arrayPointer, 1);
             arrayPointer++;
             
             cout << endl << "value: " << value << endl;
-            cout << "newIndexWidth: " << newIndexWidth << endl;
+
+            cout << "newIndexWidth: " << static_cast<int>(newIndexWidth) << endl;
             
             memset(&index, 0, 8);
             memcpy(&index, arrayPointer, newIndexWidth);
 
         }
+        cout << "NewIndex before return: " << newIndex << endl;
         return index += newIndex;
     }
 
