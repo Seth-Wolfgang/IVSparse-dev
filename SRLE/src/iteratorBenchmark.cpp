@@ -13,14 +13,15 @@ template <typename T> Eigen::SparseMatrix<T> generateMatrix(int numRows, int num
 int main() {
     int numRows = 100;
     int numCols = 100;
-    int sparsity = 50;
+    int sparsity = 20;
+    uint64_t seed = 515
     iteratorBenchmark(numRows, numCols, sparsity);
 
     return 1;
 }
 
 //[[Rcpp::export]]
-void iteratorBenchmark(int numRows, int numCols, int sparsity) {
+void iteratorBenchmark(int numRows, int numCols, int sparsity, uint64_t seed) {
     // Rcpp::Clock clock;
     //TO ENSURE EVERYTHING WORKS, THE TOTAL SUM OF ALL VALUES IS CALUCLATED AND SHOULD PRINT THE SAME NUMBER FOR EACH ITERATOR
     uint64_t total = 0;
@@ -30,7 +31,7 @@ void iteratorBenchmark(int numRows, int numCols, int sparsity) {
 
     Eigen::SparseMatrix<int> myMatrix(numRows, numCols);
     myMatrix.reserve(Eigen::VectorXi::Constant(numRows, numCols));
-    myMatrix = generateMatrix<int>(numRows, numCols, sparsity);
+    myMatrix = generateMatrix<int>(numRows, numCols, sparsity, seed);
     myMatrix.makeCompressed(); 
 
     DeBruinesComp myCompression(myMatrix);
@@ -108,10 +109,9 @@ void iteratorBenchmark(int numRows, int numCols, int sparsity) {
 
 
 template <typename T>
-Eigen::SparseMatrix<T> generateMatrix(int numRows, int numCols, int sparsity){
+Eigen::SparseMatrix<T> generateMatrix(int numRows, int numCols, int sparsity, uint64_t seed){
     //generate a random sparse matrix
-    uint64_t favoriteNumber = 518;
-    rng randMatrixGen = rng(favoriteNumber);
+    rng randMatrixGen = rng(seed);
 
     Eigen::SparseMatrix<T> myMatrix(numRows, numCols);
     myMatrix.reserve(Eigen::VectorXi::Constant(numRows, numCols));

@@ -63,17 +63,17 @@ class rng {
 
     template <typename T>
     T sample(T max_value) {
-        return (rand() % max_value) + 1;
+        return rand() % max_value;
     }
 
     template <typename T>
     T sample(uint64_t i, T max_value) {
-        return (rand(i) % max_value) + 1;
+        return rand(i) % max_value;
     }
 
     template <typename T>
     T sample(uint64_t i, uint64_t j, T max_value) {
-        return (rand(i, j) % max_value) + 1;
+        return rand(i, j) % max_value;
     }
 
     template <typename T>
