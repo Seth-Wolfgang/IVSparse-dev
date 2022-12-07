@@ -20,7 +20,6 @@ class const_array_iterator {
         uint64_t index = 0;
         T value;
         uint64_t sum = 0;
-        bool first = true;
 
     public:
       
@@ -60,22 +59,21 @@ class const_array_iterator {
 
     //todo make this return type T 
     T& operator * () {return value;}; 
+    
 
-
-    //This is NOT final. I want to replace this with a function pointer if possible
     const uint64_t operator++() {
         switch (first){
-            case true:
-                first = false;
+            case 0:
+                first = 1;
                 index = interpretNewIndex();
                 break;
 
             default:
                 index = test();
 
-                break;
+                break
         }
-        return index;
+        return index 
     }
 
 
@@ -91,7 +89,7 @@ class const_array_iterator {
         cout << "Value: " << value << endl;
         cout << "newIndex: " << newIndex << endl << endl;
 
-        if(newIndex == 0 && index != 0){
+        if(newIndex == 0){
             cout << " flag !" << endl;
             memcpy(&value, arrayPointer, valueWidth);
             arrayPointer += valueWidth; 
@@ -109,35 +107,6 @@ class const_array_iterator {
         cout << "NewIndex before return: " << newIndex << endl;
         return index += newIndex;
     }
-
-    // const uint64_t operator++() {
-    //     uint64_t newIndex = interpretNewIndex(); 
-       
-    //     printf("newIndexWidth: %d\n", newIndexWidth);
-    //     cout << "arrayPointer position: " <<  ((char*)arrayPointer - fileData) << endl; 
-    //     printf("Array Pointer Value: %d\n", *static_cast<uint8_t*>(arrayPointer));
-    //     printf("Prev Array Pointer Value: %d\n", *static_cast<uint8_t*>(arrayPointer-1));
-    //     cout << "Value: " << value << endl;
-    //     cout << "newIndex: " << newIndex << endl << endl;
-
-    //     if(newIndex == 0){
-    //         cout << " flag !" << endl;
-    //         memcpy(&value, arrayPointer, valueWidth);
-    //         arrayPointer += valueWidth; 
-    //         cout << "arrayPointer position: " <<  ((char*)arrayPointer - fileData) << endl; 
-
-    //         memcpy(&newIndexWidth, arrayPointer, 1);
-    //         arrayPointer++;
-            
-    //         cout << endl << "value: " << value << endl;
-    //         cout << "newIndexWidth: " << static_cast<int>(newIndexWidth) << endl;
-            
-    //         memset(&index, 0, 8);
-    //         memcpy(&index, arrayPointer, newIndexWidth);
-    //     }
-    //     cout << "NewIndex before return: " << newIndex << endl;
-    //     return index += newIndex;
-    // }
 
     // template<typename indexType> 
     // const uint64_t operator++() { 

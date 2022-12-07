@@ -89,7 +89,6 @@ public:
         val_t = sizeof(values);
 
         allocate();
-        cout << "Allocated" << endl;
         // ! Create a copy of data here for debugging
         void *debug = data;
 
@@ -255,8 +254,6 @@ public:
         }
 
         // find size of data in bytes
-        cout << "Sizing" << endl;
-        cout << static_cast<uint8_t *>(ptr) - static_cast<uint8_t *>(data) << endl;
         // cout << static_cast<uint8_t *>(ptr) - static_cast<uint8_t *>(data) << endl;
 
         size_t size = static_cast<uint8_t *>(ptr) - static_cast<uint8_t *>(data);
@@ -273,7 +270,6 @@ public:
         // }
 
         // write data to file
-        cout << "Writing to file..." << endl;
         //print all of data
         // for(int i = 0; i < size; i++){
         //     printf("%02x ", *static_cast<uint8_t *>(data + i));
@@ -318,10 +314,10 @@ public:
         @param col_num: number of columns in the matrix
     */
  
-        for(int j = 0; j < mat.nonZeros(); j++){
-            cout << "value: "  << x[j] << " row: " << i[j] << " col: " << p[j] << endl;
-        }
-        cout << endl << endl;
+        // for(int j = 0; j < mat.nonZeros(); j++){
+        //     cout << "value: "  << x[j] << " row: " << i[j] << " col: " << p[j] << endl;
+        // }
+        // cout << endl << endl;
 
 
         DeBruinesComp(x, i, p, mat.nonZeros(), mat.rows(), mat.cols());

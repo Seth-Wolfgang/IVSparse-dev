@@ -45,29 +45,13 @@ void iteratorBenchmark(int numRows, int numCols, double sparsity) {
     myMatrix.makeCompressed(); 
 
     DeBruinesComp myCompression(myMatrix);
-    // myCompression.print();
-    // myCompression.write("test.bin");
-
-    // cout << "Testing SRLE" << endl;
-    // const_array_iterator<int>* iter = new const_array_iterator<int>(fileName.c_str());
-    // clock.tick("SRLE w/ memcpy");
-    // while(iter->operator bool()) {
-    //     iter->operator++();
-    //     total += iter->operator*();
-    //     if(iter->operator *() != value){
-    //         value =  iter->operator *();
-    //     }
-    // }
-    // clock.tock("SRLE w/ memcpy");
-    // cout << "SRLE (N) Total: " << total << endl;
-    // cout << "SRLE Total: " << total << endl;
 
     //////////////////////////////Experimental Iterator//////////////////////////////
     total = 0;
-    cout << "Testing Experimental Iterator" << endl;
+    cout << "Testing Iterator" << endl;
     const_array_iterator<int>* newIter = new const_array_iterator<int>(fileName.c_str());
     // clock.tick("SRLE w/ void*");
-    
+
     while(newIter->operator bool()) {
         newIter->operator++();
         total += newIter->operator*();
