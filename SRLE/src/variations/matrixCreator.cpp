@@ -1,4 +1,4 @@
-#include<Eigen/Sparse>
+#include "../include/CPP_Lib.hpp"
 
 class rng {
    private:

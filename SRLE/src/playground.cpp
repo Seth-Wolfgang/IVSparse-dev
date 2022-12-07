@@ -1,22 +1,6 @@
 // [[Rcpp::depends(RcppEigen)]]
 // [[Rcpp::depends(RcppClock)]]
-// #include <RcppEigen.h>
-#include <chrono>
-#include <cstdint>
-#include <cstddef>
-#include <cstdlib>
-#include <iostream>
-#include <cstring>
-#include <bits/stdc++.h>
-#include <map>
-#include <vector>
-// #include "const_array_iterator.cpp"
-// #include "GenericCSCIterator.cpp"
-// #include "matrixCreator.cpp"
-// #include "DeBruine's_Compressed_Matrix_Name.cpp"
-#include <Eigen/Sparse>
-// #include <RcppClock.h>
-// #include <Rcpp.h>
+#include "include/CPP_Lib.hpp"
 
 using namespace std;
 //using namespace //Rcpp;
@@ -738,25 +722,6 @@ class const_array_iterator {
         end = fileData + sizeOfFile;
     }
 };
-
-template <typename T>
-Eigen::SparseMatrix<T> generateMatrix(int numRows, int numCols, double sparsity){
-    //generate a random sparse matrix
-    uint64_t favoriteNumber = 515;
-    rng randMatrixGen = rng(favoriteNumber);
-
-    Eigen::SparseMatrix<T> myMatrix(numRows, numCols);
-    myMatrix.reserve(Eigen::VectorXi::Constant(numRows, numCols));
-
-    for(int i = 0; i < numRows; i++){
-        for(int j = 0; j < numCols; j++){
-            if(randMatrixGen.draw<int>(i,j, sparsity)){
-                myMatrix.insert(i, j) = 10 * randMatrixGen.uniform<double>(j);
-            }
-        }
-    }
-    return myMatrix;
-}
 
 
 //[[Rcpp::export]]

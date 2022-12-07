@@ -1,15 +1,6 @@
 //[[Rcpp::depends(RcppEigen)]]
-#include <RcppEigen.h>
-#include <stdint.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <iostream>
-#include <iterator>
-#include <cstddef>
-#include <fstream>
-#include <algorithm> 
-// #include <Eigen/Sparse>
+// #include <RcppEigen.h>
+#include "../include/CPP_Lib.hpp"
 
 using namespace std;
 
