@@ -6,32 +6,21 @@ using namespace std;
 
 
 //Functions
-void iteratorBenchmark(int numRows, int numCols, double sparsity);
-template <typename T> Eigen::SparseMatrix<T> generateMatrix(int numRows, int numCols, double sparsity);
+void iteratorBenchmark(int numRows, int numCols, int sparsity);
+template <typename T> Eigen::SparseMatrix<T> generateMatrix(int numRows, int numCols, int sparsity);
 
 
 int main() {
     int numRows = 100;
     int numCols = 100;
-    double sparsity = 50;
+    int sparsity = 50;
     iteratorBenchmark(numRows, numCols, sparsity);
 
-    // const_array_iterator<int>* iter = new const_array_iterator<int>("input.bin");
-    // int value = 0;
-    // ////clock.tick("SRLE");
-    // while(iter->operator bool()) {
-    //     iter->operator++();
-    //     if(iter->operator *() != value){
-    //         cout << iter->operator *() << endl;
-    //         value =  iter->operator *();
-    //     }
-    // }
-
-    return 0;
+    return 1;
 }
 
 //[[Rcpp::export]]
-void iteratorBenchmark(int numRows, int numCols, double sparsity) {
+void iteratorBenchmark(int numRows, int numCols, int sparsity) {
     // Rcpp::Clock clock;
     //TO ENSURE EVERYTHING WORKS, THE TOTAL SUM OF ALL VALUES IS CALUCLATED AND SHOULD PRINT THE SAME NUMBER FOR EACH ITERATOR
     uint64_t total = 0;
@@ -51,10 +40,11 @@ void iteratorBenchmark(int numRows, int numCols, double sparsity) {
     cout << "Testing Iterator" << endl;
     const_array_iterator<int>* newIter = new const_array_iterator<int>(fileName.c_str());
     // clock.tick("SRLE w/ void*");
-
+    vector<int> SRLEVector;
     while(newIter->operator bool()) {
         newIter->operator++();
         total += newIter->operator*();
+        SRLEVector.push_back(newIter->operator*());
         if(newIter->operator *() != value){
             value =  newIter->operator *();
         }
@@ -72,12 +62,31 @@ void iteratorBenchmark(int numRows, int numCols, double sparsity) {
 
     //begin timing
     // clock.tick("Eigen");
-    Eigen::SparseMatrix<int>::InnerIterator it(myMatrix, 0);
-    for (int i=0; i<numRows; ++i){
+    vector<int> eigenVector;
+    // Eigen::SparseMatrix<int>::InnerIterator it(myMatrix, 0);
+    for (int i=0; i<numCols; ++i){
         for (Eigen::SparseMatrix<int>::InnerIterator it(myMatrix, i); it; ++it){
             total += it.value();
+            eigenVector.push_back(it.value());
         }
     }
+        
+    sort(SRLEVector.begin(), SRLEVector.end());
+    sort(eigenVector.begin(), eigenVector.end());
+
+
+    for(auto j : SRLEVector){
+        cout << j << " ";
+    }
+    cout << endl;
+    for(auto j : eigenVector){
+        cout << j << " ";
+    }
+    cout << endl;
+
+
+
+
     // clock.tock("Eigen");
     cout << "InnerIterator Total: " << total << endl;
 
@@ -99,9 +108,9 @@ void iteratorBenchmark(int numRows, int numCols, double sparsity) {
 
 
 template <typename T>
-Eigen::SparseMatrix<T> generateMatrix(int numRows, int numCols, double sparsity){
+Eigen::SparseMatrix<T> generateMatrix(int numRows, int numCols, int sparsity){
     //generate a random sparse matrix
-    uint64_t favoriteNumber = 515;
+    uint64_t favoriteNumber = 518;
     rng randMatrixGen = rng(favoriteNumber);
 
     Eigen::SparseMatrix<T> myMatrix(numRows, numCols);
