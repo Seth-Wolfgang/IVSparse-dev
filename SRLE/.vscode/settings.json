@@ -3,6 +3,20 @@
         "*.erb": "erb",
         "*.rmd": "markdown",
         "iostream": "cpp",
-        "vector": "cpp"
+        "vector": "cpp",
+        "ranges": "cpp",
+        "array": "cpp",
+        "string": "cpp",
+        "string_view": "cpp",
+        "span": "cpp",
+        "bitset": "cpp",
+        "initializer_list": "cpp",
+        "regex": "cpp",
+        "utility": "cpp",
+        "valarray": "cpp",
+        "*.tcc": "cpp",
+        "core": "cpp",
+        "charconv": "cpp",
+        "ostream": "cpp"
     }
 }

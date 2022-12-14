@@ -13,7 +13,7 @@
             "intelliSenseMode": "linux-gcc-x64",
             "browse": {
                 "path": [
-                    "${workspaceFolder}/src/include/"
+                    "${workspaceFolder}/src/"
                 ]
             }
         }
