@@ -420,6 +420,9 @@ int main()
 
     temp_comp.write("test2.bin");
 
+    // Create an iterator for temp_comp
+
+
     //temp_comp.read("test.bin");
 
     // Create an eigen sparse matrix
