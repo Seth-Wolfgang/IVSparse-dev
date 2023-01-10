@@ -9,6 +9,7 @@
 * Eigen vector has 0's in it
 * Eigen vector is not being properly converted to SRLE -> But its close! Test case did show its working, but random case does NOT
 * Optimize Optimize Optimize
+* Turn iterator into a subclass of the constructor
 
 
 # Optional:
