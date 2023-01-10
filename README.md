@@ -37,5 +37,5 @@ meeting notes 1/10
 > pointer - 1 instead of using casts and a temporary
 * Use floor() and log_2 to instead of switch statement to find size of values
 > Switch statement is fine, this could be faster.
-*
+* Get rid of void pointer arithmetic
 
