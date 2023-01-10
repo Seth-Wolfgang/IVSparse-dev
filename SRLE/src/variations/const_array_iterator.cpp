@@ -185,7 +185,6 @@ class const_array_iterator {
                 cout << static_cast<int>(*static_cast<uint8_t*>(arrayPointer)) << endl;
                 cout << "Invalid width: " << newIndexWidth << endl;
                 printf("%d\n", newIndexWidth);
-                exit(-1);
                 break;
         }
         

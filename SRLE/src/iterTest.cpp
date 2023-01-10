@@ -1,4 +1,4 @@
-#include "../include/CPP_Lib.hpp"
+#include "include/CPP_Lib.hpp"
 
 using namespace std;
 
@@ -13,7 +13,7 @@ class const_array_iterator {
         uint32_t colType;       //= params[3];
         uint32_t nCols;         //= params[4];
         uint32_t valueWidth;    //= params[5];
-        uint8_t newIndexWidth; //basically how many bytes we read, NOT ACTUALLY THE TYPE
+        uint8_t newIndexWidth;  //basically how many bytes we read, NOT ACTUALLY THE TYPE
         char* end;
         char* fileData;
         void* arrayPointer;
@@ -63,6 +63,8 @@ class const_array_iterator {
 
     const uint64_t operator++() {
         switch (first){
+
+            
             case 0:
                 first = 1;
                 index = interpretNewIndex();
@@ -71,9 +73,9 @@ class const_array_iterator {
             default:
                 index = test();
 
-                break
+                break;
         }
-        return index 
+        return index;
     }
 
 

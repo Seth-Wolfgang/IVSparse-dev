@@ -6,16 +6,16 @@ using namespace std;
 
 
 //Functions
-void iteratorBenchmark(int numRows, int numCols, int sparsity);
-template <typename T> Eigen::SparseMatrix<T> generateMatrix(int numRows, int numCols, int sparsity);
+void iteratorBenchmark(int numRows, int numCols, int sparsity, uint64_t seed);
+template <typename T> Eigen::SparseMatrix<T> generateMatrix(int numRows, int numCols, int sparsity, uint64_t seed);
 
 
 int main() {
     int numRows = 100;
     int numCols = 100;
     int sparsity = 20;
-    uint64_t seed = 515
-    iteratorBenchmark(numRows, numCols, sparsity);
+    uint64_t seed = 51;
+    iteratorBenchmark(numRows, numCols, sparsity, seed);
 
     return 1;
 }
@@ -75,18 +75,16 @@ void iteratorBenchmark(int numRows, int numCols, int sparsity, uint64_t seed) {
     sort(SRLEVector.begin(), SRLEVector.end());
     sort(eigenVector.begin(), eigenVector.end());
 
-
+    cout << "SRLE Vector" << endl;
     for(auto j : SRLEVector){
         cout << j << " ";
     }
-    cout << endl;
+    cout << endl << endl;
+    cout << "Eigen Vector" << endl;
     for(auto j : eigenVector){
         cout << j << " ";
     }
     cout << endl;
-
-
-
 
     // clock.tock("Eigen");
     cout << "InnerIterator Total: " << total << endl;
