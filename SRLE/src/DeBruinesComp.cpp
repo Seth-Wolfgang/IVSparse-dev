@@ -122,18 +122,38 @@ public:
 
         // Construct Metadata
         // * <row_t, col_t, val_t, num_rows, num_cols, [col_pointers], {...runs...}>
-        *static_cast<uint32_t *>(ptr) = row_t;
+        
+        // *static_cast<uint32_t *>(ptr) = row_t;
         // ! better way of static casting 
         *(uint32_t*)(ptr) = row_t;
-        ptr = static_cast<uint32_t *>(ptr) + 1;
-        *static_cast<uint32_t *>(ptr) = col_t;
-        ptr = static_cast<uint32_t *>(ptr) + 1;
-        *static_cast<uint32_t *>(ptr) = val_t;
-        ptr = static_cast<uint32_t *>(ptr) + 1;
-        *static_cast<uint32_t *>(ptr) = num_rows;
-        ptr = static_cast<uint32_t *>(ptr) + 1;
-        *static_cast<uint32_t *>(ptr) = num_cols;
-        ptr = static_cast<uint32_t *>(ptr) + 1;
+        
+        // ptr = static_cast<uint32_t *>(ptr) + 1;
+        ptr = (uint32_t*)(ptr) + 1;
+
+        // *static_cast<uint32_t *>(ptr) = col_t;
+        *(uint32_t*)(ptr) = col_t;
+
+        // ptr = static_cast<uint32_t *>(ptr) + 1;
+        ptr = (uint32_t*)(ptr) + 1;
+
+        // *static_cast<uint32_t *>(ptr) = val_t;
+
+
+        // ptr = static_cast<uint32_t *>(ptr) + 1;
+
+
+        // *static_cast<uint32_t *>(ptr) = num_rows;
+
+
+        // ptr = static_cast<uint32_t *>(ptr) + 1;
+
+
+        // *static_cast<uint32_t *>(ptr) = num_cols;
+
+
+        // ptr = static_cast<uint32_t *>(ptr) + 1;
+
+
 
         // Create space for col_pointers
         uint32_t *col_pointers = static_cast<uint32_t *>(ptr);
@@ -185,7 +205,7 @@ public:
 
                     // positive delta encode indices
                     size_t max = 0;
-                    idx_type *index = reinterpret_cast<idx_type *>(index_ptr + 1);
+                    idx_type *index = reinterpret_cast<idx_type *>(index_ptr + 1); // change
                     int num_elements = (int)(static_cast<idx_type *>(ptr) - index);
                     for (int k = num_elements - 1; k > 0; k--)
                     {
@@ -199,12 +219,12 @@ public:
                     // set index pointer to correct size
                     index_ptr[0] = byte_width(max);
                     // move index pointer by one
-                    index_ptr = index_ptr + 1;
+                    index_ptr += 1; // note of above changes
 
                     // create a void pointer to index_ptr
                     void *reducer_ptr = static_cast<void *>(index_ptr);
 
-                    // ! Get rid of switch statemnt with casting a void pointer to a uint8_t pointer
+                    // ! Get rid of switch statemnt with casting a void pointer to a uint8_t pointer (constexp?)
                     // Write over data with indices of new size
                     switch (byte_width(max))
                     {
