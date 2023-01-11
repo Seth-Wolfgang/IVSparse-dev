@@ -33,11 +33,12 @@ class const_array_iterator {
         
         memcpy(&params, arrayPointer, 24); //28 is subject to change depending on magic bytes
         arrayPointer+=24; //first delimitor is 4 bytes
-
+    //delete this comment
         rowType       = params[0];
         nRows         = params[1];
         colType       = params[2];
         nCols         = params[3];
+        int x = 5
         valueWidth    = params[4];
         cout << "valueWidth: " << valueWidth << endl;
 
