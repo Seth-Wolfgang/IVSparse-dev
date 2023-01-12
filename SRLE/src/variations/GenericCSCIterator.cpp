@@ -1,3 +1,14 @@
+/**
+ * @file GenericCSCIterator.cpp
+ * @author Seth Wolfgang
+ * @brief A generic iterator for CSC matrices. Not meant for optimized iteration.
+ * @version 1.0
+ * @date 2023-01-11
+ * 
+ * @copyright Copyright (c) 2023
+ * 
+ */
+
 //[[Rcpp::depends(RcppEigen)]]
 // #include <RcppEigen.h>
 #include "../include/CPP_Lib.hpp"
@@ -17,8 +28,6 @@ class GenericCSCIterator {
         int* colPtr;
         T* valuePtr;
         int* end;
-
-
 
     public:
 

@@ -4,7 +4,6 @@
 #include "include/SRLE_Lib.hpp"
 using namespace std;
 
-
 //Functions
 void iteratorBenchmark(int numRows, int numCols, int sparsity, uint64_t seed);
 template <typename T> Eigen::SparseMatrix<T> generateMatrix(int numRows, int numCols, int sparsity, uint64_t seed);
@@ -26,7 +25,7 @@ void iteratorBenchmark(int numRows, int numCols, int sparsity, uint64_t seed) {
     //TO ENSURE EVERYTHING WORKS, THE TOTAL SUM OF ALL VALUES IS CALUCLATED AND SHOULD PRINT THE SAME NUMBER FOR EACH ITERATOR
     uint64_t total = 0;
     int value = 0;
-    string fileName = "test.bin";
+    string fileName = "input.bin";
 
 
     Eigen::SparseMatrix<int> myMatrix(numRows, numCols);
@@ -40,9 +39,12 @@ void iteratorBenchmark(int numRows, int numCols, int sparsity, uint64_t seed) {
     total = 0;
     cout << "Testing Iterator" << endl;
     const_array_iterator<int>* newIter = new const_array_iterator<int>(fileName.c_str());
+    
     // clock.tick("SRLE w/ void*");
     vector<int> SRLEVector;
+    
     while(newIter->operator bool()) {
+        
         newIter->operator++();
         total += newIter->operator*();
         SRLEVector.push_back(newIter->operator*());

@@ -30,8 +30,8 @@ class const_array_iterator {
         //read first 28 bytes of fileData put it into params -> metadata
         uint32_t params[5];
         
-        memcpy(&params, arrayPointer, 24); //28 is subject to change depending on magic bytes
-        arrayPointer+=24; //first delimitor is 4 bytes
+        memcpy(&params, arrayPointer, 32); //28 is subject to change depending on magic bytes
+        arrayPointer+=32; //first delimitor is 4 bytes
 
         rowType       = params[0];
         nRows         = params[1];
@@ -49,9 +49,9 @@ class const_array_iterator {
         cout << "newIndexWidth: " << newIndexWidth << endl;
 
         // for debugging
-        //  for(int i = 0; i < 5; i++) {
-        //      cout << i << " " << params[i] << endl;
-        // }
+         for(int i = 0; i < 5; i++) {
+             cout << i << " " << params[i] << endl;
+        }
 
 
     }//end of constructor

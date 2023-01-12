@@ -1,3 +1,14 @@
+/**
+ * @file const_array_iterator.cpp
+ * @author Seth Wolfgang
+ * @brief Iterator for SRLE compressed matrices. 
+ * @version 0.6
+ * @date 2023-01-11
+ * 
+ * @copyright Copyright (c) 2023
+ * 
+ */
+
 #include "../include/CPP_Lib.hpp"
 
 using namespace std;
@@ -14,7 +25,7 @@ class const_array_iterator {
         uint32_t nCols;         //= params[4];
         uint32_t valueWidth;    //= params[5];
         uint8_t newIndexWidth; //basically how many bytes we read, NOT ACTUALLY THE TYPE
-        char* end;
+        void* end;
         char* fileData;
         void* arrayPointer;
         uint64_t index = 0;
@@ -29,26 +40,25 @@ class const_array_iterator {
         //set up the iterator
         readFile(filePath);
         //read first 28 bytes of fileData put it into params -> metadata
-        uint32_t params[5];
+        uint32_t params[8];
         
-        memcpy(&params, arrayPointer, 24); //28 is subject to change depending on magic bytes
-        arrayPointer+=24; //first delimitor is 4 bytes
-    //delete this comment
+        memcpy(&params, arrayPointer, 32); //32 is subject to change depending on magic bytes
+        arrayPointer = static_cast<char*>(arrayPointer) + 32; //first delimitor is 4 bytes
+
         rowType       = params[0];
         nRows         = params[1];
         colType       = params[2];
         nCols         = params[3];
-        int x = 5
         valueWidth    = params[4];
         cout << "valueWidth: " << valueWidth << endl;
+ 
+        value = interpretPointer(valueWidth);  
 
-        memcpy(&value, arrayPointer, valueWidth);
-        arrayPointer += valueWidth;
-        newIndexWidth =  *static_cast<uint8_t*>(arrayPointer);
-        arrayPointer++; //this should make it point to first index
+        newIndexWidth = *static_cast<uint8_t*>(arrayPointer);
+        arrayPointer = static_cast<char*>(arrayPointer) + 1; //this should make it point to first index
         
         cout << "value: " << value << endl;
-        cout << "newIndexWidth: " << newIndexWidth << endl;
+        cout << "newIndexWidth: " << (int)newIndexWidth << endl;
 
         // for debugging
         //  for(int i = 0; i < 5; i++) {
@@ -59,35 +69,23 @@ class const_array_iterator {
     }//end of constructor
 
 
-    //todo make this return type T 
     T& operator * () {return value;}; 
 
 
     uint64_t operator++() {
-        uint64_t newIndex = interpretNewIndex(); 
+        uint64_t newIndex = interpretPointer(newIndexWidth); 
        
-        // printf("newIndexWidth: %d\n", newIndexWidth);
-        // cout << "arrayPointer position: " <<  ((char*)arrayPointer - fileData) << endl; 
-        // printf("Array Pointer Value: %d\n", *static_cast<uint8_t*>(arrayPointer));
-        // printf("Prev Array Pointer Value: %d\n", *static_cast<uint8_t*>(arrayPointer-1));
-        // cout << "Value: " << value << endl;
-        cout << "newIndex: " << newIndex << endl << endl;
+        if(newIndex == 0 && operator bool() && !firstIndex){
+            value = interpretPointer(valueWidth); 
 
-        if(newIndex == 0 && !firstIndex){
-            // cout << " flag !" << endl;
-
-            memcpy(&value, arrayPointer, valueWidth);
-            arrayPointer += valueWidth; 
-            // cout << "arrayPointer position: " <<  ((char*)arrayPointer - fileData) << endl; 
-
-            memcpy(&newIndexWidth, arrayPointer, 1);
-            arrayPointer++;
+            newIndexWidth = *static_cast<uint8_t*>(arrayPointer);
+            arrayPointer = static_cast<char*>(arrayPointer) + 1;
             
             // cout << endl << "value: " << value << endl;
-            // cout << "newIndexWidth: " << static_cast<int>(newIndexWidth) << endl;
+            cout << "newIndexWidth: " << static_cast<int>(newIndexWidth) << endl;
             
             memset(&index, 0, 8);
-            memcpy(&index, arrayPointer, newIndexWidth);
+            index = interpretPointer(newIndexWidth);
             firstIndex = true;
             return index += newIndex;
         }
@@ -97,7 +95,7 @@ class const_array_iterator {
     }
 
     // const uint64_t operator++() {
-    //     uint64_t newIndex = interpretNewIndex(); 
+    //     uint64_t newIndex = interpretPointer(); 
        
     //     printf("newIndexWidth: %d\n", newIndexWidth);
     //     cout << "arrayPointer position: " <<  ((char*)arrayPointer - fileData) << endl; 
@@ -127,7 +125,6 @@ class const_array_iterator {
 
     // template<typename indexType> 
     // const uint64_t operator++() { 
-    //     //TODO template metaprogramming
     //     //todo through an exception if we request something smaller than the size of the index
     //     uint64_t newIndex = 0; //get rid of in future versions
     //     memcpy(&newIndex, arrayPointer, newIndexWidth);
@@ -166,10 +163,10 @@ class const_array_iterator {
     //     }
 
 
-    inline uint64_t interpretNewIndex(){
+    inline uint64_t interpretPointer(int width){
         uint64_t newIndex = 0;
 
-        switch (newIndexWidth){
+        switch (width){
             case 1:
                 newIndex = static_cast<uint64_t>(*static_cast<uint8_t*>(arrayPointer));
                 break;
@@ -183,17 +180,15 @@ class const_array_iterator {
                 newIndex =  static_cast<uint64_t>(*static_cast<uint8_t*>(arrayPointer));
                 break;
             default:
-                cout << static_cast<int>(*static_cast<uint8_t*>(arrayPointer)) << endl;
-                cout << "Invalid width: " << newIndexWidth << endl;
-                printf("%d\n", newIndexWidth);
+                // cout << static_cast<int>(*static_cast<uint8_t*>(arrayPointer)) << endl;
+                cout << "Invalid width: ";
+                printf("%d\n", width);
+                exit(-1);
                 break;
         }
-        
-        arrayPointer += newIndexWidth;
-
+        arrayPointer = static_cast<char*>(arrayPointer) + width;
         return newIndex;
     }
-
     //marginally faster 
     inline void readFile(const char* filePath){
         //read a file using the C fopen function and store to fileData

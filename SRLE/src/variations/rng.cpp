@@ -1,5 +1,14 @@
 #include "../include/CPP_Lib.hpp"
 
+/**
+ * @brief To generate values based off of a seed and standard distribution
+ * @author Zachary Debruine
+ * 
+ * Mainly used for testing, This code was taken and slightly modified from:
+ * https://github.com/zdebruine/singlet/blob/main/src/singlet.cpp
+ * 
+ */
+
 class rng {
    private:
     uint64_t state;

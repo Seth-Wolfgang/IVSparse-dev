@@ -1,3 +1,14 @@
+/**
+ * @file const_iterator.cpp
+ * @author Seth Wolfgang
+ * @brief A proof of concept iterator for SRLE. This one reads across a file as opposed to in RAM like const_array_iterator.cpp
+ * @version 0.1
+ * @date 2023-01-11
+ * 
+ * @copyright Copyright (c) 2023
+ * 
+ */
+
 //create an iterator struct
 #include <stdint.h>
 #include <stdio.h>

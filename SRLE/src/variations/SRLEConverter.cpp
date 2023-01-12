@@ -1,5 +1,15 @@
 #include "../include/CPP_Lib.hpp"
 
+/**
+ * @brief Construct a new De Bruines Comp:: De Bruines Comp object
+ * 
+ * THIS IS OLD, DO NOT USE THIS CONVERTER FOR ACTUAL APPLICATION
+ * TODO, DELETE WHEN WE MERGE
+ * 
+ */
+
+
+
 class DeBruinesComp
 {
 
