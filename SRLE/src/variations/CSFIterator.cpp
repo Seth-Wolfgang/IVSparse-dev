@@ -75,7 +75,6 @@ class CSFIterator {
                 newIndex =  static_cast<uint64_t>(*static_cast<uint64_t*>(currentIndex));
                 break;
             default:
-                // cout << static_cast<int>(*static_cast<uint8_t*>(currentIndex)) << endl;
                 cout << "Invalid width: " << width << endl;
                 exit(-1);
                 break;
@@ -86,7 +85,7 @@ class CSFIterator {
     }
 
     public:
-    
+
     /**
      * @brief Construct a new CSFiterator object
      * 
@@ -94,7 +93,6 @@ class CSFIterator {
      */
 
     CSFIterator(const char* filePath) {
-
         readFile(filePath);
 
         //read first 28 bytes of fileData put it into params -> metadata

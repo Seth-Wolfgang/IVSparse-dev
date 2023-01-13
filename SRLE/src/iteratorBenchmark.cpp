@@ -13,7 +13,7 @@ int main() {
     int numRows = 100;
     int numCols = 100;
     int sparsity = 20;
-    uint64_t seed = 515;
+    uint64_t seed = 5645646546;
     iteratorBenchmark(numRows, numCols, sparsity, seed);
 
     return 1;
@@ -25,7 +25,7 @@ void iteratorBenchmark(int numRows, int numCols, int sparsity, uint64_t seed) {
     //TO ENSURE EVERYTHING WORKS, THE TOTAL SUM OF ALL VALUES IS CALUCLATED AND SHOULD PRINT THE SAME NUMBER FOR EACH ITERATOR
     uint64_t total = 0;
     int value = 0;
-    string fileName = "input.bin";
+    string fileName = "test.bin";
 
     //generating a large random eigen sparse
     Eigen::SparseMatrix<int> myMatrix(numRows, numCols);
