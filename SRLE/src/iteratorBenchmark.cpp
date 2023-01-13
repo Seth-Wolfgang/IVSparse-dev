@@ -38,7 +38,7 @@ void iteratorBenchmark(int numRows, int numCols, int sparsity, uint64_t seed) {
     //////////////////////////////Experimental Iterator//////////////////////////////
     total = 0;
     cout << "Testing Iterator" << endl;
-    CSFMatrix::CSFIterator<int>* newIter = new CSFIterator<int>(fileName.c_str());
+    CSFIterator<int>* newIter = new CSFIterator<int>(fileName.c_str());
     
     // clock.tick("SRLE w/ void*");
     vector<int> SRLEVector;

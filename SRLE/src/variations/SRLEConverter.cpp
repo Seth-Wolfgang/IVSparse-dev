@@ -10,7 +10,7 @@
 
 
 
-class DeBruinesComp
+class CSFMatrix
 {
 
 private:
@@ -68,7 +68,7 @@ public:
     */
     // ! Assumes column major format (Isn't this just CSC?)
     template <typename values, typename idx_type>
-    DeBruinesComp(values *x_v, idx_type *i_v, idx_type *c_point, size_t val_num, size_t row_num, size_t col_num)
+    CSFMatrix(values *x_v, idx_type *i_v, idx_type *c_point, size_t val_num, size_t row_num, size_t col_num)
     {
 
         // ! Currently copies data first, should refactor to destroy COO matrix in place
@@ -296,7 +296,7 @@ public:
         @param &mat: Eigen Sparse Matrix to compress
     */
     template <typename T>
-    DeBruinesComp(Eigen::SparseMatrix<T> &mat){
+    CSFMatrix(Eigen::SparseMatrix<T> &mat){
 
         //convert mat to CSC
         int* i = new int[mat.nonZeros()]; // rows
@@ -330,10 +330,10 @@ public:
         // cout << endl << endl;
 
 
-        DeBruinesComp(x, i, p, mat.nonZeros(), mat.rows(), mat.cols());
+        CSFMatrix(x, i, p, mat.nonZeros(), mat.rows(), mat.cols());
     }
 
-    ~DeBruinesComp()
+    ~CSFMatrix()
     {
         free(data);
     }
