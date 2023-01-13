@@ -13,7 +13,7 @@ int main() {
     int numRows = 100;
     int numCols = 100;
     int sparsity = 20;
-    uint64_t seed = 51;
+    uint64_t seed = 515;
     iteratorBenchmark(numRows, numCols, sparsity, seed);
 
     return 1;
@@ -27,18 +27,23 @@ void iteratorBenchmark(int numRows, int numCols, int sparsity, uint64_t seed) {
     int value = 0;
     string fileName = "input.bin";
 
-
+    //generating a large random eigen sparse
     Eigen::SparseMatrix<int> myMatrix(numRows, numCols);
     myMatrix.reserve(Eigen::VectorXi::Constant(numRows, numCols));
     myMatrix = generateMatrix<int>(numRows, numCols, sparsity, seed);
     myMatrix.makeCompressed(); 
 
+    //Converting to CSF
     CSFMatrix myCompression(myMatrix);
 
-    //////////////////////////////Experimental Iterator//////////////////////////////
+    //////////////////////////////CSF Iterator//////////////////////////////
+    
+    //This block of code reads through the whole matrix and adds the sum of all values to total
+    //It currently does not work, but it is a good starting point for CSF 
+
     total = 0;
     cout << "Testing Iterator" << endl;
-    CSFIterator<int>* newIter = new CSFIterator<int>(fileName.c_str());
+    CSFMatrix::CSFIterator<int>* newIter = new CSFMatrix::CSFIterator<int>(fileName.c_str());
     
     // clock.tick("SRLE w/ void*");
     vector<int> SRLEVector;
@@ -58,10 +63,11 @@ void iteratorBenchmark(int numRows, int numCols, int sparsity, uint64_t seed) {
 
     //////////////////////////////CSC innerIterator////////////////////////////////
     //generating a large random eigen sparse
+   
+    //The next two blocks do essentially the same as the first but only go through the CSC matrix
+
     cout << "Testing Eigen" << endl;
     total = 0;
-
-
 
     //begin timing
     // clock.tick("Eigen");
@@ -73,6 +79,10 @@ void iteratorBenchmark(int numRows, int numCols, int sparsity, uint64_t seed) {
             eigenVector.push_back(it.value());
         }
     }
+
+    /**
+     * Testing to see if the vectors match
+    */
         
     sort(SRLEVector.begin(), SRLEVector.end());
     sort(eigenVector.begin(), eigenVector.end());
