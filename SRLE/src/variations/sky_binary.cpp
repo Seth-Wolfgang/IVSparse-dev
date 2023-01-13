@@ -98,7 +98,7 @@ int main() {
     writeBinaryFile("input.bin", values.at(0));
     writeBinaryFile("input.bin", newIndexWidths.at(0));
 
-    for(int i = 0; i < 100; i++){
+    for(int i = 0; i < 1; i++){
         writeBinaryFile("input.bin", buffer1Byte);
     }
 
@@ -108,7 +108,7 @@ int main() {
     writeBinaryFile("input.bin", values.at(1));
     writeBinaryFile("input.bin", newIndexWidths.at(1));
 
-    for(int i = 0; i < 100; i++){
+    for(int i = 0; i < 1; i++){
         writeBinaryFile("input.bin", buffer2Byte);
     }
     writeBinaryFile("input.bin", zero);
@@ -117,7 +117,7 @@ int main() {
 
     writeBinaryFile("input.bin", values.at(3));
     writeBinaryFile("input.bin", newIndexWidths.at(3));
-    for(int i = 0; i < 100; i++){
+    for(int i = 0; i < 1; i++){
         writeBinaryFile("input.bin", buffer8Byte);
     }
     writeBinaryFile("input.bin", zero);
@@ -132,7 +132,7 @@ int main() {
     writeBinaryFile("input.bin", values.at(2));
     writeBinaryFile("input.bin", newIndexWidths.at(2));
 
-    for(int i = 0; i < 100; i++){
+    for(int i = 0; i < 1; i++){
         writeBinaryFile("input.bin", buffer4Byte);
     }
     

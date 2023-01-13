@@ -33,12 +33,12 @@ void iteratorBenchmark(int numRows, int numCols, int sparsity, uint64_t seed) {
     myMatrix = generateMatrix<int>(numRows, numCols, sparsity, seed);
     myMatrix.makeCompressed(); 
 
-    DeBruinesComp myCompression(myMatrix);
+    CSFMatrix myCompression(myMatrix);
 
     //////////////////////////////Experimental Iterator//////////////////////////////
     total = 0;
     cout << "Testing Iterator" << endl;
-    const_array_iterator<int>* newIter = new const_array_iterator<int>(fileName.c_str());
+    CSFMatrix::CSFIterator<int>* newIter = new CSFIterator<int>(fileName.c_str());
     
     // clock.tick("SRLE w/ void*");
     vector<int> SRLEVector;
