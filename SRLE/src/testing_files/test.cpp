@@ -7,51 +7,28 @@
 using namespace std;
 
 
+void test(int **vals) {
+    // access the 5 array values and print them out
+    for (int i = 0; i < 5; i++) {
+        cout << (*vals)[i] << endl;
+    }
+}
+
 int main() {
 
-    cout << "Testing Eigen" << endl;
-    // Create a 30x30 sparse matrix
-    Eigen::SparseMatrix<double> A(30, 30);
-    for (int k = 0; k < 30; ++k) {
-        A.insert(k, k) = k*k;
-    }
-    cout << "A: " << endl << A << endl;
-
-    // make a list of all the non-zero elements
-    vector<double> non_zero;
-    for (int k = 0; k < 30; ++k) {
-        non_zero.push_back(A.coeff(k, k));
+    // malloc space for 5 integers
+    int *arr = (int *)malloc(5 * sizeof(int));
+    
+    // assign values to the array
+    for (int i = 0; i < 5; i++) {
+        arr[i] = i;
     }
 
-    // print the list of non-zero elements
-    cout << "non_zero: " << endl;
-    for (int k = 0; k < non_zero.size(); ++k) {
-        cout << non_zero[k] << " ";
-    }
+    // create a pointer pointer to pass to test()
+    int **vals = &arr;
 
-    // get a list of the indices of the non-zero elements
-    vector<int> indices;
-    for (int k = 0; k < 30; ++k) {
-        indices.push_back(A.outerIndexPtr()[k]);
-    }
-
-    // print the list of indices
-    cout << endl << "indices: " << endl;
-    for (int k = 0; k < indices.size(); ++k) {
-        cout << indices[k] << " ";
-    }
-
-    // get a list of the column indices of the non-zero elements
-    vector<int> col_indices;
-    for (int k = 0; k < 30; ++k) {
-        col_indices.push_back(A.innerIndexPtr()[k]);
-    }
-
-    // print the list of column indices
-    cout << endl << "col_indices: " << endl;
-    for (int k = 0; k < col_indices.size(); ++k) {
-        cout << col_indices[k] << " ";
-    }
+    // call test()
+    test(vals);
 
     return 0;
 }
