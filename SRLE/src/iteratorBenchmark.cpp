@@ -10,6 +10,7 @@ template <typename T> Eigen::SparseMatrix<T> generateMatrix(int numRows, int num
 
 
 int main() {
+
     int numRows = 100;
     int numCols = 100;
     int sparsity = 20;
@@ -25,7 +26,7 @@ void iteratorBenchmark(int numRows, int numCols, int sparsity, uint64_t seed) {
     //TO ENSURE EVERYTHING WORKS, THE TOTAL SUM OF ALL VALUES IS CALUCLATED AND SHOULD PRINT THE SAME NUMBER FOR EACH ITERATOR
     uint64_t total = 0;
     int value = 0;
-    string fileName = "test.bin";
+    string fileName = "input.bin"; //Input.bin is a working form of CSF. The Constructor makes test.bin, but it is not working
 
     //generating a large random eigen sparse
     Eigen::SparseMatrix<int> myMatrix(numRows, numCols);
@@ -34,7 +35,7 @@ void iteratorBenchmark(int numRows, int numCols, int sparsity, uint64_t seed) {
     myMatrix.makeCompressed(); 
 
     //Converting to CSF
-    CSFMatrix myCompression(myMatrix);
+    CSFMatrix myCSFMatrix(myMatrix);
 
     //////////////////////////////CSF Iterator//////////////////////////////
     
@@ -43,7 +44,9 @@ void iteratorBenchmark(int numRows, int numCols, int sparsity, uint64_t seed) {
 
     total = 0;
     cout << "Testing Iterator" << endl;
-    CSFMatrix::CSFIterator<int>* newIter = new CSFMatrix::CSFIterator<int>(fileName.c_str());
+
+    CSFMatrix::CSFIterator<int>* newIter = new CSFMatrix::CSFIterator<int>(myCSFMatrix);
+    // CSFMatrix::CSFIterator<int>* newIter = new CSFMatrix::CSFIterator<int>(fileName.c_str());
     
     // clock.tick("SRLE w/ void*");
     vector<int> SRLEVector;
