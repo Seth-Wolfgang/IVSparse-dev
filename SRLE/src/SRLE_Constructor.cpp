@@ -10,9 +10,6 @@ Content: This is a file to build the constructor for a new data structure and co
 // Eigen Include
 #include <Eigen/Sparse>
 
-// Namespace
-using namespace std;
-
 class SRLE {
     private:
 
@@ -50,7 +47,7 @@ class SRLE {
 
         // Check if memory was allocated
         if (!begin_ptr) {
-            throw bad_alloc();
+            throw std::bad_alloc();
         }
 
         // Set the pointer to the start of the data
