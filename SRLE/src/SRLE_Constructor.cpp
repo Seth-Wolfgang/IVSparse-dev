@@ -1,13 +1,11 @@
 /*
+
 Version 2.1
 By: Skyler Ruiter
 
 Content: This is a file to build the constructor for a new data structure and compression algorithm called SRLE. 
 
 */
-
-// Constuctor and General Includes
-
 
 // Eigen Include
 #include <Eigen/Sparse>
@@ -45,7 +43,9 @@ class SRLE {
         
         // Malloc memory for the data, never worse then CSC so allocate CSC amount
         // space for the value and row, col indicies, and a buffer zone
+        
         size_t csc_size = num_nonzeros *val_t + num_nonzeros *row_t + num_cols *col_t + num_rows;
+        
         begin_ptr = malloc(csc_size);
 
         // Check if memory was allocated
@@ -57,6 +57,7 @@ class SRLE {
         comp_ptr = begin_ptr;
     }
 
+    // Finds the amount of bytes needed to store the given value
     uint8_t byte_width(size_t size) {
         switch (size)
         {
@@ -73,14 +74,14 @@ class SRLE {
 
     public:
 
-    /* CSC Constructor
+   /* CSC Constructor
     
-    */
+   */
    template <typename values_t, typename row_ind, typename col_ind>
    SRLE(values_t **vals, row_ind **indexes, col_ind **col_p,
         size_t non_zeros, size_t row_num, size_t col_num) {
         
-        // Destructive Method
+        // ! Destructive Method
 
         // Initialize data
         num_rows = row_num;
@@ -118,7 +119,7 @@ class SRLE {
         comp_ptr = (uint32_t *)(comp_ptr) + 1;
 
         // Create a space for col pointers
-        // ! Need to be size T and probably positve delta encode them
+        // ! currently size uint64_t and positive delta encoded
         uint64_t *col_pointers = (uint64_t *)(comp_ptr);
         comp_ptr = (uint64_t *)(comp_ptr) + (uint64_t)(num_cols);
 
@@ -126,11 +127,16 @@ class SRLE {
         *(uint32_t *)(comp_ptr) = delim;
         comp_ptr = (uint32_t *)(comp_ptr) + 1;
 
+        // initialize first col pointer (col pointers are number of bytes from start of data)
+        col_pointers[0] = (uint64_t)(comp_ptr) - (uint64_t)(begin_ptr);
 
         // End of Metadata
 
         // Loop through each column and construct the compression runs
         for (size_t i = 0; i < num_cols; i++) {
+
+            // Update the col pointer
+            col_pointers[i] = (uint64_t)(comp_ptr) - (uint64_t)(begin_ptr);
 
             // For each element in the column check if it's a new value
             for (size_t j = (*col_p)[i]; j < (*col_p)[i + 1]; j++) {
@@ -150,11 +156,9 @@ class SRLE {
                     *(uint8_t *)help_ptr = (uint8_t)sizeof(row_ind);
                     comp_ptr = (uint8_t *)(comp_ptr) + 1;
 
-                    // Add the found index to run and set it to zero after
-                    // ? Do I need to set it to zero here, do we come back around?
+                    // Add the found index to run
                     *(row_ind *)(comp_ptr) = (*indexes)[j];
                     comp_ptr = (uint32_t *)(comp_ptr) + 1;
-                    (*indexes)[j] = 0;
 
                     // Loop through rest of column to get rest of indices
                     for (size_t k = j + 1; k < (*col_p)[i + 1]; k++) {
@@ -174,7 +178,10 @@ class SRLE {
 
                     }
 
-                    // Positive delta encode the indices
+                    // Set first index found to 0
+                    (*vals)[j] = 0;
+
+                    //* Positive delta encode the indices
                     
                     // set variable for max element
                     size_t max_index = 0;
@@ -204,6 +211,7 @@ class SRLE {
                     help_ptr = (uint8_t *)(help_ptr) + 1;
 
                     // write over data with indices of new size, index compression
+                    // ? Const expression?
                     switch (byte_width(max_index)) {
                         case 1:
 
@@ -269,14 +277,16 @@ class SRLE {
 
             } // end for loop of uniques in col
 
-            // find distance to beginning of compression and set that to col poitners
-            // TODO find and crunch col pointers
-
         } // end of col for loop
 
         // remove ending zeros
         while (comp_ptr != begin_ptr && *(uint8_t *)(comp_ptr) == 0) {
             comp_ptr = (uint8_t *)(comp_ptr) - 1;
+        }
+
+        // positive delta encode the column pointers
+        for (size_t i = num_cols - 1; i > 0; i--) {
+            col_pointers[i] = col_pointers[i] - col_pointers[i-1];
         }
 
         // find size of file in bytes
@@ -304,7 +314,7 @@ int main() {
     int *values_arr = (int *)malloc(58 * sizeof(int));
     int *indexes_arr = (int *)malloc(58 * sizeof(int));
     int *col_p_arr = (int *)malloc(4 * sizeof(int));
-   int x[58] = {
+    int x[58] = {
     1, 1, 2, 3, 1, 2, 2, 1, 1, 2, 3, 1, 3, 1, 3, 1, 2, 3, 2, 1, 1,
     
     1, 1, 2, 1, 1, 1, 2, 1, 1, 2, 2, 1, 3, 3, 1, 1, 1, 
@@ -342,6 +352,25 @@ int main() {
     int **col_p = &col_p_arr;
 
     SRLE test(vals, indexes, col_p, val_num, row_num, col_num);
+
+    // print out vals, indexs, col_p
+    for (size_t j = 0; j < 58; j++) {
+        printf("%d ", values_arr[j]);
+    }
+
+    printf("\n");
+
+    for (size_t j = 0; j < 58; j++) {
+        printf("%d ", indexes_arr[j]);
+    }
+
+    printf("\n");
+
+    for (size_t j = 0; j < 4; j++) {
+        printf("%d ", col_p_arr[j]);
+    }
+
+    printf("\n");
 
     // free stuff
     free(values_arr);
