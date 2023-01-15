@@ -97,9 +97,8 @@ class CSFIterator {
 
         //read first 28 bytes of fileData put it into params -> metadata
         uint32_t params[8];
-        
-        memcpy(&params, currentIndex, 32); 
-        currentIndex = static_cast<char*>(currentIndex) + 32;
+        memcpy(&params, currentIndex, 20); 
+        currentIndex = static_cast<char*>(currentIndex) + 20;
 
         //valueWidth is set and the first value is read in
         valueWidth    = params[4];

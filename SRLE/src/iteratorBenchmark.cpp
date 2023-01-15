@@ -2,12 +2,6 @@
 // [[Rcpp::depends(RcppClock)]]
 // #include <RcppEigen.h>
 #include "include/SRLE_Lib.hpp"
-using namespace std;
-
-//Functions
-void iteratorBenchmark(int numRows, int numCols, int sparsity, uint64_t seed);
-template <typename T> Eigen::SparseMatrix<T> generateMatrix(int numRows, int numCols, int sparsity, uint64_t seed);
-
 
 int main() {
 
@@ -22,11 +16,10 @@ int main() {
 
 //[[Rcpp::export]]
 void iteratorBenchmark(int numRows, int numCols, int sparsity, uint64_t seed) {
-    // Rcpp::Clock clock;
     //TO ENSURE EVERYTHING WORKS, THE TOTAL SUM OF ALL VALUES IS CALUCLATED AND SHOULD PRINT THE SAME NUMBER FOR EACH ITERATOR
     uint64_t total = 0;
     int value = 0;
-    string fileName = "input.bin"; //Input.bin is a working form of CSF. The Constructor makes test.bin, but it is not working
+    string fileName = "test.bin"; //Input.bin is a working form of CSF. The Constructor makes test.bin, but it is not working
 
     //generating a large random eigen sparse
     Eigen::SparseMatrix<int> myMatrix(numRows, numCols);
@@ -45,10 +38,9 @@ void iteratorBenchmark(int numRows, int numCols, int sparsity, uint64_t seed) {
     total = 0;
     cout << "Testing Iterator" << endl;
 
-    CSFMatrix::CSFIterator<int>* newIter = new CSFMatrix::CSFIterator<int>(myCSFMatrix);
-    // CSFMatrix::CSFIterator<int>* newIter = new CSFMatrix::CSFIterator<int>(fileName.c_str());
+    // CSFMatrix::CSFIterator<int>* newIter = new CSFMatrix::CSFIterator<int>(myCSFMatrix);
+    CSFMatrix::CSFIterator<int>* newIter = new CSFMatrix::CSFIterator<int>(fileName.c_str());
     
-    // clock.tick("SRLE w/ void*");
     vector<int> SRLEVector;
     
     while(newIter->operator bool()) {
@@ -62,7 +54,6 @@ void iteratorBenchmark(int numRows, int numCols, int sparsity, uint64_t seed) {
     }
 
     cout << "SRLE (E) Total: " << total << endl;
-    // clock.tock("SRLE w/ void*");
 
     //////////////////////////////CSC innerIterator////////////////////////////////
     //generating a large random eigen sparse
@@ -73,9 +64,7 @@ void iteratorBenchmark(int numRows, int numCols, int sparsity, uint64_t seed) {
     total = 0;
 
     //begin timing
-    // clock.tick("Eigen");
     vector<int> eigenVector;
-    // Eigen::SparseMatrix<int>::InnerIterator it(myMatrix, 0);
     for (int i=0; i<numCols; ++i){
         for (Eigen::SparseMatrix<int>::InnerIterator it(myMatrix, i); it; ++it){
             total += it.value();
@@ -101,23 +90,19 @@ void iteratorBenchmark(int numRows, int numCols, int sparsity, uint64_t seed) {
     }
     cout << endl;
 
-    // clock.tock("Eigen");
     cout << "InnerIterator Total: " << total << endl;
 
 
     //////////////////////////////GENERIC CSC Iterator////////////////////////////////
     cout << "Testing CSC Iterator" << endl;
     total = 0;
-    // clock.tick("CSC");
     GenericCSCIterator<int> iter2 = GenericCSCIterator<int>(myMatrix);
     while(iter2.operator bool()){
         total += iter2.operator *();
         iter2.operator++();
     }
-    // clock.tock("CSC");
     cout << "CSC Total: " << total << endl;
 
-    // clock.stop("Iterators");
 }
 
 

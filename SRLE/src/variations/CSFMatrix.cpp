@@ -398,12 +398,10 @@ class CSFIterator {
         uint32_t params[8];
 
         memcpy(&params, currentIndex, 32); 
-        currentIndex = static_cast<char*>(currentIndex) + 32;
-
+        currentIndex = static_cast<char*>(currentIndex) + 24;
         //valueWidth is set and the first value is read in
         valueWidth    = params[4];
         value = interpretPointer(valueWidth);  
-
         //Read in the width of this run's indices and go to first index
         newIndexWidth = *static_cast<uint8_t*>(currentIndex);
         currentIndex = static_cast<char*>(currentIndex) + 1;
@@ -428,7 +426,9 @@ class CSFIterator {
 
     uint64_t operator++() {
         uint64_t newIndex = interpretPointer(newIndexWidth); 
-       
+        cout << "newIndex: " << newIndex << endl;
+        cout << "width: " << (int)newIndexWidth << endl;
+        cout << "value " << value << endl << endl;
         //If newIndex is 0 and not the first index, then the index is a delimitor
         if(newIndex == 0 && !firstIndex){
             //Value is the first index of the run
@@ -439,6 +439,8 @@ class CSFIterator {
             currentIndex = static_cast<char*>(currentIndex) + 1;
             
             memset(&index, 0, 8);
+            cout << "value2 " << value << endl;
+            cout << "width2: " << (int)newIndexWidth << endl;
 
             //Returns the first index of the run
             index = interpretPointer(newIndexWidth);
