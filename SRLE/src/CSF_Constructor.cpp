@@ -3,17 +3,20 @@
 Version 2.1
 By: Skyler Ruiter
 
-Content: This is a file to build the constructor for a new data structure and compression algorithm called SRLE. 
+Content: This is a file to build the constructor for a new data structure and compression algorithm called CSF. 
 
 */
+
+#include <iostream>
+#include <iterator>
 
 // Eigen Include
 #include <Eigen/Sparse>
 
-class SRLE {
+class CSFmatrix {
     private:
 
-    // Constructor data
+    //* Constructor data
 
     // Compression delimiter
     uint8_t delim = 0;
@@ -41,7 +44,7 @@ class SRLE {
         // Malloc memory for the data, never worse then CSC so allocate CSC amount
         // space for the value and row, col indicies, and a buffer zone
         
-        size_t csc_size = num_nonzeros *val_t + num_nonzeros *row_t + num_cols *col_t + num_rows;
+        size_t csc_size = num_nonzeros *val_t + num_nonzeros *row_t + num_cols *col_t + num_rows + 1000;
         
         begin_ptr = malloc(csc_size);
 
@@ -71,13 +74,51 @@ class SRLE {
 
     public:
 
+    // Eigen Wrapper Constructor
+    // TODO make an optimized dedicated eigen constuctor
+    template <typename T>
+    CSFmatrix(Eigen::SparseMatrix<T>& mat) {
+ 
+        mat.makeCompressed();
+
+        size_t nnz = mat.nonZeros();
+        T* vals_arr = new T[nnz];
+        T* indexes_arr = new T[nnz];
+        T* col_p_arr = new T[mat.outerSize() + 1];
+
+        // Copy data from Eigen
+        std::memcpy(vals_arr, mat.valuePtr(), nnz * sizeof(T));
+        std::memcpy(indexes_arr, mat.innerIndexPtr(), nnz * sizeof(T));
+        std::memcpy(col_p_arr, mat.outerIndexPtr(), (mat.outerSize() + 1) * sizeof(T));
+
+        T **vals = &vals_arr;
+        T **indexes = &indexes_arr;
+        T **col_p = &col_p_arr;
+
+        // Construct CSF
+        CSFmatrix(vals, indexes, col_p, nnz, mat.rows(), mat.cols());
+
+        // Free memory
+        delete[] vals_arr;
+        delete[] indexes_arr;
+        delete[] col_p_arr;
+    }
+
    /* CSC Constructor
-    
+    Takes in 3 arrays of a CSC sparse matrix as well as the dimensions and destructively compresses the sparse data to SRLE
+    - Can ask constructor to non-destructively compress the data
    */
    template <typename values_t, typename row_ind, typename col_ind>
-   SRLE(values_t **vals, row_ind **indexes, col_ind **col_p,
-        size_t non_zeros, size_t row_num, size_t col_num) {
+   CSFmatrix(values_t **vals, row_ind **indexes, col_ind **col_p,
+        size_t non_zeros, size_t row_num, size_t col_num,
+        bool destroy = true) {
         
+        if (!destroy) {
+            // ! Non-Destructive Method
+
+            // TODO implement non-destructive method
+        }
+
         // ! Destructive Method
 
         // Initialize data
@@ -124,9 +165,6 @@ class SRLE {
         *(uint32_t *)(comp_ptr) = delim;
         comp_ptr = (uint32_t *)(comp_ptr) + 1;
 
-        // initialize first col pointer (col pointers are number of bytes from start of data)
-        col_pointers[0] = (uint64_t)(comp_ptr) - (uint64_t)(begin_ptr);
-
         // End of Metadata
 
         // Loop through each column and construct the compression runs
@@ -134,6 +172,7 @@ class SRLE {
 
             // Update the col pointer
             col_pointers[i] = (uint64_t)(comp_ptr) - (uint64_t)(begin_ptr);
+            //std::cout << std::distance((uint8_t *)(begin_ptr), (uint8_t *)(comp_ptr)) << std::endl;
 
             // For each element in the column check if it's a new value
             for (size_t j = (*col_p)[i]; j < (*col_p)[i + 1]; j++) {
@@ -292,16 +331,19 @@ class SRLE {
         // resize data to fit actual size
         begin_ptr = realloc(begin_ptr, compression_size);
 
-        // write data to file
+        // ! write data to file
         FILE *fp = fopen("data.bin", "wb");
         fwrite(begin_ptr, 1, compression_size, fp);
         fclose(fp);
 
    } // end of constructor
 
-   ~SRLE()
+   ~CSFmatrix()
    {
-        free(begin_ptr);
+        if (begin_ptr) {
+            free(begin_ptr);
+        }
+        std::cout << "Pointer Eliminated >:)" << std::endl;
    }
 };
 
@@ -316,7 +358,7 @@ int main() {
     
     1, 1, 2, 1, 1, 1, 2, 1, 1, 2, 2, 1, 3, 3, 1, 1, 1, 
     
-    2, 3, 1, 3, 1, 3, 4, 8, 2, 1, 1, 2, 3, 3, 3, 3, 1, 1, 1, 8};
+    2, 3, 1, 3, 1, 3, 4000000, 8, 2, 1, 1, 2, 3, 3, 3, 3, 1, 1, 1, 8};
    
    int i[58] = {
     
@@ -348,7 +390,7 @@ int main() {
     int **indexes = &indexes_arr;
     int **col_p = &col_p_arr;
 
-    SRLE test(vals, indexes, col_p, val_num, row_num, col_num);
+    CSFmatrix test(vals, indexes, col_p, val_num, row_num, col_num, false);
 
     // print out vals, indexs, col_p
     for (size_t j = 0; j < 58; j++) {
@@ -374,5 +416,38 @@ int main() {
     free(indexes_arr);
     free(col_p_arr);
 
-   return 0;
+    int rows = 10;
+    int cols = 10;
+
+    Eigen::SparseMatrix<int> mat(rows, cols);
+
+    // populate the matrix
+    mat.insert(2, 0) = 1;
+    mat.insert(5, 0) = 2;
+    mat.insert(3, 1) = 1;
+    mat.insert(4, 1) = 2;
+    mat.insert(9, 1) = 1;
+    mat.insert(9, 2) = 1;
+    mat.insert(1, 3) = 1;
+    mat.insert(2, 3) = 1;
+    mat.insert(6, 3) = 2;
+    mat.insert(2, 4) = 2;
+    mat.insert(4, 4) = 1;
+    mat.insert(9, 4) = 1;
+    mat.insert(3, 6) = 1;
+    mat.insert(4, 6) = 1;
+    mat.insert(5, 6) = 2;
+    mat.insert(4, 7) = 1;
+    mat.insert(5, 7) = 1;
+    mat.insert(6, 7) = 2;
+    mat.insert(7, 7) = 1;
+    mat.insert(8, 7) = 1;
+    mat.insert(4, 8) = 1;
+    mat.insert(9, 8) = 2;
+    mat.insert(4, 9) = 1;
+
+    // call constructor
+    CSFmatrix test2(mat);
+
+    return 0;
 }

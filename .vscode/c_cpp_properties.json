@@ -3,8 +3,7 @@
         {
             "name": "Win32",
             "includePath": [
-                "${default}",
-                "C:\\\\Users\\\\skyle\\\\Desktop\\\\Main\\\\College\\\\Research\\\\eigen-master\\\\**"
+                "${default}"
             ],
             "defines": [
                 "_DEBUG",
@@ -15,7 +14,12 @@
             "compilerPath": "C:/Program Files (x86)/Microsoft Visual Studio/2019/Community/VC/Tools/MSVC/14.29.30037/bin/Hostx64/x64/cl.exe",
             "cStandard": "c17",
             "cppStandard": "c++17",
-            "intelliSenseMode": "windows-msvc-x64"
+            "intelliSenseMode": "windows-msvc-x64",
+            "browse": {
+                "path": [
+                    "/usr/include"
+                ]
+            }
         }
     ],
     "version": 4
