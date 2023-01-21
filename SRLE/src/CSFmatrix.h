@@ -7,13 +7,30 @@ Content: This is a file to build the constructor for a new data structure and co
 
 */
 
+// Seth's includes
+#include <chrono>
+#include <cstdint>
+#include <cstddef>
+#include <cstdlib>
+#include <cstring>
+#include <bits/stdc++.h>
+#include <map>
+#include <vector>
+
 #include <iostream>
 #include <iterator>
 
 // Eigen Include
 #include <Eigen/Sparse>
 
-class CSFmatrix {
+using std::cout;
+using std::endl;
+
+namespace CSF {
+
+    // Class for the CSF matrix
+
+class SparseMatrix {
     private:
 
     //* Constructor data
@@ -39,6 +56,14 @@ class CSFmatrix {
     // void pointers for compression
     void* comp_ptr;
     void* begin_ptr;
+
+    void* getData() {
+        return begin_ptr;
+    }
+
+    void* getEnd() {
+        return comp_ptr;
+    }
 
     // Function to allocate memory for compression
     void allocate_memory() {
@@ -81,7 +106,7 @@ class CSFmatrix {
     // Eigen Wrapper Constructor
     // TODO make an optimized dedicated eigen constuctor
     template <typename T>
-    CSFmatrix(Eigen::SparseMatrix<T>& mat) {
+    SparseMatrix(Eigen::SparseMatrix<T>& mat) {
  
         mat.makeCompressed();
 
@@ -100,7 +125,7 @@ class CSFmatrix {
         T **col_p = &col_p_arr;
 
         // Construct CSF
-        CSFmatrix(vals, indexes, col_p, nnz, mat.rows(), mat.cols());
+        SparseMatrix(vals, indexes, col_p, nnz, mat.rows(), mat.cols());
 
         // Free memory
         delete[] vals_arr;
@@ -108,14 +133,16 @@ class CSFmatrix {
         delete[] col_p_arr;
     }
 
-   /* CSC Constructor
+
+    // ? could potentially move some logic outside the constructor for performance gains ?
+    /* CSC Constructor
     Takes in 3 arrays of a CSC sparse matrix as well as the dimensions and destructively compresses the sparse data to SRLE
     - Can ask constructor to non-destructively compress the data
-   */
-   template <typename values_t, typename row_ind, typename col_ind>
-   CSFmatrix(values_t **vals, row_ind **indexes, col_ind **col_p,
+    */
+    template <typename values_t, typename row_ind, typename col_ind>
+    SparseMatrix(values_t **vals, row_ind **indexes, col_ind **col_p,
         size_t non_zeros, size_t row_num, size_t col_num,
-        bool destroy = true) {
+        bool destroy = true, int compression_level = 3) {
         
         if (!destroy) {
             // ! Non-Destructive Method
@@ -140,39 +167,40 @@ class CSFmatrix {
         // !! Debug ptr
         void *debug = begin_ptr;
 
-        // Construct Metadata
-        // * <row_t, col_t, val_t, num_rows, num_cols, [col_pointers], {...runs...}>
+        // Construct Metadata --------------------
+            // * <row_t, col_t, val_t, num_rows, num_cols, [col_pointers], {...runs...}>
 
-        // Row, Col, and Val sizes onto compression
-        *(uint32_t *)(comp_ptr) = row_t;
-        comp_ptr = (uint32_t *)(comp_ptr) + 1;
+            // Row, Col, and Val sizes onto compression
+            *(uint32_t *)(comp_ptr) = row_t;
+            comp_ptr = (uint32_t *)(comp_ptr) + 1;
 
-        *(uint32_t *)(comp_ptr) = col_t;
-        comp_ptr = (uint32_t *)(comp_ptr) + 1;
+            *(uint32_t *)(comp_ptr) = col_t;
+            comp_ptr = (uint32_t *)(comp_ptr) + 1;
 
-        *(uint32_t *)(comp_ptr) = val_t;
-        comp_ptr = (uint32_t *)(comp_ptr) + 1;
+            *(uint32_t *)(comp_ptr) = val_t;
+            comp_ptr = (uint32_t *)(comp_ptr) + 1;
 
-        // Number of Rows and Cols onto compression
-        *(uint32_t *)(comp_ptr) = num_rows;
-        comp_ptr = (uint32_t *)(comp_ptr) + 1;
+            // Number of Rows and Cols onto compression
+            *(uint32_t *)(comp_ptr) = num_rows;
+            comp_ptr = (uint32_t *)(comp_ptr) + 1;
 
-        *(uint32_t *)(comp_ptr) = num_cols;
-        comp_ptr = (uint32_t *)(comp_ptr) + 1;
+            *(uint32_t *)(comp_ptr) = num_cols;
+            comp_ptr = (uint32_t *)(comp_ptr) + 1;
 
-        // Create a space for col pointers
-        // ! currently size uint64_t and positive delta encoded
-        uint64_t *col_pointers = (uint64_t *)(comp_ptr);
-        comp_ptr = (uint64_t *)(comp_ptr) + (uint64_t)(num_cols);
+            // Create a space for col pointers
+            // ! currently size uint64_t and positive delta encoded
+            uint64_t *col_pointers = (uint64_t *)(comp_ptr);
+            comp_ptr = (uint64_t *)(comp_ptr) + (uint64_t)(num_cols);
 
-        // Put a delim at the end of the metadata
-        *(uint32_t *)(comp_ptr) = delim;
-        comp_ptr = (uint32_t *)(comp_ptr) + 1;
+            // Put a delim at the end of the metadata
+            *(uint32_t *)(comp_ptr) = delim;
+            comp_ptr = (uint32_t *)(comp_ptr) + 1;
+        // End of Metadata --------------------
 
-        // End of Metadata
 
         // Loop through each column and construct the compression runs
-        for (size_t i = 0; i < num_cols; i++) {
+        for (size_t i = 0; i < num_cols; i++)
+        {
 
             // Update the col pointer
             col_pointers[i] = (uint64_t)(comp_ptr) - (uint64_t)(begin_ptr);
@@ -251,7 +279,6 @@ class CSFmatrix {
                     help_ptr = (uint8_t *)(help_ptr) + 1;
 
                     // write over data with indices of new size, index compression
-                    // ? Const expression?
                     switch (byte_width(max_index)) {
                         case 1:
 
@@ -340,117 +367,157 @@ class CSFmatrix {
         fwrite(begin_ptr, 1, compression_size, fp);
         fclose(fp);
 
-   } // end of constructor
+    } // end of constructor
 
-   ~CSFmatrix()
+    ~SparseMatrix()
    {
         if(is_allocated)
             free(begin_ptr);
         is_allocated = false;
    }
+
+
+    // Iterator class
+    template <typename T>
+    class CSFIterator{
+        private:
+            uint64_t index = 0;
+            uint32_t valueWidth;
+            uint8_t newIndexWidth;
+            char *fileData;
+            void *endOfData;
+            void *currentIndex;
+            T value;
+            bool firstIndex = true;
+
+
+            /**
+             * @brief Read in the next index from the file based on a variable width
+             *
+             * @param width
+             * @return uint64_t
+             */
+
+            uint64_t interpretPointer(int width) {
+                uint64_t newIndex = 0;
+
+                // Case statement takes in 1,2,4, or 8 otherwise the width is invalid
+                switch (width)
+                {
+                case 1:
+                    newIndex = static_cast<uint64_t>(*static_cast<uint8_t *>(currentIndex));
+                    break;
+                case 2:
+                    newIndex = static_cast<uint64_t>(*static_cast<uint16_t *>(currentIndex));
+                    break;
+                case 4:
+                    newIndex = static_cast<uint64_t>(*static_cast<uint32_t *>(currentIndex));
+                    break;
+                case 8:
+                    newIndex = static_cast<uint64_t>(*static_cast<uint64_t *>(currentIndex));
+                    break;
+                default:
+                    cout << "Invalid width: " << width << endl;
+                    exit(-1);
+                    break;
+                }
+
+                currentIndex = static_cast<char *>(currentIndex) + width;
+                return newIndex;
+            }
+
+        public:
+            
+            
+            /**
+             * @brief Construct a new CSFiterator object
+             *
+             * @param filePath
+             */
+            CSFIterator() {
+                currentIndex = begin_ptr;
+
+                endOfData = comp_ptr;
+                // read first 28 bytes of fileData put it into params -> metadata
+                uint32_t params[8];
+
+                memcpy(&params, currentIndex, 32);
+                currentIndex = static_cast<char *>(currentIndex) + 32;
+
+                // valueWidth is set and the first value is read in
+                valueWidth = params[4];
+                value = interpretPointer(valueWidth);
+
+                // Read in the width of this run's indices and go to first index
+                newIndexWidth = *static_cast<uint8_t *>(currentIndex);
+                currentIndex = static_cast<char *>(currentIndex) + 1;
+
+                cout << "value: " << value << endl;
+                cout << "newIndexWidth: " << (int)newIndexWidth << endl;
+            }
+
+
+            /**
+             * @brief Returns the value of the run.
+             *
+             * @return T&
+             */
+            T &operator*() { return value; };
+
+
+            /**
+             * @brief Increment the iterator
+             *
+             * @return uint64_t
+             */
+            uint64_t operator++() {
+                uint64_t newIndex = interpretPointer(newIndexWidth);
+
+                // If newIndex is 0 and not the first index, then the index is a delimitor
+                if (newIndex == 0 && !firstIndex)
+                {
+                    // Value is the first index of the run
+                    value = interpretPointer(valueWidth);
+
+                    // newIndexWidth is the second value in the run
+                    newIndexWidth = *static_cast<uint8_t *>(currentIndex);
+                    currentIndex = static_cast<char *>(currentIndex) + 1;
+
+                    memset(&index, 0, 8);
+
+                    // Returns the first index of the run
+                    index = interpretPointer(newIndexWidth);
+                    firstIndex = true;
+                    return index;
+                }
+
+                // Returns the next index of the run for positive delta encoded runs
+                firstIndex = false;
+                return index += newIndex;
+            }
+
+
+            /**
+             * @brief Check if the iterator is at the end of the the data
+             *
+             * @return true
+             * @return false
+             */
+            operator bool() { return endOfData != currentIndex; }
+
+
+    }; // End of Iterator Class
+
+
+    // TODO: Public Classes to Add
+    
+    /*
+    - Basic getter/setter methods when appropriate
+    - File input and output methods
+    */
+
+    size_t getSize() { return compression_size; }
+
 };
 
-int main() {
-
-    // malloc space for data
-    int *values_arr = (int *)malloc(58 * sizeof(int));
-    int *indexes_arr = (int *)malloc(58 * sizeof(int));
-    int *col_p_arr = (int *)malloc(4 * sizeof(int));
-    int x[58] = {
-    1, 1, 2, 3, 1, 2, 2, 1, 1, 2, 3, 1, 3, 1, 3, 1, 2, 3, 2, 1, 1,
-    
-    1, 1, 2, 1, 1, 1, 2, 1, 1, 2, 2, 1, 3, 3, 1, 1, 1, 
-    
-    2, 3, 1, 3, 1, 3, 4000000, 8, 2, 1, 1, 2, 3, 3, 3, 3, 1, 1, 1, 8};
-   
-   int i[58] = {
-    
-   1, 2, 3, 5, 7, 9, 10, 11, 12, 14, 15, 19, 20, 23, 24, 25, 26, 29, 30, 32, 34, 
-   
-   0, 9, 13, 14, 15, 16, 20, 21, 23, 24, 25, 26, 27, 29, 31, 32, 35, 
-   
-   0, 1, 3, 4, 6, 7, 9, 10, 12, 13, 14, 16, 17, 19, 23, 24, 28, 30, 31, 35};
-   
-   int p[58] = {0, 21, 38, 58};
-
-   // put values into allocated space
-    for (size_t j = 0; j < 58; j++) {
-         values_arr[j] = x[j];
-         indexes_arr[j] = i[j];
-    }
-
-    for (size_t j = 0; j < 4; j++) {
-         col_p_arr[j] = p[j];
-    }
-
-   size_t val_num = 58;
-   size_t row_num = 36;
-   size_t col_num = 3;
-
-   // call constructor
-
-   int **vals = &values_arr;
-    int **indexes = &indexes_arr;
-    int **col_p = &col_p_arr;
-
-    CSFmatrix test(vals, indexes, col_p, val_num, row_num, col_num, false);
-
-    // print out vals, indexs, col_p
-    for (size_t j = 0; j < 58; j++) {
-        printf("%d ", values_arr[j]);
-    }
-
-    printf("\n");
-
-    for (size_t j = 0; j < 58; j++) {
-        printf("%d ", indexes_arr[j]);
-    }
-
-    printf("\n");
-
-    for (size_t j = 0; j < 4; j++) {
-        printf("%d ", col_p_arr[j]);
-    }
-
-    printf("\n");
-
-    // free stuff
-    free(values_arr);
-    free(indexes_arr);
-    free(col_p_arr);
-
-    int rows = 10;
-    int cols = 10;
-
-    Eigen::SparseMatrix<int> mat(rows, cols);
-
-    // populate the matrix
-    mat.insert(2, 0) = 1;
-    mat.insert(5, 0) = 2;
-    mat.insert(3, 1) = 1;
-    mat.insert(4, 1) = 2;
-    mat.insert(9, 1) = 1;
-    mat.insert(9, 2) = 1;
-    mat.insert(1, 3) = 1;
-    mat.insert(2, 3) = 1;
-    mat.insert(6, 3) = 2;
-    mat.insert(2, 4) = 2;
-    mat.insert(4, 4) = 1;
-    mat.insert(9, 4) = 1;
-    mat.insert(3, 6) = 1;
-    mat.insert(4, 6) = 1;
-    mat.insert(5, 6) = 2;
-    mat.insert(4, 7) = 1;
-    mat.insert(5, 7) = 1;
-    mat.insert(6, 7) = 2;
-    mat.insert(7, 7) = 1;
-    mat.insert(8, 7) = 1;
-    mat.insert(4, 8) = 1;
-    mat.insert(9, 8) = 2;
-    mat.insert(4, 9) = 1;
-
-    // call constructor
-    CSFmatrix test2(mat);
-
-    return 0;
-}
+} // end of namespace
