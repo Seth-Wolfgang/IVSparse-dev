@@ -1,6 +1,4 @@
-// [[Rcpp::depends(RcppEigen)]]
-// [[Rcpp::depends(RcppClock)]]
-// #include <RcppEigen.h>
+#include "include/CSF.hpp"
 #include "include/SRLE_Lib.hpp"
 
 int main() {
@@ -14,11 +12,13 @@ int main() {
     return 1;
 }
 
-//[[Rcpp::export]]
 void iteratorBenchmark(int numRows, int numCols, int sparsity, uint64_t seed) {
     //TO ENSURE EVERYTHING WORKS, THE TOTAL SUM OF ALL VALUES IS CALUCLATED AND SHOULD PRINT THE SAME NUMBER FOR EACH ITERATOR
-    uint64_t total = 0;
     int value = 0;
+    int CSFTotal = 0;
+    int eigenTotal = 0;
+    int genericTotal = 0;
+
     string fileName = "test.bin"; //Input.bin is a working form of CSF. The Constructor makes test.bin, but it is not working
 
     //generating a large random eigen sparse
@@ -28,32 +28,31 @@ void iteratorBenchmark(int numRows, int numCols, int sparsity, uint64_t seed) {
     myMatrix.makeCompressed(); 
 
     //Converting to CSF
-    CSFMatrix myCSFMatrix(myMatrix);
+    CSF::SparseMatrix* CSFMatrix = new CSF::SparseMatrix(myMatrix);
 
     //////////////////////////////CSF Iterator//////////////////////////////
     
     //This block of code reads through the whole matrix and adds the sum of all values to total
     //It currently does not work, but it is a good starting point for CSF 
 
-    total = 0;
     cout << "Testing Iterator" << endl;
 
-    // CSFMatrix::CSFIterator<int>* newIter = new CSFMatrix::CSFIterator<int>(myCSFMatrix);
-    CSFMatrix::CSFIterator<int>* newIter = new CSFMatrix::CSFIterator<int>(fileName.c_str());
+    CSF::CSFIterator<int>* newIter = new CSF::CSFIterator<int>(*CSFMatrix);
+    // CSFIterator<int>* newIter = new CSFIterator<int>(fileName.c_str());
     
     vector<int> SRLEVector;
     
     while(newIter->operator bool()) {
         
         newIter->operator++();
-        total += newIter->operator*();
+        CSFTotal += newIter->operator*();
         SRLEVector.push_back(newIter->operator*());
         if(newIter->operator *() != value){
             value =  newIter->operator *();
         }
     }
 
-    cout << "SRLE (E) Total: " << total << endl;
+    cout << "CSF Total: " << CSFTotal << endl;
 
     //////////////////////////////CSC innerIterator////////////////////////////////
     //generating a large random eigen sparse
@@ -61,13 +60,12 @@ void iteratorBenchmark(int numRows, int numCols, int sparsity, uint64_t seed) {
     //The next two blocks do essentially the same as the first but only go through the CSC matrix
 
     cout << "Testing Eigen" << endl;
-    total = 0;
 
     //begin timing
     vector<int> eigenVector;
     for (int i=0; i<numCols; ++i){
         for (Eigen::SparseMatrix<int>::InnerIterator it(myMatrix, i); it; ++it){
-            total += it.value();
+            eigenTotal += it.value();
             eigenVector.push_back(it.value());
         }
     }
@@ -90,18 +88,25 @@ void iteratorBenchmark(int numRows, int numCols, int sparsity, uint64_t seed) {
     }
     cout << endl;
 
-    cout << "InnerIterator Total: " << total << endl;
+    cout << "InnerIterator Total: " << eigenTotal << endl;
 
 
     //////////////////////////////GENERIC CSC Iterator////////////////////////////////
     cout << "Testing CSC Iterator" << endl;
-    total = 0;
     GenericCSCIterator<int> iter2 = GenericCSCIterator<int>(myMatrix);
     while(iter2.operator bool()){
-        total += iter2.operator *();
+        genericTotal += iter2.operator *();
         iter2.operator++();
     }
-    cout << "CSC Total: " << total << endl;
+    cout << "CSC Total: " << genericTotal << endl;
+
+
+    if(genericTotal == eigenTotal && eigenTotal == CSFTotal){
+        cout << "All iterators are working" << endl;
+    }
+    else{
+        cout << "Something is wrong" << endl;
+    }
 
 }
 
