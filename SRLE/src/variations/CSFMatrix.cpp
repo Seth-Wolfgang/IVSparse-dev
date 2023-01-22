@@ -352,7 +352,7 @@ class CSF {
      * @param filePath 
      */
         template<typename valueType>
-        CSFIterator(CSF::SparseMatrix<valueType> &matrix) {
+        CSFIterator(const CSF::SparseMatrix<valueType> &matrix) {
             currentIndex = matrix.getData();
             endOfData = fileData + matrix.getSize();
 
