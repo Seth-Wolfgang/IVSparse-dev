@@ -112,7 +112,24 @@ namespace CSF {
             T** col_p = &col_p_arr;
 
             // Construct CSF
-            SparseMatrix(vals, indexes, col_p, nnz, mat.rows(), mat.cols());
+            CSF::SparseMatrix tempMatrix = CSF::SparseMatrix(vals, indexes, col_p, nnz, mat.rows(), mat.cols());
+
+
+            num_rows = tempMatrix.num_rows;
+            num_cols = tempMatrix.num_cols;
+            num_nonzeros = tempMatrix.num_nonzeros;
+
+            // Data types for matrix values_t and indices
+            row_t = tempMatrix.row_t;
+            col_t = tempMatrix.col_t;
+            val_t = tempMatrix.val_t;
+
+            // compression size
+            compression_size = tempMatrix.compression_size;
+
+            // void pointers for compression
+            comp_ptr = tempMatrix.comp_ptr;
+            begin_ptr = tempMatrix.begin_ptr;
 
             // Free memory
             delete[] vals_arr;
