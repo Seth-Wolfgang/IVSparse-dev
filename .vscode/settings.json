@@ -1,0 +1,7 @@
+{
+    "files.associations": {
+        "*.erb": "erb",
+        "*.rmd": "markdown",
+        "charconv": "cpp"
+    }
+}

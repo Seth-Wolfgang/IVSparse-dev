@@ -4,7 +4,6 @@ Version 0.2.1
 By: Skyler Ruiter
 
 Content: This is a file to build the constructor for a new data structure and compression algorithm called CSF.
-
 */
 
 // Seth's includes
@@ -26,8 +25,8 @@ Content: This is a file to build the constructor for a new data structure and co
 using std::cout;
 using std::endl;
 
-namespace CSF
-{
+
+namespace CSF {
 
     // Class for the CSF matrix
 
@@ -202,103 +201,98 @@ namespace CSF
             // Put a delim at the end of the metadata
             *(uint32_t *)(comp_ptr) = delim;
             comp_ptr = (uint32_t *)(comp_ptr) + 1;
-            // End of Metadata --------------------
+        // End of Metadata --------------------
 
-            // Loop through each column and construct the compression runs
-            for (size_t i = 0; i < num_cols; i++)
-            {
 
-                // Update the col pointer
-                col_pointers[i] = (uint64_t)(comp_ptr) - (uint64_t)(begin_ptr);
-                // std::cout << std::distance((uint8_t *)(begin_ptr), (uint8_t *)(comp_ptr)) << std::endl;
+        // Loop through each column and construct the compression runs
+        for (size_t i = 0; i < num_cols; i++)
+        {
 
-                // For each element in the column check if it's a new value
-                for (size_t j = (*col_p)[i]; j < (*col_p)[i + 1]; j++)
-                {
+            // Update the col pointer
+            col_pointers[i] = (uint64_t)(comp_ptr) - (uint64_t)(begin_ptr);
+            //std::cout << std::distance((uint8_t *)(begin_ptr), (uint8_t *)(comp_ptr)) << std::endl;
 
-                    // New unique value check
-                    if ((*vals)[j] != 0)
-                    {
-                        // New unique value found
+            // For each element in the column check if it's a new value
+            for (size_t j = (*col_p)[i]; j < (*col_p)[i + 1]; j++) {
 
-                        // Add the found value to run
-                        *(values_t *)(comp_ptr) = (*vals)[j];
-                        comp_ptr = (uint32_t *)(comp_ptr) + 1;
+                // New unique value check
+                if ((*vals)[j] != 0) {
+                    // New unique value found
 
-                        // Create an index pointer to update index type later
-                        void *help_ptr = comp_ptr;
+                    // Add the found value to run
+                    *(values_t *)(comp_ptr) = (*vals)[j];
+                    comp_ptr = (uint32_t *)(comp_ptr) + 1;
 
-                        // default index type to row index type and iterate pointer
-                        *(uint8_t *)help_ptr = (uint8_t)sizeof(row_ind);
-                        comp_ptr = (uint8_t *)(comp_ptr) + 1;
+                    // Create an index pointer to update index type later
+                    void *help_ptr = comp_ptr;
 
-                        // Add the found index to run
-                        *(row_ind *)(comp_ptr) = (*indexes)[j];
-                        comp_ptr = (uint32_t *)(comp_ptr) + 1;
+                    // default index type to row index type and iterate pointer
+                    *(uint8_t *)help_ptr = (uint8_t)sizeof(row_ind);
+                    comp_ptr = (uint8_t *)(comp_ptr) + 1;
 
-                        // Loop through rest of column to get rest of indices
-                        for (size_t k = j + 1; k < (*col_p)[i + 1]; k++)
-                        {
+                    // Add the found index to run
+                    *(row_ind *)(comp_ptr) = (*indexes)[j];
+                    comp_ptr = (uint32_t *)(comp_ptr) + 1;
 
-                            if ((*vals)[k] == (*vals)[j])
-                            {
+                    // Loop through rest of column to get rest of indices
+                    for (size_t k = j + 1; k < (*col_p)[i + 1]; k++) {
 
-                                // Found value again
+                        if ((*vals)[k] == (*vals)[j]) {
 
-                                // add index of value to run
-                                *(row_ind *)(comp_ptr) = (*indexes)[k];
-                                comp_ptr = (row_ind *)(comp_ptr) + 1;
+                            // Found value again
 
-                                // set value to zero
-                                (*vals)[k] = 0;
-                            }
+                            // add index of value to run
+                            *(row_ind *)(comp_ptr) = (*indexes)[k];
+                            comp_ptr = (row_ind *)(comp_ptr) + 1;
+
+                            // set value to zero
+                            (*vals)[k] = 0;
+
                         }
 
-                        // Set first index found to 0
-                        (*vals)[j] = 0;
+                    }
 
-                        //* Positive delta encode the indices
+                    // Set first index found to 0
+                    (*vals)[j] = 0;
 
-                        // set variable for max element
-                        size_t max_index = 0;
+                    //* Positive delta encode the indices
+                    
+                    // set variable for max element
+                    size_t max_index = 0;
 
-                        // find number of elements found for unique value
-                        size_t num_elements = (row_ind *)(comp_ptr) - ((row_ind *)(help_ptr));
+                    // find number of elements found for unique value
+                    size_t num_elements = (row_ind *)(comp_ptr) - ((row_ind *)(help_ptr));
 
-                        // bring comp_ptr back to being pointed at last found index
-                        comp_ptr = (row_ind *)(comp_ptr)-1;
+                    // bring comp_ptr back to being pointed at last found index
+                    comp_ptr = (row_ind *)(comp_ptr) - 1;
 
-                        // loop moves comp_ptr backwards through indices and positive delta encodes them
-                        for (size_t k = 0; k < num_elements - 1; k++)
-                        {
+                    // loop moves comp_ptr backwards through indices and positive delta encodes them
+                    for (size_t k = 0; k < num_elements - 1; k++) {
+                        
+                        // subtract element from one before it
+                        *(row_ind *)(comp_ptr) = *(row_ind *)(comp_ptr) - *((row_ind *)(comp_ptr) - 1);
 
-                            // subtract element from one before it
-                            *(row_ind *)(comp_ptr) = *(row_ind *)(comp_ptr) - *((row_ind *)(comp_ptr)-1);
-
-                            // if bigger then prev max make curr max idx
-                            if (*(row_ind *)(comp_ptr) > max_index)
-                            {
-                                max_index = *(row_ind *)(comp_ptr);
-                            }
-
-                            comp_ptr = (row_ind *)(comp_ptr)-1; // loop control
+                        // if bigger then prev max make curr max idx
+                        if (*(row_ind *)(comp_ptr) > max_index) {
+                            max_index = *(row_ind *)(comp_ptr);
                         }
 
-                        // set index pointer to correct size for run
-                        *(uint8_t *)(help_ptr) = byte_width(max_index);
-                        help_ptr = (uint8_t *)(help_ptr) + 1;
+                        comp_ptr = (row_ind *)(comp_ptr)-1; // loop control
+                    }
 
-                        // write over data with indices of new size, index compression
-                        switch (byte_width(max_index))
-                        {
+                    // set index pointer to correct size for run
+                    *(uint8_t *)(help_ptr) = byte_width(max_index);
+                    help_ptr = (uint8_t *)(help_ptr) + 1;
+
+                    // write over data with indices of new size, index compression
+                    switch (byte_width(max_index)) {
                         case 1:
 
                             // walk the two iterators, compressing down to optimal byte width
-                            for (size_t k = 0; k < num_elements; k++)
-                            {
+                            for (size_t k = 0; k < num_elements; k++) {
 
                                 // set index to uint8_t size
-                                *(uint8_t *)(comp_ptr) = (uint8_t) * (row_ind *)(help_ptr);
+                                *(uint8_t *)(comp_ptr) = (uint8_t)*(row_ind *)(help_ptr);
 
                                 // Iterate pointers
                                 comp_ptr = (uint8_t *)(comp_ptr) + 1;
@@ -349,51 +343,49 @@ namespace CSF
 
                             break;
 
-                        } // end switch
+                    } // end switch
 
-                        help_ptr = comp_ptr;
-                    } // end if
+                    help_ptr = comp_ptr;
+                } // end if
 
-                } // end for loop of uniques in col
+            } // end for loop of uniques in col
 
-            } // end of col for loop
+        } // end of col for loop
 
-            // remove ending zeros
-            while (comp_ptr != begin_ptr && *(uint8_t *)(comp_ptr) == 0)
-            {
-                comp_ptr = (uint8_t *)(comp_ptr)-1;
-            }
-
-            // positive delta encode the column pointers
-            for (size_t i = num_cols - 1; i > 0; i--)
-            {
-                col_pointers[i] = col_pointers[i] - col_pointers[i - 1];
-            }
-
-            // find size of file in bytes
-            compression_size = (uint8_t *)(comp_ptr) - ((uint8_t *)(begin_ptr)-1);
-
-            // resize data to fit actual size
-            begin_ptr = realloc(begin_ptr, compression_size);
-
-            // ! write data to file
-            FILE *fp = fopen("data.bin", "wb");
-            fwrite(begin_ptr, 1, compression_size, fp);
-            fclose(fp);
-
-        } // end of constructor
-
-        ~SparseMatrix()
-        {
-            if (is_allocated)
-                free(begin_ptr);
-            is_allocated = false;
+        // remove ending zeros
+        while (comp_ptr != begin_ptr && *(uint8_t *)(comp_ptr) == 0) {
+            comp_ptr = (uint8_t *)(comp_ptr) - 1;
         }
 
-        // Iterator class
-        template <typename T>
-        class CSFIterator
-        {
+        // positive delta encode the column pointers
+        for (size_t i = num_cols - 1; i > 0; i--) {
+            col_pointers[i] = col_pointers[i] - col_pointers[i-1];
+        }
+
+        // find size of file in bytes
+        compression_size = (uint8_t *)(comp_ptr) - ((uint8_t *)(begin_ptr) - 1);
+
+        // resize data to fit actual size
+        begin_ptr = realloc(begin_ptr, compression_size);
+
+        // ! write data to file
+        FILE *fp = fopen("data.bin", "wb");
+        fwrite(begin_ptr, 1, compression_size, fp);
+        fclose(fp);
+
+    } // end of constructor
+
+    ~SparseMatrix()
+   {
+        if(is_allocated)
+            free(begin_ptr);
+        is_allocated = false;
+   }
+
+
+    // Iterator class
+    template <typename T>
+    class CSFIterator{
         private:
             uint64_t index = 0;
             uint32_t valueWidth;
@@ -410,6 +402,7 @@ namespace CSF
              * @param width
              * @return uint64_t
              */
+
 
             uint64_t interpretPointer(int width)
             {
@@ -441,11 +434,13 @@ namespace CSF
             }
 
         public:
+
             /**
              * @brief Construct a new CSFiterator object
              *
              * @param filePath
              */
+
             CSFIterator()
             {
                 currentIndex = begin_ptr;
@@ -476,13 +471,14 @@ namespace CSF
              */
             T &operator*() { return value; };
 
+
             /**
              * @brief Increment the iterator
              *
              * @return uint64_t
              */
-            uint64_t operator++()
-            {
+
+            uint64_t operator++() {
                 uint64_t newIndex = interpretPointer(newIndexWidth);
 
                 // If newIndex is 0 and not the first index, then the index is a delimitor
@@ -508,6 +504,7 @@ namespace CSF
                 return index += newIndex;
             }
 
+
             /**
              * @brief Check if the iterator is at the end of the the data
              *
@@ -516,16 +513,18 @@ namespace CSF
              */
             operator bool() { return endOfData != currentIndex; }
 
-        }; // End of Iterator Class
+    }; // End of Iterator Class
 
-        // TODO: Public Classes to Add
 
-        /*
-        - Basic getter/setter methods when appropriate
-        - File input and output methods
-        */
+    // TODO: Public Classes to Add
+    
+    /*
+    - Basic getter/setter methods when appropriate
+    - File input and output methods
+    */
 
-        size_t getSize() { return compression_size; }
-    };
+    size_t getSize() { return compression_size; }
+
+};
 
 } // end of namespace
