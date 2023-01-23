@@ -1,115 +1,123 @@
-// [[Rcpp::depends(RcppEigen)]]
-// [[Rcpp::depends(RcppClock)]]
-// #include <RcppEigen.h>
-#include "include/SRLE_Lib.hpp"
-using namespace std;
-
-
-//Functions
-void iteratorBenchmark(int numRows, int numCols, double sparsity);
-template <typename T> Eigen::SparseMatrix<T> generateMatrix(int numRows, int numCols, double sparsity);
-
+#include "include/CSF.hpp"
+#include "include/CSF_Lib.hpp"
 
 int main() {
+
     int numRows = 100;
     int numCols = 100;
-    double sparsity = 50;
-    iteratorBenchmark(numRows, numCols, sparsity);
+    int sparsity = 20;
+    uint64_t seed = 5645646546;
+    iteratorBenchmark(numRows, numCols, sparsity, seed);
 
-    // const_array_iterator<int>* iter = new const_array_iterator<int>("input.bin");
-    // int value = 0;
-    // ////clock.tick("SRLE");
-    // while(iter->operator bool()) {
-    //     iter->operator++();
-    //     if(iter->operator *() != value){
-    //         cout << iter->operator *() << endl;
-    //         value =  iter->operator *();
-    //     }
-    // }
-
-    return 0;
+    return 1;
 }
 
-//[[Rcpp::export]]
-void iteratorBenchmark(int numRows, int numCols, double sparsity) {
-    // Rcpp::Clock clock;
-    //TO ENSURE EVERYTHING WORKS, THE TOTAL SUM OF ALL VALUES IS CALUCLATED AND SHOULD PRINT THE SAME NUMBER FOR EACH ITERATOR
-    uint64_t total = 0;
+void iteratorBenchmark(int numRows, int numCols, int sparsity, uint64_t seed) {
+    // TO ENSURE EVERYTHING WORKS, THE TOTAL SUM OF ALL VALUES IS CALUCLATED AND SHOULD PRINT THE SAME NUMBER FOR EACH ITERATOR
     int value = 0;
-    string fileName = "test.bin";
+    int CSFTotal = 0;
+    int eigenTotal = 0;
+    int genericTotal = 0;
 
+    string fileName = "test.bin"; // Input.bin is a working form of CSF. The Constructor makes test.bin, but it is not working
 
+    // generating a large random eigen sparse
     Eigen::SparseMatrix<int> myMatrix(numRows, numCols);
     myMatrix.reserve(Eigen::VectorXi::Constant(numRows, numCols));
-    myMatrix = generateMatrix<int>(numRows, numCols, sparsity);
-    myMatrix.makeCompressed(); 
+    myMatrix = generateMatrix<int>(numRows, numCols, sparsity, seed);
+    myMatrix.makeCompressed();
 
-    DeBruinesComp myCompression(myMatrix);
+    // Converting to CSF
+    CSF::SparseMatrix* CSFMatrix = new CSF::SparseMatrix(myMatrix);
 
-    //////////////////////////////Experimental Iterator//////////////////////////////
-    total = 0;
+    //////////////////////////////CSF Iterator//////////////////////////////
+
+    // This block of code reads through the whole matrix and adds the sum of all values to total
+    // It currently does not work, but it is a good starting point for CSF
+
     cout << "Testing Iterator" << endl;
-    const_array_iterator<int>* newIter = new const_array_iterator<int>(fileName.c_str());
-    // clock.tick("SRLE w/ void*");
 
-    while(newIter->operator bool()) {
-        newIter->operator++();
-        total += newIter->operator*();
-        if(newIter->operator *() != value){
-            value =  newIter->operator *();
+    CSF::iterator<int>* newIter = new CSF::iterator<int>(*CSFMatrix);
+    // CSF::CSFIterator<int>* newIter = new CSF::CSFIterator<int>(fileName.c_str());
+
+    vector<int> SRLEVector;
+
+    while (newIter) {
+        newIter++;
+        CSFTotal += newIter->operator*();
+        SRLEVector.push_back(newIter->operator*());
+        if (newIter->operator*() != value) {
+            value = newIter->operator*();
         }
     }
 
-    cout << "SRLE (E) Total: " << total << endl;
-    // clock.tock("SRLE w/ void*");
+    cout << "CSF Total: " << CSFTotal << endl;
 
     //////////////////////////////CSC innerIterator////////////////////////////////
-    //generating a large random eigen sparse
+    // generating a large random eigen sparse
+
+    // The next two blocks do essentially the same as the first but only go through the CSC matrix
+
     cout << "Testing Eigen" << endl;
-    total = 0;
 
-
-
-    //begin timing
-    // clock.tick("Eigen");
-    Eigen::SparseMatrix<int>::InnerIterator it(myMatrix, 0);
-    for (int i=0; i<numRows; ++i){
-        for (Eigen::SparseMatrix<int>::InnerIterator it(myMatrix, i); it; ++it){
-            total += it.value();
+    // begin timing
+    vector<int> eigenVector;
+    for (int i = 0; i < numCols; ++i) {
+        for (Eigen::SparseMatrix<int>::InnerIterator it(myMatrix, i); it; ++it) {
+            eigenTotal += it.value();
+            eigenVector.push_back(it.value());
         }
     }
-    // clock.tock("Eigen");
-    cout << "InnerIterator Total: " << total << endl;
 
+    /**
+     * Testing to see if the vectors match
+     */
+
+    sort(SRLEVector.begin(), SRLEVector.end());
+    sort(eigenVector.begin(), eigenVector.end());
+
+    cout << "SRLE Vector" << endl;
+    for (auto j : SRLEVector) {
+        cout << j << " ";
+    }
+    cout << endl
+        << endl;
+    cout << "Eigen Vector" << endl;
+    for (auto j : eigenVector) {
+        cout << j << " ";
+    }
+    cout << endl;
+
+    cout << "InnerIterator Total: " << eigenTotal << endl;
 
     //////////////////////////////GENERIC CSC Iterator////////////////////////////////
     cout << "Testing CSC Iterator" << endl;
-    total = 0;
-    // clock.tick("CSC");
     GenericCSCIterator<int> iter2 = GenericCSCIterator<int>(myMatrix);
-    while(iter2.operator bool()){
-        total += iter2.operator *();
+    while (iter2.operator bool()) {
+        genericTotal += iter2.operator*();
         iter2.operator++();
     }
-    // clock.tock("CSC");
-    cout << "CSC Total: " << total << endl;
+    cout << "CSC Total: " << genericTotal << endl;
 
-    // clock.stop("Iterators");
+    if (genericTotal == eigenTotal && eigenTotal == CSFTotal) {
+        cout << "All iterators are working" << endl;
+    }
+    else {
+        cout << "Something is wrong" << endl;
+    }
 }
 
-
 template <typename T>
-Eigen::SparseMatrix<T> generateMatrix(int numRows, int numCols, double sparsity){
-    //generate a random sparse matrix
-    uint64_t favoriteNumber = 515;
-    rng randMatrixGen = rng(favoriteNumber);
+Eigen::SparseMatrix<T> generateMatrix(int numRows, int numCols, int sparsity, uint64_t seed) {
+    // generate a random sparse matrix
+    rng randMatrixGen = rng(seed);
 
     Eigen::SparseMatrix<T> myMatrix(numRows, numCols);
     myMatrix.reserve(Eigen::VectorXi::Constant(numRows, numCols));
 
-    for(int i = 0; i < numRows; i++){
-        for(int j = 0; j < numCols; j++){
-            if(randMatrixGen.draw<int>(i,j, sparsity)){
+    for (int i = 0; i < numRows; i++) {
+        for (int j = 0; j < numCols; j++) {
+            if (randMatrixGen.draw<int>(i, j, sparsity)) {
                 myMatrix.insert(i, j) = 10 * randMatrixGen.uniform<double>(j);
             }
         }
