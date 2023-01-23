@@ -3,8 +3,7 @@
 Version 0.2.1
 By: Skyler Ruiter
 
-Content: This is a file to build the constructor for a new data structure and compression algorithm called CSF. 
-
+Content: This is a file to build the constructor for a new data structure and compression algorithm called CSF.
 */
 
 // Seth's includes
@@ -26,148 +25,155 @@ Content: This is a file to build the constructor for a new data structure and co
 using std::cout;
 using std::endl;
 
+
 namespace CSF {
 
     // Class for the CSF matrix
 
-class SparseMatrix {
+    class SparseMatrix
+    {
     private:
+        //* Constructor data
 
-    //* Constructor data
+        // Compression delimiter
+        uint8_t delim = 0;
 
-    // Compression delimiter
-    uint8_t delim = 0;
+        // dimensions and size of sparse matrix
+        uint32_t num_rows;
+        uint32_t num_cols;
+        uint32_t num_nonzeros;
 
-    // dimensions and size of sparse matrix
-    uint32_t num_rows;
-    uint32_t num_cols;
-    uint32_t num_nonzeros;
+        // Data types for matrix values_t and indices
+        uint32_t row_t;
+        uint32_t col_t;
+        uint32_t val_t;
 
-    // Data types for matrix values_t and indices
-    uint32_t row_t;
-    uint32_t col_t;
-    uint32_t val_t;
+        // compression size
+        size_t compression_size;
 
-    // compression size
-    size_t compression_size;
+        bool is_allocated = false;
 
-    bool is_allocated = false;
+        // void pointers for compression
+        void *comp_ptr;
+        void *begin_ptr;
 
-    // void pointers for compression
-    void* comp_ptr;
-    void* begin_ptr;
-
-    void* getData() {
-        return begin_ptr;
-    }
-
-    void* getEnd() {
-        return comp_ptr;
-    }
-
-    // Function to allocate memory for compression
-    void allocate_memory() {
-        
-        // Malloc memory for the data, never worse then CSC so allocate CSC amount
-        // space for the value and row, col indicies, and a buffer zone
-        
-        size_t csc_size = num_nonzeros *val_t + num_nonzeros *row_t + num_cols *col_t + 300;
-        
-        begin_ptr = malloc(csc_size);
-
-        // Check if memory was allocated
-        if (!begin_ptr) {
-            throw std::bad_alloc();
-        }
-
-        is_allocated = true;
-
-        // Set the pointer to the start of the data
-        comp_ptr = begin_ptr;
-    }
-
-    // Finds the amount of bytes needed to store the given value
-    uint8_t byte_width(size_t size) {
-        switch (size)
+        void *getData()
         {
-        case 0 ... 255:
-            return 1;
-        case 256 ... 65535:
-            return 2;
-        case 65536 ... 4294967295:
-            return 4;
-        default:
-            return 8;
+            return begin_ptr;
         }
-    }
+
+        void *getEnd()
+        {
+            return comp_ptr;
+        }
+
+        // Function to allocate memory for compression
+        void allocate_memory()
+        {
+
+            // Malloc memory for the data, never worse then CSC so allocate CSC amount
+            // space for the value and row, col indicies, and a buffer zone
+
+            size_t csc_size = num_nonzeros * val_t + num_nonzeros * row_t + num_cols * col_t + 300;
+
+            begin_ptr = malloc(csc_size);
+
+            // Check if memory was allocated
+            if (!begin_ptr)
+            {
+                throw std::bad_alloc();
+            }
+
+            is_allocated = true;
+
+            // Set the pointer to the start of the data
+            comp_ptr = begin_ptr;
+        }
+
+        // Finds the amount of bytes needed to store the given value
+        uint8_t byte_width(size_t size)
+        {
+            switch (size)
+            {
+            case 0 ... 255:
+                return 1;
+            case 256 ... 65535:
+                return 2;
+            case 65536 ... 4294967295:
+                return 4;
+            default:
+                return 8;
+            }
+        }
 
     public:
+        // Eigen Wrapper Constructor
+        // TODO make an optimized dedicated eigen constuctor
+        template <typename T>
+        SparseMatrix(Eigen::SparseMatrix<T> &mat)
+        {
 
-    // Eigen Wrapper Constructor
-    // TODO make an optimized dedicated eigen constuctor
-    template <typename T>
-    SparseMatrix(Eigen::SparseMatrix<T>& mat) {
- 
-        mat.makeCompressed();
+            mat.makeCompressed();
 
-        size_t nnz = mat.nonZeros();
-        T* vals_arr = new T[nnz];
-        T* indexes_arr = new T[nnz];
-        T* col_p_arr = new T[mat.outerSize() + 1];
+            size_t nnz = mat.nonZeros();
+            T *vals_arr = new T[nnz];
+            T *indexes_arr = new T[nnz];
+            T *col_p_arr = new T[mat.outerSize() + 1];
 
-        // Copy data from Eigen
-        std::memcpy(vals_arr, mat.valuePtr(), nnz * sizeof(T));
-        std::memcpy(indexes_arr, mat.innerIndexPtr(), nnz * sizeof(T));
-        std::memcpy(col_p_arr, mat.outerIndexPtr(), (mat.outerSize() + 1) * sizeof(T));
+            // Copy data from Eigen
+            std::memcpy(vals_arr, mat.valuePtr(), nnz * sizeof(T));
+            std::memcpy(indexes_arr, mat.innerIndexPtr(), nnz * sizeof(T));
+            std::memcpy(col_p_arr, mat.outerIndexPtr(), (mat.outerSize() + 1) * sizeof(T));
 
-        T **vals = &vals_arr;
-        T **indexes = &indexes_arr;
-        T **col_p = &col_p_arr;
+            T **vals = &vals_arr;
+            T **indexes = &indexes_arr;
+            T **col_p = &col_p_arr;
 
-        // Construct CSF
-        SparseMatrix(vals, indexes, col_p, nnz, mat.rows(), mat.cols());
+            // Construct CSF
+            SparseMatrix(vals, indexes, col_p, nnz, mat.rows(), mat.cols());
 
-        // Free memory
-        delete[] vals_arr;
-        delete[] indexes_arr;
-        delete[] col_p_arr;
-    }
-
-
-    // ? could potentially move some logic outside the constructor for performance gains ?
-    /* CSC Constructor
-    Takes in 3 arrays of a CSC sparse matrix as well as the dimensions and destructively compresses the sparse data to SRLE
-    - Can ask constructor to non-destructively compress the data
-    */
-    template <typename values_t, typename row_ind, typename col_ind>
-    SparseMatrix(values_t **vals, row_ind **indexes, col_ind **col_p,
-        size_t non_zeros, size_t row_num, size_t col_num,
-        bool destroy = true, int compression_level = 3) {
-        
-        if (!destroy) {
-            // ! Non-Destructive Method
-
-            // TODO implement non-destructive method
+            // Free memory
+            delete[] vals_arr;
+            delete[] indexes_arr;
+            delete[] col_p_arr;
         }
 
-        // ! Destructive Method
+        // ? could potentially move some logic outside the constructor for performance gains ?
+        /* CSC Constructor
+        Takes in 3 arrays of a CSC sparse matrix as well as the dimensions and destructively compresses the sparse data to SRLE
+        - Can ask constructor to non-destructively compress the data
+        */
+        template <typename values_t, typename row_ind, typename col_ind>
+        SparseMatrix(values_t **vals, row_ind **indexes, col_ind **col_p,
+                     size_t non_zeros, size_t row_num, size_t col_num,
+                     bool destroy = true, int compression_level = 3)
+        {
 
-        // Initialize data
-        num_rows = row_num;
-        num_cols = col_num;
-        num_nonzeros = non_zeros;
+            if (!destroy)
+            {
+                // ! Non-Destructive Method
 
-        row_t = byte_width(num_rows);
-        col_t = byte_width(num_cols);
-        val_t = sizeof(values_t);
+                // TODO implement non-destructive method
+            }
 
-        // Allocate memory for compression
-        allocate_memory();
+            // ! Destructive Method
 
-        // !! Debug ptr
-        void *debug = begin_ptr;
+            // Initialize data
+            num_rows = row_num;
+            num_cols = col_num;
+            num_nonzeros = non_zeros;
 
-        // Construct Metadata --------------------
+            row_t = byte_width(num_rows);
+            col_t = byte_width(num_cols);
+            val_t = sizeof(values_t);
+
+            // Allocate memory for compression
+            allocate_memory();
+
+            // !! Debug ptr
+            void *debug = begin_ptr;
+
+            // Construct Metadata --------------------
             // * <row_t, col_t, val_t, num_rows, num_cols, [col_pointers], {...runs...}>
 
             // Row, Col, and Val sizes onto compression
@@ -390,7 +396,6 @@ class SparseMatrix {
             T value;
             bool firstIndex = true;
 
-
             /**
              * @brief Read in the next index from the file based on a variable width
              *
@@ -398,7 +403,9 @@ class SparseMatrix {
              * @return uint64_t
              */
 
-            uint64_t interpretPointer(int width) {
+
+            uint64_t interpretPointer(int width)
+            {
                 uint64_t newIndex = 0;
 
                 // Case statement takes in 1,2,4, or 8 otherwise the width is invalid
@@ -427,14 +434,15 @@ class SparseMatrix {
             }
 
         public:
-            
-            
+
             /**
              * @brief Construct a new CSFiterator object
              *
              * @param filePath
              */
-            CSFIterator() {
+
+            CSFIterator()
+            {
                 currentIndex = begin_ptr;
 
                 endOfData = comp_ptr;
@@ -456,7 +464,6 @@ class SparseMatrix {
                 cout << "newIndexWidth: " << (int)newIndexWidth << endl;
             }
 
-
             /**
              * @brief Returns the value of the run.
              *
@@ -470,6 +477,7 @@ class SparseMatrix {
              *
              * @return uint64_t
              */
+
             uint64_t operator++() {
                 uint64_t newIndex = interpretPointer(newIndexWidth);
 
@@ -504,7 +512,6 @@ class SparseMatrix {
              * @return false
              */
             operator bool() { return endOfData != currentIndex; }
-
 
     }; // End of Iterator Class
 
