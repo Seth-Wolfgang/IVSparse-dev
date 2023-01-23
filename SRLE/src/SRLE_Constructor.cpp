@@ -1,6 +1,6 @@
 /*
 
-Version 2.1
+Version 0.2.1
 By: Skyler Ruiter
 
 Content: This is a file to build the constructor for a new data structure and compression algorithm called SRLE. 
