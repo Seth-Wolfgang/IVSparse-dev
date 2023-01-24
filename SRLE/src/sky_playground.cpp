@@ -1,7 +1,7 @@
 #include <iostream>
 #include <Eigen/Sparse>
 
-#include "CSFmatrix.h"
+#include "include/CSF.hpp"
 
 int main()
 {
@@ -49,7 +49,7 @@ int main()
     int **indexes = &indexes_arr;
     int **col_p = &col_p_arr;
 
-    CSF::SparseMatrix test(vals, indexes, col_p, val_num, row_num, col_num, false);
+    CSF::SparseMatrix test(vals, indexes, col_p, val_num, row_num, col_num);
 
     // print out vals, indexs, col_p
     for (size_t j = 0; j < 58; j++)
@@ -72,6 +72,9 @@ int main()
     }
 
     printf("\n");
+
+    // print size of compression
+    std:cout << test.getSize() << std::endl;
 
     // free stuff
     free(values_arr);
@@ -109,7 +112,7 @@ int main()
     mat.insert(4, 9) = 1;
 
     // call constructor
-    CSF::SparseMatrix test2(mat);
+    //CSF::SparseMatrix test2(mat);
 
     return 0;
 }
