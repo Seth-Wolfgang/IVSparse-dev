@@ -100,10 +100,11 @@ namespace CSF {
             T** indexes = &indexes_arr;
             T** col_p = &col_p_arr;
 
+
             compression_level = compression_l;
 
             // Construct CSF
-            CSF::SparseMatrix tempMatrix = CSF::SparseMatrix(vals, indexes, col_p, nnz, mat.rows(), mat.cols(), compression_level);
+            CSF::SparseMatrix<compression_level> tempMatrix = CSF::SparseMatrix<compression_level>(vals, indexes, col_p, nnz, mat.rows(), mat.cols(), compression_level);
 
 
             num_rows = tempMatrix.num_rows;
@@ -134,10 +135,9 @@ namespace CSF {
         - Can ask constructor to non-destructively compress the data
         */
         template <typename values_t, typename row_ind, typename col_ind>
-        SparseMatrix(values_t **vals, row_ind **indexes, col_ind **col_p,
+        SparseMatrix(values_t** vals, row_ind** indexes, col_ind** col_p,
                      size_t non_zeros, size_t row_num, size_t col_num,
-                     int compression_l = 3, bool destroy = true)
-        {
+                     int compression_l = 3, bool destroy = true) {
 
             // TODO: implement non-destructive method
 
@@ -240,6 +240,7 @@ namespace CSF {
 
                         //* Positive delta encode the indices -----------
 
+                        // constexpr if (compression_level == 3) {
                         constexpr if (compression_level == 3) {
 
                             // set variable for max element
@@ -271,73 +272,74 @@ namespace CSF {
 
                             // write over data with indices of new size, index compression
                             switch (byte_width(max_index)) {
-                                case 1:
+                            case 1:
 
-                                    // walk the two iterators, compressing down to optimal byte width
-                                    for (size_t k = 0; k < num_elements; k++) {
+                                // walk the two iterators, compressing down to optimal byte width
+                                for (size_t k = 0; k < num_elements; k++) {
 
-                                        // set index to uint8_t size
-                                        *(uint8_t*)(comp_ptr) = (uint8_t) * (row_ind*)(help_ptr);
+                                    // set index to uint8_t size
+                                    *(uint8_t*)(comp_ptr) = (uint8_t) * (row_ind*)(help_ptr);
 
-                                        // Iterate pointers
-                                        comp_ptr = (uint8_t*)(comp_ptr)+1;
-                                        help_ptr = (row_ind*)(help_ptr)+1;
-                                    }
-
-                                    // Add delim
-                                    *(uint8_t*)(comp_ptr) = delim;
+                                    // Iterate pointers
                                     comp_ptr = (uint8_t*)(comp_ptr)+1;
+                                    help_ptr = (row_ind*)(help_ptr)+1;
+                                }
 
-                                    break;
+                                // Add delim
+                                *(uint8_t*)(comp_ptr) = delim;
+                                comp_ptr = (uint8_t*)(comp_ptr)+1;
 
-                                case 2:
-                                    // walk the two iterators, compressing down to optimal byte width
-                                    for (size_t k = 0; k < num_elements; k++) {
+                                break;
 
-                                        // set index to uint16_t size
-                                        *(uint16_t*)(comp_ptr) = (uint16_t) * (row_ind*)(help_ptr);
+                            case 2:
+                                // walk the two iterators, compressing down to optimal byte width
+                                for (size_t k = 0; k < num_elements; k++) {
 
-                                        // Iterate pointers
-                                        comp_ptr = (uint16_t*)(comp_ptr)+1;
-                                        help_ptr = (row_ind*)(help_ptr)+1;
-                                    }
+                                    // set index to uint16_t size
+                                    *(uint16_t*)(comp_ptr) = (uint16_t) * (row_ind*)(help_ptr);
 
-                                    // Add delim
-                                    *(uint16_t*)(comp_ptr) = delim;
+                                    // Iterate pointers
                                     comp_ptr = (uint16_t*)(comp_ptr)+1;
+                                    help_ptr = (row_ind*)(help_ptr)+1;
+                                }
 
-                                    break;
+                                // Add delim
+                                *(uint16_t*)(comp_ptr) = delim;
+                                comp_ptr = (uint16_t*)(comp_ptr)+1;
 
-                                case 4:
-                                    // walk the two iterators, compressing down to optimal byte width
-                                    for (size_t k = 0; k < num_elements; k++) {
+                                break;
 
-                                        // set index to uint8_t size
-                                        *(uint32_t*)(comp_ptr) = (uint32_t) * (row_ind*)(help_ptr);
+                            case 4:
+                                // walk the two iterators, compressing down to optimal byte width
+                                for (size_t k = 0; k < num_elements; k++) {
 
-                                        // Iterate pointers
-                                        comp_ptr = (uint32_t*)(comp_ptr)+1;
-                                        help_ptr = (row_ind*)(help_ptr)+1;
-                                    }
+                                    // set index to uint8_t size
+                                    *(uint32_t*)(comp_ptr) = (uint32_t) * (row_ind*)(help_ptr);
 
-                                    // Add delim
-                                    *(uint32_t*)(comp_ptr) = delim;
+                                    // Iterate pointers
                                     comp_ptr = (uint32_t*)(comp_ptr)+1;
+                                    help_ptr = (row_ind*)(help_ptr)+1;
+                                }
 
-                                    break;
+                                // Add delim
+                                *(uint32_t*)(comp_ptr) = delim;
+                                comp_ptr = (uint32_t*)(comp_ptr)+1;
+
+                                break;
 
                             } // end switch
 
                             help_ptr = comp_ptr;
 
-                        } else if (compression_level == 2) { // end compression level 3
+                        }
+                        else if (compression_level == 2) { // end compression level 3
                             // add delim to end of run
-                            *(row_ind *)(comp_ptr) = delim;
-                            comp_ptr = (row_ind *)(comp_ptr) + 1;
+                            *(row_ind*)(comp_ptr) = delim;
+                            comp_ptr = (row_ind*)(comp_ptr)+1;
 
                             // bring up help ptr to comp ptr
                             help_ptr = comp_ptr;
-                        } 
+                        }
                     } // end if
 
                 } // end for loop of uniques in col
@@ -367,9 +369,8 @@ namespace CSF {
 
         } // end of constructor
 
-        ~SparseMatrix()
-        {
-            if(is_allocated)
+        ~SparseMatrix() {
+            if (is_allocated)
                 free(begin_ptr);
             is_allocated = false;
         }
@@ -389,10 +390,11 @@ namespace CSF {
     }; // end of SparseMatrix class
 
     // --------------- Iterator class ------------------
-    template <typename T, int compression_level>
+    template <typename T>
     class iterator {
 
-    
+
+
     };
 
 }; // end of namespace

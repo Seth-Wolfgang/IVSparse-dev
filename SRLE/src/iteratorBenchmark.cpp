@@ -28,7 +28,7 @@ void iteratorBenchmark(int numRows, int numCols, int sparsity, uint64_t seed) {
     myMatrix.makeCompressed();
 
     // Converting to CSF
-    CSF::SparseMatrix* CSFMatrix = new CSF::SparseMatrix(myMatrix);
+    CSF::SparseMatrix<3>* CSFMatrix = new CSF::SparseMatrix<3>(myMatrix);
 
     //////////////////////////////CSF Iterator//////////////////////////////
 
@@ -37,7 +37,8 @@ void iteratorBenchmark(int numRows, int numCols, int sparsity, uint64_t seed) {
 
     cout << "Testing Iterator" << endl;
 
-    CSF::iterator<int>* newIter = new CSF::iterator<int>(*CSFMatrix);
+    //using 'int' throws an error here now
+    CSF::iterator<int> newIter = CSF::iterator<int>(CSFMatrix);
     // CSF::CSFIterator<int>* newIter = new CSF::CSFIterator<int>(fileName.c_str());
 
     vector<int> SRLEVector;
