@@ -16,9 +16,6 @@ namespace CSF {
         T value;
         bool firstIndex = true;
 
-
-
-
         /**
          * @brief Reads in the column pointers from the data
          *
