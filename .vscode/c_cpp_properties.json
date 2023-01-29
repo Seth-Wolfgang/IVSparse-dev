@@ -17,7 +17,24 @@
             "intelliSenseMode": "windows-msvc-x64",
             "browse": {
                 "path": [
-                    "/usr/include"
+                    "/usr/include",
+                    "${workspaceFolder}/SRLE/src/include/"
+                ]
+            }
+        },
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/**"
+            ],
+            "defines": [],
+            "compilerPath": "/usr/bin/gcc",
+            "cStandard": "gnu17",
+            "cppStandard": "gnu++17",
+            "intelliSenseMode": "linux-gcc-x64",
+            "browse": {
+                "path": [
+                    "${workspaceFolder}/"
                 ]
             }
         }

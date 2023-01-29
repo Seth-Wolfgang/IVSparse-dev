@@ -1,0 +1,7 @@
+#pragma once
+#include <Eigen/Sparse>
+
+
+#include "src/CSF_SparseMatrix.hpp"
+#include "src/CSF_constructor.hpp"
+#include "src/CSF_iterator.hpp"
