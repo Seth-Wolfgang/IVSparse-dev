@@ -4,9 +4,9 @@
 
 int main(int argc, char** argv) {
     
-    Eigen::SparseMatrix<int> mat(10, 10);
+    Eigen::SparseMatrix<int> mat1(10, 10);
 
-    CSF::SparseMatrix<int, 3> matrix(mat);
+    CSF::SparseMatrix<int, 3> matrix1(mat1);
 
     CSF::SparseMatrix<int, 3>::Iterator it;
 
@@ -84,6 +84,39 @@ int main(int argc, char** argv) {
     free(values_arr);
     free(indexes_arr);
     free(col_p_arr);
+
+    int rows = 10;
+    int cols = 10;
+
+    Eigen::SparseMatrix<int> mat(rows, cols);
+
+    // populate the matrix
+    mat.insert(2, 0) = 1;
+    mat.insert(5, 0) = 2;
+    mat.insert(3, 1) = 1;
+    mat.insert(4, 1) = 2;
+    mat.insert(9, 1) = 1;
+    mat.insert(9, 2) = 1;
+    mat.insert(1, 3) = 1;
+    mat.insert(2, 3) = 1;
+    mat.insert(6, 3) = 2;
+    mat.insert(2, 4) = 2;
+    mat.insert(4, 4) = 1;
+    mat.insert(9, 4) = 1;
+    mat.insert(3, 6) = 1;
+    mat.insert(4, 6) = 1;
+    mat.insert(5, 6) = 2;
+    mat.insert(4, 7) = 1;
+    mat.insert(5, 7) = 1;
+    mat.insert(6, 7) = 2;
+    mat.insert(7, 7) = 1;
+    mat.insert(8, 7) = 1;
+    mat.insert(4, 8) = 1;
+    mat.insert(9, 8) = 2;
+    mat.insert(4, 9) = 1;
+
+    // call constructor
+    CSF::SparseMatrix<int, 3> matrix(mat);
 
     return 0;
 }
