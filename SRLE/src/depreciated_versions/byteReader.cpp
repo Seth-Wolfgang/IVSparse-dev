@@ -1,12 +1,3 @@
-#include <iostream>
-#include <fstream>
-#include <vector>
-#include <iterator>
-
-using namespace std;
-
-void decodeFile(vector<int> &newVector, string fileName);
-void encodeFile(vector<int> myVector, string fileName);
 
 
 int main() {
@@ -65,17 +56,17 @@ void encodeFile(vector<int> myVector, string fileName) {
     int delta = 0;
     int newValue = 0;
     while(vecRead != end) {
-        if(*vecRead < 0){
-            if(newValue != *vecRead){
+        if(*vecRead < 0){ //if the value is negative, we will adjust the counter and delta
+            if(newValue != *vecRead){ //if the value is different, delta will reset and the new value will be printed
                 newFile << *vecRead << " ";
-                newValue = *vecRead;
+                newValue = *vecRead; //newValue is set to the new value
                 delta = 0;
             }
-            newFile << counter - delta << " ";
-            delta += counter - delta;
+            newFile << counter - delta << " "; //prints new delta to file
+            delta += counter - delta; //adds new delta to delta
             counter = 0;
         } else {
-            counter++;
+            counter++; //iterates counter for each 0
         }
         vecRead++;
     }

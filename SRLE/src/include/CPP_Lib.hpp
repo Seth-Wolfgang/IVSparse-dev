@@ -12,5 +12,5 @@
 // #include <RcppClock.h>
 // #include <Rcpp.h>
 
-void iteratorBenchmark(int numRows, int numCols, int sparsity, uint64_t seed);
+bool iteratorBenchmark(int numRows, int numCols, int sparsity, uint64_t seed);
 template<typename T> Eigen::SparseMatrix<T> generateMatrix(int numRows, int numCols, int sparsity, uint64_t seed);

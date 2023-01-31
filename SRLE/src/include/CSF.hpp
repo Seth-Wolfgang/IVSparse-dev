@@ -324,14 +324,19 @@ namespace CSF {
             } // end of col for loop
 
             // remove ending zeros
-            while (comp_ptr != begin_ptr && *(uint8_t*)(comp_ptr) == 0) {
-                comp_ptr = (uint8_t*)(comp_ptr)-1;
-            }
+            // while (comp_ptr != begin_ptr && *(uint8_t*)(comp_ptr) == 0) {
+            //     comp_ptr = (uint8_t*)(comp_ptr)-1;
+            //     if (*((uint8_t*)(comp_ptr)-1) != 0) {
+            //         break;
+            //     }
+            // }
+
+
 
             // positive delta encode the column pointers
-            for (size_t i = num_cols - 1; i > 0; i--) {
-                col_pointers[i] = col_pointers[i] - col_pointers[i - 1];
-            }
+            // for (size_t i = num_cols - 1; i > 0; i--) {
+            //     col_pointers[i] = col_pointers[i] - col_pointers[i - 1];
+            // }
 
             // find size of file in bytes
             compression_size = (uint8_t*)(comp_ptr)-((uint8_t*)(begin_ptr)-1);
@@ -373,47 +378,52 @@ namespace CSF {
 
     private:
         uint64_t index = 0;
-        uint64_t* colPointers;
         uint32_t valueWidth;
         uint8_t newIndexWidth;
-        char* fileData;
+        void* data;
         void* endOfData;
         void* currentIndex;
         T value;
         bool firstIndex = true;
 
-        void readColumnPointers() {
+        /**
+         * @brief Get address of a specified column
+         * @param column
+         */
 
-            memcpy(&colPointers, currentIndex, interpretPointer(8));
-
-            for (int i = 0; i < interpretPointer(8); i++) {
-                cout << colPointers[i] << endl;
-            }
+        void goToColumn(int column) {
+            //20 bytes into the file, the column pointers are stored. Each column pointer is 8 bytes long so we can
+            //multiply the column number by 8 to get the offset of the column pointer we want.
+            //columns are 0 indexed
+            currentIndex = static_cast<char*>(currentIndex) + 8 * column;
+            uint64_t temp;
+            memcpy(&temp, currentIndex, 8);
+            //We can use currentIndex to get the address of the column we want and avoid a temporary variable.
+            currentIndex = static_cast<char*>(data) + temp;
         }
 
     public:
+
         /**
          * @brief Construct a new CSFiterator object
          *
          * @param filePath
          */
 
-        iterator(CSF::SparseMatrix& matrix) {
-            currentIndex = matrix.getData();
-            endOfData = matrix.getEnd();
+        iterator(CSF::SparseMatrix& matrix, uint64_t column = 0) {
+            data = matrix.getData();
+            endOfData = ((char*)matrix.getEnd()) - 1;
+            currentIndex = data;
 
             // read first 28 bytes of fileData put it into params -> metadata
             uint32_t params[5];
-            cout << "Flag 0" << endl;
             memcpy(&params, currentIndex, 20);
-            cout << "Flag 1" << endl;
             currentIndex = static_cast<char*>(currentIndex) + 20;
+            goToColumn(column);
 
             // valueWidth is set and the first value is read in
-            valueWidth = params[4];
+            valueWidth = params[2];
             value = interpretPointer(valueWidth);
-
-            readColumnPointers();
 
             // Read in the width of this run's indices and go to first index
             newIndexWidth = *static_cast<uint8_t*>(currentIndex);
@@ -423,18 +433,19 @@ namespace CSF {
             // cout << "newIndexWidth: " << (int)newIndexWidth << endl;
         }
 
-        iterator(const char* filePath) {
+        iterator(const char* filePath, uint64_t column = 0) {
             readFile(filePath);
 
             // read first 28 bytes of fileData put it into params -> metadata
             uint32_t params[8];
 
-            memcpy(&params, currentIndex, 24);
-            currentIndex = static_cast<char*>(currentIndex) + 24;
+            memcpy(&params, currentIndex, 20);
+            currentIndex = static_cast<char*>(currentIndex) + 20;
 
             // valueWidth is set and the first value is read in
             valueWidth = params[4];
             value = interpretPointer(valueWidth);
+            goToColumn(column);
 
             // Read in the width of this run's indices and go to first index
             newIndexWidth = *static_cast<uint8_t*>(currentIndex);
@@ -450,7 +461,9 @@ namespace CSF {
          * @return T&
          */
 
-        T& operator*() { return value; };
+        T& operator * () { return value; };
+        T getValue() { return value; }
+
 
         /**
          * @brief Increment the iterator
@@ -458,7 +471,7 @@ namespace CSF {
          * @return uint64_t
          */
 
-        uint64_t operator++() {
+        uint64_t operator++(int) {
             uint64_t newIndex = interpretPointer(newIndexWidth);
 
             // cout << "newIndex: " << newIndex << endl;
@@ -476,12 +489,13 @@ namespace CSF {
 
                 memset(&index, 0, 8);
 
-                // cout << "value2 " << value << endl;
-                // cout << "width2: " << (int)newIndexWidth << endl;
+                cout << "new value " << value << endl;
+                cout << "new width: " << (int)newIndexWidth << endl;
 
                 // Returns the first index of the run
                 index = interpretPointer(newIndexWidth);
-                firstIndex = true;
+                (index == 0) ? (firstIndex = true) : (firstIndex = false);
+
                 return index;
             }
 
@@ -497,7 +511,11 @@ namespace CSF {
          * @return false
          */
 
-        operator bool() { return endOfData != currentIndex; }
+        operator bool() {
+            cout << "endOfData vs CurrentIndex: " << endOfData << " " << currentIndex << endl;
+
+            return endOfData >= currentIndex;
+        }
 
     private:
         /**
@@ -512,15 +530,15 @@ namespace CSF {
             // Find end of file and allocate size
             fseek(file, 0, SEEK_END);
             int sizeOfFile = ftell(file);
-            fileData = (char*)malloc(sizeof(char*) * sizeOfFile);
+            data = (char*)malloc(sizeof(char*) * sizeOfFile);
 
             // Read file into memory
             fseek(file, 0, SEEK_SET);
-            fread(fileData, sizeOfFile, 1, file);
+            fread(data, sizeOfFile, 1, file);
             fclose(file);
 
-            currentIndex = fileData;
-            endOfData = fileData + sizeOfFile;
+            currentIndex = data;
+            endOfData = data + sizeOfFile;
         }
 
         /**
@@ -548,12 +566,17 @@ namespace CSF {
                 newIndex = static_cast<uint64_t>(*static_cast<uint64_t*>(currentIndex));
                 break;
             default:
-                // cout << static_cast<int>(*static_cast<uint8_t*>(currentIndex)) << endl;
-                cout << "Invalid width: " << width << endl;
-                exit(-1);
+
+                if (endOfData == currentIndex) {
+                    cout << "Value: " << value << endl;
+                    cout << static_cast<int>(*static_cast<uint8_t*>(currentIndex)) << endl;
+                    cout << "Invalid width: " << width << endl;
+                    exit(-1);
+                }
+
                 break;
             }
-
+            // cout << "newIndex: " << newIndex << endl;
             currentIndex = static_cast<char*>(currentIndex) + width;
             return newIndex;
         }

@@ -2,17 +2,39 @@
 #include "include/CSF_Lib.hpp"
 
 int main() {
+    int matrixSeed = rand();
+    int matrixSeed2 = rand();
+    int numRows = rand() % 1000 + 1;
+    int numCols = rand() % 1000 + 1;
 
-    int numRows = 100;
-    int numCols = 100;
     int sparsity = 20;
-    uint64_t seed = 5645646546;
-    iteratorBenchmark(numRows, numCols, sparsity, seed);
+    uint64_t seed = matrixSeed * matrixSeed2;
+
+    iteratorBenchmark(462, 127, 20, 596516649 * 1189641421);
+
+    // for (int i = 0; i < 1000; i++) {
+    //     matrixSeed = rand();
+    //     matrixSeed2 = rand();
+    //     numRows = rand() % 1000 + 100;
+    //     numCols = rand() % 1000 + 100;
+    //     seed = matrixSeed * matrixSeed2;
+    //     cout << "i: " << i << endl;
+    //     if (!iteratorBenchmark(numRows, numCols, sparsity, seed)) {
+            
+    //         cout << "Something went wrong" << endl;
+    //         cout << "numRows: " << numRows << endl;
+    //         cout << "numCols: " << numCols << endl;
+    //         cout << "sparsity: " << sparsity << endl;
+    //         cout << "Matrix seed: " << matrixSeed << " * " << matrixSeed2 << endl;
+    //         cout << "i: " << i << endl;
+    //         return 0;
+    //     }
+    // }
 
     return 1;
 }
 
-void iteratorBenchmark(int numRows, int numCols, int sparsity, uint64_t seed) {
+bool iteratorBenchmark(int numRows, int numCols, int sparsity, uint64_t seed) {
     // TO ENSURE EVERYTHING WORKS, THE TOTAL SUM OF ALL VALUES IS CALUCLATED AND SHOULD PRINT THE SAME NUMBER FOR EACH ITERATOR
     int value = 0;
     int CSFTotal = 0;
@@ -23,42 +45,41 @@ void iteratorBenchmark(int numRows, int numCols, int sparsity, uint64_t seed) {
 
     // generating a large random eigen sparse
     Eigen::SparseMatrix<int> myMatrix(numRows, numCols);
-    myMatrix.reserve(Eigen::VectorXi::Constant(numRows, numCols));
     myMatrix = generateMatrix<int>(numRows, numCols, sparsity, seed);
     myMatrix.makeCompressed();
 
     // Converting to CSF
-    CSF::SparseMatrix* CSFMatrix = new CSF::SparseMatrix(myMatrix);
+    CSF::SparseMatrix CSFMatrix = CSF::SparseMatrix(myMatrix);
 
     //////////////////////////////CSF Iterator//////////////////////////////
 
     // This block of code reads through the whole matrix and adds the sum of all values to total
     // It currently does not work, but it is a good starting point for CSF
 
-    cout << "Testing Iterator" << endl;
+    // cout << "Testing Iterator" << endl;
 
-    CSF::iterator<int>* newIter = new CSF::iterator<int>(*CSFMatrix);
+    CSF::iterator<int> newIter = CSF::iterator<int>(CSFMatrix);
     // CSF::CSFIterator<int>* newIter = new CSF::CSFIterator<int>(fileName.c_str());
 
     vector<int> SRLEVector;
 
-    while (newIter) {
+    while (newIter.operator bool()) {
         newIter++;
-        CSFTotal += newIter->operator*();
-        SRLEVector.push_back(newIter->operator*());
-        if (newIter->operator*() != value) {
-            value = newIter->operator*();
+        CSFTotal += newIter.getValue();
+        SRLEVector.push_back(newIter.getValue());
+        if (newIter.getValue() != value) {
+            value = newIter.getValue();
         }
     }
 
-    cout << "CSF Total: " << CSFTotal << endl;
+    // cout << "CSF Total: " << CSFTotal << endl;
 
     //////////////////////////////CSC innerIterator////////////////////////////////
     // generating a large random eigen sparse
 
     // The next two blocks do essentially the same as the first but only go through the CSC matrix
 
-    cout << "Testing Eigen" << endl;
+    // cout << "Testing Eigen" << endl;
 
     // begin timing
     vector<int> eigenVector;
@@ -69,41 +90,47 @@ void iteratorBenchmark(int numRows, int numCols, int sparsity, uint64_t seed) {
         }
     }
 
-    /**
-     * Testing to see if the vectors match
-     */
 
-    sort(SRLEVector.begin(), SRLEVector.end());
-    sort(eigenVector.begin(), eigenVector.end());
-
-    cout << "SRLE Vector" << endl;
-    for (auto j : SRLEVector) {
-        cout << j << " ";
-    }
-    cout << endl
-        << endl;
-    cout << "Eigen Vector" << endl;
-    for (auto j : eigenVector) {
-        cout << j << " ";
-    }
-    cout << endl;
-
-    cout << "InnerIterator Total: " << eigenTotal << endl;
+    // cout << "InnerIterator Total: " << eigenTotal << endl;
 
     //////////////////////////////GENERIC CSC Iterator////////////////////////////////
-    cout << "Testing CSC Iterator" << endl;
+    // cout << "Testing CSC Iterator" << endl;
     GenericCSCIterator<int> iter2 = GenericCSCIterator<int>(myMatrix);
     while (iter2.operator bool()) {
         genericTotal += iter2.operator*();
         iter2.operator++();
     }
-    cout << "CSC Total: " << genericTotal << endl;
+    // cout << "CSC Total: " << genericTotal << endl;
 
     if (genericTotal == eigenTotal && eigenTotal == CSFTotal) {
-        cout << "All iterators are working" << endl;
+        return true;
     }
     else {
-        cout << "Something is wrong" << endl;
+        cout << "CSF Total: " << CSFTotal << endl;
+        cout << "Eigen Total: " << eigenTotal << endl;
+        cout << "Generic Total: " << genericTotal << endl;
+        cout << "off by: " << CSFTotal - eigenTotal << endl;
+        /**
+ * Testing to see if the vectors match
+ */
+
+        // sort(SRLEVector.begin(), SRLEVector.end());
+        // sort(eigenVector.begin(), eigenVector.end());
+
+        // cout << "SRLE Vector" << endl;
+        // for (auto j : SRLEVector) {
+        //     cout << j << " ";
+        // }
+        // cout << endl
+        //     << endl;
+        // cout << "Eigen Vector" << endl;
+        // for (auto j : eigenVector) {
+        //     cout << j << " ";
+        // }
+        // cout << endl;
+
+        return false;
+
     }
 }
 
@@ -113,12 +140,12 @@ Eigen::SparseMatrix<T> generateMatrix(int numRows, int numCols, int sparsity, ui
     rng randMatrixGen = rng(seed);
 
     Eigen::SparseMatrix<T> myMatrix(numRows, numCols);
-    myMatrix.reserve(Eigen::VectorXi::Constant(numRows, numCols));
+    myMatrix.reserve(Eigen::VectorXi::Constant(numRows * 10, numCols * 10));
 
     for (int i = 0; i < numRows; i++) {
         for (int j = 0; j < numCols; j++) {
             if (randMatrixGen.draw<int>(i, j, sparsity)) {
-                myMatrix.insert(i, j) = 10 * randMatrixGen.uniform<double>(j);
+                myMatrix.insert(i, j) = 100 * randMatrixGen.uniform<double>(j);
             }
         }
     }
