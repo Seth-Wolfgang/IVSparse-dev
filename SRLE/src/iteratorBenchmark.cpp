@@ -10,26 +10,26 @@ int main() {
     int sparsity = 20;
     uint64_t seed = matrixSeed * matrixSeed2;
 
-    iteratorBenchmark(462, 127, 20, 596516649 * 1189641421);
+    // cout << iteratorBenchmark(462, 127, 20, -1022439467) << endl;
 
-    // for (int i = 0; i < 1000; i++) {
-    //     matrixSeed = rand();
-    //     matrixSeed2 = rand();
-    //     numRows = rand() % 1000 + 100;
-    //     numCols = rand() % 1000 + 100;
-    //     seed = matrixSeed * matrixSeed2;
-    //     cout << "i: " << i << endl;
-    //     if (!iteratorBenchmark(numRows, numCols, sparsity, seed)) {
+    for (int i = 0; i < 1000; i++) {
+        matrixSeed = rand();
+        matrixSeed2 = rand();
+        numRows = rand() % 1000 + 100;
+        numCols = rand() % 1000 + 100;
+        seed = matrixSeed * matrixSeed2;
+        cout << "i: " << i << endl;
+        if (!iteratorBenchmark(numRows, numCols, sparsity, seed)) {
             
-    //         cout << "Something went wrong" << endl;
-    //         cout << "numRows: " << numRows << endl;
-    //         cout << "numCols: " << numCols << endl;
-    //         cout << "sparsity: " << sparsity << endl;
-    //         cout << "Matrix seed: " << matrixSeed << " * " << matrixSeed2 << endl;
-    //         cout << "i: " << i << endl;
-    //         return 0;
-    //     }
-    // }
+            cout << "Something went wrong" << endl;
+            cout << "numRows: " << numRows << endl;
+            cout << "numCols: " << numCols << endl;
+            cout << "sparsity: " << sparsity << endl;
+            cout << "Matrix seed: " << matrixSeed << " * " << matrixSeed2 << endl;
+            cout << "i: " << i << endl;
+            return 0;
+        }
+    }
 
     return 1;
 }
@@ -89,6 +89,7 @@ bool iteratorBenchmark(int numRows, int numCols, int sparsity, uint64_t seed) {
             eigenVector.push_back(it.value());
         }
     }
+
 
 
     // cout << "InnerIterator Total: " << eigenTotal << endl;
