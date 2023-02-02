@@ -323,12 +323,9 @@ namespace CSF {
             } // end of col for loop
 
             // remove ending zeros
-            // while (comp_ptr != begin_ptr && *(uint8_t*)(comp_ptr) == 0) {
-            //     comp_ptr = (uint8_t*)(comp_ptr)-1;
-            //     if (*((uint8_t*)(comp_ptr)-1) != 0) {
-            //         break;
-            //     }
-            // }
+            while (comp_ptr != begin_ptr && *(uint8_t*)(comp_ptr) == 0) {
+                comp_ptr = (uint8_t*)(comp_ptr)-1;
+            }
 
             // positive delta encode the column pointers
             // for (size_t i = num_cols - 1; i > 0; i--) {
@@ -348,12 +345,12 @@ namespace CSF {
 
         } // end of constructor
 
-        //     ~SparseMatrix()
-        //    {
-        //         if(is_allocated)
-        //             free(begin_ptr);
-        //         is_allocated = false;
-        //    }
+            ~SparseMatrix()
+           {
+                if(is_allocated)
+                    free(begin_ptr);
+                is_allocated = false;
+           }
 
         size_t getSize() const {
             return compression_size;
@@ -493,13 +490,13 @@ namespace CSF {
 
                 memset(&index, 0, 8);
 
-                // cout << "new value " << value << endl;
-                // cout << "new width: " << (int)newIndexWidth << endl;
+                cout << "new value " << value << endl;
+                cout << "new width: " << (int)newIndexWidth << endl;
 
                 // Returns the first index of the run
                 index = interpretPointer(newIndexWidth);
-                (index == 0) ? (firstIndex = true) : (firstIndex = false);
-
+                // (index == 0) ? (firstIndex = true) : (firstIndex = false);
+                // firstIndex = true;
                 return index;
             }
 
