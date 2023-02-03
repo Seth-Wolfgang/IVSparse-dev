@@ -46,6 +46,146 @@ namespace CSF {
         delete[] col_p_arr;
     }
 
+
+    // // dedicated eigen constructor
+    // template <typename T, int compression_level>
+    // SparseMatrix<T, compression_level>::SparseMatrix(Eigen::SparseMatrix<T>& mat, bool destroy=false) {
+    //     // compress the matrix if not already
+    //     mat.makeCompressed();
+
+    //     // initialize data
+    //     num_rows = mat.rows();
+    //     num_cols = mat.cols();
+    //     num_nonzeros = mat.nonZeros();
+
+    //     row_t = byte_width(num_rows);
+    //     col_t = byte_width(num_cols);
+    //     val_t = sizeof(T);
+
+    //     // allocate memory for compression
+    //     allocate_memory();
+
+    //     // !! Debug ptr
+    //     void* debug = begin_ptr;
+
+    //     // Construct metadata --------------------
+    //     // * <row_t, col_t, val_t, num_rows, num_cols, [col_pointers], {...runs...}>
+
+    //     // row, col, and val sizes onto compression
+    //     *(uint32_t *)(comp_ptr) = row_t;
+    //     comp_ptr = (uint32_t *)(comp_ptr) + 1;
+
+    //     *(uint32_t *)(comp_ptr) = col_t;
+    //     comp_ptr = (uint32_t *)(comp_ptr) + 1;
+
+    //     *(uint32_t *)(comp_ptr) = val_t;
+    //     comp_ptr = (uint32_t *)(comp_ptr) + 1;
+
+    //     // Number of Rows and Cols onto compression
+    //     *(uint32_t *)(comp_ptr) = num_rows;
+    //     comp_ptr = (uint32_t *)(comp_ptr) + 1;
+
+    //     *(uint32_t *)(comp_ptr) = num_cols;
+    //     comp_ptr = (uint32_t *)(comp_ptr) + 1;
+
+    //     // Create a space for col pointers
+    //     uint64_t *col_pointers = (uint64_t *)(comp_ptr);
+    //     comp_ptr = (uint64_t *)(comp_ptr) + (uint64_t)(num_cols);
+
+    //     // Put a delim at the end of the metadata
+    //     *(uint32_t *)(comp_ptr) = delim;
+    //     comp_ptr = (uint32_t *)(comp_ptr) + 1;
+    //     // End of Metadata --------------------
+
+    //     // Loop through each column
+    //     for (size_t i = 0; i < num_cols; i++) {
+    //         // update the col pointer
+    //         col_pointers[i] = (uint64_t)(comp_ptr) - (uint64_t)(begin_ptr);
+
+    //         // loop through each row in the column
+    //         for (Eigen::SparseMatrix<T>::InnerIterator it(mat, i); it; ++it) {
+    //             if (it.val() != 0) {
+    //                 // new value found
+
+    //                 // add the found value to run
+    //                 *(T *)(comp_ptr) = it.val();
+    //                 comp_ptr = (T *)(comp_ptr) + 1;
+
+    //                 // create an index pointer to update index type later
+    //                 void *help_ptr = comp_ptr;
+
+    //                 // default index size is value type
+    //                 *(T *)(comp_ptr) = (uint8_t)sizeof(T);
+    //                 comp_ptr = (uint8_t *)(comp_ptr) + 1;
+
+    //                 // add the found index to run
+    //                 *(T *)(comp_ptr) = it.row();
+    //                 comp_ptr = (T *)(comp_ptr) + 1;
+
+    //                 // loop through the rest of the column
+    //                 for (Eigen::SparseMatrix<T>::InnerIterator it2(mat, i); it2; ++it2) {
+    //                     if (it2.val() == it.val() && it2.row() > it.row()) {
+    //                         // new value found
+
+    //                         // add the found index to run
+    //                         *(T *)(comp_ptr) = it2.row();
+    //                         comp_ptr = (T *)(comp_ptr) + 1;
+
+    //                         // set current index to zero
+    //                         it2.valueRef() = 0;
+    //                     }
+    //                 }
+
+    //                 // set origianl index to zero
+    //                 it.valueRef() = 0;
+
+    //                 // positive delta encode the indexes
+
+    //                 if (compression_level == 3) {
+
+    //                     // set variable for max element
+    //                     size_t max_index = 0;
+
+    //                     // find the number of elements found for unique value
+    //                     size_t num_elements = (T*)(comp_ptr)-((T*)(help_ptr));
+
+    //                     // bring comp_ptr back to being pointed at last found index
+    //                     comp_ptr = (row_ind *)(comp_ptr)-1;
+
+    //                     // loop moves comp_ptr backwards through indices and positive delta encodes them
+    //                     for (size_t k = 0; k < num_elements - 1; k++) {
+
+    //                         // subtract element from one before it
+    //                         *(T*)(comp_ptr) = *(T*)(comp_ptr) - *((T*)(comp_ptr)-1);
+
+    //                         // if bigger then prev max make curr max idx
+    //                         if (*(T *)(comp_ptr) > max_index)
+    //                         {
+    //                             max_index = *(T *)(comp_ptr);
+    //                         }
+
+    //                         comp_ptr = (T *)(comp_ptr)-1; // loop control
+    //                     }
+
+    //                     // set index pointer to correct size for run
+    //                     *(uint8_t *)(help_ptr) = byte_width(max_index);
+    //                     help_ptr = (uint8_t *)(help_ptr) + 1;
+
+
+    //                 } else if (compression_level = 2) {
+    //                     // add delim to end of run
+    //                     *(T *)(comp_ptr) = delim;
+    //                     comp_ptr = (T *)(comp_ptr) + 1;
+
+    //                     // bring up help ptr to comp ptr
+    //                     help_ptr = comp_ptr;
+    //                 }
+
+    //             }
+    //         }
+    //     }
+    // }
+
     
     // implementation details for the constructor
     template <typename T, int compression_level>
@@ -53,229 +193,234 @@ namespace CSF {
     SparseMatrix<T, compression_level>::SparseMatrix(values_t **vals, row_ind **indexes, col_ind **col_p, size_t non_zeros, size_t row_num, size_t col_num, bool destroy) {
         // TODO: implement non-destructive method
 
-            // ! Destructive Method
+        // ! Destructive Method
 
-            // Initialize data
-            num_rows = row_num;
-            num_cols = col_num;
-            num_nonzeros = non_zeros;
+        // TODO: Check that T and values_t are the same
+
+        // Initialize data
+        num_rows = row_num;
+        num_cols = col_num;
+        num_nonzeros = non_zeros;
 
 
-            row_t = byte_width(num_rows);
-            col_t = byte_width(num_cols);
-            val_t = sizeof(values_t);
+        row_t = byte_width(num_rows);
+        col_t = byte_width(num_cols);
+        val_t = sizeof(values_t);
 
-            // Allocate memory for compression
-            allocate_memory();
+        // Allocate memory for compression
+        allocate_memory();
 
-            // !! Debug ptr
-            void* debug = begin_ptr;
+        // !! Debug ptr
+        void* debug = begin_ptr;
 
-            // Construct Metadata --------------------
-            // * <row_t, col_t, val_t, num_rows, num_cols, [col_pointers], {...runs...}>
+        // Construct Metadata --------------------
+        // * <row_t, col_t, val_t, num_rows, num_cols, [col_pointers], {...runs...}>
 
-            // Row, Col, and Val sizes onto compression
-            *(uint32_t*)(comp_ptr) = row_t;
-            comp_ptr = (uint32_t*)(comp_ptr)+1;
+        // Row, Col, and Val sizes onto compression
+        *(uint32_t*)(comp_ptr) = row_t;
+        comp_ptr = (uint32_t*)(comp_ptr)+1;
 
-            *(uint32_t*)(comp_ptr) = col_t;
-            comp_ptr = (uint32_t*)(comp_ptr)+1;
+        *(uint32_t*)(comp_ptr) = col_t;
+        comp_ptr = (uint32_t*)(comp_ptr)+1;
 
-            *(uint32_t*)(comp_ptr) = val_t;
-            comp_ptr = (uint32_t*)(comp_ptr)+1;
+        *(uint32_t*)(comp_ptr) = val_t;
+        comp_ptr = (uint32_t*)(comp_ptr)+1;
 
-            // Number of Rows and Cols onto compression
-            *(uint32_t*)(comp_ptr) = num_rows;
-            comp_ptr = (uint32_t*)(comp_ptr)+1;
+        // Number of Rows and Cols onto compression
+        *(uint32_t*)(comp_ptr) = num_rows;
+        comp_ptr = (uint32_t*)(comp_ptr)+1;
 
-            *(uint32_t*)(comp_ptr) = num_cols;
-            comp_ptr = (uint32_t*)(comp_ptr)+1;
+        *(uint32_t*)(comp_ptr) = num_cols;
+        comp_ptr = (uint32_t*)(comp_ptr)+1;
 
-            // Create a space for col pointers
-            uint64_t* col_pointers = (uint64_t*)(comp_ptr);
-            comp_ptr = (uint64_t*)(comp_ptr)+(uint64_t)(num_cols);
+        // Create a space for col pointers
+        uint64_t* col_pointers = (uint64_t*)(comp_ptr);
+        comp_ptr = (uint64_t*)(comp_ptr)+(uint64_t)(num_cols);
 
-            // Put a delim at the end of the metadata
-            *(uint32_t*)(comp_ptr) = delim;
-            comp_ptr = (uint32_t*)(comp_ptr)+1;
-            // End of Metadata --------------------
+        // Put a delim at the end of the metadata
+        *(uint32_t*)(comp_ptr) = delim;
+        comp_ptr = (uint32_t*)(comp_ptr)+1;
+        // End of Metadata --------------------
 
-            // Loop through each column and construct the compression runs
-            for (size_t i = 0; i < num_cols; i++) {
+        // Loop through each column and construct the compression runs
+        for (size_t i = 0; i < num_cols; i++) {
 
-                // Update the col pointer
-                col_pointers[i] = (uint64_t)(comp_ptr)-(uint64_t)(begin_ptr);
-                // std::cout << std::distance((uint8_t *)(begin_ptr), (uint8_t *)(comp_ptr)) << std::endl;
+            // Update the col pointer
+            col_pointers[i] = (uint64_t)(comp_ptr)-(uint64_t)(begin_ptr);
+            // std::cout << std::distance((uint8_t *)(begin_ptr), (uint8_t *)(comp_ptr)) << std::endl;
 
-                // For each element in the column check if it's a new value
-                for (size_t j = (*col_p)[i]; j < (*col_p)[i + 1]; j++) {
+            // For each element in the column check if it's a new value
+            for (size_t j = (*col_p)[i]; j < (*col_p)[i + 1]; j++) {
 
-                    // New unique value check
-                    if ((*vals)[j] != 0) {
-                        // New unique value found
+                // New unique value check
+                if ((*vals)[j] != 0) {
+                    // New unique value found
 
-                        // Add the found value to run
-                        *(values_t*)(comp_ptr) = (*vals)[j];
-                        comp_ptr = (uint32_t*)(comp_ptr)+1;
+                    // Add the found value to run
+                    *(values_t*)(comp_ptr) = (*vals)[j];
+                    comp_ptr = (values_t*)(comp_ptr)+1;
 
-                        // Create an index pointer to update index type later
-                        void* help_ptr = comp_ptr;
+                    // Create an index pointer to update index type later
+                    void* help_ptr = comp_ptr;
 
-                        // default index type to row index type and iterate pointer
-                        *(uint8_t*)help_ptr = (uint8_t)sizeof(row_ind);
-                        comp_ptr = (uint8_t*)(comp_ptr)+1;
+                    // default index type to row index type and iterate pointer
+                    *(uint8_t*)help_ptr = (uint8_t)sizeof(row_ind);
+                    comp_ptr = (uint8_t*)(comp_ptr)+1;
 
-                        // Add the found index to run
-                        *(row_ind*)(comp_ptr) = (*indexes)[j];
-                        comp_ptr = (uint32_t*)(comp_ptr)+1;
+                    // Add the found index to run
+                    *(row_ind*)(comp_ptr) = (*indexes)[j];
+                    comp_ptr = (row_ind*)(comp_ptr)+1;
 
-                        // Loop through rest of column to get rest of indices
-                        for (size_t k = j + 1; k < (*col_p)[i + 1]; k++) {
+                    // Loop through rest of column to get rest of indices
+                    for (size_t k = j + 1; k < (*col_p)[i + 1]; k++) {
 
-                            if ((*vals)[k] == (*vals)[j]) {
+                        if ((*vals)[k] == (*vals)[j]) {
 
-                                // Found value again
+                            // Found value again
 
-                                // add index of value to run
-                                *(row_ind*)(comp_ptr) = (*indexes)[k];
-                                comp_ptr = (row_ind*)(comp_ptr)+1;
-
-                                // set value to zero
-                                (*vals)[k] = 0;
-                            }
-                        }
-
-                        // Set first index found to 0
-                        (*vals)[j] = 0;
-
-                        //* Positive delta encode the indices -----------
-
-                        // constexpr if (compression_level == 3) {
-                        if (compression_level == 3) {
-
-                            // set variable for max element
-                            size_t max_index = 0;
-
-                            // find number of elements found for unique value
-                            size_t num_elements = (row_ind*)(comp_ptr)-((row_ind*)(help_ptr));
-
-                            // bring comp_ptr back to being pointed at last found index
-                            comp_ptr = (row_ind*)(comp_ptr)-1;
-
-                            // loop moves comp_ptr backwards through indices and positive delta encodes them
-                            for (size_t k = 0; k < num_elements - 1; k++) {
-
-                                // subtract element from one before it
-                                *(row_ind*)(comp_ptr) = *(row_ind*)(comp_ptr)-*((row_ind*)(comp_ptr)-1);
-
-                                // if bigger then prev max make curr max idx
-                                if (*(row_ind*)(comp_ptr) > max_index) {
-                                    max_index = *(row_ind*)(comp_ptr);
-                                }
-
-                                comp_ptr = (row_ind*)(comp_ptr)-1; // loop control
-                            }
-
-                            // set index pointer to correct size for run
-                            *(uint8_t*)(help_ptr) = byte_width(max_index);
-                            help_ptr = (uint8_t*)(help_ptr)+1;
-
-                            // write over data with indices of new size, index compression
-                            switch (byte_width(max_index)) {
-                            case 1:
-
-                                // walk the two iterators, compressing down to optimal byte width
-                                for (size_t k = 0; k < num_elements; k++) {
-
-                                    // set index to uint8_t size
-                                    *(uint8_t*)(comp_ptr) = (uint8_t) * (row_ind*)(help_ptr);
-
-                                    // Iterate pointers
-                                    comp_ptr = (uint8_t*)(comp_ptr)+1;
-                                    help_ptr = (row_ind*)(help_ptr)+1;
-                                }
-
-                                // Add delim
-                                *(uint8_t*)(comp_ptr) = delim;
-                                comp_ptr = (uint8_t*)(comp_ptr)+1;
-
-                                break;
-
-                            case 2:
-                                // walk the two iterators, compressing down to optimal byte width
-                                for (size_t k = 0; k < num_elements; k++) {
-
-                                    // set index to uint16_t size
-                                    *(uint16_t*)(comp_ptr) = (uint16_t) * (row_ind*)(help_ptr);
-
-                                    // Iterate pointers
-                                    comp_ptr = (uint16_t*)(comp_ptr)+1;
-                                    help_ptr = (row_ind*)(help_ptr)+1;
-                                }
-
-                                // Add delim
-                                *(uint16_t*)(comp_ptr) = delim;
-                                comp_ptr = (uint16_t*)(comp_ptr)+1;
-
-                                break;
-
-                            case 4:
-                                // walk the two iterators, compressing down to optimal byte width
-                                for (size_t k = 0; k < num_elements; k++) {
-
-                                    // set index to uint8_t size
-                                    *(uint32_t*)(comp_ptr) = (uint32_t) * (row_ind*)(help_ptr);
-
-                                    // Iterate pointers
-                                    comp_ptr = (uint32_t*)(comp_ptr)+1;
-                                    help_ptr = (row_ind*)(help_ptr)+1;
-                                }
-
-                                // Add delim
-                                *(uint32_t*)(comp_ptr) = delim;
-                                comp_ptr = (uint32_t*)(comp_ptr)+1;
-
-                                break;
-
-                            } // end switch
-
-                            help_ptr = comp_ptr;
-
-                        } else if (compression_level == 2) { // end compression level 3
-                            // add delim to end of run
-                            *(row_ind*)(comp_ptr) = delim;
+                            // add index of value to run
+                            *(row_ind*)(comp_ptr) = (*indexes)[k];
                             comp_ptr = (row_ind*)(comp_ptr)+1;
 
-                            // bring up help ptr to comp ptr
-                            help_ptr = comp_ptr;
+                            // set value to zero
+                            (*vals)[k] = 0;
                         }
-                    } // end if
+                    }
 
-                } // end for loop of uniques in col
+                    // Set first index found to 0
+                    (*vals)[j] = 0;
 
-            } // end of col for loop
+                    //* Positive delta encode the indices -----------
 
-            // remove ending zeros
-            while (comp_ptr != begin_ptr && *(uint8_t*)(comp_ptr) == 0) {
-                comp_ptr = (uint8_t*)(comp_ptr)-1;
-            }
+                    // constexpr if (compression_level == 3) {
+                    if (compression_level == 3) {
 
-            // positive delta encode the column pointers
-            // for (size_t i = num_cols - 1; i > 0; i--) {
-            //     col_pointers[i] = col_pointers[i] - col_pointers[i - 1];
-            // }
+                        // set variable for max element
+                        size_t max_index = 0;
 
-            // find size of file in bytes
-            compression_size = (uint8_t*)(comp_ptr)-((uint8_t*)(begin_ptr)-1);
+                        // find number of elements found for unique value
+                        size_t num_elements = (row_ind*)(comp_ptr)-((row_ind*)(help_ptr));
 
-            // resize data to fit actual size
-            begin_ptr = realloc(begin_ptr, compression_size);
+                        // bring comp_ptr back to being pointed at last found index
+                        comp_ptr = (row_ind*)(comp_ptr)-1;
 
-            // ! write data to file
-            FILE* fp = fopen("data.bin", "wb");
-            fwrite(begin_ptr, 1, compression_size, fp);
-            fclose(fp);
+                        // loop moves comp_ptr backwards through indices and positive delta encodes them
+                        for (size_t k = 0; k < num_elements - 1; k++) {
+
+                            // subtract element from one before it
+                            *(row_ind*)(comp_ptr) = *(row_ind*)(comp_ptr)-*((row_ind*)(comp_ptr)-1);
+
+                            // if bigger then prev max make curr max idx
+                            if (*(row_ind*)(comp_ptr) > max_index) {
+                                max_index = *(row_ind*)(comp_ptr);
+                            }
+
+                            comp_ptr = (row_ind*)(comp_ptr)-1; // loop control
+                        }
+
+                        // set index pointer to correct size for run
+                        *(uint8_t*)(help_ptr) = byte_width(max_index);
+                        help_ptr = (uint8_t*)(help_ptr)+1;
+
+                        // write over data with indices of new size, index compression
+                        switch (byte_width(max_index)) {
+                        case 1:
+
+                            // walk the two iterators, compressing down to optimal byte width
+                            for (size_t k = 0; k < num_elements; k++) {
+
+                                // set index to uint8_t size
+                                *(uint8_t*)(comp_ptr) = (uint8_t) * (row_ind*)(help_ptr);
+
+                                // Iterate pointers
+                                comp_ptr = (uint8_t*)(comp_ptr)+1;
+                                help_ptr = (row_ind*)(help_ptr)+1;
+                            }
+
+                            // Add delim
+                            *(uint8_t*)(comp_ptr) = delim;
+                            comp_ptr = (uint8_t*)(comp_ptr)+1;
+
+                            break;
+
+                        case 2:
+                            // walk the two iterators, compressing down to optimal byte width
+                            for (size_t k = 0; k < num_elements; k++) {
+
+                                // set index to uint16_t size
+                                *(uint16_t*)(comp_ptr) = (uint16_t) * (row_ind*)(help_ptr);
+
+                                // Iterate pointers
+                                comp_ptr = (uint16_t*)(comp_ptr)+1;
+                                help_ptr = (row_ind*)(help_ptr)+1;
+                            }
+
+                            // Add delim
+                            *(uint16_t*)(comp_ptr) = delim;
+                            comp_ptr = (uint16_t*)(comp_ptr)+1;
+
+                            break;
+
+                        case 4:
+                            // walk the two iterators, compressing down to optimal byte width
+                            for (size_t k = 0; k < num_elements; k++) {
+
+                                // set index to uint8_t size
+                                *(uint32_t*)(comp_ptr) = (uint32_t) * (row_ind*)(help_ptr);
+
+                                // Iterate pointers
+                                comp_ptr = (uint32_t*)(comp_ptr)+1;
+                                help_ptr = (row_ind*)(help_ptr)+1;
+                            }
+
+                            // Add delim
+                            *(uint32_t*)(comp_ptr) = delim;
+                            comp_ptr = (uint32_t*)(comp_ptr)+1;
+
+                            break;
+
+                        } // end switch
+
+                        help_ptr = comp_ptr;
+
+                    } else if (compression_level == 2) { // end compression level 3
+                        // add delim to end of run
+                        *(row_ind*)(comp_ptr) = delim;
+                        comp_ptr = (row_ind*)(comp_ptr)+1;
+
+                        // bring up help ptr to comp ptr
+                        help_ptr = comp_ptr;
+                    }
+                } // end if
+
+            } // end for loop of uniques in col
+
+        } // end of col for loop
+
+        // remove ending zeros
+        while (comp_ptr != begin_ptr && *(uint8_t*)(comp_ptr) == 0) {
+            comp_ptr = (uint8_t*)(comp_ptr)-1;
+        }
+
+        // positive delta encode the column pointers
+        // for (size_t i = num_cols - 1; i > 0; i--) {
+        //     col_pointers[i] = col_pointers[i] - col_pointers[i - 1];
+        // }
+
+        // find size of file in bytes
+        compression_size = (uint8_t*)(comp_ptr)-((uint8_t*)(begin_ptr)-1);
+
+        // resize data to fit actual size
+        begin_ptr = realloc(begin_ptr, compression_size);
+
+        // ! write data to file
+        FILE* fp = fopen("data.bin", "wb");
+        fwrite(begin_ptr, 1, compression_size, fp);
+        fclose(fp);
     }
+
+    // template<typename T, int compression_level>
+    // SparseMatrix<T, compression_level=1>::SparseMatrix(T)
 
     // implementation details for the destructor
     template <typename T, int compression_level>

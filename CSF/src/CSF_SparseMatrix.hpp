@@ -48,6 +48,29 @@ namespace CSF {
 
             void* end();
 
+
             class Iterator;
+
+            class Col {
+                
+                template <typename index_t>
+                Col (index_t col) {
+                    it = Iterator(matrix, col)
+                }
+
+                Eigen::Vector<T, 1, -1> operator*(Eigen::Vector<T, 1, -1>) {
+
+                }
+
+                private:
+                    Iterator& it;
+            }
+
+
+            Column(index_t col) {
+                Col()
+                // pass in data for column needed
+            }
+
     };
 }
