@@ -34,7 +34,8 @@
             "intelliSenseMode": "linux-gcc-x64",
             "browse": {
                 "path": [
-                    "${workspaceFolder}/"
+                    "${workspaceFolder}/",
+                    "${workspaceFolder}/misc/"
                 ]
             }
         }
