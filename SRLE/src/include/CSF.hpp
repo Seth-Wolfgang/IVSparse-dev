@@ -327,9 +327,10 @@ namespace CSF {
 
             } // end of col for loop
 
+
             // remove ending zeros
             for (uint8_t i = 0; i < last_index_width + 1; i++) {
-            comp_ptr = (uint8_t*)(comp_ptr)-1;
+                comp_ptr = (uint8_t*)(comp_ptr)-1;
             }
 
             // find size of file in bytes
