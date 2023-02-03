@@ -143,6 +143,8 @@ namespace CSF {
             row_t = byte_width(num_rows);
             col_t = byte_width(num_cols);
             val_t = sizeof(values_t);
+            
+            uint8_t last_index_width = 1;
 
             // Allocate memory for compression
             allocate_memory();
@@ -255,6 +257,9 @@ namespace CSF {
                         // set index pointer to correct size for run
                         *(uint8_t*)(help_ptr) = byte_width(max_index);
                         help_ptr = (uint8_t*)(help_ptr)+1;
+                        
+                        // ! temp solution, def a more optimal solution to be found
+                        last_index_width = byte_width(max_index);
 
                         // write over data with indices of new size, index compression
                         switch (byte_width(max_index)) {
@@ -323,14 +328,9 @@ namespace CSF {
             } // end of col for loop
 
             // remove ending zeros
-            while (comp_ptr != begin_ptr && *(uint8_t*)(comp_ptr) == 0) {
-                comp_ptr = (uint8_t*)(comp_ptr)-1;
+            for (uint8_t i = 0; i < last_index_width + 1; i++) {
+            comp_ptr = (uint8_t*)(comp_ptr)-1;
             }
-
-            // positive delta encode the column pointers
-            // for (size_t i = num_cols - 1; i > 0; i--) {
-            //     col_pointers[i] = col_pointers[i] - col_pointers[i - 1];
-            // }
 
             // find size of file in bytes
             compression_size = (uint8_t*)(comp_ptr)-((uint8_t*)(begin_ptr)-1);
