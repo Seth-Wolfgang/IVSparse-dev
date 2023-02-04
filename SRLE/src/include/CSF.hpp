@@ -143,7 +143,7 @@ namespace CSF {
             row_t = byte_width(num_rows);
             col_t = byte_width(num_cols);
             val_t = sizeof(values_t);
-            
+
             uint8_t last_index_width = 1;
 
             // Allocate memory for compression
@@ -257,7 +257,7 @@ namespace CSF {
                         // set index pointer to correct size for run
                         *(uint8_t*)(help_ptr) = byte_width(max_index);
                         help_ptr = (uint8_t*)(help_ptr)+1;
-                        
+
                         // ! temp solution, def a more optimal solution to be found
                         last_index_width = byte_width(max_index);
 
@@ -329,29 +329,34 @@ namespace CSF {
 
 
             // remove ending zeros
-            for (uint8_t i = 0; i < last_index_width + 1; i++) {
+            for (uint8_t i = 0; i < last_index_width; i++) {
                 comp_ptr = (uint8_t*)(comp_ptr)-1;
             }
+            
 
+            // comp_ptr = (uint8_t*)(comp_ptr) + last_index_width;
+            
             // find size of file in bytes
+
             compression_size = (uint8_t*)(comp_ptr)-((uint8_t*)(begin_ptr)-1);
-
-            // resize data to fit actual size
-            begin_ptr = realloc(begin_ptr, compression_size);
-
-            // ! write data to file
             FILE* fp = fopen("data.bin", "wb");
             fwrite(begin_ptr, 1, compression_size, fp);
             fclose(fp);
+            // resize data to fit actual size
+            cout << "Compression size: " << compression_size << endl;
+            begin_ptr = realloc(begin_ptr, compression_size);
+            cout << "Compression size: " << compression_size << endl;
+
+            // ! write data to file
+
 
         } // end of constructor
 
-            ~SparseMatrix()
-           {
-                if(is_allocated)
-                    free(begin_ptr);
-                is_allocated = false;
-           }
+        // ~SparseMatrix() {
+        //     if (is_allocated)
+        //         free(begin_ptr);
+        //     is_allocated = false;
+        // }
 
         size_t getSize() const {
             return compression_size;
@@ -414,7 +419,7 @@ namespace CSF {
 
         iterator(CSF::SparseMatrix& matrix) {
             data = matrix.getData();
-            endOfData = ((char*)matrix.getEnd()) - 1;
+            endOfData = matrix.getEnd();
             currentIndex = data;
 
             // read first 28 bytes of fileData put it into params -> metadata
@@ -491,8 +496,8 @@ namespace CSF {
 
                 memset(&index, 0, 8);
 
-                cout << "new value " << value << endl;
-                cout << "new width: " << (int)newIndexWidth << endl;
+                // cout << "new value " << value << endl;
+                // cout << "new width: " << (int)newIndexWidth << endl;
 
                 // Returns the first index of the run
                 index = interpretPointer(newIndexWidth);
