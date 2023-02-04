@@ -119,8 +119,8 @@ int main(int argc, char** argv) {
     // call constructor
     //CSF::SparseMatrix<int, 3> matrix(mat);
 
-    int numRows = 100;
-    int numCols = 100;
+    int numRows = 21;
+    int numCols = 52;
     int sparsity = 20;
     uint64_t seed = 5645646546;
 
