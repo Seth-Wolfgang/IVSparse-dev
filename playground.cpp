@@ -117,7 +117,7 @@ int main(int argc, char** argv) {
     mat.insert(4, 9) = 1;
 
     // call constructor
-    CSF::SparseMatrix<int, 3> matrix(mat);
+    //CSF::SparseMatrix<int, 3> matrix(mat);
 
     int numRows = 100;
     int numCols = 100;
@@ -130,10 +130,14 @@ int main(int argc, char** argv) {
     myMatrix = generateMatrix<int>(numRows, numCols, sparsity, seed);
     myMatrix.makeCompressed();
 
-    CSF::SparseMatrix<int, 3> big(myMatrix);
+    //CSF::SparseMatrix<int, 3> big(myMatrix);
 
     // print out big compression size
     //std::cout << big.byte_size() << std::endl;
+
+    //std::cout << myMatrix << std::endl;
+
+    
 
     return 0;
 }

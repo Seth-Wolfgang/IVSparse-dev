@@ -33,12 +33,14 @@ namespace CSF {
         
         public:
 
-            SparseMatrix(Eigen::SparseMatrix<T>& mat);
+            SparseMatrix(Eigen::SparseMatrix<T>& mat, bool destroy = false);
 
             template <typename values_t, typename row_ind, typename col_ind>
             SparseMatrix(values_t **vals, row_ind **indexes, col_ind **col_p,
                          size_t non_zeros, size_t row_num, size_t col_num,
-                         bool destroy = true);
+                         bool destroy = false);
+
+            SparseMatrix(const char *filename);
 
             ~SparseMatrix();
 
@@ -48,6 +50,7 @@ namespace CSF {
 
             void* end();
 
+            void write(const char *filename);
 
             //class Iterator;
 
