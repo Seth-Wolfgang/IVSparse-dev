@@ -46,7 +46,7 @@ namespace CSF {
             // Malloc memory for the data, never worse then CSC so allocate CSC amount
             // space for the value and row, col indicies, and a buffer zone
 
-            size_t csc_size = num_nonzeros * val_t + num_nonzeros * row_t + num_cols * col_t + 300;
+            size_t csc_size = num_nonzeros * val_t + num_nonzeros * row_t + num_cols * col_t + 1000;
 
             begin_ptr = malloc(csc_size);
 
@@ -332,23 +332,19 @@ namespace CSF {
             for (uint8_t i = 0; i < last_index_width; i++) {
                 comp_ptr = (uint8_t*)(comp_ptr)-1;
             }
-            
 
-            // comp_ptr = (uint8_t*)(comp_ptr) + last_index_width;
-            
             // find size of file in bytes
 
             compression_size = (uint8_t*)(comp_ptr)-((uint8_t*)(begin_ptr)-1);
-            FILE* fp = fopen("data.bin", "wb");
-            fwrite(begin_ptr, 1, compression_size, fp);
-            fclose(fp);
+
             // resize data to fit actual size
             cout << "Compression size: " << compression_size << endl;
             begin_ptr = realloc(begin_ptr, compression_size);
-            cout << "Compression size: " << compression_size << endl;
 
             // ! write data to file
-
+            FILE* fp = fopen("data.bin", "wb");
+            fwrite(begin_ptr, 1, compression_size, fp);
+            fclose(fp);
 
         } // end of constructor
 
@@ -370,19 +366,39 @@ namespace CSF {
             return comp_ptr;
         }
 
+        //Slyler, change <int> to the template when merge everything again
+        void operator << (std::ostream& os) {
+            CSF::Iterator<int> it = CSF::Iterator<int>(matrix);
+            char** charMatrix = (char**)calloc(this->num_cols * this->num_rows, sizeof(char*));
+
+            for (int i = 0; i < this->num_rows; i++) {
+                it.goToColumn(i);
+                while (it) {
+                    it++;
+                    charMatrix[i][it.getIndex] = it.getValue();
+                }
+            }
+
+
+        }
+
+
     }; // end of SparseMatrix class
 
     // Iterator class
     template <typename T>
-    class iterator {
+    class Iterator {
 
     private:
         uint64_t index = 0;
         uint32_t valueWidth;
+        uint32_t numRows;
+        uint32_t numColumns;
         uint8_t newIndexWidth;
         void* data;
         void* endOfData;
         void* currentIndex;
+        void* tempPointer;
         T value;
         bool firstIndex = true;
 
@@ -397,16 +413,10 @@ namespace CSF {
             //columns are 0 indexed 
 
             //TODO: implemet a way of checking if currentIndex points to next column
-            //TODO: optimize this function
 
             currentIndex = static_cast<char*>(data) + 20 + 8 * column;
-            // currentIndex = static_cast<char*>(currentIndex) + 8 * column;
-
-            uint64_t temp;
-            memcpy(&temp, currentIndex, 8);
-
-            //We can use currentIndex to get the address of the column we want and avoid a temporary variable.
-            currentIndex = static_cast<char*>(data) + temp;
+            memcpy(currentIndex, currentIndex, 8);
+            currentIndex = static_cast<char*>(data) + *static_cast<char*>(currentIndex);
         }
 
     public:
@@ -417,14 +427,19 @@ namespace CSF {
          * @param filePath
          */
 
-        iterator(CSF::SparseMatrix& matrix) {
+        Iterator(CSF::SparseMatrix& matrix) {
             data = matrix.getData();
             endOfData = matrix.getEnd();
             currentIndex = data;
 
             // read first 28 bytes of fileData put it into params -> metadata
             uint32_t params[5];
+
+
             memcpy(&params, currentIndex, 20);
+            numRows = params[3];
+            numColumns = params[4];
+
             currentIndex = static_cast<char*>(currentIndex) + 20;
             goToColumn(0);
 
@@ -440,7 +455,7 @@ namespace CSF {
             // cout << "newIndexWidth: " << (int)newIndexWidth << endl;
         }
 
-        iterator(const char* filePath) {
+        Iterator(const char* filePath) {
             readFile(filePath);
 
             // read first 28 bytes of fileData put it into params -> metadata
@@ -468,8 +483,15 @@ namespace CSF {
          * @return T&
          */
 
-        T& operator * () { return value; };
-        T getValue() { return value; }
+        const T& operator * () { return value; };
+        const T getValue() { return value; }
+
+
+        /**
+         * @brief Getter for the index of the iterator
+         *
+         */
+        uint64_t getIndex() { return index; }
 
 
         /**
@@ -496,8 +518,8 @@ namespace CSF {
 
                 memset(&index, 0, 8);
 
-                // cout << "new value " << value << endl;
-                // cout << "new width: " << (int)newIndexWidth << endl;
+                cout << "new value " << value << endl;
+                cout << "new width: " << (int)newIndexWidth << endl;
 
                 // Returns the first index of the run
                 index = interpretPointer(newIndexWidth);
@@ -518,11 +540,39 @@ namespace CSF {
          * @return false
          */
 
-        operator bool() {
-            // cout << "endOfData vs CurrentIndex: " << endOfData << " " << currentIndex << endl;
+        operator bool() { return endOfData != currentIndex; }
 
-            return endOfData != currentIndex;
+
+        /**
+         * @brief Gets the data of a specified column
+         *
+         * @param column
+         * @return char*
+         */
+
+        char* getColumn(uint64_t column) {
+            //TODO: optimize this function
+            Iterator it = *this;
+            it.index = 0;
+            it.goToColumn(column);
+            it.currentIndex = static_cast<char*>(it.currentIndex) + 1;
+            it.value = it.interpretPointer(it.valueWidth);
+            char* columnData = (char*)calloc(it.numRows, sizeof(T));
+
+            if (numColumns != 1) it.endOfData = static_cast<char*>(data) + *(static_cast<uint64_t*>(data) + 20 + ((column + 1) * 8));
+
+
+
+            //copy data into new array
+            while (it) {
+                it++;
+                columnData[it.index] = value;
+            }
+
+
+            return columnData;
         }
+
 
     private:
         /**
@@ -588,37 +638,7 @@ namespace CSF {
             return newIndex;
         }
 
-        /**
-         * @brief Gets the data of a specified column
-         *
-         * @param column
-         * @return char*
-         */
+    }; // end of iterator
 
-        char* getColumn(uint64_t column) {
-            //TODO: optimize this function
-            uint64_t start;
-            uint64_t end;
-            char* columnData;
-
-            //Grab memory address for start and end
-            memcpy(&start, static_cast<char*>(data) + 20 + (column * 8), 8);
-            memcpy(&end, static_cast<char*>(data) + 20 + ((column + 1) * 8), 8);
-
-            start = data + start;
-            end = data + end;
-
-            //Copy all data from start to end - 1
-            memcpy(columnData, &start, &end - &start);
-
-
-            return columnData;
-        }
-
-
-
-
-
-    };
 
 }; // end of namespace

@@ -1,5 +1,7 @@
 #include "include/CSF.hpp"
 #include "include/CSF_Lib.hpp"
+bool iteratorBenchmark(int numRows, int numCols, int sparsity, uint64_t seed);
+template<typename T> Eigen::SparseMatrix<T> generateMatrix(int numRows, int numCols, int sparsity, uint64_t seed);
 
 
 int main() {
@@ -11,29 +13,31 @@ int main() {
     int sparsity = 20;
     uint64_t seed = matrixSeed * matrixSeed2;
 
-    // cout << iteratorBenchmark(544, 130, 20, 1563481712) << endl;
+    cout << iteratorBenchmark(10, 1, 5, matrixSeed) << endl;
 
-    for (int i = 0; i < 10000; i++) {
-        matrixSeed = rand();
-        matrixSeed2 = rand();
-        numRows = rand() % 100 + 10;
-        numCols = rand() % 100 + 10;
-        // sparsity = rand() % 50 + 1;
-        cout << "numRows: " << numRows << endl;
-        cout << "numCols: " << numCols << endl;
-        seed = matrixSeed * matrixSeed2;
-        cout << "i: " << i << endl;
-        if (!iteratorBenchmark(numRows, numCols, sparsity, seed - matrixSeed2)) {
+    // for (int i = 0; i < 10001; i++) {
+    //     matrixSeed = rand();
+    //     matrixSeed2 = rand();
+    //     numRows = rand() % 100 + 1;
+    //     numCols = rand() % 100 + 1;
+    //     sparsity = rand() % 50 + 1;
+    //     seed = matrixSeed * matrixSeed2;
+    //     cout << "i: " << i << endl;
+        // cout << "numRows: " << numRows << endl;
+        // cout << "numCols: " << numCols << endl;
+        // cout << "sparsity: " << sparsity << endl;
+        // cout << "seed: " << seed - matrixSeed2 << endl;
+    //     if (!iteratorBenchmark(numRows, numCols, sparsity, seed - matrixSeed2)) {
 
-            cout << "Something went wrong" << endl;
-            cout << "numRows: " << numRows << endl;
-            cout << "numCols: " << numCols << endl;
-            cout << "sparsity: " << sparsity << endl;
-            cout << "Matrix seed: " << matrixSeed << " * " << matrixSeed2 << endl;
-            cout << "i: " << i << endl;
-            return 0;
-        }
-    }
+    //         cout << "Something went wrong" << endl;
+    //         cout << "numRows: " << numRows << endl;
+    //         cout << "numCols: " << numCols << endl;
+    //         cout << "sparsity: " << sparsity << endl;
+    //         cout << "Matrix seed: " << matrixSeed << " * " << matrixSeed2 << endl;
+    //         cout << "i: " << i << endl;
+    //         return 0;
+    //     }
+    // }
     cout << " \u001b[32mEverything worked!!\u001b[0m" << endl;
     return 1;
 }
@@ -62,19 +66,27 @@ bool iteratorBenchmark(int numRows, int numCols, int sparsity, uint64_t seed) {
 
     // cout << "Testing Iterator" << endl;
 
-    CSF::iterator<int> newIter = CSF::iterator<int>(CSFMatrix);
-    // CSF::CSFIterator<int>* newIter = new CSF::CSFIterator<int>(fileName.c_str());
+    CSF::Iterator<int> newIter = CSF::Iterator<int>(CSFMatrix);
+    // CSF::Iterator<int>* newIter = new CSF::Iterator<int>(fileName.c_str());
 
-    vector<int> SRLEVector;
+    vector<int> CSFVector;
 
     while (newIter.operator bool()) {
         newIter++;
         CSFTotal += newIter.getValue();
-        SRLEVector.push_back(newIter.getValue());
+        CSFVector.push_back(newIter.getValue());
         if (newIter.getValue() != value) {
             value = newIter.getValue();
         }
     }
+
+    char* column = newIter.getColumn(0);
+    cout << "Column: " << endl;
+    //print data in column
+    for (int i = 0; i < numRows; i++) {
+        cout << (int)column[i] << " ";
+    }
+    cout << endl;
 
     // cout << "CSF Total: " << CSFTotal << endl;
 
@@ -85,7 +97,6 @@ bool iteratorBenchmark(int numRows, int numCols, int sparsity, uint64_t seed) {
 
     // cout << "Testing Eigen" << endl;
 
-    // begin timing
     vector<int> eigenVector;
     for (int i = 0; i < numCols; ++i) {
         for (Eigen::SparseMatrix<int>::InnerIterator it(myMatrix, i); it; ++it) {
@@ -94,10 +105,7 @@ bool iteratorBenchmark(int numRows, int numCols, int sparsity, uint64_t seed) {
         }
     }
 
-    //print eigen matrix
-
-
-
+    cout << myMatrix << endl;
 
     // cout << "InnerIterator Total: " << eigenTotal << endl;
 
@@ -122,11 +130,11 @@ bool iteratorBenchmark(int numRows, int numCols, int sparsity, uint64_t seed) {
  * Testing to see if the vectors match
  */
 
- // sort(SRLEVector.begin(), SRLEVector.end());
+ // sort(CSFVector.begin(), CSFVector.end());
  // sort(eigenVector.begin(), eigenVector.end());
 
- // cout << "SRLE Vector" << endl;
- // for (auto j : SRLEVector) {
+ // cout << "CSF Vector" << endl;
+ // for (auto j : CSFVector) {
  //     cout << j << " ";
  // }
  // cout << endl
@@ -148,7 +156,7 @@ Eigen::SparseMatrix<T> generateMatrix(int numRows, int numCols, int sparsity, ui
     rng randMatrixGen = rng(seed);
 
     Eigen::SparseMatrix<T> myMatrix(numRows, numCols);
-    myMatrix.reserve(Eigen::VectorXi::Constant(numRows * 10, numCols * 20));
+    myMatrix.reserve(Eigen::VectorXi::Constant(numRows * 100, numCols * 100));
     for (int i = 0; i < numRows; i++) {
         for (int j = 0; j < numCols; j++) {
             if (randMatrixGen.draw<int>(i, j, sparsity)) {
