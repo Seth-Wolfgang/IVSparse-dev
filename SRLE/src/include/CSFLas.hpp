@@ -5,12 +5,9 @@
 // will be replaced by operators when they are operational
 
 template <typename T>
-char* scalarMultiply(int scalar, CSF<T> column) { 
+CSF::SparseMatrix<T> scalarMultiply(int scalar, CSF<T> column) { 
 
     
-
-
-
 }
 
 

@@ -6,38 +6,34 @@ template<typename T> Eigen::SparseMatrix<T> generateMatrix(int numRows, int numC
 
 int main() {
     int matrixSeed = rand();
-    int matrixSeed2 = rand();
     int numRows = rand() % 1000 + 1;
     int numCols = rand() % 1000 + 1;
 
-    int sparsity = 20;
-    uint64_t seed = matrixSeed * matrixSeed2;
+    int sparsity = 10;
 
-    cout << iteratorBenchmark(10, 1, 5, matrixSeed) << endl;
+    // cout << iteratorBenchmark(10, 1, 5, matrixSeed) << endl;
 
-    // for (int i = 0; i < 10001; i++) {
-    //     matrixSeed = rand();
-    //     matrixSeed2 = rand();
-    //     numRows = rand() % 100 + 1;
-    //     numCols = rand() % 100 + 1;
-    //     sparsity = rand() % 50 + 1;
-    //     seed = matrixSeed * matrixSeed2;
-    //     cout << "i: " << i << endl;
+    for (int i = 0; i < 10001; i++) {
+        matrixSeed = rand();
+        numRows = rand() % 1000 + 1;
+        numCols = rand() % 1000 + 1;
+        // sparsity = rand() % 50 + 1;
+        cout << "i: " << i << endl;
         // cout << "numRows: " << numRows << endl;
         // cout << "numCols: " << numCols << endl;
         // cout << "sparsity: " << sparsity << endl;
         // cout << "seed: " << seed - matrixSeed2 << endl;
-    //     if (!iteratorBenchmark(numRows, numCols, sparsity, seed - matrixSeed2)) {
+        if (!iteratorBenchmark(numRows, numCols, sparsity, matrixSeed)) {
 
-    //         cout << "Something went wrong" << endl;
-    //         cout << "numRows: " << numRows << endl;
-    //         cout << "numCols: " << numCols << endl;
-    //         cout << "sparsity: " << sparsity << endl;
-    //         cout << "Matrix seed: " << matrixSeed << " * " << matrixSeed2 << endl;
-    //         cout << "i: " << i << endl;
-    //         return 0;
-    //     }
-    // }
+            cout << "Something went wrong" << endl;
+            cout << "numRows: " << numRows << endl;
+            cout << "numCols: " << numCols << endl;
+            cout << "sparsity: " << sparsity << endl;
+            cout << "Matrix seed: " << matrixSeed << endl;
+            cout << "i: " << i << endl;
+            return 0;
+        }
+    }
     cout << " \u001b[32mEverything worked!!\u001b[0m" << endl;
     return 1;
 }
@@ -80,13 +76,13 @@ bool iteratorBenchmark(int numRows, int numCols, int sparsity, uint64_t seed) {
         }
     }
 
-    char* column = newIter.getColumn(0);
-    cout << "Column: " << endl;
+    // char* column = newIter.getColumn(0);
+    // cout << "Column: " << endl;
     //print data in column
-    for (int i = 0; i < numRows; i++) {
-        cout << (int)column[i] << " ";
-    }
-    cout << endl;
+    // for (int i = 0; i < numRows; i++) {
+    //     cout << (int)column[i] << " ";
+    // }
+    // cout << endl;
 
     // cout << "CSF Total: " << CSFTotal << endl;
 
@@ -105,7 +101,7 @@ bool iteratorBenchmark(int numRows, int numCols, int sparsity, uint64_t seed) {
         }
     }
 
-    cout << myMatrix << endl;
+    // cout << myMatrix << endl;
 
     // cout << "InnerIterator Total: " << eigenTotal << endl;
 
@@ -156,7 +152,7 @@ Eigen::SparseMatrix<T> generateMatrix(int numRows, int numCols, int sparsity, ui
     rng randMatrixGen = rng(seed);
 
     Eigen::SparseMatrix<T> myMatrix(numRows, numCols);
-    myMatrix.reserve(Eigen::VectorXi::Constant(numRows * 100, numCols * 100));
+    myMatrix.reserve(Eigen::VectorXi::Constant(numRows * 100, numCols * 250));
     for (int i = 0; i < numRows; i++) {
         for (int j = 0; j < numCols; j++) {
             if (randMatrixGen.draw<int>(i, j, sparsity)) {
