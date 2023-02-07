@@ -1,221 +1,289 @@
-// #pragma once
+#pragma once
 
-// #include <iostream>
+#include <iostream>
 
-// namespace CSF {
-//     template <typename T>
-//     class SparseMatrix<T, 3> {
-//     class Iterator{
-//     private:
-        
-//         uint64_t index = 0;
-//         uint64_t *colPointers;
-//         uint32_t valueWidth;
-//         uint8_t newIndexWidth;
-//         char *fileData;
-//         void *endOfData;
-//         void *currentIndex;
-//         T value;
-//         bool firstIndex = true;
+using std::cout;
+using std::endl;
 
-//         /**
-//          * @brief Reads in the column pointers from the data
-//          *
-//          */
+namespace CSF {
 
-//         void readColumnPointers()
-//         {
 
-//             memcpy(&colPointers, currentIndex, interpretPointer(8));
+// CSC iterator (compression level 1)
+template <typename T, typename T_index>
+class SparseMatrix<T, T_index, 1> {
+    public:
+    class Iterator {
+        public:
+        int hi = 3;
 
-//             for (int i = 0; i < interpretPointer(8); i++)
-//             {
-//                 std::cout << colPointers[i] << std::endl;
-//             }
-//         }
+        Iterator() {
+            cout << "hi skyler" << endl;
+        }
+    };
+};
 
-//         /**
-//          * @brief Helper method for the constructor.
-//          *
-//          */
+// General case iterator (compression levels 2 and 3)
+template <typename T, typename T_index, int compression_level>
+class SparseMatrix<T, T_index, compression_level>::Iterator {
 
-//         void setup()
-//         {
-//             uint32_t params[5];
+    private:
+        uint64_t index = 0;
+        uint32_t valueWidth;
+        uint32_t numRows;
+        uint32_t numColumns;
+        uint8_t newIndexWidth;
+        void *data;
+        void *endOfData;
+        void *currentIndex;
+        void *tempPointer;
+        T value;
+        bool firstIndex = true;
 
-//             memcpy(&params, currentIndex, 20);
-//             currentIndex = static_cast<char *>(currentIndex) + 20;
+        /**
+         * @brief Get address of a specified column
+         * @param column
+         */
 
-//             // valueWidth is set and the first value is read in
-//             valueWidth = params[4];
-//             value = interpretPointer(valueWidth);
+        void goToColumn(int column)
+        {
+            // 20 bytes into the file, the column pointers are stored. Each column pointer is 8 bytes long so we can
+            // multiply the column number by 8 to get the offset of the column pointer we want.
+            // columns are 0 indexed
 
-//             readColumnPointers();
+            // TODO: implemet a way of checking if currentIndex points to next column
 
-//             // Read in the width of this run's indices and go to first index
-//             newIndexWidth = *static_cast<uint8_t *>(currentIndex);
-//             currentIndex = static_cast<char *>(currentIndex) + 1;
-//         }
+            currentIndex = static_cast<char *>(data) + 20 + 8 * column;
+            memcpy(currentIndex, currentIndex, 8);
+            currentIndex = static_cast<char *>(data) + *static_cast<char *>(currentIndex);
+        }
 
-//     public:
-//         /**
-//          * @brief Construct a new CSFiterator object
-//          *
-//          * @param filePath
-//          */
+    public:
+        /**
+         * @brief Construct a new CSFiterator object
+         *
+         * @param filePath
+         */
 
-//         Iterator(const CSF::SparseMatrix<T, 3> &matrix) {
+        int hi = 4;
+        Iterator() {
+            std::cout << "hello" << std::endl;
+        }
 
-//             // Sets start and end
-//             currentIndex = matrix.begin();
-//             endOfData = matrix.end();
+        Iterator(CSF::SparseMatrix<T, T_index, compression_level> &matrix)
+        {
+            data = matrix.beginPtr();
+            endOfData = matrix.endPtr();
+            currentIndex = data;
 
-//             // General setup for the contstructor
-//             setup();
-//         }
+            // read first 28 bytes of fileData put it into params -> metadata
+            uint32_t params[5];
 
-//         Iterator(const CSF::SparseMatrix<T, 3> &matrix, int column = 0) 
-//         {
+            memcpy(&params, currentIndex, 20);
+            numRows = params[3];
+            numColumns = params[4];
 
-//             // Sets start and end
-//             currentIndex = matrix.getData();
-//             endOfData = matrix.getEnd();
+            currentIndex = static_cast<char *>(currentIndex) + 20;
+            goToColumn(0);
 
-//             // General setup for the contstructor
-//             setup();
+            // valueWidth is set and the first value is read in
+            valueWidth = params[2];
+            value = interpretPointer(valueWidth);
 
-//             // Skips to column specified
-//             readColumnPointers(column);
-//         }
+            // Read in the width of this run's indices and go to first index
+            newIndexWidth = *static_cast<uint8_t *>(currentIndex);
+            currentIndex = static_cast<char *>(currentIndex) + 1;
 
-//         Iterator(const char *filePath, int column = 0)
-//         {
-//             readFile(filePath);
+            // cout << "value: " << value << endl;
+            // cout << "newIndexWidth: " << (int)newIndexWidth << endl;
+        }
 
-//             // General setup for the contstructor
-//             setup();
+        Iterator(const char *filePath)
+        {
+            readFile(filePath);
 
-//             // Skips to column specified
-//             readColumnPointers(column);
-//         }
+            // read first 28 bytes of fileData put it into params -> metadata
+            uint32_t params[8];
 
-//         /**
-//          * @brief Returns the value of the run.
-//          *
-//          * @return T&
-//          */
+            memcpy(&params, currentIndex, 20);
+            currentIndex = static_cast<char *>(currentIndex) + 20;
 
-//         const T &operator*() { return value; };
+            // valueWidth is set and the first value is read in
+            valueWidth = params[4];
+            value = interpretPointer(valueWidth);
+            goToColumn(0);
 
-//         /**
-//          * @brief Increment the iterator
-//          *
-//          * @return uint64_t
-//          */
+            // Read in the width of this run's indices and go to first index
+            newIndexWidth = *static_cast<uint8_t *>(currentIndex);
+            currentIndex = static_cast<char *>(currentIndex) + 1;
 
-//         uint64_t operator++() {
-//             uint64_t newIndex = interpretPointer(newIndexWidth);
+            // cout << "value: " << value << endl;
+            // cout << "newIndexWidth: " << (int)newIndexWidth << endl;
+        }
 
-//             // cout << "newIndex: " << newIndex << endl;
-//             // cout << "width: " << (int)newIndexWidth << endl;
-//             // cout << "value " << value << endl << endl;
+        /**
+         * @brief Returns the value of the run.
+         *
+         * @return T&
+         */
 
-//             // If newIndex is 0 and not the first index, then the index is a delimitor
-//             if (newIndex == 0 && !firstIndex)
-//             {
-//                 // Value is the first index of the run
-//                 value = interpretPointer(valueWidth);
+        const T &operator*() { return value; };
+        const T getValue() { return value; }
 
-//                 // newIndexWidth is the second value in the run
-//                 newIndexWidth = *static_cast<uint8_t *>(currentIndex);
-//                 currentIndex = static_cast<char *>(currentIndex) + 1;
+        /**
+         * @brief Getter for the index of the iterator
+         *
+         */
+        uint64_t getIndex() { return index; }
 
-//                 memset(&index, 0, 8);
+        /**
+         * @brief Increment the iterator
+         *
+         * @return uint64_t
+         */
 
-//                 // cout << "value2 " << value << endl;
-//                 // cout << "width2: " << (int)newIndexWidth << endl;
+        uint64_t operator++(int)
+        {
+            uint64_t newIndex = interpretPointer(newIndexWidth);
 
-//                 // Returns the first index of the run
-//                 index = interpretPointer(newIndexWidth);
-//                 firstIndex = true;
-//                 return index;
-//             }
+            // cout << "newIndex: " << newIndex << endl;
+            // cout << "width: " << (int)newIndexWidth << endl;
+            // cout << "value " << value << endl << endl;
 
-//             // Returns the next index of the run for positive delta encoded runs
-//             firstIndex = false;
-//             return index += newIndex;
-//         }
+            // If newIndex is 0 and not the first index, then the index is a delimitor
+            if (newIndex == 0 && !firstIndex)
+            {
+                // Value is the first index of the run
+                value = interpretPointer(valueWidth);
 
-//         /**
-//          * @brief Check if the iterator is at the end of the the data
-//          *
-//          * @return true
-//          * @return false
-//          */
+                // newIndexWidth is the second value in the run
+                newIndexWidth = *static_cast<uint8_t *>(currentIndex);
+                currentIndex = static_cast<char *>(currentIndex) + 1;
 
-//         operator bool() { return endOfData != currentIndex; }
+                memset(&index, 0, 8);
 
-//     private:
-//         /**
-//          * @brief Read a file into memory
-//          *
-//          * @param filePath
-//          */
+                cout << "new value " << value << endl;
+                cout << "new width: " << (int)newIndexWidth << endl;
 
-//         inline void readFile(const char *filePath)
-//         {
-//             FILE *file = fopen(filePath, "rb");
+                // Returns the first index of the run
+                index = interpretPointer(newIndexWidth);
+                // (index == 0) ? (firstIndex = true) : (firstIndex = false);
+                // firstIndex = true;
+                return index;
+            }
 
-//             // Find end of file and allocate size
-//             fseek(file, 0, SEEK_END);
-//             int sizeOfFile = ftell(file);
-//             fileData = (char *)malloc(sizeof(char *) * sizeOfFile);
+            // Returns the next index of the run for positive delta encoded runs
+            firstIndex = false;
+            return index += newIndex;
+        }
 
-//             // Read file into memory
-//             fseek(file, 0, SEEK_SET);
-//             fread(fileData, sizeOfFile, 1, file);
-//             fclose(file);
+        /**
+         * @brief Check if the iterator is at the end of the the data
+         *
+         * @return true
+         * @return false
+         */
 
-//             currentIndex = fileData;
-//             endOfData = fileData + sizeOfFile;
-//         }
+        operator bool() { return endOfData != currentIndex; }
 
-//         /**
-//          * @brief Read in the next index from the file based on a variable width
-//          *
-//          * @param width
-//          * @return uint64_t
-//          */
+        /**
+         * @brief Gets the data of a specified column
+         *
+         * @param column
+         * @return char*
+         */
 
-//         inline uint64_t interpretPointer(int width)
-//         {
-//             uint64_t newIndex = 0;
+        char *getColumn(uint64_t column)
+        {
+            // TODO: optimize this function
+            Iterator it = *this;
+            it.index = 0;
+            it.goToColumn(column);
+            it.currentIndex = static_cast<char *>(it.currentIndex) + 1;
+            it.value = it.interpretPointer(it.valueWidth);
+            char *columnData = (char *)calloc(it.numRows, sizeof(T));
 
-//             // Case statement takes in 1,2,4, or 8 otherwise the width is invalid
-//             switch (width)
-//             {
-//             case 1:
-//                 newIndex = static_cast<uint64_t>(*static_cast<uint8_t *>(currentIndex));
-//                 break;
-//             case 2:
-//                 newIndex = static_cast<uint64_t>(*static_cast<uint16_t *>(currentIndex));
-//                 break;
-//             case 4:
-//                 newIndex = static_cast<uint64_t>(*static_cast<uint32_t *>(currentIndex));
-//                 break;
-//             case 8:
-//                 newIndex = static_cast<uint64_t>(*static_cast<uint64_t *>(currentIndex));
-//                 break;
-//             default:
-//                 // cout << static_cast<int>(*static_cast<uint8_t*>(currentIndex)) << endl;
-//                 std::cout << "Invalid width: " << width << std::endl;
-//                 exit(-1);
-//                 break;
-//             }
+            if (numColumns != 1)
+                it.endOfData = static_cast<char *>(data) + *(static_cast<uint64_t *>(data) + 20 + ((column + 1) * 8));
 
-//             currentIndex = static_cast<char *>(currentIndex) + width;
-//             return newIndex;
-//         }
-//     };
-// };
-// }
+            // copy data into new array
+            while (it)
+            {
+                it++;
+                columnData[it.index] = value;
+            }
+
+            return columnData;
+        }
+
+    private:
+        /**
+         * @brief Read a file into memory
+         *
+         * @param filePath
+         */
+
+        inline void readFile(const char *filePath)
+        {
+            FILE *file = fopen(filePath, "rb");
+
+            // Find end of file and allocate size
+            fseek(file, 0, SEEK_END);
+            int sizeOfFile = ftell(file);
+            data = (char *)malloc(sizeof(char *) * sizeOfFile);
+
+            // Read file into memory
+            fseek(file, 0, SEEK_SET);
+            fread(data, sizeOfFile, 1, file);
+            fclose(file);
+
+            currentIndex = data;
+            endOfData = data + sizeOfFile;
+        }
+
+        /**
+         * @brief Read in the next index from the file based on a variable width
+         *
+         * @param width
+         * @return uint64_t
+         */
+
+        inline uint64_t interpretPointer(int width)
+        {
+            uint64_t newIndex = 0;
+
+            // Case statement takes in 1,2,4, or 8 otherwise the width is invalid
+            switch (width)
+            {
+            case 1:
+                newIndex = static_cast<uint64_t>(*static_cast<uint8_t *>(currentIndex));
+                break;
+            case 2:
+                newIndex = static_cast<uint64_t>(*static_cast<uint16_t *>(currentIndex));
+                break;
+            case 4:
+                newIndex = static_cast<uint64_t>(*static_cast<uint32_t *>(currentIndex));
+                break;
+            case 8:
+                newIndex = static_cast<uint64_t>(*static_cast<uint64_t *>(currentIndex));
+                break;
+            default:
+
+                if (endOfData == currentIndex)
+                {
+                    cout << "Value: " << value << endl;
+                    cout << static_cast<int>(*static_cast<uint8_t *>(currentIndex)) << endl;
+                    cout << "Invalid width: " << width << endl;
+                    exit(-1);
+                }
+
+                break;
+            }
+            // cout << "newIndex: " << newIndex << endl;
+            currentIndex = static_cast<char *>(currentIndex) + width;
+            return newIndex;
+        }
+
+    // end of iterator
+};
+
+}

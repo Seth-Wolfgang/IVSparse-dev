@@ -1,6 +1,6 @@
 #pragma once
 namespace CSF {
-    template <typename T, int compression_level>
+    template <typename T, typename T_index=T, int compression_level=3>
     class SparseMatrix {
         private:
             //* Constructor data
@@ -30,6 +30,8 @@ namespace CSF {
             void allocate_memory();
 
             uint8_t byte_width(size_t size);
+
+
         
         public:
 
@@ -46,13 +48,13 @@ namespace CSF {
 
             size_t byte_size();
 
-            void* begin();
+            void* beginPtr();
 
-            void* end();
+            void* endPtr();
 
             void write(const char *filename);
 
-            //class Iterator;
+            class Iterator;
 
             // class Col {
                 
@@ -76,4 +78,6 @@ namespace CSF {
             // }
 
     };
+
+    
 }

@@ -4,12 +4,6 @@
 #include <iostream>
 
 int main(int argc, char** argv) {
-    
-    Eigen::SparseMatrix<int> mat1(10, 10);
-
-    CSF::SparseMatrix<int, 3> matrix1(mat1);
-
-    //CSF::SparseMatrix<int, 3>::Iterator it(matrix1);
 
     // malloc space for data
     int *values_arr = (int *)malloc(58 * sizeof(int));
@@ -54,7 +48,7 @@ int main(int argc, char** argv) {
     int **indexes = &indexes_arr;
     int **col_p = &col_p_arr;
 
-    CSF::SparseMatrix<int, 3> test(vals, indexes, col_p, val_num, row_num, col_num);
+    CSF::SparseMatrix<int> test(vals, indexes, col_p, val_num, row_num, col_num);
 
     // print out vals, indexs, col_p
     for (size_t j = 0; j < 58; j++)
@@ -117,12 +111,12 @@ int main(int argc, char** argv) {
     mat.insert(4, 9) = 1;
 
     // call constructor
-    //CSF::SparseMatrix<int, 3> matrix(mat);
+    CSF::SparseMatrix<int, int, 3> matrix(mat);
 
-    int numRows = 21;
-    int numCols = 52;
+    int numRows = 100;
+    int numCols = 100;
     int sparsity = 20;
-    uint64_t seed = 5645646546;
+    uint64_t seed = 1956553944;
 
     // generating a large random eigen sparse
     Eigen::SparseMatrix<int> myMatrix(numRows, numCols);
@@ -137,7 +131,18 @@ int main(int argc, char** argv) {
 
     //std::cout << myMatrix << std::endl;
 
-    
+    // !! YAYY PARTIAL TEMPLATE ITERATORS 
+    // ? how does this work with compression levels changing? do they need a new instance of the matrix?
+    // ? can I just keep a variable locally? but if that happens then what's the point of the template
+    // ? And wouldn't the end users templated compression be all wrong?
+
+    CSF::SparseMatrix<int, int, 3>::Iterator it(matrix);
+
+    std::cout << it.hi << std::endl;
+
+    CSF::SparseMatrix<int, int, 1>::Iterator it2{};
+
+    std::cout << it2.hi << std::endl;
 
     return 0;
 }

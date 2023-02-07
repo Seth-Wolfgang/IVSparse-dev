@@ -3,10 +3,11 @@
 #include <type_traits>
 
 namespace CSF {
-    
-    template <typename T, int compression_level>
-    SparseMatrix<T, compression_level>::SparseMatrix(Eigen::SparseMatrix<T>& mat, bool destroy) {
-        
+
+    template <typename T, typename T_index, int compression_level>
+    SparseMatrix<T, T_index, compression_level>::SparseMatrix(Eigen::SparseMatrix<T> &mat, bool destroy)
+    {
+
         // declare variables for destruction path choice
         Eigen::SparseMatrix<T> mat_copy;
 
@@ -270,11 +271,13 @@ namespace CSF {
         fclose(fp);
     }
 
+    // It seems I need to redefine the entire sparse matrix class with a temlpate value of 1 for compression level in order to actually get a redefined constructor to work like I want. Should consider the easier way of just using an if statement to check the compression level and then just doing the compression like that. This is a bit of a mess
     
     // implementation details for the constructor
-    template <typename T, int compression_level>
+    template <typename T, typename T_index, int compression_level>
     template <typename values_t, typename row_ind, typename col_ind>
-    SparseMatrix<T, compression_level>::SparseMatrix(values_t **vals, row_ind **indexes, col_ind **col_p, size_t non_zeros, size_t row_num, size_t col_num, bool destroy) {
+    SparseMatrix<T, T_index, compression_level>::SparseMatrix(values_t **vals, row_ind **indexes, col_ind **col_p, size_t non_zeros, size_t row_num, size_t col_num, bool destroy)
+    {
 
         // Check that template T and values_t are the same
         static_assert(std::is_same<T, values_t>::value, "Your matrix must be of the same type as the constructor");
@@ -502,10 +505,10 @@ namespace CSF {
         fclose(fp);
     }
 
-
     // read in data from file
-    template <typename T, int compression_level>
-    SparseMatrix<T, compression_level>::SparseMatrix(const char* filename) {
+    template <typename T, typename T_index, int compression_level>
+    SparseMatrix<T, T_index, compression_level>::SparseMatrix(const char *filename)
+    {
 
         // open file
         FILE* fp = fopen(filename, "rb");
@@ -547,73 +550,14 @@ namespace CSF {
         is_allocated = true;
     }
 
-
     // implementation details for the destructor
-    template <typename T, int compression_level>
-    SparseMatrix<T, compression_level>::~SparseMatrix() {
+    template <typename T, typename T_index, int compression_level>
+    SparseMatrix<T, T_index, compression_level>::~SparseMatrix()
+    {
         if (is_allocated)
             free(begin_ptr);
         is_allocated = false;
     }
 
-    // ---- Helper Functions ----
-    template <typename T, int compression_level>
-    void SparseMatrix<T, compression_level>::allocate_memory() {
-        // Malloc memory for the data, never worse then CSC so allocate CSC amount
-        // space for the value and row, col indicies, and a buffer zone
-
-        size_t csc_size = num_nonzeros * val_t + num_nonzeros * row_t + num_cols * col_t + 300;
-
-        begin_ptr = malloc(csc_size);
-
-        // Check if memory was allocated
-        if (!begin_ptr)
-        {
-            throw std::bad_alloc();
-        }
-
-        is_allocated = true;
-
-        // Set the pointer to the start of the data
-        comp_ptr = begin_ptr;
-    }
-
-    template <typename T, int compression_level>
-    uint8_t SparseMatrix<T, compression_level>::byte_width(size_t size) {
-        switch (size) {
-        case 0 ... 255:
-            return 1;
-        case 256 ... 65535:
-            return 2;
-        case 65536 ... 4294967295:
-            return 4;
-        default:
-            return 8;
-        }
-    }
-
-    // ---- Member Functions ----
-    template <typename T, int compression_level>
-    size_t SparseMatrix<T, compression_level>::byte_size() {
-        return compression_size;
-    }
-
-    template <typename T, int compression_level>
-    void* SparseMatrix<T, compression_level>::begin() {
-        return begin_ptr;
-    }
-
-    template <typename T, int compression_level>
-    void* SparseMatrix<T, compression_level>::end() {
-        return comp_ptr;
-    }
-
-    // write data to file
-    template <typename T, int compression_level>
-    void SparseMatrix<T, compression_level>::write(const char* filename) {
-        // ! write data to file
-        FILE* fp = fopen(filename, "wb");
-        fwrite(begin_ptr, 1, compression_size, fp);
-        fclose(fp);
-    }
+    
 }

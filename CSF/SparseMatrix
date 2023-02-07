@@ -3,5 +3,6 @@
 
 
 #include "src/CSF_SparseMatrix.hpp"
+#include "src/CSF_methods.hpp"
 #include "src/CSF_constructor.hpp"
 #include "src/CSF_iterator.hpp"
