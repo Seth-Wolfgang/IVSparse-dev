@@ -7,6 +7,7 @@ namespace CSF {
         // Malloc memory for the data, never worse then CSC so allocate CSC amount
         // space for the value and row, col indicies, and a buffer zone
 
+        // TODO: Change to better alogrithm
         size_t csc_size = num_nonzeros * val_t + num_nonzeros * row_t + num_cols * col_t + 300;
 
         begin_ptr = malloc(csc_size);
@@ -16,8 +17,6 @@ namespace CSF {
         {
             throw std::bad_alloc();
         }
-
-        is_allocated = true;
 
         // Set the pointer to the start of the data
         comp_ptr = begin_ptr;
@@ -62,7 +61,7 @@ namespace CSF {
     template <typename T, typename T_index, int compression_level>
     void SparseMatrix<T, T_index, compression_level>::write(const char *filename)
     {
-        // ! write data to file
+        // write data to file
         FILE *fp = fopen(filename, "wb");
         fwrite(begin_ptr, 1, compression_size, fp);
         fclose(fp);

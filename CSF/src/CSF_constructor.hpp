@@ -271,7 +271,9 @@ namespace CSF {
         fclose(fp);
     }
 
-    // It seems I need to redefine the entire sparse matrix class with a temlpate value of 1 for compression level in order to actually get a redefined constructor to work like I want. Should consider the easier way of just using an if statement to check the compression level and then just doing the compression like that. This is a bit of a mess
+
+    // ? how to do this?
+    //SparseMatrix(Eigen::SparseMatrix<T, Eigen::ColMajor, T_index> &mat, bool destroy)
     
     // implementation details for the constructor
     template <typename T, typename T_index, int compression_level>
@@ -546,18 +548,48 @@ namespace CSF {
         num_cols = *(uint32_t *)(help_ptr);
         help_ptr = (uint32_t *)(help_ptr) + 1;
 
-        // set is allocated
-        is_allocated = true;
     }
 
     // implementation details for the destructor
     template <typename T, typename T_index, int compression_level>
     SparseMatrix<T, T_index, compression_level>::~SparseMatrix()
     {
-        if (is_allocated)
             free(begin_ptr);
-        is_allocated = false;
     }
 
     
+    //* Compression Level 1 Implementation Details ---------------
+
+    template <typename T, typename T_index>
+    SparseMatrix<T, T_index, 1>::SparseMatrix(Eigen::SparseMatrix<T> &mat, bool destroy) {
+
+        Eigen::SparseMatrix<T> mat_copy;
+
+        if (destroy) {
+
+            mat.makeCompressed();
+
+            values = mat.valuePtr();
+            indices = mat.innerIndexPtr();
+            col_p = mat.outerIndexPtr();
+
+            // Initialize data
+            num_rows = mat.rows();
+            num_cols = mat.cols();
+            num_nonzeros = mat.nonZeros();
+        } else {
+            // make a deep copy of mat
+            mat_copy = mat;
+            mat_copy.makeCompressed();
+
+            values = mat_copy.valuePtr();
+            indices = mat_copy.innerIndexPtr();
+            col_p = mat_copy.outerIndexPtr();
+
+            // Initialize data
+            num_rows = mat_copy.rows();
+            num_cols = mat_copy.cols();
+            num_nonzeros = mat_copy.nonZeros();
+        }
+    }
 }

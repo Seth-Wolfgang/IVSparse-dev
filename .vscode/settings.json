@@ -2,6 +2,7 @@
     "files.associations": {
         "*.erb": "erb",
         "*.rmd": "markdown",
-        "core": "cpp"
+        "core": "cpp",
+        "ranges": "cpp"
     }
 }

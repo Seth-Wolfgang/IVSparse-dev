@@ -7,19 +7,27 @@ using std::endl;
 
 namespace CSF {
 
-
+// ?    since im redefining sparse matrix here can I just redefine
+// ?    all the other things I need to be compression level 1 as well?
+// ?    and if so where should all that go? in sparse matrix?
 // CSC iterator (compression level 1)
-template <typename T, typename T_index>
-class SparseMatrix<T, T_index, 1> {
-    public:
-    class Iterator {
-        public:
-        int hi = 3;
+// template <typename T, typename T_index>
+// class SparseMatrix<T, T_index, 1> {
+//     public:
+//     class Iterator {
+//         public:
+//         int hi = 3;
 
-        Iterator() {
-            cout << "hi skyler" << endl;
-        }
-    };
+//         Iterator() {
+//             cout << "hi skyler" << endl;
+//         }
+//     };
+// };
+
+template <typename T, typename T_index>
+class SparseMatrix<T, T_index, 1>::Iterator {
+    public:
+    int hi = 8;
 };
 
 // General case iterator (compression levels 2 and 3)

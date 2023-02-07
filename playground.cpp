@@ -132,9 +132,6 @@ int main(int argc, char** argv) {
     //std::cout << myMatrix << std::endl;
 
     // !! YAYY PARTIAL TEMPLATE ITERATORS 
-    // ? how does this work with compression levels changing? do they need a new instance of the matrix?
-    // ? can I just keep a variable locally? but if that happens then what's the point of the template
-    // ? And wouldn't the end users templated compression be all wrong?
 
     CSF::SparseMatrix<int, int, 3>::Iterator it(matrix);
 
