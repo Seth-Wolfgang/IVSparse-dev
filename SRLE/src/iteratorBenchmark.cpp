@@ -13,16 +13,23 @@ int main() {
 
     // cout << iteratorBenchmark(10, 1, 5, matrixSeed) << endl;
 
-    for (int i = 0; i < 10001; i++) {
+
+    /*
+        Crashes are now only caused by empty matrice. Weird matrix dimensions can cause empty matrices due
+        to how matrices are generated based on the sparsity parameter. i.e. a matrix size of 1x4 with a high sparsity
+        will most certainly cause a segmentation fault.  
+    */
+
+    for (int i = 0; i <= 1000; i++) {
         matrixSeed = rand();
-        numRows = rand() % 1000 + 1;
-        numCols = rand() % 1000 + 1;
-        // sparsity = rand() % 50 + 1;
+        numRows = rand() % 100 + 1;
+        numCols = rand() % 100 + 1;
+        sparsity = rand() % 20 + 1;
         cout << "i: " << i << endl;
         // cout << "numRows: " << numRows << endl;
         // cout << "numCols: " << numCols << endl;
         // cout << "sparsity: " << sparsity << endl;
-        // cout << "seed: " << seed - matrixSeed2 << endl;
+        // cout << "Matrix seed: " << matrixSeed << endl;
         if (!iteratorBenchmark(numRows, numCols, sparsity, matrixSeed)) {
 
             cout << "Something went wrong" << endl;
@@ -152,7 +159,7 @@ Eigen::SparseMatrix<T> generateMatrix(int numRows, int numCols, int sparsity, ui
     rng randMatrixGen = rng(seed);
 
     Eigen::SparseMatrix<T> myMatrix(numRows, numCols);
-    myMatrix.reserve(Eigen::VectorXi::Constant(numRows * 100, numCols * 250));
+    myMatrix.reserve(Eigen::VectorXi::Constant(numRows * 100, numCols * 100));
     for (int i = 0; i < numRows; i++) {
         for (int j = 0; j < numCols; j++) {
             if (randMatrixGen.draw<int>(i, j, sparsity)) {
