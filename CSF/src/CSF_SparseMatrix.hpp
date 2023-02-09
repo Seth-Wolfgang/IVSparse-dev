@@ -33,7 +33,7 @@ namespace CSF {
         3. Compressed Sparse Fiber w/ Positive Delta Encoded & Byte Packed Indices
 
     */
-    template <typename T, typename T_index=T, int compression_level=3>
+    template <typename T, typename T_index=uint64_t, int compression_level=3>
     class SparseMatrix {
         // Private data members and functions
         private:
@@ -195,7 +195,6 @@ namespace CSF {
             T_index *col_p;
         
         public:
-        int hello = 9;
 
         SparseMatrix(Eigen::SparseMatrix<T> &mat, bool destroy = false);
 
