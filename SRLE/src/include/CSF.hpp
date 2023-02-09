@@ -1,4 +1,3 @@
-
 /*
 Version 2.1
 By: Skyler Ruiter
@@ -7,12 +6,7 @@ Content: This is a file to build the constructor for a new data structure and co
 
 #include "CSF_Lib.hpp"
 
-using std::cout;
-using std::endl;
-
 namespace CSF {
-
-
 
     // Class for the CSF matrix
 
@@ -340,7 +334,7 @@ namespace CSF {
             compression_size = (uint8_t*)(comp_ptr)-((uint8_t*)(begin_ptr)-1);
 
             // resize data to fit actual size
-            // cout << "Compression size: " << compression_size << endl;
+            // std::cout << "Compression size: " << compression_size << std::endl;
             begin_ptr = realloc(begin_ptr, compression_size);
 
             // ! write data to file
@@ -385,7 +379,7 @@ namespace CSF {
         //         for (int j = 0; j < this->num_cols; j++) {
         //             os << charMatrix[i][j];
         //         }
-        //         os << endl;
+        //         os << std::endl;
         //     }
 
         // }
@@ -406,7 +400,6 @@ namespace CSF {
         void* data;
         void* endOfData;
         void* currentIndex;
-        void* tempPointer;
         T value;
         bool firstIndex = true;
 
@@ -415,17 +408,17 @@ namespace CSF {
          * @param column
          */
 
-        // void goToColumn(int column) {
-        //     //20 bytes into the file, the column pointers are stored. Each column pointer is 8 bytes long so we can
-        //     //multiply the column number by 8 to get the offset of the column pointer we want.
-        //     //columns are 0 indexed 
+        //  void goToColumn(int column) {
+        //      //20 bytes into the file, the column pointers are stored. Each column pointer is 8 bytes long so we can
+        //      //multiply the column number by 8 to get the offset of the column pointer we want.
+        //      //columns are 0 indexed 
 
-        //     //TODO: implemet a way of checking if currentIndex points to next column
+        //      //TODO: implemet a way of checking if currentIndex points to next column
 
-        //     currentIndex = static_cast<char*>(data) + 20 + 8 * column;
-        //     memcpy(currentIndex, currentIndex, 8);
-        //     currentIndex = static_cast<char*>(data) + *static_cast<char*>(currentIndex);
-        // }
+        //      currentIndex = static_cast<char*>(data) + 20 + 8 * column;
+        //      memcpy(currentIndex, currentIndex, 8);
+        //      currentIndex = static_cast<char*>(data) + *static_cast<char*>(currentIndex);
+        //  }
 
         void goToColumn(int column) {
             //20 bytes into the file, the column pointers are stored. Each column pointer is 8 bytes long so we can
@@ -458,16 +451,19 @@ namespace CSF {
             endOfData = matrix.getEnd();
             currentIndex = data;
 
-            // read first 28 bytes of fileData put it into params -> metadata
+            // read first 20 bytes of fileData put it into params -> metadata
             uint32_t params[5];
-
 
             memcpy(&params, currentIndex, 20);
             numRows = params[3];
             numColumns = params[4];
 
+            //Skips metadata and goes to first column
             currentIndex = static_cast<char*>(currentIndex) + 20;
             goToColumn(0);
+
+            //Insures the matrix is not empty
+            assert(currentIndex < endOfData);
 
             // valueWidth is set and the first value is read in
             valueWidth = params[2];
@@ -477,8 +473,8 @@ namespace CSF {
             newIndexWidth = *static_cast<uint8_t*>(currentIndex);
             currentIndex = static_cast<char*>(currentIndex) + 1;
 
-            // cout << "value: " << value << endl;
-            // cout << "newIndexWidth: " << (int)newIndexWidth << endl;
+            // std::cout << "value: " << value << std::endl;
+            // std::cout << "newIndexWidth: " << (int)newIndexWidth << std::endl;
         }
 
         Iterator(const char* filePath) {
@@ -499,8 +495,8 @@ namespace CSF {
             newIndexWidth = *static_cast<uint8_t*>(currentIndex);
             currentIndex = static_cast<char*>(currentIndex) + 1;
 
-            // cout << "value: " << value << endl;
-            // cout << "newIndexWidth: " << (int)newIndexWidth << endl;
+            // std::cout << "value: " << value << std::endl;
+            // std::cout << "newIndexWidth: " << (int)newIndexWidth << std::endl;
         }
 
         /**
@@ -529,10 +525,6 @@ namespace CSF {
         uint64_t operator++(int) {
             uint64_t newIndex = interpretPointer(newIndexWidth);
 
-            // cout << "newIndex: " << newIndex << endl;
-            // cout << "width: " << (int)newIndexWidth << endl;
-            // cout << "value " << value << endl << endl;
-
             // If newIndex is 0 and not the first index, then the index is a delimitor
             if (newIndex == 0 && !firstIndex) {
                 // Value is the first index of the run
@@ -542,15 +534,11 @@ namespace CSF {
                 newIndexWidth = *static_cast<uint8_t*>(currentIndex);
                 currentIndex = static_cast<char*>(currentIndex) + 1;
 
+                //Restart the index
                 memset(&index, 0, 8);
-
-                // cout << "new value " << value << endl;
-                // cout << "new width: " << (int)newIndexWidth << endl;
 
                 // Returns the first index of the run
                 index = interpretPointer(newIndexWidth);
-                // (index == 0) ? (firstIndex = true) : (firstIndex = false);
-                // firstIndex = true;
                 return index;
             }
 
@@ -566,9 +554,7 @@ namespace CSF {
          * @return false
          */
 
-        operator bool() { 
-            // cout << endOfData << " " << currentIndex <<endl;
-            return endOfData != currentIndex; }
+        operator bool() { return endOfData != currentIndex; }
 
 
         /**
@@ -578,26 +564,26 @@ namespace CSF {
          * @return char*
          */
 
-        // char* getColumn(uint64_t column) {
-        //     //TODO: optimize this function
-        //     Iterator it = *this;
-        //     it.index = 0;
-        //     it.goToColumn(column);
-        //     it.currentIndex = static_cast<char*>(it.currentIndex) + 1;
-        //     it.value = it.interpretPointer(it.valueWidth);
-        //     char* columnData = (char*)calloc(it.numRows, sizeof(T));
+         // char* getColumn(uint64_t column) {
+         //     //TODO: optimize this function
+         //     Iterator it = *this;
+         //     it.index = 0;
+         //     it.goToColumn(column);
+         //     it.currentIndex = static_cast<char*>(it.currentIndex) + 1;
+         //     it.value = it.interpretPointer(it.valueWidth);
+         //     char* columnData = (char*)calloc(it.numRows, sizeof(T));
 
-        //     if (numColumns != 1) it.endOfData = static_cast<char*>(data) + *(static_cast<uint64_t*>(data) + 20 + ((column + 1) * 8));
+         //     if (numColumns != 1) it.endOfData = static_cast<char*>(data) + *(static_cast<uint64_t*>(data) + 20 + ((column + 1) * 8));
 
-        //     //copy data into new array
-        //     while (it) {
-        //         it++;
-        //         columnData[it.index] = value;
-        //     }
+         //     //copy data into new array
+         //     while (it) {
+         //         it++;
+         //         columnData[it.index] = value;
+         //     }
 
 
-        //     return columnData;
-        // }
+         //     return columnData;
+         // }
 
 
     private:
@@ -649,17 +635,16 @@ namespace CSF {
                 newIndex = static_cast<uint64_t>(*static_cast<uint64_t*>(currentIndex));
                 break;
             default:
-
                 if (endOfData == currentIndex) {
-                    cout << "Value: " << value << endl;
-                    cout << static_cast<int>(*static_cast<uint8_t*>(currentIndex)) << endl;
-                    cout << "Invalid width: " << width << endl;
+                    // std::cout << "Value: " << value << std::endl;
+                    // std::cout << static_cast<int>(*static_cast<uint8_t*>(currentIndex)) << std::endl;
+                    cerr << "Invalid width: " << width << std::endl;
                     exit(-1);
                 }
 
                 break;
             }
-            // cout << "newIndex: " << newIndex << endl;
+            // std::cout << "newIndex: " << newIndex << std::endl;
             currentIndex = static_cast<char*>(currentIndex) + width;
             return newIndex;
         }

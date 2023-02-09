@@ -1,5 +1,0 @@
-library(Rcpp)
-library(RcppClock)
-library(RcppEigen)
-sourceCpp("src\\playground.cpp")
-iteratorBenchmark(10000, 10000, 50.0)
