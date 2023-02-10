@@ -17,7 +17,7 @@ int main() {
         matrixSeed = rand();
         numRows = rand() % 100 + 1;
         numCols = rand() % 100 + 1;
-        sparsity = rand() % 20 + 1;
+        sparsity = rand() % 1 + 1;
         std::cout << "i: " << i << endl;
         // std::cout << "numRows: " << numRows << endl;
         // std::cout << "numCols: " << numCols << endl;

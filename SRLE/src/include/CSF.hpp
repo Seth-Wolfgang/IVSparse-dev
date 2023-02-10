@@ -506,8 +506,6 @@ namespace CSF {
          */
 
         const T& operator * () { return value; };
-        const T getValue() { return value; }
-
 
         /**
          * @brief Getter for the index of the iterator
