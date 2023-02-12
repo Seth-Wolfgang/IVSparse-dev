@@ -9,7 +9,7 @@
         uint8_t indexWidth;
         void* data;
         void* endOfData;
-        void* currentIndex;
+        void* currentIndex; 
         T value;
         bool firstIndex = true;
 
@@ -108,7 +108,7 @@
          */
 
         uint64_t operator++(int) {
-            index = interpretPointer(newIndexWidth);
+            index = interpretPointer(indexWidth);
 
             // If newIndex is 0 and not the first index, then the index is a delimitor
             if (index == 0 && !firstIndex) {
@@ -119,7 +119,7 @@
                 currentIndex = static_cast<char*>(currentIndex) + 1;
 
                 // Returns the first index of the run
-                index = interpretPointer(newIndexWidth);
+                index = interpretPointer(indexWidth);
                 return index;
             }
 
