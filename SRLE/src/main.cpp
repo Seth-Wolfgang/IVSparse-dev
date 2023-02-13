@@ -64,7 +64,7 @@ bool iteratorBenchmark(int numRows, int numCols, int sparsity, uint64_t seed) {
     myMatrix.makeCompressed();
 
     // Converting to CSF
-    CSF::SparseMatrix CSFMatrix = CSF::SparseMatrix(myMatrix);
+    CSF::SparseMatrix<int> CSFMatrix = CSF::SparseMatrix<int>(myMatrix);
 
     //////////////////////////////CSF Iterator//////////////////////////////
 
@@ -77,7 +77,7 @@ bool iteratorBenchmark(int numRows, int numCols, int sparsity, uint64_t seed) {
             value = *newIter;
         }
     }
-
+    
     //////////////////////////////CSC innerIterator////////////////////////////////
     // generating a large random eigen sparse
     // The next two blocks do essentially the same as the first but only go through the CSC matrix

@@ -10,6 +10,7 @@ namespace CSF {
 
     // Class for the CSF matrix
 
+    template <typename T>
     class SparseMatrix {
     private:
         //* Constructor data
@@ -74,7 +75,6 @@ namespace CSF {
     public:
         // Eigen Wrapper Constructor
         // TODO make an optimized dedicated eigen constuctor
-        template <typename T>
         SparseMatrix(Eigen::SparseMatrix<T>& mat) {
 
             mat.makeCompressed();
@@ -94,7 +94,7 @@ namespace CSF {
             T** col_p = &col_p_arr;
 
             // Construct CSF
-            CSF::SparseMatrix tempMatrix = CSF::SparseMatrix(vals, indexes, col_p, nnz, mat.rows(), mat.cols());
+            CSF::SparseMatrix<T> tempMatrix = CSF::SparseMatrix<T>(vals, indexes, col_p, nnz, mat.rows(), mat.cols());
 
 
             num_rows = tempMatrix.num_rows;
@@ -124,8 +124,8 @@ namespace CSF {
         Takes in 3 arrays of a CSC sparse matrix as well as the dimensions and destructively compresses the sparse data to SRLE
         - Can ask constructor to non-destructively compress the data
         */
-        template <typename values_t, typename row_ind, typename col_ind>
-        SparseMatrix(values_t** vals, row_ind** indexes, col_ind** col_p,
+        template <typename row_ind, typename col_ind>
+        SparseMatrix(T** vals, row_ind** indexes, col_ind** col_p,
                      size_t non_zeros, size_t row_num, size_t col_num,
                      bool destroy = true, int compression_level = 3) {
 
@@ -138,7 +138,7 @@ namespace CSF {
 
             row_t = byte_width(num_rows);
             col_t = byte_width(num_cols);
-            val_t = sizeof(values_t);
+            val_t = sizeof(T);
 
             uint8_t last_index_width = 1;
 
@@ -192,8 +192,8 @@ namespace CSF {
                         // New unique value found
 
                         // Add the found value to run
-                        *(values_t*)(comp_ptr) = (*vals)[j];
-                        comp_ptr = (values_t*)(comp_ptr)+1;
+                        *(T*)(comp_ptr) = (*vals)[j];
+                        comp_ptr = (T*)(comp_ptr)+1;
 
                         // Create an index pointer to update index type later
                         void* help_ptr = comp_ptr;
@@ -446,7 +446,7 @@ namespace CSF {
          * @param filePath
          */
 
-        Iterator(CSF::SparseMatrix& matrix) {
+        Iterator(CSF::SparseMatrix<T>& matrix) {
             data = matrix.getData();
             endOfData = matrix.getEnd();
             currentIndex = data;

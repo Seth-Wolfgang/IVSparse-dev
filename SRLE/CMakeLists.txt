@@ -9,18 +9,31 @@ set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_SOURCE_DIR}/CMake)
 set(EXECUTABLE_OUTPUT_PATH ${CMAKE_SOURCE_DIR}/CMake)
 
 project(CSF)
-add_executable(main ${CMAKE_SOURCE_DIR}/src/main.cpp)
+# add_executable(main ${CMAKE_SOURCE_DIR}/tests/testCSF.cpp)
+enable_testing()
 
 # Required for googletest
 set(CMAKE_CXX_STANDARD 14)
 
-# Doesn't work
-
-
 include(FetchContent)
-FetChContent_Declare(
+FetchContent_Declare(
     googletest
     URL https://github.com/google/googletest/archive/03597a01ee50ed33e9dfd640b249b4be3799d395.zip
 )
 
 FetchContent_MakeAvailable(googletest)
+
+enable_testing()
+
+add_executable(
+  testingMain   
+  ${CMAKE_SOURCE_DIR}/tests/testingMain.cpp
+)
+
+target_link_libraries(
+  testingMain
+  GTest::gtest_main
+)
+
+include(GoogleTest)
+gtest_discover_tests(testingMain)

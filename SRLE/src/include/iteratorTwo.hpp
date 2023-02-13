@@ -47,8 +47,9 @@
 
             // read first 20 bytes of fileData put it into params -> metadata
             uint32_t params[5];
-
             memcpy(&params, currentIndex, 20);
+
+            //Sets the metadata
             indexWidth = params[0];
             numRows = params[3];
             numColumns = params[4];
