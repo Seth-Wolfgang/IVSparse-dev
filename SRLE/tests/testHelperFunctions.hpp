@@ -18,20 +18,20 @@ Eigen::SparseMatrix<T> generateEigenMatrix(int numRows, int numCols, int sparsit
 }
 
 template<typename T>
-CSF::SparseMatrix<T> getCSFMatrix(int numRows, int numCols, int sparsity, int seed) {
+CSF::SparseMatrix getCSFMatrix(int numRows, int numCols, int sparsity, int seed) {
 
     //Generating a random sparse matrix using Eigen, because we know it works
     Eigen::SparseMatrix<T> eigenMatrix(numRows, numCols); 
-    eigenMatrix = generateMatrix<T>(numRows, numCols, sparsity, seed);
+    eigenMatrix = generateEigenMatrix<T>(numRows, numCols, sparsity, seed);
     eigenMatrix.makeCompressed();
 
     // Converting to CSF
-    return CSF::SparseMatrix<T>(eigenMatrix);
+    return CSF::SparseMatrix(eigenMatrix);
 }
 
 template<typename T>
-CSF::SparseMatrix<T> getCSFMatrix(Eigen::SparseMatrix<T> myMatrix) {
-    return CSF::SparseMatrix<T>(myMatrix);
+CSF::SparseMatrix getCSFMatrix(Eigen::SparseMatrix<T> myMatrix) {
+    return CSF::SparseMatrix(myMatrix);
 }
 
 template <typename T>
@@ -53,15 +53,23 @@ uint64_t getEigenTotal(Eigen::SparseMatrix<T> matrix) {
  */
 
 template<typename T>
-uint64_t getSum(CSF::SparseMatrix<T> matrix) {
+uint64_t getSum(CSF::SparseMatrix matrix) {
     uint64_t sum = 0;
     CSF::Iterator<T> iter = CSF::Iterator<T>(matrix);
     while (iter) {
-        sum += *iter;
         iter++;
+        sum += *iter;
     }
     return sum;
 }
 
-
+template<typename T>
+void getSumNoReturn(CSF::SparseMatrix matrix) {
+    uint64_t sum = 0;
+    CSF::Iterator<T> iter = CSF::Iterator<T>(matrix);
+    while (iter) {
+        iter++;
+        sum += *iter;
+    }
+}
 
