@@ -3,6 +3,9 @@
         "*.erb": "erb",
         "*.rmd": "markdown",
         "core": "cpp",
-        "ranges": "cpp"
+        "ranges": "cpp",
+        "ostream": "cpp",
+        "*.tcc": "cpp",
+        "memory_resource": "cpp"
     }
 }

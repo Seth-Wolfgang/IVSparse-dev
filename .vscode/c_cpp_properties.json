@@ -20,7 +20,8 @@
                     "/usr/include",
                     "${workspaceFolder}/CSF/"
                 ]
-            }
+            },
+            "configurationProvider": "ms-vscode.makefile-tools"
         },
         {
             "name": "Linux",

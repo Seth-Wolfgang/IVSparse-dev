@@ -1,6 +1,12 @@
 /.vscode
+.vscode
 *.json
 *.o
 *.out
 *.bin
 *.exe
+CMAKE
+CMakeFiles
+*.log
+_deps
+*.csf

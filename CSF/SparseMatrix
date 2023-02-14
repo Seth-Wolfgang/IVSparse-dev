@@ -1,8 +1,8 @@
 #pragma once
 #include <Eigen/Sparse>
 
-
 #include "src/CSF_SparseMatrix.hpp"
-#include "src/CSF_methods.hpp"
-#include "src/CSF_constructor.hpp"
-#include "src/CSF_iterator.hpp"
+#include "src/CSF_Methods.hpp"
+#include "src/CSF_Constructors.hpp"
+#include "src/CSF_Iterators.hpp"
+#include "src/CSF_BLAS.hpp"
