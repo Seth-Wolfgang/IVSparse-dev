@@ -106,7 +106,7 @@ namespace CSF
         triplet.reserve(num_nonzeros);
 
         // use iterator to go through the data
-        CSF::SparseMatrix<T, T_index, compression_level>::Iterator
+        //CSF::SparseMatrix<T, T_index, compression_level>::Iterator;
 
     }
 

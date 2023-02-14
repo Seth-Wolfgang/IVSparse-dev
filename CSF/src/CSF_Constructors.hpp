@@ -124,7 +124,7 @@ namespace CSF {
         fclose(fp);
 
         // set pointers
-        comp_ptr = begin_ptr + compression_size;
+        comp_ptr = (void *)((char *)(begin_ptr) + compression_size);
         void *help_ptr = begin_ptr;
 
         // get metadata
