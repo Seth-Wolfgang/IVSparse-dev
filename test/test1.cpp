@@ -8,12 +8,13 @@ TODO -
 2. Get the decompressor working (using iterator most likely)
 3. Merging branches and testing
 4. Writing a ton of comments
-5. Start writing BLAS routines
+5. // *Start writing BLAS routines (or is it better to get testing and beta out first then BLAS)
 6. Finish up the Constructors for CSF
 7. Write up the redundancy testing helper function
 8. Go through and do all user checks, attempt to break 
     CSF as much as possible to make sure user can't break it easily
 9. Write up offical example code and documentation
+10. Overload << operator for CSF
 */
 
 int main (int argc, char** argv) {
@@ -100,6 +101,16 @@ int main (int argc, char** argv) {
     // print out number of nonzeros and compression size
     // ! cant find non-zeros w/o counting them explicitly
     std::cout << "mat12 has " << mat12.nonzeros() << " nonzeros and " << mat12.byte_size() << " bytes" << std::endl;
-    
+
+
+    // create a new CSF matrix with the raw csc constructor
+    int * vals = myMatrix.valuePtr();
+    int * rows = myMatrix.innerIndexPtr();
+    int * cols = myMatrix.outerIndexPtr();
+
+    // ! T has to be int because &vals is an integer pointer
+    CSF::SparseMatrix<int, uint64_t, 3> mat13(&vals, &rows, &cols, myMatrix.nonZeros(), myMatrix.rows(), myMatrix.cols());
+    CSF::SparseMatrix<int, uint64_t, 2> mat14(&vals, &rows, &cols, myMatrix.nonZeros(), myMatrix.rows(), myMatrix.cols());
+
     return 0;
 }

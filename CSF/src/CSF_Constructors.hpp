@@ -11,14 +11,6 @@ namespace CSF {
     template <typename T, typename T_index, int compression_level>
     SparseMatrix<T, T_index, compression_level>::SparseMatrix()
     {
-        row_t = 8;
-        col_t = 8;
-        val_t = sizeof(T);
-
-        begin_ptr = malloc(28);
-        comp_ptr = begin_ptr;
-
-        create_metadata();
     }
 
     template <typename T, typename T_index, int compression_level>
