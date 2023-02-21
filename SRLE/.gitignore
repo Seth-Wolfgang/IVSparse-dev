@@ -11,3 +11,4 @@ _deps
 *.log
 CMakeFiles
 CMAKE
+*workspace

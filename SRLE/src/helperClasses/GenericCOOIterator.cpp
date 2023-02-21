@@ -1,12 +1,11 @@
 //[[Rcpp::depends(RcppEigen)]]
 // #include <RcppEigen.h>
-#include "../include/CPP_Lib.hpp"
+#include "../include/CSF_Lib.hpp"
 
 using namespace std;
 
-//template<typename T> <- return what user wants https://en.cppreference.com/w/cpp/language/partial_specialization
 template<typename T>
-class GenericCSCIterator {
+class GenericCOOIterator {
     //todo:
     //clean the vocabulary
     private:
@@ -20,7 +19,7 @@ class GenericCSCIterator {
 
     public:
 
-    GenericCSCIterator(Eigen::SparseMatrix<T> myMatrix) {
+    GenericCOOIterator(Eigen::SparseMatrix<T> myMatrix) {
         for (int i=0; i < myMatrix.outerSize(); ++i)
             for(typename Eigen::SparseMatrix<T>::InnerIterator it(myMatrix, i); it; ++it){               
                 row.push_back(it.row());

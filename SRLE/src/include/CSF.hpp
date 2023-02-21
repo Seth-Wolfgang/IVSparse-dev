@@ -3,8 +3,7 @@ Version 2.1
 By: Skyler Ruiter
 Content: This is a file to build the constructor for a new data structure and compression algorithm called CSF.
 */
-
-#include "CSF_Lib.hpp"
+#include "CPP_Lib.hpp"
 
 namespace CSF {
 
@@ -350,18 +349,59 @@ namespace CSF {
         //     is_allocated = false;
         // }
 
-        size_t getSize() const {
+        /**
+         * @brief Get the Size object 
+         * 
+         *
+         * @return 
+         */
+
+        size_t getSize() {
             return compression_size;
         }
+
+        /**
+         * @brief Get the beginning of the data
+         * 
+         * @return void* 
+         */
 
         void* getData() {
             return begin_ptr;
         }
 
+        /**
+         * @brief Get the end of the data
+         * 
+         * @return void* 
+         */
+
         void* getEnd() {
             return comp_ptr;
         }
 
+        /**
+         * @brief Get the number of rows
+         * 
+         * @return uint32_t 
+         */
+
+        uint32_t getNumRows() {
+            return num_rows;
+        }
+
+        /**
+         * @brief Get the number of columns
+         * 
+         *
+         * @return 
+         */
+
+        uint32_t getNumCols() {
+            return num_cols;
+        }
+
+    
         //Slyler, change <int> to the template when merge everything again
         // void operator << (std::ostream& os) {
         //     CSF::Iterator<int> it = CSF::Iterator<int>(matrix);
@@ -408,17 +448,17 @@ namespace CSF {
          * @param column
          */
 
-        //  void goToColumn(int column) {
-        //      //20 bytes into the file, the column pointers are stored. Each column pointer is 8 bytes long so we can
-        //      //multiply the column number by 8 to get the offset of the column pointer we want.
-        //      //columns are 0 indexed 
+         //  void goToColumn(int column) {
+         //      //20 bytes into the file, the column pointers are stored. Each column pointer is 8 bytes long so we can
+         //      //multiply the column number by 8 to get the offset of the column pointer we want.
+         //      //columns are 0 indexed 
 
-        //      //TODO: implemet a way of checking if currentIndex points to next column
+         //      //TODO: implemet a way of checking if currentIndex points to next column
 
-        //      currentIndex = static_cast<char*>(data) + 20 + 8 * column;
-        //      memcpy(currentIndex, currentIndex, 8);
-        //      currentIndex = static_cast<char*>(data) + *static_cast<char*>(currentIndex);
-        //  }
+         //      currentIndex = static_cast<char*>(data) + 20 + 8 * column;
+         //      memcpy(currentIndex, currentIndex, 8);
+         //      currentIndex = static_cast<char*>(data) + *static_cast<char*>(currentIndex);
+         //  }
 
         void goToColumn(int column) {
             //20 bytes into the file, the column pointers are stored. Each column pointer is 8 bytes long so we can
@@ -428,8 +468,8 @@ namespace CSF {
             //TODO: implemet a way of checking if currentIndex points to next column
             //TODO: optimize this function
 
-            currentIndex = static_cast<char*>(data) + 20 + 8 * column;
-            // currentIndex = static_cast<char*>(currentIndex) + 8 * column;
+            // currentIndex = getColumnAddress(column);
+            currentIndex = static_cast<char*>(currentIndex) + 8 * column;
 
             uint64_t temp;
             memcpy(&temp, currentIndex, 8);
@@ -505,14 +545,61 @@ namespace CSF {
          * @return T&
          */
 
-        const T& operator * () { return value; };
+        T& operator * () { return value; };
+
+        /**
+         * @brief Equality operator of this iterator and another iterator
+         * 
+         * @param other 
+         * @return true 
+         * @return false 
+         */
+
+        bool operator == (const Iterator& other) {
+            return currentIndex == other.getIndex();
+        }
+
+        /**
+         * @brief Inequality operator of this iterator and another iterator
+         * 
+         * @param other 
+         * @return true 
+         * @return false 
+         */
+
+        bool operator != (const Iterator& other) {
+            return currentIndex != other.getIndex();
+        }
+
+        /**
+         * @brief Less than operator of this iterator and another iterator
+         * 
+         * @param other 
+         * @return true 
+         * @return false 
+         */
+
+        bool operator < (const Iterator& other) {
+            return currentIndex < other.getIndex();
+        }
+
+        /**
+         * @brief Greater than operator of this iterator and another iterator
+         * 
+         * @param other 
+         * @return true 
+         * @return false 
+         */
+
+        bool operator > (const Iterator& other) {
+            return currentIndex > other.getIndex();
+        }
 
         /**
          * @brief Getter for the index of the iterator
          *
          */
         uint64_t getIndex() { return index; }
-
 
         /**
          * @brief Increment the iterator
@@ -562,27 +649,55 @@ namespace CSF {
          * @return char*
          */
 
-         // char* getColumn(uint64_t column) {
-         //     //TODO: optimize this function
-         //     Iterator it = *this;
-         //     it.index = 0;
-         //     it.goToColumn(column);
-         //     it.currentIndex = static_cast<char*>(it.currentIndex) + 1;
-         //     it.value = it.interpretPointer(it.valueWidth);
-         //     char* columnData = (char*)calloc(it.numRows, sizeof(T));
+        // char* getColumn(uint64_t column) {
+        //     //TODO: optimize this function
 
-         //     if (numColumns != 1) it.endOfData = static_cast<char*>(data) + *(static_cast<uint64_t*>(data) + 20 + ((column + 1) * 8));
+        //     //Reseets iterator to the beginning and sends it to the corresponding column
+        //     Iterator it = *this;
+        //     it.index = 0;
+        //     it.goToColumn(column);
+        //     it.currentIndex = static_cast<char*>(it.currentIndex) + 1;
+        //     it.value = it.interpretPointer(it.valueWidth);
+        //     char* columnData = (char*)calloc(it.numRows, sizeof(T));
 
-         //     //copy data into new array
-         //     while (it) {
-         //         it++;
-         //         columnData[it.index] = value;
-         //     }
+        //     if (numColumns != 1) it.endOfData = static_cast<char*>(data) + *(static_cast<uint64_t*>(data) + 20 + ((column + 1) * 8));
 
+        //     //copy data into new array
+        //     while (it) {
+        //         it++;
+        //         columnData[it.index] = value;
+        //     }
 
-         //     return columnData;
-         // }
+        //     return columnData;
+        // }
 
+        /**
+         * @brief Returns an iterator to the specified column
+         * 
+         * @param column 
+         * @return CSF::Iterator<T> 
+         */
+
+        CSF::Iterator<T> getColumn(uint64_t column) {
+            Iterator* it = new Iterator(*this);
+            it.goToColumn(column);
+            it.setEnd(goToColumn(column + 1));
+
+            return *it;
+        }
+
+        /**
+         * @brief Iterates until iterator hit the next value
+         * 
+         */
+
+        void nextValue() {
+            T currentValue = value;
+
+            while(*this == value) {
+                this++;
+            }
+        }
 
     private:
         /**
@@ -636,7 +751,7 @@ namespace CSF {
                 if (endOfData == currentIndex) {
                     // std::cout << "Value: " << value << std::endl;
                     // std::cout << static_cast<int>(*static_cast<uint8_t*>(currentIndex)) << std::endl;
-                    cerr << "Invalid width: " << width << std::endl;
+                    std::cerr << "Invalid width: " << width << std::endl;
                     exit(-1);
                 }
 
@@ -646,6 +761,31 @@ namespace CSF {
             currentIndex = static_cast<char*>(currentIndex) + width;
             return newIndex;
         }
+
+        /**
+         * @brief Set the ending address of the iterator
+         * 
+         * @param end 
+         */
+
+        void setEnd(void *end) {
+            endOfData = end;
+        }
+
+        /**
+         * @brief Get the address of a specified column
+         * 
+         * @param column 
+         * @return void*
+         */
+
+        //???????????
+        // inline void* getColumnAddress(uint64_t column) {
+        //     uint64_t temp = ((uint64_t*)data + 20 + (column * 8));
+            
+            
+        //     return (void*)((uint64_t)(data) + temp); //+((uint64_t*)data + 20 + (column * 8));
+        // }
 
     }; // end of iterator
 

@@ -1,7 +1,7 @@
 #include <iostream>
 #include <Eigen/Sparse>
 
-#include "CSFmatrix.h"
+#include "../include/CSF_Lib.hpp"
 
 int main()
 {
