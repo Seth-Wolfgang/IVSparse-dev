@@ -1,5 +1,8 @@
 
-
+/**
+ * @brief THIS IS A COPY OF THE ONE IN CSF.hpp
+ * 
+ */
 namespace CSF {
 
     template <typename T>
