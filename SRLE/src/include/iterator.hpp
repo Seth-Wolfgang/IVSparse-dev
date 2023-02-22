@@ -1,46 +1,39 @@
+        Iterator(CSF::SparseMatrix& matrix) {
+            data = matrix.getData();
+            endOfData = matrix.getEnd();
+            currentIndex = data;
 
-/**
- * @brief THIS IS A COPY OF THE ONE IN CSF.hpp
- * 
- */
-namespace CSF {
+            // read first 20 bytes of fileData put it into params -> metadata
+            uint32_t params[5];
 
-    template <typename T>
-    class SparseMatrix::iterator {
+            memcpy(&params, currentIndex, 20);
+            numRows = params[3];
+            numColumns = params[4];
 
-    private:
-        uint64_t index = 0;
-        uint64_t* colPointers;
-        uint32_t valueWidth;
-        uint8_t newIndexWidth;
-        char* fileData;
-        void* endOfData;
-        void* currentIndex;
-        T value;
-        bool firstIndex = true;
+            //Skips metadata and goes to first column
+            currentIndex = static_cast<char*>(currentIndex) + 20;
+            goToColumn(0);
 
-        /**
-         * @brief Reads in the column pointers from the data
-         *
-         */
+            //Insures the matrix is not empty
+            assert(currentIndex < endOfData);
 
-        void readColumnPointers() {
+            // valueWidth is set and the first value is read in
+            valueWidth = params[2];
+            value = interpretPointer(valueWidth);
 
-            memcpy(&colPointers, currentIndex, interpretPointer(8));
+            // Read in the width of this run's indices and go to first index
+            newIndexWidth = *static_cast<uint8_t*>(currentIndex);
+            currentIndex = static_cast<char*>(currentIndex) + 1;
 
-            for (int i = 0; i < interpretPointer(8); i++) {
-                cout << colPointers[i] << endl;
-            }
+            // std::cout << "value: " << value << std::endl;
+            // std::cout << "newIndexWidth: " << (int)newIndexWidth << std::endl;
         }
 
+        Iterator(const char* filePath) {
+            readFile(filePath);
 
-        /**
-         * @brief Helper method for the constructor. 
-         * 
-         */
-
-        void setup() {
-            uint32_t params[5];
+            // read first 28 bytes of fileData put it into params -> metadata
+            uint32_t params[8];
 
             memcpy(&params, currentIndex, 20);
             currentIndex = static_cast<char*>(currentIndex) + 20;
@@ -48,55 +41,14 @@ namespace CSF {
             // valueWidth is set and the first value is read in
             valueWidth = params[4];
             value = interpretPointer(valueWidth);
-
-            readColumnPointers();
+            goToColumn(0);
 
             // Read in the width of this run's indices and go to first index
             newIndexWidth = *static_cast<uint8_t*>(currentIndex);
             currentIndex = static_cast<char*>(currentIndex) + 1;
-        }
 
-    public:
-        /**
-         * @brief Construct a new CSFiterator object
-         *
-         * @param filePath
-         */
-
-        iterator(const CSF::SparseMatrix& matrix) {
-
-            //Sets start and end
-            currentIndex = matrix.getData();
-            endOfData = matrix.getEnd();
-
-            //General setup for the contstructor
-            setup();
-
-        }
-
-        iterator(const CSF::SparseMatrix& matrix, int column = 0) {
-
-            //Sets start and end
-            currentIndex = matrix.getData();
-            endOfData = matrix.getEnd();
-
-            //General setup for the contstructor
-            setup();
-
-            //Skips to column specified
-            readColumnPointers(column);
-        }
-
-
-        iterator(const char* filePath, int column = 0) {
-            readFile(filePath);
-
-            //General setup for the contstructor
-            setup();
-
-            //Skips to column specified
-            readColumnPointers(column);
-
+            // std::cout << "value: " << value << std::endl;
+            // std::cout << "newIndexWidth: " << (int)newIndexWidth << std::endl;
         }
 
         /**
@@ -105,7 +57,61 @@ namespace CSF {
          * @return T&
          */
 
-        T& operator*() { return value; };
+        T& operator * () { return value; };
+
+        /**
+         * @brief Equality operator of this iterator and another iterator
+         * 
+         * @param other 
+         * @return true 
+         * @return false 
+         */
+
+        bool operator == (const Iterator& other) {
+            return currentIndex == other.getIndex();
+        }
+
+        /**
+         * @brief Inequality operator of this iterator and another iterator
+         * 
+         * @param other 
+         * @return true 
+         * @return false 
+         */
+
+        bool operator != (const Iterator& other) {
+            return currentIndex != other.getIndex();
+        }
+
+        /**
+         * @brief Less than operator of this iterator and another iterator
+         * 
+         * @param other 
+         * @return true 
+         * @return false 
+         */
+
+        bool operator < (const Iterator& other) {
+            return currentIndex < other.getIndex();
+        }
+
+        /**
+         * @brief Greater than operator of this iterator and another iterator
+         * 
+         * @param other 
+         * @return true 
+         * @return false 
+         */
+
+        bool operator > (const Iterator& other) {
+            return currentIndex > other.getIndex();
+        }
+
+        /**
+         * @brief Getter for the index of the iterator
+         *
+         */
+        uint64_t getIndex() { return index; }
 
         /**
          * @brief Increment the iterator
@@ -113,13 +119,8 @@ namespace CSF {
          * @return uint64_t
          */
 
-        uint64_t operator++() < 3 >
-        {
+        uint64_t operator++(int) {
             uint64_t newIndex = interpretPointer(newIndexWidth);
-
-            // cout << "newIndex: " << newIndex << endl;
-            // cout << "width: " << (int)newIndexWidth << endl;
-            // cout << "value " << value << endl << endl;
 
             // If newIndex is 0 and not the first index, then the index is a delimitor
             if (newIndex == 0 && !firstIndex) {
@@ -130,14 +131,11 @@ namespace CSF {
                 newIndexWidth = *static_cast<uint8_t*>(currentIndex);
                 currentIndex = static_cast<char*>(currentIndex) + 1;
 
+                //Restart the index
                 memset(&index, 0, 8);
-
-                // cout << "value2 " << value << endl;
-                // cout << "width2: " << (int)newIndexWidth << endl;
 
                 // Returns the first index of the run
                 index = interpretPointer(newIndexWidth);
-                firstIndex = true;
                 return index;
             }
 
@@ -155,6 +153,64 @@ namespace CSF {
 
         operator bool() { return endOfData != currentIndex; }
 
+
+        /**
+         * @brief Gets the data of a specified column
+         *
+         * @param column
+         * @return char*
+         */
+
+        // char* getColumn(uint64_t column) {
+        //     //TODO: optimize this function
+
+        //     //Reseets iterator to the beginning and sends it to the corresponding column
+        //     Iterator it = *this;
+        //     it.index = 0;
+        //     it.goToColumn(column);
+        //     it.currentIndex = static_cast<char*>(it.currentIndex) + 1;
+        //     it.value = it.interpretPointer(it.valueWidth);
+        //     char* columnData = (char*)calloc(it.numRows, sizeof(T));
+
+        //     if (numColumns != 1) it.endOfData = static_cast<char*>(data) + *(static_cast<uint64_t*>(data) + 20 + ((column + 1) * 8));
+
+        //     //copy data into new array
+        //     while (it) {
+        //         it++;
+        //         columnData[it.index] = value;
+        //     }
+
+        //     return columnData;
+        // }
+
+        /**
+         * @brief Returns an iterator to the specified column
+         * 
+         * @param column 
+         * @return CSF::Iterator<T> 
+         */
+
+        CSF::Iterator<T> getColumn(uint64_t column) {
+            Iterator* it = new Iterator(*this);
+            it.goToColumn(column);
+            it.setEnd(goToColumn(column + 1));
+
+            return *it;
+        }
+
+        /**
+         * @brief Iterates until iterator hit the next value
+         * 
+         */
+
+        void nextValue() {
+            T currentValue = value;
+
+            while(*this == value) {
+                this++;
+            }
+        }
+
     private:
         /**
          * @brief Read a file into memory
@@ -168,15 +224,15 @@ namespace CSF {
             // Find end of file and allocate size
             fseek(file, 0, SEEK_END);
             int sizeOfFile = ftell(file);
-            fileData = (char*)malloc(sizeof(char*) * sizeOfFile);
+            data = (char*)malloc(sizeof(char*) * sizeOfFile);
 
             // Read file into memory
             fseek(file, 0, SEEK_SET);
-            fread(fileData, sizeOfFile, 1, file);
+            fread(data, sizeOfFile, 1, file);
             fclose(file);
 
-            currentIndex = fileData;
-            endOfData = fileData + sizeOfFile;
+            currentIndex = data;
+            endOfData = data + sizeOfFile;
         }
 
         /**
@@ -204,15 +260,43 @@ namespace CSF {
                 newIndex = static_cast<uint64_t>(*static_cast<uint64_t*>(currentIndex));
                 break;
             default:
-                // cout << static_cast<int>(*static_cast<uint8_t*>(currentIndex)) << endl;
-                cout << "Invalid width: " << width << endl;
-                exit(-1);
+                if (endOfData == currentIndex) {
+                    // std::cout << "Value: " << value << std::endl;
+                    // std::cout << static_cast<int>(*static_cast<uint8_t*>(currentIndex)) << std::endl;
+                    std::cerr << "Invalid width: " << width << std::endl;
+                    exit(-1);
+                }
+
                 break;
             }
-
+            // std::cout << "newIndex: " << newIndex << std::endl;
             currentIndex = static_cast<char*>(currentIndex) + width;
             return newIndex;
         }
-    };
 
-}
+        /**
+         * @brief Set the ending address of the iterator
+         * 
+         * @param end 
+         */
+
+        void setEnd(void *end) {
+            endOfData = end;
+        }
+
+        /**
+         * @brief Get the address of a specified column
+         * 
+         * @param column 
+         * @return void*
+         */
+
+        //???????????
+        // inline void* getColumnAddress(uint64_t column) {
+        //     uint64_t temp = ((uint64_t*)data + 20 + (column * 8));
+            
+            
+        //     return (void*)((uint64_t)(data) + temp); //+((uint64_t*)data + 20 + (column * 8));
+        // }
+
+    }; // end of iterator
