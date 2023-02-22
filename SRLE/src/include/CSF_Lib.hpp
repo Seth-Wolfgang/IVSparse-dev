@@ -1,6 +1,9 @@
 #pragma once
 
-// #include "../variations/const_array_iterator.cpp"
-#include "../helperClasses/GenericCSCIterator.cpp"
+
+#include "CPP_Lib.hpp"
+
+#include "CSF.hpp"
+#include "../helperClasses/GenericCOOIterator.cpp"
 #include "../helperClasses/matrixCreator.cpp"
-// #include "../variations/SRLEConverter.cpp"
+#include "CSF_BLAS.hpp"

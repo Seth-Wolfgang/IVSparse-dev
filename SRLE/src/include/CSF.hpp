@@ -1,16 +1,9 @@
-
 /*
 Version 2.1
 By: Skyler Ruiter
 Content: This is a file to build the constructor for a new data structure and compression algorithm called CSF.
 */
-
-#include "CSF_Lib.hpp"
-
-using std::cout;
-using std::endl;
-
-#define DEBUG 0
+#include "CPP_Lib.hpp"
 
 namespace CSF {
 
@@ -49,7 +42,7 @@ namespace CSF {
             // Malloc memory for the data, never worse then CSC so allocate CSC amount
             // space for the value and row, col indicies, and a buffer zone
 
-            size_t csc_size = num_nonzeros * val_t + num_nonzeros * row_t + num_cols * col_t + 300;
+            size_t csc_size = num_nonzeros * val_t + num_nonzeros * row_t + num_cols * col_t + 3000;
 
             begin_ptr = malloc(csc_size);
 
@@ -154,6 +147,8 @@ namespace CSF {
             col_t = byte_width(num_cols);
             val_t = sizeof(values_t);
 
+            uint8_t last_index_width = 1;
+
             // Allocate memory for compression
             allocate_memory();
 
@@ -181,7 +176,6 @@ namespace CSF {
             comp_ptr = (uint32_t*)(comp_ptr)+1;
 
             // Create a space for col pointers
-            // ! currently size uint64_t and positive delta encoded
             uint64_t* col_pointers = (uint64_t*)(comp_ptr);
             comp_ptr = (uint64_t*)(comp_ptr)+(uint64_t)(num_cols);
 
@@ -206,7 +200,7 @@ namespace CSF {
 
                         // Add the found value to run
                         *(values_t*)(comp_ptr) = (*vals)[j];
-                        comp_ptr = (uint32_t*)(comp_ptr)+1;
+                        comp_ptr = (values_t*)(comp_ptr)+1;
 
                         // Create an index pointer to update index type later
                         void* help_ptr = comp_ptr;
@@ -217,7 +211,7 @@ namespace CSF {
 
                         // Add the found index to run
                         *(row_ind*)(comp_ptr) = (*indexes)[j];
-                        comp_ptr = (uint32_t*)(comp_ptr)+1;
+                        comp_ptr = (row_ind*)(comp_ptr)+1;
 
                         // Loop through rest of column to get rest of indices
                         for (size_t k = j + 1; k < (*col_p)[i + 1]; k++) {
@@ -266,9 +260,12 @@ namespace CSF {
                                 comp_ptr = (row_ind*)(comp_ptr)-1; // loop control
                             }
 
-                            // set index pointer to correct size for run
-                            *(uint8_t*)(help_ptr) = byte_width(max_index);
-                            help_ptr = (uint8_t*)(help_ptr)+1;
+                        // set index pointer to correct size for run
+                        *(uint8_t*)(help_ptr) = byte_width(max_index);
+                        help_ptr = (uint8_t*)(help_ptr)+1;
+
+                        // ! temp solution, def a more optimal solution to be found
+                        last_index_width = byte_width(max_index);
 
                             // write over data with indices of new size, index compression
                             switch (byte_width(max_index)) {
@@ -346,20 +343,18 @@ namespace CSF {
 
             } // end of col for loop
 
+
             // remove ending zeros
-            while (comp_ptr != begin_ptr && *(uint8_t*)(comp_ptr) == 0) {
+            for (uint8_t i = 0; i < last_index_width; i++) {
                 comp_ptr = (uint8_t*)(comp_ptr)-1;
             }
 
-            // positive delta encode the column pointers
-            for (size_t i = num_cols - 1; i > 0; i--) {
-                col_pointers[i] = col_pointers[i] - col_pointers[i - 1];
-            }
-
             // find size of file in bytes
+
             compression_size = (uint8_t*)(comp_ptr)-((uint8_t*)(begin_ptr)-1);
 
             // resize data to fit actual size
+            // std::cout << "Compression size: " << compression_size << std::endl;
             begin_ptr = realloc(begin_ptr, compression_size);
 
             // ! write data to file
@@ -369,32 +364,92 @@ namespace CSF {
 
         } // end of constructor
 
-        ~SparseMatrix() {
-            if (is_allocated)
-                free(begin_ptr);
-            is_allocated = false;
-        }
+        // ~SparseMatrix() {
+        //     if (is_allocated)
+        //         free(begin_ptr);
+        //     is_allocated = false;
+        // }
 
-        size_t byteSize() const {
+        /**
+         * @brief Get the Size object 
+         * 
+         *
+         * @return 
+         */
+
+        size_t getSize() {
             return compression_size;
         }
+
+        /**
+         * @brief Get the beginning of the data
+         * 
+         * @return void* 
+         */
 
         void* getData() {
             return begin_ptr;
         }
 
+        /**
+         * @brief Get the end of the data
+         * 
+         * @return void* 
+         */
+
         void* getEnd() {
             return comp_ptr;
         }
 
+        /**
+         * @brief Get the number of rows
+         * 
+         * @return uint32_t 
+         */
+
+        uint32_t getNumRows() {
+            return num_rows;
+        }
+
+        /**
+         * @brief Get the number of columns
+         * 
+         *
+         * @return 
+         */
+
+        uint32_t getNumCols() {
+            return num_cols;
+        }
+
+    
+        //Slyler, change <int> to the template when merge everything again
+        // void operator << (std::ostream& os) {
+        //     CSF::Iterator<int> it = CSF::Iterator<int>(matrix);
+        //     char** charMatrix = (char**)calloc(this->num_cols * this->num_rows, sizeof(char*));
+
+        //     for (int i = 0; i < this->num_rows; i++) {
+        //         it.goToColumn(i);
+        //         while (it) {
+        //             it++;
+        //             charMatrix[i][it.getIndex] = it.getValue();
+        //         }
+        //     }
+
+        //     for (int i = 0; i < this->num_rows; i++) {
+        //         for (int j = 0; j < this->num_cols; j++) {
+        //             os << charMatrix[i][j];
+        //         }
+        //         os << std::endl;
+        //     }
+
+        // }
+
+
     }; // end of SparseMatrix class
 
-    // --------------- Iterator class ------------------
-    template <typename T>
-    class iterator {
 
 
 
-    };
 
 }; // end of namespace

@@ -1,6 +1,14 @@
 /.vscode
-a.out
 data.bin
 launch.json
 tasks.json
 c_cpp_properties.json
+_deps
+.vscode
+*.bin
+*.out
+*.o
+*.log
+CMakeFiles
+CMAKE
+*workspace
