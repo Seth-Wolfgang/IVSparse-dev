@@ -29,8 +29,8 @@ namespace CSF {
         num_nonzeros = mat.nonZeros();
 
         T *vals;
-        T_index *indexes;
-        T_index *col_p;
+        int *indexes;
+        int *col_p;
 
         if (destroy) {
             vals = mat.valuePtr();
@@ -64,7 +64,11 @@ namespace CSF {
         // Check that templates T and values_t are the same
         static_assert(std::is_same<T, values_t>::value, "Your matrix must be of the same type as the constructor");
 
-        // TODO: index type checking (T_index and row_ind / col_ind)
+        // if compression level is 2 make sure the size of row and col types are same as T_index
+        // if (compression_level == 2) {
+        //     static_assert(sizeof(T_index) == sizeof(row_ind), "Your row index type must be the same as the constructor");
+        //     static_assert(sizeof(T_index) == sizeof(col_ind), "Your col index type must be the same as the constructor");
+        // }
 
         // intialize the matrix
         num_rows = row_num;
@@ -126,6 +130,7 @@ namespace CSF {
         // assert that the compression level is the same and throw error
         if (compression != compression_level) {
             printf("Compression level of file does not match the compression level of the constructor\n");
+            printf("The compression level of the file is %d and the compression level of the constructor is %d", compression, compression_level);
             exit(1);
         }
 
@@ -141,6 +146,7 @@ namespace CSF {
         // assert that the value type is the same and throw error
         if (val_t != sizeof(T)) {
             printf("Value type of file does not match the value type of the constructor\n");
+            printf("The value type of the file is %d and the value type of the constructor is %lu", val_t, sizeof(T));
             exit(1);
         }
 
@@ -148,6 +154,9 @@ namespace CSF {
         help_ptr = (uint32_t *)(help_ptr) + 1;
 
         num_cols = *(uint32_t *)(help_ptr);
+        help_ptr = (uint32_t *)(help_ptr) + 1;
+
+        num_nonzeros = *(uint32_t *)(help_ptr);
         help_ptr = (uint32_t *)(help_ptr) + 1;
 
         // make sure that rows and cols are not less than 1
@@ -202,7 +211,7 @@ namespace CSF {
     uint64_t* SparseMatrix<T, T_index, compression_level>::create_metadata()
     {
         // Construct Metadata --------------------
-        // * <compression, row_t, col_t, val_t, num_rows, num_cols, [col_pointers], {...runs...}>
+        // * <compression, row_t, col_t, val_t, num_rows, num_cols, num_nonzeros, [col_pointers], {...runs...}>
 
         // Compression Level onto compression
         *(uint32_t *)(comp_ptr) = compression;
@@ -218,11 +227,14 @@ namespace CSF {
         *(uint32_t *)(comp_ptr) = val_t;
         comp_ptr = (uint32_t *)(comp_ptr) + 1;
 
-        // Number of Rows and Cols onto compression
+        // Number of Rows and Cols onto compression and num nonzeros
         *(uint32_t *)(comp_ptr) = num_rows;
         comp_ptr = (uint32_t *)(comp_ptr) + 1;
 
         *(uint32_t *)(comp_ptr) = num_cols;
+        comp_ptr = (uint32_t *)(comp_ptr) + 1;
+
+        *(uint32_t *)(comp_ptr) = num_nonzeros;
         comp_ptr = (uint32_t *)(comp_ptr) + 1;
 
         // Create a space for col pointers
@@ -285,12 +297,12 @@ namespace CSF {
                     void *help_ptr = comp_ptr;
 
                     // default index type to row index type and iterate pointer
-                    *(uint8_t *)help_ptr = (uint8_t)sizeof(rows_type);
+                    *(uint8_t *)help_ptr = (uint8_t)sizeof(T_index);
                     comp_ptr = (uint8_t *)(comp_ptr) + 1;
 
                     // Add the found index to run
-                    *(rows_type *)(comp_ptr) = (indexes)[j];
-                    comp_ptr = (rows_type *)(comp_ptr) + 1;
+                    *(T_index *)(comp_ptr) = (indexes)[j];
+                    comp_ptr = (T_index *)(comp_ptr) + 1;
 
                     // Loop through rest of column to get rest of indices
                     for (size_t k = j + 1; k < (col_p)[i + 1]; k++)
@@ -302,8 +314,8 @@ namespace CSF {
                             // Found value again
 
                             // add index of value to run
-                            *(rows_type *)(comp_ptr) = (indexes)[k];
-                            comp_ptr = (rows_type *)(comp_ptr) + 1;
+                            *(T_index *)(comp_ptr) = (indexes)[k];
+                            comp_ptr = (T_index *)(comp_ptr) + 1;
 
                             // set value to zero
                             (vals)[k] = 0;
@@ -322,25 +334,25 @@ namespace CSF {
                         size_t max_index = 0;
 
                         // find number of elements found for unique value
-                        size_t num_elements = (rows_type *)(comp_ptr) - ((rows_type *)(help_ptr));
+                        size_t num_elements = (T_index *)(comp_ptr) - ((T_index *)(help_ptr));
 
                         // bring comp_ptr back to being pointed at last found index
-                        comp_ptr = (rows_type *)(comp_ptr)-1;
+                        comp_ptr = (T_index *)(comp_ptr)-1;
 
                         // loop moves comp_ptr backwards through indices and positive delta encodes them
                         for (size_t k = 0; k < num_elements - 1; k++)
                         {
 
                             // subtract element from one before it
-                            *(rows_type *)(comp_ptr) = *(rows_type *)(comp_ptr) - *((rows_type *)(comp_ptr)-1);
+                            *(T_index *)(comp_ptr) = *(T_index *)(comp_ptr) - *((T_index *)(comp_ptr)-1);
 
                             // if bigger then prev max make curr max idx
-                            if (*(rows_type *)(comp_ptr) > max_index)
+                            if (*(T_index *)(comp_ptr) > max_index)
                             {
-                                max_index = *(rows_type *)(comp_ptr);
+                                max_index = *(T_index *)(comp_ptr);
                             }
 
-                            comp_ptr = (rows_type *)(comp_ptr)-1; // loop control
+                            comp_ptr = (T_index *)(comp_ptr)-1; // loop control
                         }
 
                         // set index pointer to correct size for run
@@ -360,11 +372,11 @@ namespace CSF {
                             {
 
                                 // set index to uint8_t size
-                                *(uint8_t *)(comp_ptr) = (uint8_t) * (rows_type *)(help_ptr);
+                                *(uint8_t *)(comp_ptr) = (uint8_t) * (T_index *)(help_ptr);
 
                                 // Iterate pointers
                                 comp_ptr = (uint8_t *)(comp_ptr) + 1;
-                                help_ptr = (rows_type *)(help_ptr) + 1;
+                                help_ptr = (T_index *)(help_ptr) + 1;
                             }
 
                             // Add delim
@@ -379,11 +391,11 @@ namespace CSF {
                             {
 
                                 // set index to uint16_t size
-                                *(uint16_t *)(comp_ptr) = (uint16_t) * (rows_type *)(help_ptr);
+                                *(uint16_t *)(comp_ptr) = (uint16_t) * (T_index *)(help_ptr);
 
                                 // Iterate pointers
                                 comp_ptr = (uint16_t *)(comp_ptr) + 1;
-                                help_ptr = (rows_type *)(help_ptr) + 1;
+                                help_ptr = (T_index *)(help_ptr) + 1;
                             }
 
                             // Add delim
@@ -398,11 +410,11 @@ namespace CSF {
                             {
 
                                 // set index to uint8_t size
-                                *(uint32_t *)(comp_ptr) = (uint32_t) * (rows_type *)(help_ptr);
+                                *(uint32_t *)(comp_ptr) = (uint32_t) * (T_index *)(help_ptr);
 
                                 // Iterate pointers
                                 comp_ptr = (uint32_t *)(comp_ptr) + 1;
-                                help_ptr = (rows_type *)(help_ptr) + 1;
+                                help_ptr = (T_index *)(help_ptr) + 1;
                             }
 
                             // Add delim
@@ -418,8 +430,8 @@ namespace CSF {
                     else if (compression_level == 2)
                     { // end compression level 3
                         // add delim to end of run
-                        *(rows_type *)(comp_ptr) = delim;
-                        comp_ptr = (rows_type *)(comp_ptr) + 1;
+                        *(T_index *)(comp_ptr) = delim;
+                        comp_ptr = (T_index *)(comp_ptr) + 1;
 
                         // bring up help ptr to comp ptr
                         help_ptr = comp_ptr;
@@ -469,8 +481,6 @@ namespace CSF {
         if (num_rows < 1 || num_cols < 1 || num_nonzeros < 1)
             throw std::invalid_argument("The matrix must have at least one row, column, and nonzero value");
 
-        // assert that T_index is of type int if using this constructor
-        static_assert(std::is_same<T_index, int>::value, "T_index must be of type int for eigen matrix constructor");
 
         // set types
         row_t = sizeof(T_index);
@@ -480,17 +490,27 @@ namespace CSF {
         // if destroy is false copy the data
         if (!destroy) {
             vals = (T *)malloc(num_nonzeros * sizeof(T));
-            indexes = (int *)malloc(num_nonzeros * sizeof(T));
-            col_p = (int *)malloc((num_cols + 1) * sizeof(T));
+            indexes = (T_index *)malloc(num_nonzeros * sizeof(T_index));
+            col_p = (T_index *)malloc((num_cols + 1) * sizeof(T_index));
 
             // copy data
             memcpy(vals, mat.valuePtr(), num_nonzeros * sizeof(T));
-            memcpy(indexes, mat.innerIndexPtr(), num_nonzeros * sizeof(T));
-            memcpy(col_p, mat.outerIndexPtr(), (num_cols + 1) * sizeof(T));
+            
+
+            // ! check back here to see if this works
+            // copy indexes and col_p and cast them to T_index
+            for (size_t i = 0; i < num_nonzeros; i++)
+                indexes[i] = (T_index)mat.innerIndexPtr()[i];
+            
+            for (size_t i = 0; i < num_cols + 1; i++)
+                col_p[i] = (T_index)mat.outerIndexPtr()[i];
+
         } else {
             vals = mat.valuePtr();
-            indexes = mat.innerIndexPtr();
-            col_p = mat.outerIndexPtr();
+
+            // ! check back here to see if this works
+            indexes = (T_index *)mat.innerIndexPtr();
+            col_p = (T_index *)mat.outerIndexPtr();
         }
 
         // set compression size
@@ -505,6 +525,42 @@ namespace CSF {
                                                 size_t non_zeros, size_t row_num, size_t col_num,
                                                 bool destroy)
     {
+        // assert that values_t is the same as T
+        static_assert(std::is_same<values_t, T>::value, "type of value array must be the same as value template parameter");
+
+        // assert that row_ind is the same size as T_index
+        static_assert(sizeof(row_ind) == sizeof(T_index), "type of row index array must be the same size as row index template parameter");
+
+        // assert that col_ind is the same size as T_index
+        static_assert(sizeof(col_ind) == sizeof(T_index), "type of column index array must be the same size as column index template parameter");
+
+        // set variables
+        num_rows = row_num;
+        num_cols = col_num;
+        num_nonzeros = non_zeros;
+
+        // set types
+        row_t = sizeof(T_index);
+        col_t = sizeof(T_index);
+        val_t = sizeof(T);
+
+        // if destroy is false copy the data
+        if (!destroy) {
+            this->vals = (T *)malloc(num_nonzeros * sizeof(T));
+            this->indexes = (T_index *)malloc(num_nonzeros * sizeof(T_index));
+            this->col_p = (T_index *)malloc((num_cols + 1) * sizeof(T_index));
+
+            // copy data
+            memcpy(this->vals, *vals, num_nonzeros * sizeof(T));
+            memcpy(this->indexes, *indexes, num_nonzeros * sizeof(T_index));
+            memcpy(this->col_p, *col_p, (num_cols + 1) * sizeof(T_index));
+
+        } else {
+            this->vals = *vals;
+            this->indexes = *indexes;
+            this->col_p = *col_p;
+        }
+
     }
 
     template <typename T, typename T_index>

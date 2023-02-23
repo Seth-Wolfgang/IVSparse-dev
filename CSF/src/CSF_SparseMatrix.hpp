@@ -54,7 +54,7 @@ namespace CSF {
 
         CSF::SparseMatrix<T, T_index, 1> to_csf1();
 
-        as<CSF::SparseMatrix<T, T_index, 3>(){}
+        as<CSF::SparseMatrix<T, T_index, 3>(){};
 
         template <class to>
         to as(){

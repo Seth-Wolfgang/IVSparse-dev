@@ -4,12 +4,12 @@
 
 /*
 TODO - 
-1. Fix index typing, cast to uint64 when needed stop being lazy
+1. Fix index typing, cast to uint64 when needed stop being lazy //!(done?)
 2. Get the decompressor working (using iterator most likely)
 3. Merging branches and testing
 4. Writing a ton of comments
 5. // *Start writing BLAS routines (or is it better to get testing and beta out first then BLAS)
-6. Finish up the Constructors for CSF
+6. Finish up the Constructors for CSF //!(done?)
 7. Write up the redundancy testing helper function
 8. Go through and do all user checks, attempt to break 
     CSF as much as possible to make sure user can't break it easily
@@ -37,22 +37,24 @@ int main (int argc, char** argv) {
     // Create a CSF matrix from the Eigen matrix
 
     // Default initialization (compression lvl 3 and T_index = uint64_t but is ignored because bytepacking)
-    // ! Not working rn
-    //CSF::SparseMatrix<int> mat1(myMatrix);
+    CSF::SparseMatrix<int> mat1(myMatrix);
 
     // Explicit initialization of comp_lvl 3 and int indexing
     CSF::SparseMatrix<int, int, 3> mat2(myMatrix);
-
 
     // compression level 2 using int indexing
     CSF::SparseMatrix<int, int, 2> mat3(myMatrix);
 
     // compression level 2 using other indexing
-    // ! Not working rn
-    //CSF::SparseMatrix<int, uint64_t, 2> mat4(myMatrix);
+    CSF::SparseMatrix<int, uint64_t, 2> mat4(myMatrix);
+
+    // write the matrix to a file
+    mat4.write("mat4.csf");
 
     // compression level 1 using int indexing
     CSF::SparseMatrix<int, int, 1> mat5(myMatrix);
+
+    CSF::SparseMatrix<int, uint64_t, 1> matmat(myMatrix);
 
     // compression level 1 using other indexing
     // ! Not working rn
