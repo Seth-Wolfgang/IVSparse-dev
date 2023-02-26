@@ -121,10 +121,8 @@ namespace CSF {
         FILE *fp = fopen(filename, "rb");
 
         // Check that the file exists
-        if (fp == NULL) {
-            printf("File %s does not exist\n", filename);
-            exit(1);
-        }
+        if (fp == nullptr)
+            throw std::invalid_argument("The file could not be opened");
 
         // get size of file
         fseek(fp, 0, SEEK_END);
@@ -638,13 +636,104 @@ namespace CSF {
     template <typename T, typename T_index>
     SparseMatrix<T, T_index, 1>::SparseMatrix(const char *filename)
     {
-        // * <compression, row_t, col_t, val_t, num_rows, num_cols, num_nonzeros, [ vals ], [ rows ], [ col_p ]>
+        // check that T_index
+        if (std::is_floating_point<T_index>::value)
+            throw std::invalid_argument("The row and column types must be non-floating point types");
+
+        // check that T and T_index are numeric types
+        if (!std::is_arithmetic<T>::value || !std::is_arithmetic<T_index>::value)
+            throw std::invalid_argument("The value and index types must be numeric types");
+
+        // open file
+        FILE *file = fopen(filename, "rb");
+
+        // check if file is null
+        if (file == nullptr)
+            throw std::invalid_argument("The file could not be opened");
+
+        // read in metadata which is 7 uint32_t values
+        uint32_t metadata[7];
+        fread(metadata, sizeof(uint32_t), 7, file);
+
+        // set variables
+        if (metadata[0] != 1)
+            throw std::invalid_argument("The file is not in compression level 1");
+
+        row_t = metadata[1];
+        col_t = metadata[2];
+        val_t = metadata[3];
+        num_rows = metadata[4];
+        num_cols = metadata[5];
+        num_nonzeros = metadata[6];
+
+        // check that the value type is valid
+        check_valt(val_t);
+
+        // check number of rows and cols and nonzeros is above 0
+        if (num_rows <= 0 || num_cols <= 0 || num_nonzeros <= 0)
+            throw std::invalid_argument("The number of rows, columns, and nonzeros must be greater than 0");
+
+        // read in data
+        try {
+            vals = (T *)malloc(num_nonzeros * sizeof(T));
+            indexes = (T_index *)malloc(num_nonzeros * sizeof(T_index));
+            col_p = (T_index *)malloc((num_cols + 1) * sizeof(T_index));
+        } catch (std::bad_alloc &e) {
+            std::cout << "Error: " << e.what() << std::endl;
+            exit(1);
+        }
+
+        // -- read in data -- //
+
+        // read in column pointers
+        fread(col_p, sizeof(T_index), num_cols + 1, file);
+
+        // read in the values
+        fread(vals, sizeof(T), num_nonzeros, file);
+
+        // read in the indexes
+        fread(indexes, sizeof(T_index), num_nonzeros, file);
+
+        // close file
+        fclose(file);
     }
 
     template <typename T, typename T_index>
     SparseMatrix<T, T_index, 1>::SparseMatrix(CSF::SparseMatrix<T, T_index, 1> &mat)
     {
+        // check that T_index
+        if (std::is_floating_point<T_index>::value)
+            throw std::invalid_argument("The row and column types must be non-floating point types");
 
+        // check that T and T_index are numeric types
+        if (!std::is_arithmetic<T>::value || !std::is_arithmetic<T_index>::value)
+            throw std::invalid_argument("The value and index types must be numeric types");
+
+        // set variables
+        num_rows = mat.rows();
+        num_cols = mat.cols();
+        num_nonzeros = mat.nonzeros();
+
+        // set types
+        row_t = sizeof(T_index);
+        col_t = sizeof(T_index);
+        val_t = encode_valt();
+
+        check_valt(val_t);
+
+        // copy data
+        try {
+            vals = (T *)malloc(num_nonzeros * sizeof(T));
+            indexes = (T_index *)malloc(num_nonzeros * sizeof(T_index));
+            col_p = (T_index *)malloc((num_cols + 1) * sizeof(T_index));
+        } catch (std::bad_alloc &e) {
+            std::cout << "Error: " << e.what() << std::endl;
+            exit(1);
+        }
+
+        memcpy(vals, mat.vals, num_nonzeros * sizeof(T));
+        memcpy(indexes, mat.indexes, num_nonzeros * sizeof(T_index));
+        memcpy(col_p, mat.col_p, (num_cols + 1) * sizeof(T_index));
     }
 
     template <typename T, typename T_index>

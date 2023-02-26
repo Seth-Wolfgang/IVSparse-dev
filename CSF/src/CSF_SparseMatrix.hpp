@@ -138,7 +138,7 @@ namespace CSF {
 
         Eigen::SparseMatrix<T> to_eigen();
 
-        const void* valuePtr();
+        void* valuePtr();
 
         const void* indexPtr();
 

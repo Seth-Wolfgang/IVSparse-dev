@@ -193,7 +193,7 @@ namespace CSF
     }
 
     template <typename T, typename T_index>
-    const void *SparseMatrix<T, T_index, 1>::valuePtr()
+    void *SparseMatrix<T, T_index, 1>::valuePtr()
     {
         return vals;
     }
