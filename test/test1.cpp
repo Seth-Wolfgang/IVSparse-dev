@@ -3,23 +3,19 @@
 #include <iostream>
 
 /*
-TODO - 
-1. Fix index typing, cast to uint64 when needed stop being lazy //!(done?)
-2. Get the decompressor working (using iterator most likely)
-3. Merging branches and testing
-4. Writing a ton of comments
-5. // *Start writing BLAS routines (or is it better to get testing and beta out first then BLAS)
-6. Finish up the Constructors for CSF //!(done?)
-7. Write up the redundancy testing helper function
-8. Go through and do all user checks, attempt to break 
-    CSF as much as possible to make sure user can't break it easily
-9. Write up offical example code and documentation
-10. Overload << operator for CSF
+Things to test/get working:
+1. Decompressor
+2. Floats and doubles
+3. negative numbers
+4. CSF vectors
+5. CSF -> Eigen
+6. << operator
+7. index types
+8. redundancy checker
+9. CSF1 write and read from file
 */
 
 int main (int argc, char** argv) {
-
-    // Show the different functionalites of the CSF format
 
     // Create a random matrix
     int numRows = 50;
@@ -34,85 +30,62 @@ int main (int argc, char** argv) {
     myMatrix.makeCompressed();
 
 
-    // Create a CSF matrix from the Eigen matrix
+    // --- Eigen + CSF Testing --- //
 
-    // Default initialization (compression lvl 3 and T_index = uint64_t but is ignored because bytepacking)
+    //* Integer and default Index and Value Type
+
+    // Create a CSF matrix from an Eigen matrix (defualt)
     CSF::SparseMatrix<int> mat1(myMatrix);
+    mat1.write("mat1.csf");
 
-    // Explicit initialization of comp_lvl 3 and int indexing
-    CSF::SparseMatrix<int, int, 3> mat2(myMatrix);
+    // Create a CSF matrix from an Eigen matrix (CSF2)
+    CSF::SparseMatrix<int, int, 2> mat2(myMatrix);
+    //mat2.write("mat2.csf");
 
-    // compression level 2 using int indexing
-    CSF::SparseMatrix<int, int, 2> mat3(myMatrix);
+    // Create a CSF matrix from an Eigen matrix (CSF1)
+    CSF::SparseMatrix<int, int, 1> mat3(myMatrix);
+    //! (Not implemented yet) mat3.write("mat3.csf");
 
-    // compression level 2 using other indexing
-    CSF::SparseMatrix<int, uint64_t, 2> mat4(myMatrix);
 
-    // write the matrix to a file
-    mat4.write("mat4.csf");
+    //* Non Integer index types
+    CSF::SparseMatrix<int, uint16_t, 3> mat4(myMatrix);
+    //mat4.write("mat4.csf");
 
-    // compression level 1 using int indexing
-    CSF::SparseMatrix<int, int, 1> mat5(myMatrix);
-
-    CSF::SparseMatrix<int, uint64_t, 1> matmat(myMatrix);
-
-    // compression level 1 using other indexing
-    // ! Not working rn
-    //CSF::SparseMatrix<int, uint64_t, 1> mat6(myMatrix);
-
+    CSF::SparseMatrix<int, uint32_t, 3> mat5(myMatrix);
+    //mat5.write("mat5.csf");
     
-    // create a new eigen matrix of type short
-    Eigen::SparseMatrix<short> myMatrix2(numRows, numCols);
+    CSF::SparseMatrix<int, uint64_t, 3> mat6(myMatrix);
+    //mat6.write("mat6.csf");
 
-    // populate the matrix
-    for (int k=0; k<myMatrix.outerSize(); ++k)
-        for (Eigen::SparseMatrix<int>::InnerIterator it(myMatrix,k); it; ++it)
-            myMatrix2.insert(it.row(), it.col()) = it.value();
+    CSF::SparseMatrix<int, uint64_t, 2> mat7(myMatrix);
+    //mat7.write("mat7.csf");
 
+    CSF::SparseMatrix<int, uint64_t, 1> mat8(myMatrix);
+    mat8.write("mat8.csf");
 
-    // create a new CSF matrix from the eigen matrix of type short
-    CSF::SparseMatrix<short, int, 3> mat7(myMatrix2);
+    // create an eigen matrix from mat8
+    Eigen::SparseMatrix<int> mat8_eigen = mat8.to_eigen();
 
-    // create a comp_lvl 2 CSF matrix from the eigen matrix of type short
-    CSF::SparseMatrix<short, int, 2> mat8(myMatrix2);
+    // create a random eigen matrix of type double
+    Eigen::SparseMatrix<double> myMatrix2(numRows, numCols);
+    myMatrix2.reserve(Eigen::VectorXi::Constant(numRows, numCols));
+    myMatrix2 = generateMatrix<double>(numRows, numCols, sparsity, seed);
+    myMatrix2.makeCompressed();
 
-    // create a comp_lvl 1 CSF matrix from the eigen matrix of type short
-    CSF::SparseMatrix<short, int, 1> mat9(myMatrix2);
+    // Create a CSF matrix from an Eigen matrix (defualt)
+    CSF::SparseMatrix<double, uint16_t, 2> mat9(myMatrix2);
+    mat9.write("mat9.csf");
 
-    // create a comp_lvl 3 CSF matrix from the eigen matrix of type short
-    // ! Not working rn
-    //CSF::SparseMatrix<short> mat10(myMatrix2);
+    // create a random eigen matrix of type float
+    Eigen::SparseMatrix<float> myMatrix3(numRows, numCols);
+    myMatrix3.reserve(Eigen::VectorXi::Constant(numRows, numCols));
+    myMatrix3 = generateMatrix<float>(numRows, numCols, sparsity, seed);
+    myMatrix3.makeCompressed();
 
+    // Create a CSF matrix from an Eigen matrix (defualt)
+    CSF::SparseMatrix<float, uint16_t, 2> mat10(myMatrix3);
+    //mat10.write("mat10.csf");
 
-    // turn the CSF1 matrix into a CSF3 matrix
-    CSF::SparseMatrix<int, int, 3> mat11 = mat5.to_csf3();
-
-    // print the rows and cols of mat11
-    std::cout << "mat11 has " << mat11.rows() << " rows and " << mat11.cols() << " cols" << std::endl;
-
-    // print out number of nonzeros and compression size
-    std::cout << "mat11 has " << mat11.nonzeros() << " nonzeros and " << mat11.byte_size() << " bytes" << std::endl;
-
-    // write mat11 to file
-    mat11.write("mat11.csf");
-
-
-    // read mat11 from file
-    CSF::SparseMatrix<int, int, 3> mat12("mat11.csf");
-    
-    // print out number of nonzeros and compression size
-    // ! cant find non-zeros w/o counting them explicitly
-    std::cout << "mat12 has " << mat12.nonzeros() << " nonzeros and " << mat12.byte_size() << " bytes" << std::endl;
-
-
-    // create a new CSF matrix with the raw csc constructor
-    int * vals = myMatrix.valuePtr();
-    int * rows = myMatrix.innerIndexPtr();
-    int * cols = myMatrix.outerIndexPtr();
-
-    // ! T has to be int because &vals is an integer pointer
-    CSF::SparseMatrix<int, uint64_t, 3> mat13(&vals, &rows, &cols, myMatrix.nonZeros(), myMatrix.rows(), myMatrix.cols());
-    CSF::SparseMatrix<int, uint64_t, 2> mat14(&vals, &rows, &cols, myMatrix.nonZeros(), myMatrix.rows(), myMatrix.cols());
 
     return 0;
 }

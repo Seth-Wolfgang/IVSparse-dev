@@ -3,6 +3,8 @@
 #define DEBUG 1
 
 #include <type_traits>
+#include <iostream>
+#include <iomanip>
 
 namespace CSF {
 
@@ -42,14 +44,19 @@ namespace CSF {
             col_p = mat.outerIndexPtr();
 
             // deep copy the values
-            vals = (T *) malloc(num_nonzeros * sizeof(T));
-            memcpy(vals, mat.valuePtr(), num_nonzeros * sizeof(T));
+            try {
+                vals = (T *)malloc(num_nonzeros * sizeof(T));
+                memcpy(vals, mat.valuePtr(), num_nonzeros * sizeof(T));
+            } catch (std::bad_alloc &e) {
+                std::cerr << "Error: " << e.what() << std::endl;
+                exit(1);
+            }
         }
 
         compress(vals, indexes, col_p);
 
         // free the memory if the matrix was destroyed
-        if (!destroy) {
+        if (!destroy && vals != nullptr) {
             free(vals);
         }
         
@@ -64,20 +71,21 @@ namespace CSF {
         // Check that templates T and values_t are the same
         static_assert(std::is_same<T, values_t>::value, "Your matrix must be of the same type as the constructor");
 
-        // if compression level is 2 make sure the size of row and col types are same as T_index
-        // if (compression_level == 2) {
-        //     static_assert(sizeof(T_index) == sizeof(row_ind), "Your row index type must be the same as the constructor");
-        //     static_assert(sizeof(T_index) == sizeof(col_ind), "Your col index type must be the same as the constructor");
-        // }
-
         // intialize the matrix
         num_rows = row_num;
         num_cols = col_num;
         num_nonzeros = non_zeros;
 
         if (!destroy) {
+            
             // allocate space for a copy of vals
-            values_t *vals_copy = (values_t *)malloc(num_nonzeros * sizeof(values_t));
+            values_t *vals_copy;
+            try {
+                vals_copy = (values_t *)malloc(num_nonzeros * sizeof(values_t));
+            } catch (std::bad_alloc &e) {
+                std::cerr << "Error: " << e.what() << std::endl;
+                exit(1);
+            }
 
             // copy vals into vals_copy
             memcpy(vals_copy, *vals, num_nonzeros * sizeof(values_t));
@@ -96,6 +104,19 @@ namespace CSF {
     template <typename T, typename T_index, int compression_level>
     SparseMatrix<T, T_index, compression_level>::SparseMatrix(const char *filename)
     {
+
+        // check that T_index
+        if (std::is_floating_point<T_index>::value)
+            throw std::invalid_argument("The row and column types must be non-floating point types");
+
+        // check the compression level is either 1, 2, or 3
+        if (compression_level < 1 || compression_level > 3)
+            throw std::invalid_argument("The compression level must be either 1, 2, or 3");
+
+        // check that T and T_index are numeric types
+        if (!std::is_arithmetic<T>::value || !std::is_arithmetic<T_index>::value)
+            throw std::invalid_argument("The value and index types must be numeric types");
+
         // Open the file
         FILE *fp = fopen(filename, "rb");
 
@@ -111,7 +132,12 @@ namespace CSF {
         fseek(fp, 0, SEEK_SET);
 
         // allocate memory for file
-        begin_ptr = malloc(compression_size);
+        try {
+            begin_ptr = malloc(compression_size);
+        } catch (std::bad_alloc &e) {
+            std::cerr << "Error: " << e.what() << std::endl;
+            exit(1);
+        }
 
         // read in data
         fread(begin_ptr, 1, compression_size, fp);
@@ -120,7 +146,7 @@ namespace CSF {
         fclose(fp);
 
         // set pointers
-        comp_ptr = (void *)((char *)(begin_ptr) + compression_size);
+        comp_ptr = (void *)((uint8_t *)(begin_ptr) + compression_size);
         void *help_ptr = begin_ptr;
 
         // get metadata
@@ -143,12 +169,8 @@ namespace CSF {
         val_t = *(uint32_t *)(help_ptr);
         help_ptr = (uint32_t *)(help_ptr) + 1;
 
-        // assert that the value type is the same and throw error
-        if (val_t != sizeof(T)) {
-            printf("Value type of file does not match the value type of the constructor\n");
-            printf("The value type of the file is %d and the value type of the constructor is %lu", val_t, sizeof(T));
-            exit(1);
-        }
+        // call check_valt
+        check_valt(val_t);
 
         num_rows = *(uint32_t *)(help_ptr);
         help_ptr = (uint32_t *)(help_ptr) + 1;
@@ -175,7 +197,12 @@ namespace CSF {
         num_cols = mat.cols();
         num_nonzeros = mat.nonzeros();
 
-        begin_ptr = malloc(mat.byte_size());
+        try {
+            begin_ptr = malloc(mat.byte_size());
+        } catch (std::bad_alloc &e) {
+            std::cerr << "Error: " << e.what() << std::endl;
+            exit(1);
+        }
         comp_ptr = (uint8_t *)begin_ptr + mat.byte_size();
 
         // copy the data
@@ -201,7 +228,8 @@ namespace CSF {
     template <typename T, typename T_index, int compression_level>
     SparseMatrix<T, T_index, compression_level>::~SparseMatrix()
     {
-        free(begin_ptr);
+        if (begin_ptr != NULL)
+            free(begin_ptr);
     }
 
 
@@ -258,6 +286,18 @@ namespace CSF {
         if (num_rows < 1 || num_cols < 1 || num_nonzeros < 1)
             throw std::invalid_argument("The matrix must have at least one row, column, and nonzero value");
 
+        // check that row or col type isn't float or double
+        if (std::is_floating_point<rows_type>::value || std::is_floating_point<cols_type>::value)
+            throw std::invalid_argument("The row and column types must be non-floating point types");
+
+        // check the compression level is either 1, 2, or 3
+        if (compression_level < 1 || compression_level > 3)
+            throw std::invalid_argument("The compression level must be either 1, 2, or 3");
+
+        // check that T and T_index are numeric types
+        if (!std::is_arithmetic<T>::value || !std::is_arithmetic<T_index>::value)
+            throw std::invalid_argument("The value and index types must be numeric types");
+
 
         // determine the type of each value
         if (compression_level == 2) {
@@ -268,7 +308,7 @@ namespace CSF {
             col_t = byte_width(num_cols);
         }
 
-        val_t = sizeof(values_type);
+        val_t = encode_valt();
 
         // allocate memory for the matrix
         allocate_memory();
@@ -276,7 +316,7 @@ namespace CSF {
         // create pointer to update col pointers
         uint64_t *col_pointers = create_metadata();
 
-        uint8_t last_col_index = 1;
+        uint8_t last_col_index = sizeof(T_index);
 
         for (size_t i = 0; i < num_cols; i++) {
 
@@ -290,8 +330,8 @@ namespace CSF {
                     // New unique value found
 
                     // Add the found value to run
-                    *(values_type *)(comp_ptr) = (vals)[j];
-                    comp_ptr = (values_type *)(comp_ptr) + 1;
+                    *(T *)(comp_ptr) = (vals)[j];
+                    comp_ptr = (T *)(comp_ptr) + 1;
 
                     // Create an index pointer to update index type later
                     void *help_ptr = comp_ptr;
@@ -359,7 +399,6 @@ namespace CSF {
                         *(uint8_t *)(help_ptr) = byte_width(max_index);
                         help_ptr = (uint8_t *)(help_ptr) + 1;
 
-                        // ! temp solution, def a more optimal solution to be found
                         last_col_index = byte_width(max_index);
 
                         // write over data with indices of new size, index compression
@@ -451,7 +490,12 @@ namespace CSF {
         compression_size = (uint8_t *)(comp_ptr) - ((uint8_t *)(begin_ptr)-1);
 
         // resize data to fit actual size
-        begin_ptr = realloc(begin_ptr, compression_size);
+        try {
+            begin_ptr = realloc(begin_ptr, compression_size);
+        } catch (std::bad_alloc &e) {
+            std::cout << "Error: " << e.what() << std::endl;
+            exit(1);
+        }
     }
 
 
@@ -481,18 +525,32 @@ namespace CSF {
         if (num_rows < 1 || num_cols < 1 || num_nonzeros < 1)
             throw std::invalid_argument("The matrix must have at least one row, column, and nonzero value");
 
+        // check that row or col type isn't float or double
+        if (std::is_floating_point<T_index>::value)
+            throw std::invalid_argument("The index types must be non-floating point types");
+
+        // check that T and T_index are numeric types
+        if (!std::is_arithmetic<T>::value || !std::is_arithmetic<T_index>::value)
+            throw std::invalid_argument("The value and index types must be numeric types");
 
         // set types
         row_t = sizeof(T_index);
         col_t = sizeof(T_index);
-        val_t = sizeof(T);
+        val_t = encode_valt();
+
+        check_valt(val_t);
 
         // if destroy is false copy the data
         if (!destroy) {
-            vals = (T *)malloc(num_nonzeros * sizeof(T));
-            indexes = (T_index *)malloc(num_nonzeros * sizeof(T_index));
-            col_p = (T_index *)malloc((num_cols + 1) * sizeof(T_index));
-
+            try {
+                vals = (T *)malloc(num_nonzeros * sizeof(T));
+                indexes = (T_index *)malloc(num_nonzeros * sizeof(T_index));
+                col_p = (T_index *)malloc((num_cols + 1) * sizeof(T_index));
+            } catch (std::bad_alloc &e) {
+                std::cout << "Error: " << e.what() << std::endl;
+                exit(1);
+            }
+            
             // copy data
             memcpy(vals, mat.valuePtr(), num_nonzeros * sizeof(T));
             
@@ -514,8 +572,7 @@ namespace CSF {
         }
 
         // set compression size
-        // TODO: take another look here
-        compression_size = num_nonzeros * sizeof(T) + num_nonzeros * sizeof(T) + (num_cols + 1) * sizeof(T);
+        compression_size = num_nonzeros * sizeof(T) + num_nonzeros * sizeof(T_index) + (num_cols + 1) * sizeof(T_index);
 
     }
 
@@ -534,6 +591,14 @@ namespace CSF {
         // assert that col_ind is the same size as T_index
         static_assert(sizeof(col_ind) == sizeof(T_index), "type of column index array must be the same size as column index template parameter");
 
+        // check that row or col type isn't float or double
+        if (std::is_floating_point<row_ind>::value || std::is_floating_point<col_ind>::value)
+            throw std::invalid_argument("The row and column types must be non-floating point types");
+
+        // check that T and T_index are numeric types
+        if (!std::is_arithmetic<T>::value || !std::is_arithmetic<T_index>::value)
+            throw std::invalid_argument("The value and index types must be numeric types");
+
         // set variables
         num_rows = row_num;
         num_cols = col_num;
@@ -542,13 +607,20 @@ namespace CSF {
         // set types
         row_t = sizeof(T_index);
         col_t = sizeof(T_index);
-        val_t = sizeof(T);
+        val_t = encode_valt();
+
+        check_valt(val_t);
 
         // if destroy is false copy the data
         if (!destroy) {
-            this->vals = (T *)malloc(num_nonzeros * sizeof(T));
-            this->indexes = (T_index *)malloc(num_nonzeros * sizeof(T_index));
-            this->col_p = (T_index *)malloc((num_cols + 1) * sizeof(T_index));
+            try {
+                this->vals = (T *)malloc(num_nonzeros * sizeof(T));
+                this->indexes = (T_index *)malloc(num_nonzeros * sizeof(T_index));
+                this->col_p = (T_index *)malloc((num_cols + 1) * sizeof(T_index));
+            } catch (std::bad_alloc &e) {
+                std::cout << "Error: " << e.what() << std::endl;
+                exit(1);
+            }
 
             // copy data
             memcpy(this->vals, *vals, num_nonzeros * sizeof(T));
@@ -566,7 +638,7 @@ namespace CSF {
     template <typename T, typename T_index>
     SparseMatrix<T, T_index, 1>::SparseMatrix(const char *filename)
     {
-
+        // * <compression, row_t, col_t, val_t, num_rows, num_cols, num_nonzeros, [ vals ], [ rows ], [ col_p ]>
     }
 
     template <typename T, typename T_index>

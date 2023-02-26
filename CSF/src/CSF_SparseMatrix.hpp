@@ -25,6 +25,10 @@ namespace CSF {
 
         void allocate_memory();
 
+        uint32_t encode_valt();
+
+        void check_valt(uint32_t valt);
+
         uint8_t byte_width(size_t size);
 
         uint64_t* create_metadata();
@@ -54,18 +58,18 @@ namespace CSF {
 
         CSF::SparseMatrix<T, T_index, 1> to_csf1();
 
-        as<CSF::SparseMatrix<T, T_index, 3>(){};
+        // as<CSF::SparseMatrix<T, T_index, 3>(){};
 
-        template <class to>
-        to as(){
+        // template <class to>
+        // to as(){
             
-        }
+        // }
 
         Eigen::SparseMatrix<T> to_eigen();
 
-        void *beginPtr();
+        const void *beginPtr();
 
-        void *endPtr();
+        const void *endPtr();
 
         size_t byte_size();
 
@@ -106,6 +110,10 @@ namespace CSF {
 
         void allocate_memory();
 
+        uint32_t encode_valt();
+
+        void check_valt(uint32_t valt);
+
         uint8_t byte_width(size_t size);
 
     public:
@@ -130,9 +138,11 @@ namespace CSF {
 
         Eigen::SparseMatrix<T> to_eigen();
 
-        void *beginPtr();
+        const void* valuePtr();
 
-        void *endPtr();
+        const void* indexPtr();
+
+        const void* colPtr();
 
         size_t byte_size();
 

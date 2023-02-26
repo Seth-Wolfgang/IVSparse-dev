@@ -1,6 +1,7 @@
 #pragma once
 
 #include <vector>
+#include <iostream>
 
 namespace CSF
 {
@@ -10,15 +11,14 @@ namespace CSF
         // Malloc memory for the data, never worse then CSC so allocate CSC amount
         // plus space for the value and row, col indicies, and a buffer zone
 
-        size_t csc_size = num_nonzeros * val_t + num_nonzeros * row_t + num_cols * col_t;
-        size_t comp_size_guess = 28 + (8 * num_cols) + csc_size * 3;
+        size_t csc_size = num_nonzeros * sizeof(T) + num_nonzeros * sizeof(T_index) + num_cols * sizeof(T_index);
+        size_t comp_size_guess = 28 + (8 * num_cols) + csc_size;
 
-        begin_ptr = malloc(comp_size_guess);
-
-        // Check if memory was allocated
-        if (!begin_ptr)
-        {
-            throw std::bad_alloc();
+        try {
+            begin_ptr = malloc(comp_size_guess);
+        } catch (std::bad_alloc &e) {
+            std::cout << "Error allocating memory for compression" << std::endl;
+            throw e;
         }
 
         // Set the pointer to the start of the data
@@ -41,6 +41,39 @@ namespace CSF
         }
     }
 
+    template <typename T, typename T_index, int compression_level>
+    uint32_t SparseMatrix<T, T_index, compression_level>::encode_valt() {
+        uint8_t byte0 = sizeof(T);
+        uint8_t byte1 = std::is_floating_point_v<T> ? 1 : 0;
+        uint8_t byte2 = std::is_signed_v<T> ? 1 : 0;
+        uint8_t byte3 = 0;
+
+        return (byte3 << 24) | (byte2 << 16) | (byte1 << 8) | byte0;
+    }
+
+    template <typename T, typename T_index, int compression_level>
+    void SparseMatrix<T, T_index, compression_level>::check_valt(uint32_t valt) {
+        uint8_t byte0 = valt & 0xFF;
+        uint8_t byte1 = (valt >> 8) & 0xFF;
+        uint8_t byte2 = (valt >> 16) & 0xFF;
+        uint8_t byte3 = (valt >> 24) & 0xFF;
+
+        if (byte0 != sizeof(T)) {
+            std::cout << "Error: Value type size does not match" << std::endl;
+            throw std::runtime_error("Value type size does not match, correct size is " + std::to_string(sizeof(T)) + "");
+        }
+
+        if (byte1 != std::is_floating_point_v<T>) {
+            std::cout << "Error: Value type is not floating point" << std::endl;
+            throw std::runtime_error("Value type is not floating point when it should be");
+        }
+
+        if (byte2 != std::is_signed_v<T>) {
+            std::cout << "Error: Value type is not signed" << std::endl;
+            throw std::runtime_error("Value type is not signed when it should be");
+        }
+    }
+
     // ---- Member Functions ----
     template <typename T, typename T_index, int compression_level>
     size_t SparseMatrix<T, T_index, compression_level>::byte_size()
@@ -49,13 +82,13 @@ namespace CSF
     }
 
     template <typename T, typename T_index, int compression_level>
-    void *SparseMatrix<T, T_index, compression_level>::beginPtr()
+    const void *SparseMatrix<T, T_index, compression_level>::beginPtr()
     {
         return begin_ptr;
     }
 
     template <typename T, typename T_index, int compression_level>
-    void *SparseMatrix<T, T_index, compression_level>::endPtr()
+    const void *SparseMatrix<T, T_index, compression_level>::endPtr()
     {
         return comp_ptr;
     }
@@ -160,6 +193,87 @@ namespace CSF
     }
 
     template <typename T, typename T_index>
+    const void *SparseMatrix<T, T_index, 1>::valuePtr()
+    {
+        return vals;
+    }
+
+    template <typename T, typename T_index>
+    const void *SparseMatrix<T, T_index, 1>::indexPtr()
+    {
+        return indexes;
+    }
+
+    template <typename T, typename T_index>
+    const void *SparseMatrix<T, T_index, 1>::colPtr()
+    {
+        return col_p;
+    }
+
+    template <typename T, typename T_index>
+    uint32_t SparseMatrix<T, T_index, 1>::encode_valt()
+    {
+        uint8_t byte0 = sizeof(T);
+        uint8_t byte1 = std::is_floating_point_v<T> ? 1 : 0;
+        uint8_t byte2 = std::is_signed_v<T> ? 1 : 0;
+        uint8_t byte3 = 0;
+
+        return (byte3 << 24) | (byte2 << 16) | (byte1 << 8) | byte0;
+    }
+
+    template <typename T, typename T_index>
+    void SparseMatrix<T, T_index, 1>::check_valt(uint32_t valt)
+    {
+        uint8_t byte0 = valt & 0xFF;
+        uint8_t byte1 = (valt >> 8) & 0xFF;
+        uint8_t byte2 = (valt >> 16) & 0xFF;
+        uint8_t byte3 = (valt >> 24) & 0xFF;
+
+        if (byte0 != sizeof(T))
+        {
+            std::cout << "Error: Value type size does not match" << std::endl;
+            throw std::runtime_error("Value type size does not match, correct size is " + std::to_string(sizeof(T)) + "");
+        }
+
+        if (byte1 != std::is_floating_point_v<T>)
+        {
+            std::cout << "Error: Value type is not floating point" << std::endl;
+            throw std::runtime_error("Value type is not floating point when it should be");
+        }
+
+        if (byte2 != std::is_signed_v<T>)
+        {
+            std::cout << "Error: Value type is not signed" << std::endl;
+            throw std::runtime_error("Value type is not signed when it should be");
+        }
+    }
+
+    template <typename T, typename T_index>
+    void SparseMatrix<T, T_index, 1>::write(const char *filename)
+    {
+        // write data to file
+        FILE *fp = fopen(filename, "wb");
+
+        // construct the metadata
+        // * <compression, row_t, col_t, val_t, num_rows, num_cols, num_nonzeros, [[col_pointers] [vals] [indexes]]>
+        uint32_t metadata[7] = {compression, row_t, col_t, val_t, num_rows, num_cols, num_nonzeros};
+
+        // write the metadata
+        fwrite(metadata, sizeof(uint32_t), 7, fp);
+
+        // write the col_p
+        fwrite(col_p, sizeof(T_index), num_cols + 1, fp);
+
+        // write the vals
+        fwrite(vals, sizeof(T), num_nonzeros, fp);
+
+        // write the indexes
+        fwrite(indexes, sizeof(T_index), num_nonzeros, fp);
+
+        fclose(fp);
+    }
+
+    template <typename T, typename T_index>
     CSF::SparseMatrix<T, T_index, 3> SparseMatrix<T, T_index, 1>::to_csf3(bool destroy) 
     {
         // create a new CSF3 matrix using vals, indexes, and col_p
@@ -182,6 +296,23 @@ namespace CSF
     template <typename T, typename T_index>
     Eigen::SparseMatrix<T> SparseMatrix<T, T_index, 1>::to_eigen()
     {
+        // construct triplet list from CSC
+        std::vector<Eigen::Triplet<T>> tripletList;
+        tripletList.reserve(num_nonzeros);
 
+        for (uint32_t i = 0; i < num_cols; i++)
+        {
+            for (uint32_t j = col_p[i]; j < col_p[i + 1]; j++)
+            {
+                tripletList.push_back(Eigen::Triplet<T>(indexes[j], i, vals[j]));
+            }
+        }
+
+        // construct the Eigen matrix
+        Eigen::SparseMatrix<T> eigen(num_rows, num_cols);
+        eigen.setFromTriplets(tripletList.begin(), tripletList.end());
+
+        // return the Eigen matrix
+        return eigen;
     }
 }
