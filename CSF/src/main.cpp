@@ -7,9 +7,6 @@ template<typename E> Eigen::SparseMatrix<E> generateMatrix(int numRows, int numC
 template<typename T> uint64_t getSum(CSF::SparseMatrix matrix);
 template<typename T> uint64_t getSum(Eigen::SparseMatrix<T> matrix);
 
-
-
-
 int main() {
 
 

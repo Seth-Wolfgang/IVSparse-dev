@@ -12,6 +12,7 @@ _deps
 *.exe
 *.json
 *.csf
+*.csfr
 CMakeFiles
 CMAKE
 *workspace
