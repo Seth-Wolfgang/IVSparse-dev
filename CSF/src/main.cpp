@@ -1,4 +1,3 @@
-#include "include/CSF_Lib.hpp"
 
 template<typename T> void iteratorBenchmarkDriver(int iterations);
 template<typename T> void BLASBenchmarkDriver(int iterations);
