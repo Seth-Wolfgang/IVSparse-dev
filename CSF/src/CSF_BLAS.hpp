@@ -1,57 +1,61 @@
-#include "CSF_Lib.hpp"
-
+#pragma once
+#include <algorithm>
+#include <vector>
+#include <iostream>
 
 // testing ground for simple linear algebra operations
 // will be replaced by operators when they are all operational
 
 /**
- * @brief Scalar multiplication function for CSF matrices 
- * 
+ * @brief Scalar multiplication function for CSF matrices
  *
- * @tparam T 
- * @param scalar 
- * @param column 
- * @return 
+ *
+ * @tparam T
+ * @param scalar
+ * @param column
+ * @return
  */
 
 template <typename T>
-CSF::SparseMatrix scalarMultiply( CSF::SparseMatrix matrix, int scalar) { 
+CSF::SparseMatrix scalarMultiply(CSF::SparseMatrix matrix, int scalar)
+{
     CSF::SparseMatrix result = matrix;
     CSF::Iterator<T> matIter = CSF::Iterator<T>(matrix);
     CSF::Iterator<T> resIter = CSF::Iterator<T>(result);
 
-    while (matIter) {
+    while (matIter)
+    {
         matIter++;
-        
-        if(*matIter != *resIter) {
+
+        if (*matIter != *resIter)
+        {
             resIter++;
             *resIter = scalar * *matIter;
-            
+
             continue;
-        } 
+        }
         resIter++;
     }
-    
+
     return result;
 }
 
-
 /**
- * @brief Dot product function for CSF Vectors 
- * 
+ * @brief Dot product function for CSF Vectors
  *
- * @tparam T 
- * @param vec1 
- * @param vec2 
- * @return 
+ *
+ * @tparam T
+ * @param vec1
+ * @param vec2
+ * @return
  */
-//TODO Will work for any CSC matrix. 
-//TODO IDEA: Form a dictionary of the two vectors and 
-// template <typename T>
-// T dotProduct(CSF::SparseMatrix<T> vec1, CSF::SparseMatrix<T> vec2) {
-//     T result = 0;
-//     CSF::Iterator<T> iter1 = CSF::Iterator<T>(vec1);
-//     CSF::Iterator<T> iter2 = CSF::Iterator<T>(vec2);
+// TODO Will work for any CSC matrix.
+// TODO IDEA: Form a dictionary of the two vectors and
+//  template <typename T>
+//  T dotProduct(CSF::SparseMatrix<T> vec1, CSF::SparseMatrix<T> vec2) {
+//      T result = 0;
+//      CSF::Iterator<T> iter1 = CSF::Iterator<T>(vec1);
+//      CSF::Iterator<T> iter2 = CSF::Iterator<T>(vec2);
 
 //     while (iter1 && iter2) {
 
@@ -87,7 +91,3 @@ CSF::SparseMatrix scalarMultiply( CSF::SparseMatrix matrix, int scalar) {
 
 //     return result;
 // }
-
-
-
-

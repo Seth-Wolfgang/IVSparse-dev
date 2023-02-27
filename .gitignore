@@ -9,6 +9,9 @@ _deps
 *.out
 *.o
 *.log
+*.exe
+*.json
+*.csf
 CMakeFiles
 CMAKE
 *workspace
