@@ -42,6 +42,33 @@ namespace CSF
     }
 
     template <typename T, typename T_index, int compression_level>
+    void SparseMatrix<T, T_index, compression_level>::sanity_checks() {
+        // throw an error if the matrix has less than one rows or columns or nonzero values
+        if (num_rows < 1 || num_cols < 1 || num_nonzeros < 1)
+            throw std::invalid_argument("The matrix must have at least one row, column, and nonzero value");
+
+        // check that T_index is not floating point
+        if (std::is_floating_point<T_index>::value)
+            throw std::invalid_argument("The index type must be a non-floating point type");
+
+        // check the compression level is either 1, 2, or 3
+        if (compression_level < 1 || compression_level > 3)
+            throw std::invalid_argument("The compression level must be either 1, 2, or 3");
+
+        // check that T and T_index are numeric types
+        if (!std::is_arithmetic<T>::value || !std::is_arithmetic<T_index>::value)
+            throw std::invalid_argument("The value and index types must be numeric types");
+
+        // check that the value type or index type is not a bool
+        if (std::is_same<T, bool>::value || std::is_same<T_index, bool>::value)
+            throw std::invalid_argument("The value and index types must not be bool");
+
+        // make sure compression size is above 0
+        if (compression_size < 1)
+            throw std::invalid_argument("The compression size must be greater than 0");
+    }
+
+    template <typename T, typename T_index, int compression_level>
     uint32_t SparseMatrix<T, T_index, compression_level>::encode_valt() {
         uint8_t byte0 = sizeof(T);
         uint8_t byte1 = std::is_floating_point_v<T> ? 1 : 0;

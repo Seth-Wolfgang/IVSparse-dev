@@ -46,7 +46,7 @@ int main (int argc, char** argv) {
     myMatrix4_e = generateMatrix<uint64_t>(numRows, numCols, sparsity, seed);
     myMatrix4_e.makeCompressed();
 
-    // ---- Create CSF Matrices from above Eigen Matrices ---- //
+    // ---- Create CSF Matrices from above Eigen Matrices ---- // 
 
     // Create integer CSF matrices of compression levels 1, 2, and 3 (competent user)
     CSF::SparseMatrix<int, int, 1> myMatrix1(myMatrix_e);
@@ -103,6 +103,11 @@ int main (int argc, char** argv) {
     CSF::SparseMatrix<int, int, 1> myMatrix40(myMatrix1);
     CSF::SparseMatrix<int, int, 2> myMatrix41(myMatrix2);
     CSF::SparseMatrix<int, int, 3> myMatrix42(myMatrix3);
+    // print out the rows and columns of matrix42
+    std::cout << "myMatrix42 has " << myMatrix42.rows() << " rows and " << myMatrix42.cols() << " columns." << std::endl;
+    // print the compression level
+    std::cout << "myMatrix42 has compression level " << myMatrix42.compLvl() << std::endl;
+    myMatrix42.write("tmp/myMatrix42.csf");
     CSF::SparseMatrix<int, uint64_t, 1> myMatrix43(myMatrix4);
     CSF::SparseMatrix<int, uint64_t, 2> myMatrix44(myMatrix5);
     CSF::SparseMatrix<int, uint64_t, 3> myMatrix45(myMatrix6);

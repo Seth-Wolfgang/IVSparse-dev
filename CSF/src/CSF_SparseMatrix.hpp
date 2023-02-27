@@ -33,6 +33,8 @@ namespace CSF {
 
         uint64_t* create_metadata();
 
+        void sanity_checks();
+
         template <typename values_type, typename rows_type, typename cols_type>
         void compress(values_type *vals, rows_type *indexes, cols_type *col_p);
 
