@@ -62,6 +62,8 @@ namespace CSF
         // check that the value type or index type is not a bool
         if (std::is_same<T, bool>::value || std::is_same<T_index, bool>::value)
             throw std::invalid_argument("The value and index types must not be bool");
+
+        check_valt(val_t);
     }
 
     template <typename T, typename T_index, int compression_level>
@@ -231,6 +233,28 @@ namespace CSF
     const void *SparseMatrix<T, T_index, 1>::colPtr()
     {
         return col_p;
+    }
+
+    template <typename T, typename T_index>
+    void SparseMatrix<T, T_index, 1>::sanity_checks()
+    {
+        // throw an error if the matrix has less than one rows or columns or nonzero values
+        if (num_rows < 1 || num_cols < 1 || num_nonzeros < 1)
+            throw std::invalid_argument("The matrix must have at least one row, column, and nonzero value");
+
+        // check that T_index is not floating point
+        if (std::is_floating_point<T_index>::value)
+            throw std::invalid_argument("The index type must be a non-floating point type");
+
+        // check that T and T_index are numeric types
+        if (!std::is_arithmetic<T>::value || !std::is_arithmetic<T_index>::value)
+            throw std::invalid_argument("The value and index types must be numeric types");
+
+        // check that the value type or index type is not a bool
+        if (std::is_same<T, bool>::value || std::is_same<T_index, bool>::value)
+            throw std::invalid_argument("The value and index types must not be bool");
+
+        check_valt(val_t);
     }
 
     template <typename T, typename T_index>

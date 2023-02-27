@@ -112,6 +112,8 @@ namespace CSF {
 
         void allocate_memory();
 
+        void sanity_checks();
+
         uint32_t encode_valt();
 
         void check_valt(uint32_t valt);
