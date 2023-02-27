@@ -105,19 +105,6 @@ namespace CSF {
     template <typename T, typename T_index, int compression_level>
     SparseMatrix<T, T_index, compression_level>::SparseMatrix(const char *filename)
     {
-
-        // check that T_index
-        if (std::is_floating_point<T_index>::value)
-            throw std::invalid_argument("The row and column types must be non-floating point types");
-
-        // check the compression level is either 1, 2, or 3
-        if (compression_level < 1 || compression_level > 3)
-            throw std::invalid_argument("The compression level must be either 1, 2, or 3");
-
-        // check that T and T_index are numeric types
-        if (!std::is_arithmetic<T>::value || !std::is_arithmetic<T_index>::value)
-            throw std::invalid_argument("The value and index types must be numeric types");
-
         // Open the file
         FILE *fp = fopen(filename, "rb");
 
@@ -168,9 +155,6 @@ namespace CSF {
         val_t = *(uint32_t *)(help_ptr);
         help_ptr = (uint32_t *)(help_ptr) + 1;
 
-        // call check_valt
-        check_valt(val_t);
-
         num_rows = *(uint32_t *)(help_ptr);
         help_ptr = (uint32_t *)(help_ptr) + 1;
 
@@ -180,11 +164,7 @@ namespace CSF {
         num_nonzeros = *(uint32_t *)(help_ptr);
         help_ptr = (uint32_t *)(help_ptr) + 1;
 
-        // make sure that rows and cols are not less than 1
-        if (num_rows < 1 || num_cols < 1) {
-            printf("Number of rows and columns must be greater than 0\n");
-            exit(1);
-        }
+        sanity_checks();
 
     }
 
@@ -225,8 +205,7 @@ namespace CSF {
         val_t = *(uint32_t *)(help_ptr);
         help_ptr = (uint32_t *)(help_ptr) + 1;
 
-        // call check_valt
-        check_valt(val_t);
+        sanity_checks();
     }
 
     template <typename T, typename T_index, int compression_level>
@@ -290,8 +269,6 @@ namespace CSF {
         if (std::is_floating_point<rows_type>::value || std::is_floating_point<cols_type>::value)
             throw std::invalid_argument("The row and column types must be non-floating point types");
 
-        sanity_checks();
-
         // determine the type of each value
         if (compression_level == 2) {
             row_t = sizeof(T_index);
@@ -302,6 +279,8 @@ namespace CSF {
         }
 
         val_t = encode_valt();
+
+        sanity_checks();
 
         // allocate memory for the matrix
         allocate_memory();
@@ -514,24 +493,12 @@ namespace CSF {
         num_cols = mat.cols();
         num_nonzeros = mat.nonZeros();
 
-        // throw an error if the matrix has less than one rows or columns or nonzero values
-        if (num_rows < 1 || num_cols < 1 || num_nonzeros < 1)
-            throw std::invalid_argument("The matrix must have at least one row, column, and nonzero value");
-
-        // check that row or col type isn't float or double
-        if (std::is_floating_point<T_index>::value)
-            throw std::invalid_argument("The index types must be non-floating point types");
-
-        // check that T and T_index are numeric types
-        if (!std::is_arithmetic<T>::value || !std::is_arithmetic<T_index>::value)
-            throw std::invalid_argument("The value and index types must be numeric types");
-
         // set types
         row_t = sizeof(T_index);
         col_t = sizeof(T_index);
         val_t = encode_valt();
 
-        check_valt(val_t);
+        sanity_checks();
 
         // if destroy is false copy the data
         if (!destroy) {
@@ -584,14 +551,6 @@ namespace CSF {
         // assert that col_ind is the same size as T_index
         static_assert(sizeof(col_ind) == sizeof(T_index), "type of column index array must be the same size as column index template parameter");
 
-        // check that row or col type isn't float or double
-        if (std::is_floating_point<row_ind>::value || std::is_floating_point<col_ind>::value)
-            throw std::invalid_argument("The row and column types must be non-floating point types");
-
-        // check that T and T_index are numeric types
-        if (!std::is_arithmetic<T>::value || !std::is_arithmetic<T_index>::value)
-            throw std::invalid_argument("The value and index types must be numeric types");
-
         // set variables
         num_rows = row_num;
         num_cols = col_num;
@@ -602,7 +561,7 @@ namespace CSF {
         col_t = sizeof(T_index);
         val_t = encode_valt();
 
-        check_valt(val_t);
+        sanity_checks();
 
         // if destroy is false copy the data
         if (!destroy) {
@@ -632,14 +591,6 @@ namespace CSF {
     template <typename T, typename T_index>
     SparseMatrix<T, T_index, 1>::SparseMatrix(const char *filename)
     {
-        // check that T_index
-        if (std::is_floating_point<T_index>::value)
-            throw std::invalid_argument("The row and column types must be non-floating point types");
-
-        // check that T and T_index are numeric types
-        if (!std::is_arithmetic<T>::value || !std::is_arithmetic<T_index>::value)
-            throw std::invalid_argument("The value and index types must be numeric types");
-
         // open file
         FILE *file = fopen(filename, "rb");
 
@@ -661,13 +612,6 @@ namespace CSF {
         num_rows = metadata[4];
         num_cols = metadata[5];
         num_nonzeros = metadata[6];
-
-        // check that the value type is valid
-        check_valt(val_t);
-
-        // check number of rows and cols and nonzeros is above 0
-        if (num_rows <= 0 || num_cols <= 0 || num_nonzeros <= 0)
-            throw std::invalid_argument("The number of rows, columns, and nonzeros must be greater than 0");
 
         // read in data
         try {
@@ -694,18 +638,13 @@ namespace CSF {
         fclose(file);
 
         compression_size = num_nonzeros * sizeof(T) + num_nonzeros * sizeof(T_index) + (num_cols + 1) * sizeof(T_index);
+
+        sanity_checks();
     }
 
     template <typename T, typename T_index>
     SparseMatrix<T, T_index, 1>::SparseMatrix(CSF::SparseMatrix<T, T_index, 1> &mat)
     {
-        // check that T_index
-        if (std::is_floating_point<T_index>::value)
-            throw std::invalid_argument("The row and column types must be non-floating point types");
-
-        // check that T and T_index are numeric types
-        if (!std::is_arithmetic<T>::value || !std::is_arithmetic<T_index>::value)
-            throw std::invalid_argument("The value and index types must be numeric types");
 
         // set variables
         num_rows = mat.rows();
@@ -718,7 +657,7 @@ namespace CSF {
         col_t = sizeof(T_index);
         val_t = encode_valt();
 
-        check_valt(val_t);
+        sanity_checks();
 
         // copy data
         try {
