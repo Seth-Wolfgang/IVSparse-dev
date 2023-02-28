@@ -83,8 +83,7 @@ namespace CSF {
 
         uint32_t compLvl();
         
-        template <typename iteratorType = T, typename indexType = T_index, int iteratorCompressionLevel = compression_level>
-        class Iterator;
+        class Iterator{};
     };
 
 
@@ -161,8 +160,7 @@ namespace CSF {
 
         uint32_t compLvl();
 
-        template <typename iteratorType = T, typename indexType = T_index>
-        class Iterator;
+        class Iterator{};
     };
 
 }
