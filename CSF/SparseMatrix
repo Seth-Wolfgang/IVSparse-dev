@@ -1,4 +1,16 @@
+/**
+ * @file SparseMatrix
+ * @author Skyler Ruiter
+ * @brief All the includes for the CSF SparseMatrix library
+ * @version 0.1
+ * @date 2023-02-27
+ * 
+ * @copyright Copyright (c) 2023
+ * 
+ */
+
 #pragma once
+
 #include <Eigen/Sparse>
 
 #include "src/CSF_SparseMatrix.hpp"

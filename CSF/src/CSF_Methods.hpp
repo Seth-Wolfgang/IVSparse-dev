@@ -28,15 +28,13 @@ namespace CSF
     template <typename T, typename T_index, int compression_level>
     uint8_t SparseMatrix<T, T_index, compression_level>::byte_width(size_t size)
     {
-        switch (size)
-        {
-        case 0 ... 255:
+        if (size <= 255) {
             return 1;
-        case 256 ... 65535:
+        } else if (size <= 65535) {
             return 2;
-        case 65536 ... 4294967295:
+        } else if (size <= 4294967295) {
             return 4;
-        default:
+        } else {
             return 8;
         }
     }
@@ -69,7 +67,7 @@ namespace CSF
     template <typename T, typename T_index, int compression_level>
     uint32_t SparseMatrix<T, T_index, compression_level>::encode_valt() {
         uint8_t byte0 = sizeof(T);
-        uint8_t byte1 = std::is_floating_point_v<T> ? 1 : 0;
+        uint8_t byte1 = std::is_floating_point<T>::value ? 1 : 0;
         uint8_t byte2 = std::is_signed_v<T> ? 1 : 0;
         uint8_t byte3 = 0;
 
@@ -107,13 +105,13 @@ namespace CSF
     }
 
     template <typename T, typename T_index, int compression_level>
-    const void *SparseMatrix<T, T_index, compression_level>::beginPtr()
+    void *SparseMatrix<T, T_index, compression_level>::beginPtr()
     {
         return begin_ptr;
     }
 
     template <typename T, typename T_index, int compression_level>
-    const void *SparseMatrix<T, T_index, compression_level>::endPtr()
+    void *SparseMatrix<T, T_index, compression_level>::endPtr()
     {
         return comp_ptr;
     }
@@ -174,15 +172,13 @@ namespace CSF
     template <typename T, typename T_index>
     uint8_t SparseMatrix<T, T_index, 1>::byte_width(size_t size)
     {
-        switch (size)
-        {
-        case 0 ... 255:
+        if (size <= 255) {
             return 1;
-        case 256 ... 65535:
+        } else if (size <= 65535) {
             return 2;
-        case 65536 ... 4294967295:
+        } else if (size <= 4294967295) {
             return 4;
-        default:
+        } else {
             return 8;
         }
     }
@@ -224,13 +220,13 @@ namespace CSF
     }
 
     template <typename T, typename T_index>
-    const void *SparseMatrix<T, T_index, 1>::indexPtr()
+    void *SparseMatrix<T, T_index, 1>::indexPtr()
     {
         return indexes;
     }
 
     template <typename T, typename T_index>
-    const void *SparseMatrix<T, T_index, 1>::colPtr()
+    void *SparseMatrix<T, T_index, 1>::colPtr()
     {
         return col_p;
     }

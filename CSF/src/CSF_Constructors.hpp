@@ -481,8 +481,8 @@ namespace CSF {
     template <typename T, typename T_index>
     SparseMatrix<T, T_index, 1>::SparseMatrix(Eigen::SparseMatrix<T> &mat, bool destroy)
     {
-        // check that the matrix is in column major order
-        assert(mat.IsRowMajor == false);
+        if (mat.IsRowMajor)
+            throw std::invalid_argument("The matrix must be in column major order");
 
         // check that the matrix is in compressed format
         if (mat.isCompressed() == false)
