@@ -5,8 +5,8 @@
 template<typename T> bool iteratorBenchmark(int numRows, int numCols, int sparsity, uint64_t seed, int compressionLevel);
 template<typename T> bool ScalarMultiplicationBench(int numRows, int numCols, int sparsity, uint64_t seed, int compressionLevel);
 template<typename T> Eigen::SparseMatrix<T> generateMatrix(int numRows, int numCols, int sparsity, uint64_t seed);
-template<typename T, int compressionLevel> T getSum(CSF::SparseMatrix<T, T, compressionLevel> matrix);
-template<typename T, int compressionLevel> T getSum(Eigen::SparseMatrix<T> matrix);
+template<typename T, typename indexType, int compressionLevel> T getSum(CSF::SparseMatrix<T, indexType, compressionLevel> matrix);
+template<typename T> T getSum(Eigen::SparseMatrix<T> matrix);
 template<typename T, int compressionLevel> void printValuesInTwo(CSF::SparseMatrix<T, T, compressionLevel> matrix, CSF::SparseMatrix<T, T, compressionLevel> matrix2);
 template<typename T, int compressionLevel> void printValues(CSF::SparseMatrix<T,T, compressionLevel> matrix, CSF::SparseMatrix<T, T, compressionLevel> matrix2);
 template<typename T> void testDriver(std::function<T(T, T, T, T, T)> lambda, int iterations, int compressionLevel);
@@ -76,8 +76,8 @@ bool iteratorBenchmark(int numRows, int numCols, int sparsity, uint64_t seed, in
     CSF::SparseMatrix<T,T,3> CSFMatrix(eigenMatrix);
 
     //Getting totals
-    T CSFTotal = getSum<T, 3>(CSFMatrix);
-    T eigenTotal = getSum<T, 3>(eigenMatrix);
+    T CSFTotal = getSum<T,T, 3>(CSFMatrix);
+    T eigenTotal = getSum<T>(eigenMatrix);
 
     if (CSFTotal == eigenTotal) {
         return true;
@@ -146,8 +146,8 @@ bool ScalarMultiplicationBench(int numRows, int numCols, int sparsity, uint64_t 
   * @brief Prints all values in CSF matrix
   *
   */
-template <typename T, int compressionLevel>
-void printValues(CSF::SparseMatrix<T,T, compressionLevel> matrix) {
+template <typename T, typename indexType, int compressionLevel>
+void printValues(CSF::SparseMatrix<T, indexType, compressionLevel> matrix) {
     CSF::Iterator<T, T, compressionLevel> newIter(matrix);
     T value = *newIter;
 
@@ -161,8 +161,8 @@ void printValues(CSF::SparseMatrix<T,T, compressionLevel> matrix) {
     }
 }
 
-template <typename T, int compressionLevel>
-void printValuesInTwo(CSF::SparseMatrix<T, T, compressionLevel> matrix, CSF::SparseMatrix<T, T, compressionLevel> matrix2) {
+template <typename T, typename indexType, int compressionLevel>
+void printValuesInTwo(CSF::SparseMatrix<T, indexType, compressionLevel> matrix, CSF::SparseMatrix<T, indexType, compressionLevel> matrix2) {
     CSF::Iterator<T, T, compressionLevel> newIter(matrix);
     CSF::Iterator<T, T, compressionLevel> newIter2(matrix2);
     T value = *newIter;
@@ -186,8 +186,8 @@ void printValuesInTwo(CSF::SparseMatrix<T, T, compressionLevel> matrix, CSF::Spa
  * @return uint64_t
  */
 
-template <typename T, int compressionLevel>
-T getSum(CSF::SparseMatrix<T, T, compressionLevel> matrix) {
+template <typename T, typename indexType, int compressionLevel>
+T getSum(CSF::SparseMatrix<T, indexType, compressionLevel> matrix) {
     T CSFTotal = 0;
     CSF::Iterator<T, T, compressionLevel> newIter(matrix);
     T value = *newIter;
