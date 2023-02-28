@@ -3,8 +3,8 @@
 
 namespace CSF {
 
-    
-    template <typename T, typename T_index=uint64_t, int compression_level=3>
+
+    template <typename T, typename T_index = uint64_t, int compression_level = 3>
     class SparseMatrix {
         const uint8_t delim = 0;
 
@@ -19,8 +19,8 @@ namespace CSF {
         size_t compression_size;
         uint32_t compression = compression_level;
 
-        void *comp_ptr;
-        void *begin_ptr;
+        void* comp_ptr;
+        void* begin_ptr;
 
 
         void allocate_memory();
@@ -36,27 +36,27 @@ namespace CSF {
         void sanity_checks();
 
         template <typename values_type, typename rows_type, typename cols_type>
-        void compress(values_type *vals, rows_type *indexes, cols_type *col_p);
+        void compress(values_type* vals, rows_type* indexes, cols_type* col_p);
 
         double redundancy_check();
 
     public:
         SparseMatrix();
 
-        SparseMatrix(Eigen::SparseMatrix<T> &mat, bool destroy = false);
+        SparseMatrix(Eigen::SparseMatrix<T>& mat, bool destroy = false);
 
         template <typename values_t, typename row_ind, typename col_ind>
-        SparseMatrix(values_t **vals, row_ind **indexes, col_ind **col_p,
+        SparseMatrix(values_t** vals, row_ind** indexes, col_ind** col_p,
                      size_t non_zeros, size_t row_num, size_t col_num,
                      bool destroy = false);
 
-        SparseMatrix(const char *filename);
+        SparseMatrix(const char* filename);
 
-        SparseMatrix(CSF::SparseMatrix<T, T_index, compression_level> &mat);
+        SparseMatrix(CSF::SparseMatrix<T, T_index, compression_level>& mat);
 
         ~SparseMatrix();
 
-        void write(const char *filename);
+        void write(const char* filename);
 
         CSF::SparseMatrix<T, T_index, 1> to_csf1();
 
@@ -64,14 +64,14 @@ namespace CSF {
 
         // template <class to>
         // to as(){
-            
+
         // }
 
         Eigen::SparseMatrix<T> to_eigen();
 
-        const void *beginPtr();
+        void* beginPtr();
 
-        const void *endPtr();
+        void* endPtr();
 
         size_t byte_size();
 
@@ -82,12 +82,13 @@ namespace CSF {
         uint32_t nonzeros();
 
         uint32_t compLvl();
-
+        
+        template <typename iteratorType = T, typename indexType = T_index, int iteratorCompressionLevel = compression_level>
         class Iterator;
     };
 
 
-    
+
     template <typename T, typename T_index>
     class SparseMatrix<T, T_index, 1> {
         const uint8_t delim = 0;
@@ -103,8 +104,8 @@ namespace CSF {
         size_t compression_size;
         uint32_t compression = 1;
 
-        void *comp_ptr;
-        void *begin_ptr;
+        void* comp_ptr;
+        void* begin_ptr;
 
         T* vals;
         T_index* indexes;
@@ -123,16 +124,16 @@ namespace CSF {
     public:
         SparseMatrix();
 
-        SparseMatrix(Eigen::SparseMatrix<T> &mat, bool destroy = false);
+        SparseMatrix(Eigen::SparseMatrix<T>& mat, bool destroy = false);
 
         template <typename values_t, typename row_ind, typename col_ind>
-        SparseMatrix(values_t **vals, row_ind **indexes, col_ind **col_p,
+        SparseMatrix(values_t** vals, row_ind** indexes, col_ind** col_p,
                      size_t non_zeros, size_t row_num, size_t col_num,
                      bool destroy = false);
 
-        SparseMatrix(CSF::SparseMatrix<T, T_index, 1> &mat);
+        SparseMatrix(CSF::SparseMatrix<T, T_index, 1>& mat);
 
-        SparseMatrix(const char *filename);
+        SparseMatrix(const char* filename);
 
         ~SparseMatrix();
 
@@ -144,13 +145,13 @@ namespace CSF {
 
         void* valuePtr();
 
-        const void* indexPtr();
+        void* indexPtr();
 
-        const void* colPtr();
+        void* colPtr();
 
         size_t byte_size();
 
-        void write(const char *filename);
+        void write(const char* filename);
 
         uint32_t rows();
 
@@ -160,6 +161,7 @@ namespace CSF {
 
         uint32_t compLvl();
 
+        template <typename iteratorType = T, typename indexType = T_index>
         class Iterator;
     };
 

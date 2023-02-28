@@ -11,13 +11,11 @@ namespace CSF {
     // General Constructors
 
     template <typename T, typename T_index, int compression_level>
-    SparseMatrix<T, T_index, compression_level>::SparseMatrix()
-    {
+    SparseMatrix<T, T_index, compression_level>::SparseMatrix() {
     }
 
     template <typename T, typename T_index, int compression_level>
-    SparseMatrix<T, T_index, compression_level>::SparseMatrix(Eigen::SparseMatrix<T> &mat, bool destroy)
-    {
+    SparseMatrix<T, T_index, compression_level>::SparseMatrix(Eigen::SparseMatrix<T>& mat, bool destroy) {
         // check that the matrix is in column major order
         if (mat.IsRowMajor)
             throw std::invalid_argument("The matrix must be in column major order");
@@ -31,24 +29,26 @@ namespace CSF {
         num_cols = mat.cols();
         num_nonzeros = mat.nonZeros();
 
-        T *vals;
-        int *indexes;
-        int *col_p;
+        T* vals;
+        int* indexes;
+        int* col_p;
 
         if (destroy) {
             vals = mat.valuePtr();
             indexes = mat.innerIndexPtr();
             col_p = mat.outerIndexPtr();
 
-        } else {
+        }
+        else {
             indexes = mat.innerIndexPtr();
             col_p = mat.outerIndexPtr();
 
             // deep copy the values
             try {
-                vals = (T *)malloc(num_nonzeros * sizeof(T));
+                vals = (T*)malloc(num_nonzeros * sizeof(T));
                 memcpy(vals, mat.valuePtr(), num_nonzeros * sizeof(T));
-            } catch (std::bad_alloc &e) {
+            }
+            catch (std::bad_alloc& e) {
                 std::cerr << "Error: " << e.what() << std::endl;
                 exit(1);
             }
@@ -60,15 +60,14 @@ namespace CSF {
         if (!destroy && vals != nullptr) {
             free(vals);
         }
-        
+
     }
 
     template <typename T, typename T_index, int compression_level>
     template <typename values_t, typename row_ind, typename col_ind>
-    SparseMatrix<T, T_index, compression_level>::SparseMatrix(values_t **vals, row_ind **indexes, col_ind **col_p,
+    SparseMatrix<T, T_index, compression_level>::SparseMatrix(values_t** vals, row_ind** indexes, col_ind** col_p,
                                                               size_t non_zeros, size_t row_num, size_t col_num,
-                                                              bool destroy)
-    {
+                                                              bool destroy) {
         // Check that templates T and values_t are the same
         static_assert(std::is_same<T, values_t>::value, "Your matrix must be of the same type as the constructor");
 
@@ -78,12 +77,13 @@ namespace CSF {
         num_nonzeros = non_zeros;
 
         if (!destroy) {
-            
+
             // allocate space for a copy of vals
-            values_t *vals_copy;
+            values_t* vals_copy;
             try {
-                vals_copy = (values_t *)malloc(num_nonzeros * sizeof(values_t));
-            } catch (std::bad_alloc &e) {
+                vals_copy = (values_t*)malloc(num_nonzeros * sizeof(values_t));
+            }
+            catch (std::bad_alloc& e) {
                 std::cerr << "Error: " << e.what() << std::endl;
                 exit(1);
             }
@@ -96,17 +96,17 @@ namespace CSF {
 
             // free vals_copy
             free(vals_copy);
-        } else {
+        }
+        else {
             compress(*vals, *indexes, *col_p);
         }
 
     }
 
     template <typename T, typename T_index, int compression_level>
-    SparseMatrix<T, T_index, compression_level>::SparseMatrix(const char *filename)
-    {
+    SparseMatrix<T, T_index, compression_level>::SparseMatrix(const char* filename) {
         // Open the file
-        FILE *fp = fopen(filename, "rb");
+        FILE* fp = fopen(filename, "rb");
 
         // Check that the file exists
         if (fp == nullptr)
@@ -120,7 +120,8 @@ namespace CSF {
         // allocate memory for file
         try {
             begin_ptr = malloc(compression_size);
-        } catch (std::bad_alloc &e) {
+        }
+        catch (std::bad_alloc& e) {
             std::cerr << "Error: " << e.what() << std::endl;
             exit(1);
         }
@@ -132,12 +133,12 @@ namespace CSF {
         fclose(fp);
 
         // set pointers
-        comp_ptr = (void *)((uint8_t *)(begin_ptr) + compression_size);
-        void *help_ptr = begin_ptr;
+        comp_ptr = (void*)((uint8_t*)(begin_ptr)+compression_size);
+        void* help_ptr = begin_ptr;
 
         // get metadata
-        compression = *(uint32_t *)(help_ptr);
-        help_ptr = (uint32_t *)(help_ptr) + 1;
+        compression = *(uint32_t*)(help_ptr);
+        help_ptr = (uint32_t*)(help_ptr)+1;
 
         // assert that the compression level is the same and throw error
         if (compression != compression_level) {
@@ -146,31 +147,30 @@ namespace CSF {
             exit(1);
         }
 
-        row_t = *(uint32_t *)(help_ptr);
-        help_ptr = (uint32_t *)(help_ptr) + 1;
+        row_t = *(uint32_t*)(help_ptr);
+        help_ptr = (uint32_t*)(help_ptr)+1;
 
-        col_t = *(uint32_t *)(help_ptr);
-        help_ptr = (uint32_t *)(help_ptr) + 1;
+        col_t = *(uint32_t*)(help_ptr);
+        help_ptr = (uint32_t*)(help_ptr)+1;
 
-        val_t = *(uint32_t *)(help_ptr);
-        help_ptr = (uint32_t *)(help_ptr) + 1;
+        val_t = *(uint32_t*)(help_ptr);
+        help_ptr = (uint32_t*)(help_ptr)+1;
 
-        num_rows = *(uint32_t *)(help_ptr);
-        help_ptr = (uint32_t *)(help_ptr) + 1;
+        num_rows = *(uint32_t*)(help_ptr);
+        help_ptr = (uint32_t*)(help_ptr)+1;
 
-        num_cols = *(uint32_t *)(help_ptr);
-        help_ptr = (uint32_t *)(help_ptr) + 1;
+        num_cols = *(uint32_t*)(help_ptr);
+        help_ptr = (uint32_t*)(help_ptr)+1;
 
-        num_nonzeros = *(uint32_t *)(help_ptr);
-        help_ptr = (uint32_t *)(help_ptr) + 1;
+        num_nonzeros = *(uint32_t*)(help_ptr);
+        help_ptr = (uint32_t*)(help_ptr)+1;
 
         sanity_checks();
 
     }
 
     template <typename T, typename T_index, int compression_level>
-    SparseMatrix<T, T_index, compression_level>::SparseMatrix(CSF::SparseMatrix<T, T_index, compression_level> &mat) 
-    {
+    SparseMatrix<T, T_index, compression_level>::SparseMatrix(CSF::SparseMatrix<T, T_index, compression_level>& mat) {
         // create a deep copy of the matrix
         num_rows = mat.rows();
         num_cols = mat.cols();
@@ -180,37 +180,37 @@ namespace CSF {
 
         try {
             begin_ptr = malloc(mat.byte_size());
-        } catch (std::bad_alloc &e) {
+        }
+        catch (std::bad_alloc& e) {
             std::cerr << "Error: " << e.what() << std::endl;
             exit(1);
         }
-        comp_ptr = (uint8_t *)begin_ptr + mat.byte_size();
+        comp_ptr = (uint8_t*)begin_ptr + mat.byte_size();
 
         // copy the data
         memcpy(begin_ptr, mat.beginPtr(), mat.byte_size());
 
         // set the pointers
-        void *help_ptr = begin_ptr;
+        void* help_ptr = begin_ptr;
 
         // get metadata
-        compression = *(uint32_t *)(help_ptr);
-        help_ptr = (uint32_t *)(help_ptr) + 1;
+        compression = *(uint32_t*)(help_ptr);
+        help_ptr = (uint32_t*)(help_ptr)+1;
 
-        row_t = *(uint32_t *)(help_ptr);
-        help_ptr = (uint32_t *)(help_ptr) + 1;
+        row_t = *(uint32_t*)(help_ptr);
+        help_ptr = (uint32_t*)(help_ptr)+1;
 
-        col_t = *(uint32_t *)(help_ptr);
-        help_ptr = (uint32_t *)(help_ptr) + 1;
+        col_t = *(uint32_t*)(help_ptr);
+        help_ptr = (uint32_t*)(help_ptr)+1;
 
-        val_t = *(uint32_t *)(help_ptr);
-        help_ptr = (uint32_t *)(help_ptr) + 1;
+        val_t = *(uint32_t*)(help_ptr);
+        help_ptr = (uint32_t*)(help_ptr)+1;
 
         sanity_checks();
     }
 
     template <typename T, typename T_index, int compression_level>
-    SparseMatrix<T, T_index, compression_level>::~SparseMatrix()
-    {
+    SparseMatrix<T, T_index, compression_level>::~SparseMatrix() {
         if (begin_ptr != NULL)
             free(begin_ptr);
     }
@@ -219,42 +219,41 @@ namespace CSF {
     // Constructor Helper Functions ---------------------------------------------------------------------------
 
     template <typename T, typename T_index, int compression_level>
-    uint64_t* SparseMatrix<T, T_index, compression_level>::create_metadata()
-    {
+    uint64_t* SparseMatrix<T, T_index, compression_level>::create_metadata() {
         // Construct Metadata --------------------
         // * <compression, row_t, col_t, val_t, num_rows, num_cols, num_nonzeros, [col_pointers], {...runs...}>
 
         // Compression Level onto compression
-        *(uint32_t *)(comp_ptr) = compression;
-        comp_ptr = (uint32_t *)(comp_ptr) + 1;
+        *(uint32_t*)(comp_ptr) = compression;
+        comp_ptr = (uint32_t*)(comp_ptr)+1;
 
         // Row, Col, and Val sizes onto compression
-        *(uint32_t *)(comp_ptr) = row_t;
-        comp_ptr = (uint32_t *)(comp_ptr) + 1;
+        *(uint32_t*)(comp_ptr) = row_t;
+        comp_ptr = (uint32_t*)(comp_ptr)+1;
 
-        *(uint32_t *)(comp_ptr) = col_t;
-        comp_ptr = (uint32_t *)(comp_ptr) + 1;
+        *(uint32_t*)(comp_ptr) = col_t;
+        comp_ptr = (uint32_t*)(comp_ptr)+1;
 
-        *(uint32_t *)(comp_ptr) = val_t;
-        comp_ptr = (uint32_t *)(comp_ptr) + 1;
+        *(uint32_t*)(comp_ptr) = val_t;
+        comp_ptr = (uint32_t*)(comp_ptr)+1;
 
         // Number of Rows and Cols onto compression and num nonzeros
-        *(uint32_t *)(comp_ptr) = num_rows;
-        comp_ptr = (uint32_t *)(comp_ptr) + 1;
+        *(uint32_t*)(comp_ptr) = num_rows;
+        comp_ptr = (uint32_t*)(comp_ptr)+1;
 
-        *(uint32_t *)(comp_ptr) = num_cols;
-        comp_ptr = (uint32_t *)(comp_ptr) + 1;
+        *(uint32_t*)(comp_ptr) = num_cols;
+        comp_ptr = (uint32_t*)(comp_ptr)+1;
 
-        *(uint32_t *)(comp_ptr) = num_nonzeros;
-        comp_ptr = (uint32_t *)(comp_ptr) + 1;
+        *(uint32_t*)(comp_ptr) = num_nonzeros;
+        comp_ptr = (uint32_t*)(comp_ptr)+1;
 
         // Create a space for col pointers
-        uint64_t *col_pointers = (uint64_t *)(comp_ptr);
-        comp_ptr = (uint64_t *)(comp_ptr) + (uint64_t)(num_cols);
+        uint64_t* col_pointers = (uint64_t*)(comp_ptr);
+        comp_ptr = (uint64_t*)(comp_ptr)+(uint64_t)(num_cols);
 
         // Put a delim at the end of the metadata
-        *(uint32_t *)(comp_ptr) = delim;
-        comp_ptr = (uint32_t *)(comp_ptr) + 1;
+        *(uint32_t*)(comp_ptr) = delim;
+        comp_ptr = (uint32_t*)(comp_ptr)+1;
         // End of Metadata --------------------
 
         return col_pointers;
@@ -262,8 +261,7 @@ namespace CSF {
 
     template <typename T, typename T_index, int compression_level>
     template <typename values_type, typename rows_type, typename cols_type>
-    void SparseMatrix<T, T_index, compression_level>::compress(values_type *vals, rows_type *indexes, cols_type *col_p)
-    {
+    void SparseMatrix<T, T_index, compression_level>::compress(values_type* vals, rows_type* indexes, cols_type* col_p) {
 
         // check that row or col type isn't float or double
         if (std::is_floating_point<rows_type>::value || std::is_floating_point<cols_type>::value)
@@ -273,7 +271,8 @@ namespace CSF {
         if (compression_level == 2) {
             row_t = sizeof(T_index);
             col_t = sizeof(T_index);
-        } else {
+        }
+        else {
             row_t = byte_width(num_rows);
             col_t = byte_width(num_cols);
         }
@@ -286,48 +285,45 @@ namespace CSF {
         allocate_memory();
 
         // create pointer to update col pointers
-        uint64_t *col_pointers = create_metadata();
+        uint64_t* col_pointers = create_metadata();
 
         uint8_t last_col_index = sizeof(T_index);
 
         for (size_t i = 0; i < num_cols; i++) {
 
             // Update the col pointer
-            col_pointers[i] = (uint64_t)(comp_ptr) - (uint64_t)(begin_ptr);
+            col_pointers[i] = (uint64_t)(comp_ptr)-(uint64_t)(begin_ptr);
 
             for (size_t j = col_p[i]; j < col_p[i + 1]; j++) {
 
-                if ((vals)[j] != 0)
-                {
+                if ((vals)[j] != 0) {
                     // New unique value found
 
                     // Add the found value to run
-                    *(T *)(comp_ptr) = (vals)[j];
-                    comp_ptr = (T *)(comp_ptr) + 1;
+                    *(T*)(comp_ptr) = (vals)[j];
+                    comp_ptr = (T*)(comp_ptr)+1;
 
                     // Create an index pointer to update index type later
-                    void *help_ptr = comp_ptr;
+                    void* help_ptr = comp_ptr;
 
                     // default index type to row index type and iterate pointer
-                    *(uint8_t *)help_ptr = (uint8_t)sizeof(T_index);
-                    comp_ptr = (uint8_t *)(comp_ptr) + 1;
+                    *(uint8_t*)help_ptr = (uint8_t)sizeof(T_index);
+                    comp_ptr = (uint8_t*)(comp_ptr)+1;
 
                     // Add the found index to run
-                    *(T_index *)(comp_ptr) = (indexes)[j];
-                    comp_ptr = (T_index *)(comp_ptr) + 1;
+                    *(T_index*)(comp_ptr) = (indexes)[j];
+                    comp_ptr = (T_index*)(comp_ptr)+1;
 
                     // Loop through rest of column to get rest of indices
-                    for (size_t k = j + 1; k < (col_p)[i + 1]; k++)
-                    {
+                    for (size_t k = j + 1; k < (col_p)[i + 1]; k++) {
 
-                        if ((vals)[k] == (vals)[j])
-                        {
+                        if ((vals)[k] == (vals)[j]) {
 
                             // Found value again
 
                             // add index of value to run
-                            *(T_index *)(comp_ptr) = (indexes)[k];
-                            comp_ptr = (T_index *)(comp_ptr) + 1;
+                            *(T_index*)(comp_ptr) = (indexes)[k];
+                            comp_ptr = (T_index*)(comp_ptr)+1;
 
                             // set value to zero
                             (vals)[k] = 0;
@@ -339,98 +335,91 @@ namespace CSF {
 
                     //* Positive delta encode the indices -----------
 
-                    if (compression_level == 3)
-                    {
+                    if (compression_level == 3) {
 
                         // set variable for max element
                         size_t max_index = 0;
 
                         // find number of elements found for unique value
-                        size_t num_elements = (T_index *)(comp_ptr) - ((T_index *)(help_ptr));
+                        size_t num_elements = (T_index*)(comp_ptr)-((T_index*)(help_ptr));
 
                         // bring comp_ptr back to being pointed at last found index
-                        comp_ptr = (T_index *)(comp_ptr)-1;
+                        comp_ptr = (T_index*)(comp_ptr)-1;
 
                         // loop moves comp_ptr backwards through indices and positive delta encodes them
-                        for (size_t k = 0; k < num_elements - 1; k++)
-                        {
+                        for (size_t k = 0; k < num_elements - 1; k++) {
 
                             // subtract element from one before it
-                            *(T_index *)(comp_ptr) = *(T_index *)(comp_ptr) - *((T_index *)(comp_ptr)-1);
+                            *(T_index*)(comp_ptr) = *(T_index*)(comp_ptr)-*((T_index*)(comp_ptr)-1);
 
                             // if bigger then prev max make curr max idx
-                            if (*(T_index *)(comp_ptr) > max_index)
-                            {
-                                max_index = *(T_index *)(comp_ptr);
+                            if (*(T_index*)(comp_ptr) > max_index) {
+                                max_index = *(T_index*)(comp_ptr);
                             }
 
-                            comp_ptr = (T_index *)(comp_ptr)-1; // loop control
+                            comp_ptr = (T_index*)(comp_ptr)-1; // loop control
                         }
 
                         // set index pointer to correct size for run
-                        *(uint8_t *)(help_ptr) = byte_width(max_index);
-                        help_ptr = (uint8_t *)(help_ptr) + 1;
+                        *(uint8_t*)(help_ptr) = byte_width(max_index);
+                        help_ptr = (uint8_t*)(help_ptr)+1;
 
                         last_col_index = byte_width(max_index);
 
                         // write over data with indices of new size, index compression
-                        switch (byte_width(max_index))
-                        {
+                        switch (byte_width(max_index)) {
                         case 1:
 
                             // walk the two iterators, compressing down to optimal byte width
-                            for (size_t k = 0; k < num_elements; k++)
-                            {
+                            for (size_t k = 0; k < num_elements; k++) {
 
                                 // set index to uint8_t size
-                                *(uint8_t *)(comp_ptr) = (uint8_t) * (T_index *)(help_ptr);
+                                *(uint8_t*)(comp_ptr) = (uint8_t) * (T_index*)(help_ptr);
 
                                 // Iterate pointers
-                                comp_ptr = (uint8_t *)(comp_ptr) + 1;
-                                help_ptr = (T_index *)(help_ptr) + 1;
+                                comp_ptr = (uint8_t*)(comp_ptr)+1;
+                                help_ptr = (T_index*)(help_ptr)+1;
                             }
 
                             // Add delim
-                            *(uint8_t *)(comp_ptr) = delim;
-                            comp_ptr = (uint8_t *)(comp_ptr) + 1;
+                            *(uint8_t*)(comp_ptr) = delim;
+                            comp_ptr = (uint8_t*)(comp_ptr)+1;
 
                             break;
 
                         case 2:
                             // walk the two iterators, compressing down to optimal byte width
-                            for (size_t k = 0; k < num_elements; k++)
-                            {
+                            for (size_t k = 0; k < num_elements; k++) {
 
                                 // set index to uint16_t size
-                                *(uint16_t *)(comp_ptr) = (uint16_t) * (T_index *)(help_ptr);
+                                *(uint16_t*)(comp_ptr) = (uint16_t) * (T_index*)(help_ptr);
 
                                 // Iterate pointers
-                                comp_ptr = (uint16_t *)(comp_ptr) + 1;
-                                help_ptr = (T_index *)(help_ptr) + 1;
+                                comp_ptr = (uint16_t*)(comp_ptr)+1;
+                                help_ptr = (T_index*)(help_ptr)+1;
                             }
 
                             // Add delim
-                            *(uint16_t *)(comp_ptr) = delim;
-                            comp_ptr = (uint16_t *)(comp_ptr) + 1;
+                            *(uint16_t*)(comp_ptr) = delim;
+                            comp_ptr = (uint16_t*)(comp_ptr)+1;
 
                             break;
 
                         case 4:
                             // walk the two iterators, compressing down to optimal byte width
-                            for (size_t k = 0; k < num_elements; k++)
-                            {
+                            for (size_t k = 0; k < num_elements; k++) {
 
                                 // set index to uint8_t size
-                                *(uint32_t *)(comp_ptr) = (uint32_t) * (T_index *)(help_ptr);
+                                *(uint32_t*)(comp_ptr) = (uint32_t) * (T_index*)(help_ptr);
 
                                 // Iterate pointers
-                                comp_ptr = (uint32_t *)(comp_ptr) + 1;
-                                help_ptr = (T_index *)(help_ptr) + 1;
+                                comp_ptr = (uint32_t*)(comp_ptr)+1;
+                                help_ptr = (T_index*)(help_ptr)+1;
                             }
 
                             // Add delim
-                            *(uint32_t *)(comp_ptr) = delim;
-                            comp_ptr = (uint32_t *)(comp_ptr) + 1;
+                            *(uint32_t*)(comp_ptr) = delim;
+                            comp_ptr = (uint32_t*)(comp_ptr)+1;
 
                             break;
 
@@ -438,11 +427,10 @@ namespace CSF {
 
                         help_ptr = comp_ptr;
                     }
-                    else if (compression_level == 2)
-                    { // end compression level 3
+                    else if (compression_level == 2) { // end compression level 3
                         // add delim to end of run
-                        *(T_index *)(comp_ptr) = delim;
-                        comp_ptr = (T_index *)(comp_ptr) + 1;
+                        *(T_index*)(comp_ptr) = delim;
+                        comp_ptr = (T_index*)(comp_ptr)+1;
 
                         // bring up help ptr to comp ptr
                         help_ptr = comp_ptr;
@@ -453,18 +441,18 @@ namespace CSF {
         } // end column loop
 
         // remove ending zeros
-        for (uint8_t i = 0; i < last_col_index + 1; i++)
-        {
-            comp_ptr = (uint8_t *)(comp_ptr)-1;
+        for (uint8_t i = 0; i < last_col_index + 1; i++) {
+            comp_ptr = (uint8_t*)(comp_ptr)-1;
         }
 
         // find size of file in bytes
-        compression_size = (uint8_t *)(comp_ptr) - ((uint8_t *)(begin_ptr)-1);
+        compression_size = (uint8_t*)(comp_ptr)-((uint8_t*)(begin_ptr)-1);
 
         // resize data to fit actual size
         try {
             begin_ptr = realloc(begin_ptr, compression_size);
-        } catch (std::bad_alloc &e) {
+        }
+        catch (std::bad_alloc& e) {
             std::cout << "Error: " << e.what() << std::endl;
             exit(1);
         }
@@ -474,13 +462,11 @@ namespace CSF {
 
     // CSF::SparseMatrix<T, T_index, 1> Constructors ----------------------------------------------------------
     template <typename T, typename T_index>
-    SparseMatrix<T, T_index, 1>::SparseMatrix()
-    {
+    SparseMatrix<T, T_index, 1>::SparseMatrix() {
     }
-    
+
     template <typename T, typename T_index>
-    SparseMatrix<T, T_index, 1>::SparseMatrix(Eigen::SparseMatrix<T> &mat, bool destroy)
-    {
+    SparseMatrix<T, T_index, 1>::SparseMatrix(Eigen::SparseMatrix<T>& mat, bool destroy) {
         // check that the matrix is in column major order
         assert(mat.IsRowMajor == false);
 
@@ -503,32 +489,34 @@ namespace CSF {
         // if destroy is false copy the data
         if (!destroy) {
             try {
-                vals = (T *)malloc(num_nonzeros * sizeof(T));
-                indexes = (T_index *)malloc(num_nonzeros * sizeof(T_index));
-                col_p = (T_index *)malloc((num_cols + 1) * sizeof(T_index));
-            } catch (std::bad_alloc &e) {
+                vals = (T*)malloc(num_nonzeros * sizeof(T));
+                indexes = (T_index*)malloc(num_nonzeros * sizeof(T_index));
+                col_p = (T_index*)malloc((num_cols + 1) * sizeof(T_index));
+            }
+            catch (std::bad_alloc& e) {
                 std::cout << "Error: " << e.what() << std::endl;
                 exit(1);
             }
-            
+
             // copy data
             memcpy(vals, mat.valuePtr(), num_nonzeros * sizeof(T));
-            
+
 
             // ! check back here to see if this works
             // copy indexes and col_p and cast them to T_index
             for (size_t i = 0; i < num_nonzeros; i++)
                 indexes[i] = (T_index)mat.innerIndexPtr()[i];
-            
+
             for (size_t i = 0; i < num_cols + 1; i++)
                 col_p[i] = (T_index)mat.outerIndexPtr()[i];
 
-        } else {
+        }
+        else {
             vals = mat.valuePtr();
 
             // ! check back here to see if this works
-            indexes = (T_index *)mat.innerIndexPtr();
-            col_p = (T_index *)mat.outerIndexPtr();
+            indexes = (T_index*)mat.innerIndexPtr();
+            col_p = (T_index*)mat.outerIndexPtr();
         }
 
         // set compression size
@@ -538,10 +526,9 @@ namespace CSF {
 
     template <typename T, typename T_index>
     template <typename values_t, typename row_ind, typename col_ind>
-    SparseMatrix<T, T_index, 1>::SparseMatrix(values_t **vals, row_ind **indexes, col_ind **col_p,
-                                                size_t non_zeros, size_t row_num, size_t col_num,
-                                                bool destroy)
-    {
+    SparseMatrix<T, T_index, 1>::SparseMatrix(values_t** vals, row_ind** indexes, col_ind** col_p,
+                                              size_t non_zeros, size_t row_num, size_t col_num,
+                                              bool destroy) {
         // assert that values_t is the same as T
         static_assert(std::is_same<values_t, T>::value, "type of value array must be the same as value template parameter");
 
@@ -566,10 +553,11 @@ namespace CSF {
         // if destroy is false copy the data
         if (!destroy) {
             try {
-                this->vals = (T *)malloc(num_nonzeros * sizeof(T));
-                this->indexes = (T_index *)malloc(num_nonzeros * sizeof(T_index));
-                this->col_p = (T_index *)malloc((num_cols + 1) * sizeof(T_index));
-            } catch (std::bad_alloc &e) {
+                this->vals = (T*)malloc(num_nonzeros * sizeof(T));
+                this->indexes = (T_index*)malloc(num_nonzeros * sizeof(T_index));
+                this->col_p = (T_index*)malloc((num_cols + 1) * sizeof(T_index));
+            }
+            catch (std::bad_alloc& e) {
                 std::cout << "Error: " << e.what() << std::endl;
                 exit(1);
             }
@@ -579,7 +567,8 @@ namespace CSF {
             memcpy(this->indexes, *indexes, num_nonzeros * sizeof(T_index));
             memcpy(this->col_p, *col_p, (num_cols + 1) * sizeof(T_index));
 
-        } else {
+        }
+        else {
             this->vals = *vals;
             this->indexes = *indexes;
             this->col_p = *col_p;
@@ -589,10 +578,9 @@ namespace CSF {
     }
 
     template <typename T, typename T_index>
-    SparseMatrix<T, T_index, 1>::SparseMatrix(const char *filename)
-    {
+    SparseMatrix<T, T_index, 1>::SparseMatrix(const char* filename) {
         // open file
-        FILE *file = fopen(filename, "rb");
+        FILE* file = fopen(filename, "rb");
 
         // check if file is null
         if (file == nullptr)
@@ -615,10 +603,11 @@ namespace CSF {
 
         // read in data
         try {
-            vals = (T *)malloc(num_nonzeros * sizeof(T));
-            indexes = (T_index *)malloc(num_nonzeros * sizeof(T_index));
-            col_p = (T_index *)malloc((num_cols + 1) * sizeof(T_index));
-        } catch (std::bad_alloc &e) {
+            vals = (T*)malloc(num_nonzeros * sizeof(T));
+            indexes = (T_index*)malloc(num_nonzeros * sizeof(T_index));
+            col_p = (T_index*)malloc((num_cols + 1) * sizeof(T_index));
+        }
+        catch (std::bad_alloc& e) {
             std::cout << "Error: " << e.what() << std::endl;
             exit(1);
         }
@@ -643,8 +632,7 @@ namespace CSF {
     }
 
     template <typename T, typename T_index>
-    SparseMatrix<T, T_index, 1>::SparseMatrix(CSF::SparseMatrix<T, T_index, 1> &mat)
-    {
+    SparseMatrix<T, T_index, 1>::SparseMatrix(CSF::SparseMatrix<T, T_index, 1>& mat) {
 
         // set variables
         num_rows = mat.rows();
@@ -661,10 +649,11 @@ namespace CSF {
 
         // copy data
         try {
-            vals = (T *)malloc(num_nonzeros * sizeof(T));
-            indexes = (T_index *)malloc(num_nonzeros * sizeof(T_index));
-            col_p = (T_index *)malloc((num_cols + 1) * sizeof(T_index));
-        } catch (std::bad_alloc &e) {
+            vals = (T*)malloc(num_nonzeros * sizeof(T));
+            indexes = (T_index*)malloc(num_nonzeros * sizeof(T_index));
+            col_p = (T_index*)malloc((num_cols + 1) * sizeof(T_index));
+        }
+        catch (std::bad_alloc& e) {
             std::cout << "Error: " << e.what() << std::endl;
             exit(1);
         }
@@ -675,8 +664,7 @@ namespace CSF {
     }
 
     template <typename T, typename T_index>
-    SparseMatrix<T, T_index, 1>::~SparseMatrix()
-    {
+    SparseMatrix<T, T_index, 1>::~SparseMatrix() {
         if (vals != nullptr)
             free(vals);
         if (indexes != nullptr)
