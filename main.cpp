@@ -191,7 +191,8 @@ T getSum(CSF::SparseMatrix<T, indexType, compressionLevel> matrix) {
     T CSFTotal = 0;
     CSF::Iterator<T, T, compressionLevel> newIter = CSF::Iterator<T, T, compressionLevel>(matrix);
     T value = *newIter;
-    matrix.write("data.bin");
+    // std::cout << newIter.getColumnAddress(0) << std::endl;
+    // matrix.write("data.bin");
     while (newIter) {
         newIter++;
         CSFTotal += *newIter;
