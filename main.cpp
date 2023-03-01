@@ -189,9 +189,9 @@ void printValuesInTwo(CSF::SparseMatrix<T, indexType, compressionLevel> matrix, 
 template <typename T, typename indexType, int compressionLevel>
 T getSum(CSF::SparseMatrix<T, indexType, compressionLevel> matrix) {
     T CSFTotal = 0;
-    CSF::Iterator<T, T, compressionLevel> newIter(matrix);
+    CSF::Iterator<T, T, compressionLevel> newIter = CSF::Iterator<T, T, compressionLevel>(matrix);
     T value = *newIter;
-
+    // matrix.write("data.bin");
     while (newIter) {
         newIter++;
         CSFTotal += *newIter;

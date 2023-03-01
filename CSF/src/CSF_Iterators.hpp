@@ -1,4 +1,5 @@
 #pragma once
+# define META_DATA_SIZE 28
 
 namespace CSF {    
 template <typename T, typename indexType, int compressionLevel>
@@ -23,15 +24,8 @@ template <typename T, typename indexType, int compressionLevel>
          */
 
         void goToColumn(int column) {
-            //20 bytes into the file, the column pointers are stored. Each column pointer is 8 bytes long so we can
-            //multiply the column number by 8 to get the offset of the column pointer we want.
-            //columns are 0 indexed 
-
-            //TODO: implemet a way of checking if currentIndex points to next column
-            //TODO: optimize this function
-
             // currentIndex = getColumnAddress(column);
-            currentIndex = static_cast<char*>(currentIndex) + 8 * column;
+            currentIndex = static_cast<char*>(currentIndex) + sizeof(uint64_t) * column;
 
             uint64_t temp;
             memcpy(&temp, currentIndex, 8);
@@ -53,22 +47,23 @@ template <typename T, typename indexType, int compressionLevel>
             endOfData = matrix.endPtr();
             currentIndex = data;
 
-            // read first 20 bytes of fileData put it into params -> metadata
-            uint32_t params[5];
+            // read first 28 bytes of fileData put it into params -> metadata
+            uint32_t params[7];
+            memcpy(&params, currentIndex, META_DATA_SIZE);
 
-            memcpy(&params, currentIndex, 20);
             numRows = params[3];
             numColumns = params[4];
 
             //Skips metadata and goes to first column
-            currentIndex = static_cast<char*>(currentIndex) + 20;
+            currentIndex = static_cast<char*>(currentIndex) + META_DATA_SIZE;
             goToColumn(0);
 
             //Insures the matrix is not empty
             assert(currentIndex < endOfData);
 
             // valueWidth is set and the first value is read in
-            valueWidth = params[2];
+            valueWidth = params[3] & 0xFFFF;
+
             value = static_cast<T*>(currentIndex);
             currentIndex = static_cast<char*>(currentIndex) + valueWidth;
 
@@ -86,8 +81,8 @@ template <typename T, typename indexType, int compressionLevel>
             // read first 28 bytes of fileData put it into params -> metadata
             uint32_t params[8];
 
-            memcpy(&params, currentIndex, 20);
-            currentIndex = static_cast<char*>(currentIndex) + 20;
+            memcpy(&params, currentIndex, META_DATA_SIZE);
+            currentIndex = static_cast<char*>(currentIndex) + META_DATA_SIZE;
 
             // valueWidth is set and the first value is read in
             valueWidth = params[4];
@@ -111,7 +106,7 @@ template <typename T, typename indexType, int compressionLevel>
          */
 
         T& operator * () {
-            return *static_cast<T*>(value);
+            return *value;
         };
 
         /**
@@ -247,7 +242,7 @@ template <typename T, typename indexType, int compressionLevel>
          //     it.value = it.interpretPointer(it.valueWidth);
          //     char* columnData = (char*)calloc(it.numRows, sizeof(T));
 
-         //     if (numColumns != 1) it.endOfData = static_cast<char*>(data) + *(static_cast<uint64_t*>(data) + 20 + ((column + 1) * 8));
+         //     if (numColumns != 1) it.endOfData = static_cast<char*>(data) + *(static_cast<uint64_t*>(data) + META_DATA_SIZE + ((column + 1) * 8));
 
          //     //copy data into new array
          //     while (it) {
@@ -293,8 +288,19 @@ template <typename T, typename indexType, int compressionLevel>
          */
 
         inline void* getColumnAddress(uint64_t column) {
-            uint64_t temp = ((uint64_t*)data + 20 + (column * 8));
-            return (void*)((uint64_t)data + temp); //+((uint64_t*)data + 20 + (column * 8));
+            /*
+                char* data + METADATASIZE + column * sizeof(uint64_t) goes to the column pointer specified
+                    why char*? -> so we only add 1 * the rest of the sum of metadatasize and column * sizeof(uint64_t)
+                
+                cast to uint64_t so that we grab 8 bytes from memory.
+                dereference the pointer to get the value of the pointer
+
+                Then we add temp to data to go to the column we need. Data is casted to char* because we only want to add 1 * temp
+                then we convert to void* so we have the memory address
+
+            */
+            //  uint64_t temp = *((uint64_t*)((char*)data + METADATASIZE + (column * sizeof(uint64_t))))
+            return (void*)((char*)data +  *((uint64_t*)((char*)data + META_DATA_SIZE + (column * sizeof(uint64_t)))));
         }
 
         /**
