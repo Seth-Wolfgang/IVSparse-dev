@@ -61,8 +61,9 @@ template <typename T, typename indexType, int compressionLevel>
             //Insures the matrix is not empty
             assert(currentIndex < endOfData);
 
-            // valueWidth is set and the first value is read in
-            valueWidth = params[3] & 0xFFFF;
+
+            // valueWidth is set and the first value is read in. Eliminates extra memory
+            valueWidth = params[3] & 0xFFFF; 
 
             value = static_cast<T*>(currentIndex);
             currentIndex = static_cast<char*>(currentIndex) + valueWidth;
