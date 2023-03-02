@@ -210,23 +210,30 @@ namespace CSF {
     }
 
     //TODO add a constructor that takes a CSF::Iterator (WIP)
-    // template <typename T, typename T_index, int compression_level>
-    // SparseMatrix<T, T_index, compression_level>::SparseMatrix(CSF::Iterator<T, T_index, compression_level>& iter){
+    template <typename T, typename T_index, int compression_level>
+    SparseMatrix<T, T_index, compression_level>::SparseMatrix(CSF::Iterator<T, T_index, compression_level>& iter){
 
-    //     try {
-    //         begin_ptr = malloc(iter.getEnd() + iter.getData());
-    //     }
-    //     catch (std::bad_alloc& e) {
-    //         std::cerr << "Error: " << e.what() << std::endl;
-    //         exit(1);
-    //     }
+        try {
+            begin_ptr = malloc(iter.getEnd() + iter.getData());
+        }
+        catch (std::bad_alloc& e) {
+            std::cerr << "Error: " << e.what() << std::endl;
+            exit(1);
+        }
 
-    //     begin_ptr = iter.getData;
-    //     uint32_t metaData[7] = iter.getMetaData();
+        begin_ptr = iter.getData;
+        uint32_t metaData[7] = iter.getMetaData();
 
+        // compression_level = metaData[0]; -> I don't know how to do this
+        
+        row_t = metaData[1];
+        col_t = metaData[2];
+        val_t = metaData[3];
+        num_rows = metaData[4];
+        num_cols = metaData[5];
+        num_nonzeros = metaData[6];
 
-
-    // }
+    }
 
     template <typename T, typename T_index, int compression_level>
     SparseMatrix<T, T_index, compression_level>::~SparseMatrix() {
