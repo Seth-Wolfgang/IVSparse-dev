@@ -209,6 +209,25 @@ namespace CSF {
         sanity_checks();
     }
 
+    //TODO add a constructor that takes a CSF::Iterator (WIP)
+    // template <typename T, typename T_index, int compression_level>
+    // SparseMatrix<T, T_index, compression_level>::SparseMatrix(CSF::Iterator<T, T_index, compression_level>& iter){
+
+    //     try {
+    //         begin_ptr = malloc(iter.getEnd() + iter.getData());
+    //     }
+    //     catch (std::bad_alloc& e) {
+    //         std::cerr << "Error: " << e.what() << std::endl;
+    //         exit(1);
+    //     }
+
+    //     begin_ptr = iter.getData;
+    //     uint32_t metaData[7] = iter.getMetaData();
+
+
+
+    // }
+
     template <typename T, typename T_index, int compression_level>
     SparseMatrix<T, T_index, compression_level>::~SparseMatrix() {
         if (begin_ptr != NULL)

@@ -41,7 +41,7 @@ namespace CSF {
      // }
 
      /**
-      * @brief Scalar multiplication function without return
+      * @brief Scalar multiplication function without return (WIP)
       *
       * @tparam T
       * @param matrix
@@ -49,18 +49,18 @@ namespace CSF {
       * @return CSF::SparseMatrix
       */
 
-    // template <typename T, typename, indexType, int compressionLevel>
-    // void scalarMultiply(CSF::SparseMatrix<T, indexType, compressionLevel> matrix, int scalar) {
-    //     CSF::Iterator<T> iter = CSF::Iterator<T>(matrix);
+    template <typename T, typename indexType, int compressionLevel>
+    void scalarMultiply(CSF::SparseMatrix<T, indexType, compressionLevel> matrix, int scalar) {
+    CSF::Iterator<T, T, compressionLevel> iter = CSF::Iterator<T, T, compressionLevel>(matrix);
 
-    //     //Iterate through the matrix and multiply each value by the scalar
-    //     while (iter) {
-    //         if (iter.atBeginningOfRun()) {
-    //             iter.setRunValue(scalar * *iter);
-    //         }
-    //         iter++;
-    //     }
-    // }
+        //Iterate through the matrix and multiply each value by the scalar
+        while (iter) {
+            if (iter.atBeginningOfRun()) {
+                iter.setRunValue(scalar * *iter);
+            }
+            iter++;
+        }
+    }
 
     /**
     * @brief Vector multiplication function for CSF Vectors

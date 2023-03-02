@@ -54,6 +54,8 @@ namespace CSF {
 
         SparseMatrix(CSF::SparseMatrix<T, T_index, compression_level>& mat);
 
+        // SparseMatrix(CSF::Iterator<T, T_index, compression_level>& iter); //(WIP)
+
         ~SparseMatrix();
 
         void write(const char* filename);
@@ -134,6 +136,8 @@ namespace CSF {
 
         SparseMatrix(const char* filename);
 
+        // SparseMatrix(CSF::Iterator<T, T_index, compression_level>& iter); //(WIP)
+
         ~SparseMatrix();
 
         CSF::SparseMatrix<T, T_index, 3> to_csf3(bool destroy = false);
@@ -162,5 +166,72 @@ namespace CSF {
 
         class Iterator{};
     };
+
+    // template<typename T, typename T_index, int compression_level>
+    // class Iterator {
+        
+    //     private:
+    //         uint64_t index = 0;
+    //         uint32_t valueWidth;
+    //         uint32_t numRows;
+    //         uint32_t numColumns;
+    //         uint8_t newIndexWidth;
+    //         void* data;
+    //         void* endOfData;
+    //         void* currentIndex;
+    //         T* value;
+    //         bool firstIndex = true; 
+    //         bool atFirstIndex = true;
+    //         uint32_t metadata[7];
+
+    //         void readMetaData();
+
+    //         inline void readFile(const char* filePath);
+
+    //         inline uint64_t interpretPointer(int width);
+
+    //         void setEnd(void* end);
+
+    //     public:
+
+    //         Iterator(CSF::SparseMatrix<T, indexType, compression_level> matrix);
+
+    //         Iterator(const char* filePath);
+
+    //         uint32_t* getMetaData();
+
+    //         void* getData();
+
+    //         void* getEnd();
+
+    //         T& operator * ();
+
+    //         bool operator == (const Iterator& other);
+
+    //         bool operator != (const Iterator& other);
+
+    //         bool operator < (const Iterator& other);
+
+    //         bool operator > (const Iterator& other);
+
+    //         uint64_t getIndex();
+
+    //         bool atBeginningOfRun();
+
+    //         uint64_t operator++(int);
+
+    //         operator bool();
+
+    //         char* getColumn(uint64_t column);
+
+    //         void setRunValue(T newValue);
+
+    //         inline void* getColumnAddress(uint64_t column);
+
+    //         void goToColumn(int column);
+
+    //         bool compareAddress(void* address);
+
+    // }; // end of Iterator class
 
 }

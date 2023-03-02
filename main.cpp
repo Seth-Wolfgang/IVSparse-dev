@@ -7,16 +7,16 @@ template<typename T> bool ScalarMultiplicationBench(int numRows, int numCols, in
 template<typename T> Eigen::SparseMatrix<T> generateMatrix(int numRows, int numCols, int sparsity, uint64_t seed);
 template<typename T, typename indexType, int compressionLevel> T getSum(CSF::SparseMatrix<T, indexType, compressionLevel> matrix);
 template<typename T> T getSum(Eigen::SparseMatrix<T> matrix);
-template<typename T, int compressionLevel> void printValuesInTwo(CSF::SparseMatrix<T, T, compressionLevel> matrix, CSF::SparseMatrix<T, T, compressionLevel> matrix2);
-template<typename T, int compressionLevel> void printValues(CSF::SparseMatrix<T,T, compressionLevel> matrix, CSF::SparseMatrix<T, T, compressionLevel> matrix2);
+template<typename T, typename indexType, int compressionLevel> void printValues(CSF::SparseMatrix<T, indexType, compressionLevel> matrix);
+template<typename T, typename indexType, int compressionLevel> void printValuesInTwo(CSF::SparseMatrix<T, indexType, compressionLevel> matrix, CSF::SparseMatrix<T, indexType, compressionLevel> matrix2);
 template<typename T> void testDriver(std::function<T(T, T, T, T, T)> lambda, int iterations, int compressionLevel);
 
 int main() {
 
     testDriver<int>(iteratorBenchmark<int>, 100, 3);
     std::cout << "Finished iterator Test" << std::endl << std::endl;
-    // testDriver<int>(ScalarMultiplicationBench<int, 3>, 100);
-    // std::cout << "Finished Scalar Test" << endl << std::endl;
+    testDriver<int>(ScalarMultiplicationBench<int>, 100, 3);
+    std::cout << "Finished Scalar Test" << std::endl << std::endl;
 
     std::cout << "\u001b[32mEverything worked!!\u001b[0m" << std::endl;
     return 1;
@@ -106,31 +106,31 @@ bool iteratorBenchmark(int numRows, int numCols, int sparsity, uint64_t seed, in
 template<typename T>
 bool ScalarMultiplicationBench(int numRows, int numCols, int sparsity, uint64_t seed, int compressionLevel) {
 
-    // // generating a large random eigen sparse
-    // Eigen::SparseMatrix<T> eigenMatrix(numRows, numCols);
-    // eigenMatrix = generateMatrix<T>(numRows, numCols, sparsity, seed);
-    // eigenMatrix.makeCompressed();
+    // generating a large random eigen sparse
+    Eigen::SparseMatrix<T> eigenMatrix(numRows, numCols);
+    eigenMatrix = generateMatrix<T>(numRows, numCols, sparsity, seed);
+    eigenMatrix.makeCompressed();
 
-    // // Converting to CSF
-    // CSF::SparseMatrix<T,T,3> CSFMatrix(eigenMatrix);
-    // CSF::SparseMatrix<T,T,3> CSFMatrix2(eigenMatrix);
+    // Converting to CSF
+    CSF::SparseMatrix<T,T,3> CSFMatrix(eigenMatrix);
+    CSF::SparseMatrix<T,T,3> CSFMatrix2(eigenMatrix);
 
-    // // Getting totals
-    // T eigenTotal = getSum<T>(eigenMatrix);
-    // T originalTotal = getSum<T>(CSFMatrix);
-    // assert(originalTotal == eigenTotal);
+    // Getting totals
+    T eigenTotal = getSum<T>(eigenMatrix);
+    T originalTotal = getSum<T>(CSFMatrix);
+    assert(originalTotal == eigenTotal);
 
-    // CSF::scalarMultiply<T, T, compressionLevel>(CSFMatrix, 2);
-    // T scaledTotal = getSum<T>(CSFMatrix);
+    CSF::scalarMultiply<T, T, 3>(CSFMatrix, 2);
+    T scaledTotal = getSum<T>(CSFMatrix);
 
-    // // std::cout << "Original Matrix: " << originalTotal << "\tScaled Matrix: " << scaledTotal << std::endl;
-    // // std::cout << "should be: : " << 2 * originalTotal << std::endl;
-    // // std::cout << "Off by: " << scaledTotal - (2 * originalTotal) << std::endl;
+    std::cout << "Original Matrix: " << originalTotal << "\tScaled Matrix: " << scaledTotal << std::endl;
+    std::cout << "should be: : " << 2 * originalTotal << std::endl;
+    std::cout << "Off by: " << scaledTotal - (2 * originalTotal) << std::endl;
 
-    // printValuesInTwo<T>(CSFMatrix, CSFMatrix2);
-    // return (scaledTotal == 2 * originalTotal);
+    printValuesInTwo<T, T, 3>(CSFMatrix, CSFMatrix2);
+    return (scaledTotal == 2 * originalTotal);
 
-    return true;
+//     return true;
 }
 
 
@@ -156,15 +156,15 @@ void printValues(CSF::SparseMatrix<T, indexType, compressionLevel> matrix) {
         if (*newIter != value) {
             std::cout << *newIter << std::endl;
             value = *newIter;
-
         }
     }
 }
 
-template <typename T, typename indexType, int compressionLevel>
-void printValuesInTwo(CSF::SparseMatrix<T, indexType, compressionLevel> matrix, CSF::SparseMatrix<T, indexType, compressionLevel> matrix2) {
-    CSF::Iterator<T, T, compressionLevel> newIter(matrix);
-    CSF::Iterator<T, T, compressionLevel> newIter2(matrix2);
+
+template<typename T, typename indexType, int compressionLevel> 
+void printValuesInTwo(CSF::SparseMatrix<T, indexType, compressionLevel> matrix, CSF::SparseMatrix<T, indexType, compressionLevel> matrix2){
+    CSF::Iterator<T, indexType, compressionLevel> newIter(matrix);
+    CSF::Iterator<T, indexType, compressionLevel> newIter2(matrix2);
     T value = *newIter;
 
     while (newIter) {
@@ -192,7 +192,6 @@ T getSum(CSF::SparseMatrix<T, indexType, compressionLevel> matrix) {
     CSF::Iterator<T, T, compressionLevel> newIter = CSF::Iterator<T, T, compressionLevel>(matrix);
     T value = *newIter;
     // std::cout << newIter.getColumnAddress(0) << std::endl;
-    // matrix.write("data.bin");
     while (newIter) {
         newIter++;
         CSFTotal += *newIter;

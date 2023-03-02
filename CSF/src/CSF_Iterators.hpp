@@ -15,44 +15,27 @@ template <typename T, typename indexType, int compressionLevel>
         void* endOfData;
         void* currentIndex;
         T* value;
-        bool firstIndex = true;
+        bool firstIndex = true; 
         bool atFirstIndex = true;
-
-        /**
-         * @brief Get address of a specified column
-         * @param column
-         */
-
-        void goToColumn(int column) {
-            // currentIndex = getColumnAddress(column);
-            currentIndex = static_cast<char*>(currentIndex) + sizeof(uint64_t) * column;
-
-            uint64_t temp;
-            memcpy(&temp, currentIndex, 8);
-
-            //We can use currentIndex to get the address of the column we want and avoid a temporary variable.
-            currentIndex = static_cast<char*>(data) + temp;
-        }
+        uint32_t metadata[7];
 
     public:
 
         /**
-         * @brief Construct a new CSFiterator object
+         * @brief Construct a new CSFiterator object using a CSF::SparseMatrix
          *
          * @param filePath
          */
 
         Iterator(CSF::SparseMatrix<T, indexType, compressionLevel> matrix) {
+
+            //Sets the beginnign and end of the data
             data = matrix.beginPtr();
             endOfData = matrix.endPtr();
             currentIndex = data;
 
-            // read first 28 bytes of fileData put it into params -> metadata
-            uint32_t params[7];
-            memcpy(&params, currentIndex, META_DATA_SIZE);
-
-            numRows = params[3];
-            numColumns = params[4];
+            //Reads in the metadata
+            readMetaData();
 
             //Skips metadata and goes to first column
             currentIndex = static_cast<char*>(currentIndex) + META_DATA_SIZE;
@@ -60,10 +43,6 @@ template <typename T, typename indexType, int compressionLevel>
 
             //Insures the matrix is not empty
             assert(currentIndex < endOfData);
-
-
-            // valueWidth is set and the first value is read in. Eliminates extra memory
-            valueWidth = params[3] & 0xFFFF; 
 
             value = static_cast<T*>(currentIndex);
             currentIndex = static_cast<char*>(currentIndex) + valueWidth;
@@ -75,6 +54,12 @@ template <typename T, typename indexType, int compressionLevel>
             // std::cout << "value: " << value << std::endl;
             // std::cout << "newIndexWidth: " << (int)newIndexWidth << std::endl;
         }
+
+        /**
+         * @brief Construct a new Iterator object using a file
+         * 
+         * @param filePath 
+         */
 
         Iterator(const char* filePath) {
             readFile(filePath);
@@ -101,10 +86,27 @@ template <typename T, typename indexType, int compressionLevel>
         }
 
         /**
+         * @brief Reads in the metadata from the file
+         * 
+         */
+        uint32_t* getMetaData() {
+            return metadata;
+        }
+
+        /**
+         * @brief Getter for matrix data
+         * 
+         *
+        */
+        void* getData() { return data; }
+
+        /**
          * @brief Returns the value of the run.
          *
          * @return T&
          */
+
+        void* getEnd() {return endOfData; }
 
         T& operator * () {
             return *value;
@@ -175,8 +177,13 @@ template <typename T, typename indexType, int compressionLevel>
         bool atBeginningOfRun() { return atFirstIndex; }
 
         /**
-         * @brief Increment the iterator
-         *
+         * @brief Increment operator for the iterator
+         * 
+         * This handles the basic usage of the iterator. The iterator will go through each index of the CSF::SparseMatrix and return the index of where it is.
+         * The iterator will change value when it hits the assigned delimitor as set by the CSF::SparseMatrix. Each delimitor is a collection of 0s that are the size
+         * of the index. Only the first index may be a zero, in which case the iterator will return a zero, but not recognize it as a delimitor.
+         * 
+         * 
          * @return uint64_t
          */
 
@@ -194,7 +201,7 @@ template <typename T, typename indexType, int compressionLevel>
                 newIndexWidth = *static_cast<uint8_t*>(currentIndex);
                 currentIndex = static_cast<char*>(currentIndex) + 1;
 
-                //Restart the index
+                // Make index 0 as it is a new run
                 memset(&index, 0, 8);
 
                 // Returns the first index of the run
@@ -203,12 +210,11 @@ template <typename T, typename indexType, int compressionLevel>
                 return index;
             }
 
-            // Returns the next index of the run for positive delta encoded runs
             firstIndex = false;
             atFirstIndex = false;
-            //TODO write constexpr around this to determine 
-            // if we positive delta encode
 
+            // Depending on if the CSF::SparseMatrix is at compression level 2 or 3, we handle the index differently
+            // Compression level 3 is postive delta encoded, so we return the sum of the current index and the previous ones
             if constexpr (compressionLevel == 2)
                 return newIndex;
             else
@@ -224,51 +230,49 @@ template <typename T, typename indexType, int compressionLevel>
 
         operator bool() { return endOfData != currentIndex; }
 
-
         /**
-         * @brief Gets the data of a specified column
+         * @brief Gets the data of a specified column (WIP)
          *
          * @param column
          * @return char*
          */
 
-         // char* getColumn(uint64_t column) {
-         //     //TODO: optimize this function
+         char* getColumn(uint64_t column) {
+             //TODO: optimize this function
 
-         //     //Reseets iterator to the beginning and sends it to the corresponding column
-         //     Iterator it = *this;
-         //     it.index = 0;
-         //     it.goToColumn(column);
-         //     it.currentIndex = static_cast<char*>(it.currentIndex) + 1;
-         //     it.value = it.interpretPointer(it.valueWidth);
-         //     char* columnData = (char*)calloc(it.numRows, sizeof(T));
+             //Reseets iterator to the beginning and sends it to the corresponding column
+             Iterator it = *this;
+             it.index = 0;
+             it.goToColumn(column);
+             it.currentIndex = static_cast<char*>(it.currentIndex) + 1;
+             it.value = it.interpretPointer(it.valueWidth);
+             char* columnData = (char*)calloc(it.numRows, sizeof(T));
 
-         //     if (numColumns != 1) it.endOfData = static_cast<char*>(data) + *(static_cast<uint64_t*>(data) + META_DATA_SIZE + ((column + 1) * 8));
+             if (numColumns != 1) it.endOfData = static_cast<char*>(data) + *(static_cast<uint64_t*>(data) + META_DATA_SIZE + ((column + 1) * 8));
 
-         //     //copy data into new array
-         //     while (it) {
-         //         it++;
-         //         columnData[it.index] = value;
-         //     }
+             //copy data into new array
+             while (it) {
+                 it++;
+                 columnData[it.index] = value;
+             }
 
-         //     return columnData;
-         // }
+             return columnData;
+         }
 
          /**
-          * @brief Returns an iterator to the specified column
+          * @brief Returns an iterator to the specified column (WIP)
           *
           * @param column
           * @return CSF::Iterator<T>
           */
 
-          //TODO doesn't work
-        CSF::Iterator<T, indexType, compressionLevel> getColumn(uint64_t column) {
-            Iterator* it = new Iterator(*this); //Creates a shallow copy of the iterator
-            it.goToColumn(column);
-            it.setEnd(goToColumn(column + 1));
+        // CSF::Iterator<T, indexType, compressionLevel> getColumn(uint64_t column) {
+        //     Iterator* it = new Iterator(*this); //Creates a shallow copy of the iterator
+        //     it.goToColumn(column);
+        //     it.setEnd(goToColumn(column + 1));
 
-            return *it;
-        }
+        //     return *it;
+        // }
 
 
         /**
@@ -290,14 +294,13 @@ template <typename T, typename indexType, int compressionLevel>
 
         inline void* getColumnAddress(uint64_t column) {
             /*
-                char* data + METADATASIZE + column * sizeof(uint64_t) goes to the column pointer specified
-                    why char*? -> so we only add 1 * the rest of the sum of metadatasize and column * sizeof(uint64_t)
-                
-                cast to uint64_t so that we grab 8 bytes from memory.
-                dereference the pointer to get the value of the pointer
-
-                Then we add temp to data to go to the column we need. Data is casted to char* because we only want to add 1 * temp
-                then we convert to void* so we have the memory address
+            char* data + METADATASIZE + column * sizeof(uint64_t) goes to the column pointer specified
+            Why char*? -> so we only add 1 * the rest of the sum of metadatasize and column * sizeof(uint64_t)
+            
+            cast to uint64_t so that we grab 8 bytes from memory.
+            dereference the pointer to get the value of the pointer.
+            Then we add temp to data to go to the column we need. Data is casted to char* because we only want to add 1 * temp.
+            then we convert to void* so we have the memory address.
 
             */
             //  uint64_t temp = *((uint64_t*)((char*)data + METADATASIZE + (column * sizeof(uint64_t))))
@@ -305,9 +308,20 @@ template <typename T, typename indexType, int compressionLevel>
         }
 
         /**
-         * @brief TODO this should not be public
+         * @brief Sends the iterator to a specific column.
+         * @param column
+         */
+
+        void goToColumn(int column) {
+            currentIndex = getColumnAddress(column);
+        }
+
+        /**
+         * @brief Compares the address of the iterator with a given address. 
+         * NOTE: This should only be used to compare with an iterator pointing
+         * to the same CSF::SparseMatrix.
          *
-         * address will be less than currentINdex when we need a true.
+         * address will be less than currentIndex when we need a true.
          * This is becasue operator++ will be set to the first index of a run
          * and address will point to the first byte of the value
          *
@@ -326,6 +340,22 @@ template <typename T, typename indexType, int compressionLevel>
          *
          * @param filePath
          */
+
+        void readMetaData(){
+            uint32_t params[7];
+            memcpy(&params, currentIndex, META_DATA_SIZE);
+            // params[0] compression type
+            // params[1] row type
+            // params[2] column type
+            // params[3] value type
+            // params[4] # of rows
+            // params[5] # of columns
+            // params[6] # of nonzeros
+            
+            valueWidth = params[3] & 0xFFFF;
+            numRows = params[4];
+            numColumns = params[5];
+        }
 
         inline void readFile(const char* filePath) {
             FILE* file = fopen(filePath, "rb");
@@ -370,8 +400,6 @@ template <typename T, typename indexType, int compressionLevel>
                 break;
             default:
                 if (endOfData == currentIndex) {
-                    // std::cout << "Value: " << value << std::endl;
-                    // std::cout << static_cast<int>(*static_cast<uint8_t*>(currentIndex)) << std::endl;
                     std::cerr << "Invalid width: " << width << std::endl;
                     exit(-1);
                 }
