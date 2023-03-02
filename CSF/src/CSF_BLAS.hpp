@@ -4,41 +4,6 @@ namespace CSF {
     // testing ground for simple linear algebra operations
     // will be replaced by operators when they are all operational
 
-    /**
-     * @brief Scalar multiplication function for CSF matrices
-     *
-     *
-     * @tparam T
-     * @param scalar
-     * @param column
-     * @return
-     */
-
-     // template <typename T>
-     // CSF::SparseMatrix scalarMultiply(CSF::SparseMatrix matrix, int scalar) {
-     //     CSF::SparseMatrix result = CSF::SparseMatrix(matrix);
-     //     CSF::Iterator<T> originalIter = CSF::Iterator<T>(matrix);
-     //     CSF::Iterator<T> resultIter = CSF::Iterator<T>(result);
-
-     //     //Inital run
-     //     resultIter.setNewValue(scalar * *originalIter);
-
-     //     //Iterate through the matrix and multiply each value by the scalar
-     //     while (originalIter) {
-     //         originalIter++;
-
-     //         if (*originalIter != *resultIter) {
-     //             resultIter++;
-     //             // cout << "EQ: " << scalar << " * " << *originalIter << " = " << scalar * *originalIter << endl;
-     //             resultIter.setNewValue(scalar * *originalIter);
-
-     //             continue;
-     //         }
-     //         resultIter++;
-     //     }
-
-     //     return result;
-     // }
 
      /**
       * @brief Scalar multiplication function without return (WIP)
@@ -60,6 +25,8 @@ namespace CSF {
             }
             iter++;
         }
+
+        return CSF::SparseMatrix<T, indexType, compressionLevel>(iter);
     }
 
     /**
