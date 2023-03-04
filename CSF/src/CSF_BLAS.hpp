@@ -15,8 +15,8 @@ namespace CSF {
       */
 
     template <typename T, typename indexType, int compressionLevel>
-    void scalarMultiply(CSF::SparseMatrix<T, indexType, compressionLevel> matrix, int scalar) {
-    CSF::Iterator<T, T, compressionLevel> iter = CSF::Iterator<T, T, compressionLevel>(matrix);
+    void scalarMultiply(CSF::SparseMatrix<T, indexType, compressionLevel>& matrix, int scalar) {
+        CSF::Iterator<T, T, compressionLevel> iter = CSF::Iterator<T, T, compressionLevel>(matrix);
 
         //Iterate through the matrix and multiply each value by the scalar
         while (iter) {
@@ -26,7 +26,7 @@ namespace CSF {
             iter++;
         }
 
-        return CSF::SparseMatrix<T, indexType, compressionLevel>(iter);
+        // return CSF::SparseMatrix<T, indexType, compressionLevel>(iter);
     }
 
     /**
@@ -42,7 +42,7 @@ namespace CSF {
     // template <typename T, typename, indexType, int compressionLevel>
     // void vectorMultiply(CSF::SparseMatrix<T, indexType, compressionLevel> matrix, CSF::SparseMatrix<T, indexType, compressionLevel> vector) {
     //     if (matrix.getNumCols() == vector.getNumRows()) {
-    //         std::cerr << "Matrix and vector dimensions do not match" << endl;
+    //         std::cerr << "Matrix and vector dimensions do not match" << std::endl;
     //     }
 
     //     CSF::Iterator<T> matIter = CSF::Iterator<T>(matrix);

@@ -54,7 +54,7 @@ namespace CSF {
 
         SparseMatrix(CSF::SparseMatrix<T, T_index, compression_level>& mat);
 
-        SparseMatrix(Iterator<T, T_index, compression_level>& iter); //(WIP)
+        // SparseMatrix(Iterator<T, T_index, compression_level>& iter); //(WIP)
 
         ~SparseMatrix();
 
@@ -136,7 +136,7 @@ namespace CSF {
 
         SparseMatrix(const char* filename);
 
-        SparseMatrix(SparseMatrix::Iterator<T, T_index, compression_level>& iter); //(WIP)
+        // SparseMatrix(SparseMatrix::Iterator<T, T_index, compression_level>& iter); //(WIP)
 
         ~SparseMatrix();
 

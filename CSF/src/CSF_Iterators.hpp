@@ -27,7 +27,7 @@ template <typename T, typename indexType, int compressionLevel>
          * @param filePath
          */
 
-        Iterator(CSF::SparseMatrix<T, indexType, compressionLevel> matrix) {
+        Iterator(CSF::SparseMatrix<T, indexType, compressionLevel>& matrix) {
 
             //Sets the beginnign and end of the data
             data = matrix.beginPtr();

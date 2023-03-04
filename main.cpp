@@ -127,7 +127,7 @@ bool ScalarMultiplicationBench(int numRows, int numCols, int sparsity, uint64_t 
     std::cout << "should be: : " << 2 * originalTotal << std::endl;
     std::cout << "Off by: " << scaledTotal - (2 * originalTotal) << std::endl;
 
-    printValuesInTwo<T, T, 3>(CSFMatrix, CSFMatrix2);
+    // printValuesInTwo<T, T, 3>(CSFMatrix, CSFMatrix2);
     return (scaledTotal == 2 * originalTotal);
 
 //     return true;
