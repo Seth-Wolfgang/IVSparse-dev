@@ -39,31 +39,46 @@ namespace CSF {
     * @return
     */
 
-    // template <typename T, typename, indexType, int compressionLevel>
-    // void vectorMultiply(CSF::SparseMatrix<T, indexType, compressionLevel> matrix, CSF::SparseMatrix<T, indexType, compressionLevel> vector) {
-    //     if (matrix.getNumCols() == vector.getNumRows()) {
-    //         std::cerr << "Matrix and vector dimensions do not match" << std::endl;
-    //     }
+    template <typename T, typename indexType, int compressionLevel>
+    void vectorMultiply(CSF::SparseMatrix<T, indexType, compressionLevel>& matrix, CSF::SparseMatrix<T, indexType, compressionLevel>& vector) {
+        if (matrix.cols() != vector.rows() || vector.cols() != 1) {
+            std::cerr << "Matrix and vector dimensions do not match" << std::endl;
 
-    //     CSF::Iterator<T> matIter = CSF::Iterator<T>(matrix);
-    //     CSF::Iterator<T> vecIter = CSF::Iterator<T>(vector);
-    //     void* addressOfNextColumn = matIter.getColumnAddress(vecIter.getIndex() + 1);
+            if (matrix.cols() != vector.rows()) {
+                std::cerr << "Matrix and vector dimensions do not match" << std::endl;
+                std::cerr << "Matrix has " << matrix.cols() << " columns and vector has " << vector.rows() << " rows" << std::endl;
+            }
+            else {
+                std::cerr << "Given vector parameter is not a column vector" << std::endl;
+                std::cerr << "Vector has " << vector.cols() << " columns" << std::endl;
+            }
+            exit(-1);
+        }
 
-    //     //Iterate through the matrix and multiply each value by the scalar
-    //     while (vecIter) {
-    //         matIter.goToColumn(vecIter.getIndex());
+        //We need two iterators to iterate through the matrix and vector
+        CSF::Iterator<T, indexType, compressionLevel> matIter = CSF::Iterator<T, indexType, compressionLevel>(matrix);
+        CSF::Iterator<T, indexType, compressionLevel> vecIter = CSF::Iterator<T, indexType, compressionLevel>(vector);
 
-    //         //TODO: check to see if we're at address of next column
-    //         while (matIter.compareAddress(addressOfNextColumn)) {
-    //             if (matIter.atBeginningOfRun())
-    //                 iter.setRunValue(*iter * *vecIter)
-    //                 matIter++;
-    //         }
-    //         vecIter++;
-    //         addressOfNextColumn = matIter.getColumnAddress(vecIter.getIndex() + 1);
-    //     }
+        //We need to keep track of the address of the next column
+        void* addressOfNextColumn = matIter.getColumnAddress(vecIter.getIndex() + 1);
 
-    // }
+        //Iterate through the matrix and multiply each value by the scalar
+        while (vecIter && matIter) {
+            matIter.goToColumn(vecIter.getIndex());
+
+            while (matIter.compareAddress(addressOfNextColumn) == -1 && matIter) {
+                if (matIter.atBeginningOfRun()) {
+
+                    std::cout << "multiplying " << *matIter << " by " << *vecIter << " = " << *matIter * *vecIter << std::endl;
+                    matIter.setRunValue(*matIter * *vecIter);
+
+                }
+                matIter++;
+            }
+            vecIter++;
+            addressOfNextColumn = matIter.getColumnAddress(vecIter.getIndex() + 1);
+        }
+    }
 
 
     /**

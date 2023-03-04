@@ -314,6 +314,21 @@ template <typename T, typename indexType, int compressionLevel>
 
         void goToColumn(int column) {
             currentIndex = getColumnAddress(column);
+
+                // Value is the first index of the run
+                value = static_cast<T*>(currentIndex);
+                currentIndex = static_cast<char*>(currentIndex) + valueWidth;
+
+                // newIndexWidth is the second value in the run
+                newIndexWidth = *static_cast<uint8_t*>(currentIndex);
+                currentIndex = static_cast<char*>(currentIndex) + 1;
+
+                // Make index 0 as it is a new run
+                memset(&index, 0, 8);
+
+                // Returns the first index of the run
+                index = interpretPointer(newIndexWidth);
+                atFirstIndex = true;
         }
 
         /**
@@ -329,8 +344,19 @@ template <typename T, typename indexType, int compressionLevel>
          * @return
          */
 
-        bool compareAddress(void* address) {
-            return currentIndex >= address;
+        inline int compareAddress(void* address) {
+
+            if (currentIndex < address){
+                return -1;
+            }
+            else if(currentIndex == address){
+                return 0;
+            }
+            else if (currentIndex > address){
+                return 1;
+            }
+
+            return -2;
         }
 
 
