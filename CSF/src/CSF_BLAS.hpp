@@ -77,6 +77,10 @@ namespace CSF {
                     // std::cout << "multiplying " << *matIter << " by " << *vecIter << " = " << *matIter * *vecIter << std::endl;
                     matIter.setRunValue(*matIter * *vecIter);
                     
+                    // if the last of the binary data is an index, the function might continue
+                    // So we have a safeguard here. If this statement is in the while loop, it will not
+                    // be successful in multiplying the last value. 
+                    // Ex. A run where -> (3) [0] *end* where 0 is where the end pointer points to. 3 is a value, and 0 is the final index of the CSF matrix.
                     if(matIter)
                         break;
                 }
