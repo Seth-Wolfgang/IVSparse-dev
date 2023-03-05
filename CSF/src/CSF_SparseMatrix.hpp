@@ -56,7 +56,7 @@ namespace CSF {
 
         // SparseMatrix(Iterator<T, T_index, compression_level>& iter); //(WIP)
 
-        ~SparseMatrix();
+        // ~SparseMatrix();
 
         void write(const char* filename);
 

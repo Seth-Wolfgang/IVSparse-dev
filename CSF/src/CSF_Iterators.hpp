@@ -1,8 +1,8 @@
 #pragma once
 # define META_DATA_SIZE 28
 
-namespace CSF {    
-template <typename T, typename indexType, int compressionLevel>
+namespace CSF {
+    template <typename T, typename indexType, int compressionLevel>
     class Iterator {
 
     private:
@@ -15,7 +15,7 @@ template <typename T, typename indexType, int compressionLevel>
         void* endOfData;
         void* currentIndex;
         T* value;
-        bool firstIndex = true; 
+        bool firstIndex = true;
         bool atFirstIndex = true;
         uint32_t metadata[7];
 
@@ -34,21 +34,21 @@ template <typename T, typename indexType, int compressionLevel>
             endOfData = matrix.endPtr();
             currentIndex = data;
 
-            // To make sure the matrix isn't empty or in some way invalid
-            assert(currentIndex < endOfData);
-
             //Reads in the metadata
             readMetaData();
 
             //Skips metadata and goes to first column
             currentIndex = static_cast<char*>(currentIndex) + META_DATA_SIZE;
             goToColumn(0);
+
+            // To make sure the matrix isn't empty or in some way invalid
+            // assert(currentIndex < endOfData);
         }
 
         /**
          * @brief Construct a new Iterator object using a file
-         * 
-         * @param filePath 
+         *
+         * @param filePath
          */
 
         Iterator(const char* filePath) {
@@ -69,7 +69,7 @@ template <typename T, typename indexType, int compressionLevel>
 
         /**
          * @brief Reads in the metadata from the file
-         * 
+         *
          */
         uint32_t* getMetaData() {
             return metadata;
@@ -77,7 +77,7 @@ template <typename T, typename indexType, int compressionLevel>
 
         /**
          * @brief Getter for matrix data
-         * 
+         *
          *
         */
         void* getData() { return data; }
@@ -88,7 +88,7 @@ template <typename T, typename indexType, int compressionLevel>
          * @return T&
          */
 
-        void* getEnd() {return endOfData; }
+        void* getEnd() { return endOfData; }
 
         T& operator * () {
             return *value;
@@ -160,12 +160,12 @@ template <typename T, typename indexType, int compressionLevel>
 
         /**
          * @brief Increment operator for the iterator
-         * 
+         *
          * This handles the basic usage of the iterator. The iterator will go through each index of the CSF::SparseMatrix and return the index of where it is.
          * The iterator will change value when it hits the assigned delimitor as set by the CSF::SparseMatrix. Each delimitor is a collection of 0s that are the size
          * of the index. Only the first index may be a zero, in which case the iterator will return a zero, but not recognize it as a delimitor.
-         * 
-         * 
+         *
+         *
          * @return uint64_t
          */
 
@@ -219,49 +219,49 @@ template <typename T, typename indexType, int compressionLevel>
          * @return char*
          */
 
-         char* getColumn(uint64_t column) {
-             //TODO: optimize this function
+        char* getColumn(uint64_t column) {
+            //TODO: optimize this function
 
-             //Reseets iterator to the beginning and sends it to the corresponding column
-             Iterator it = *this;
-             it.index = 0;
-             it.goToColumn(column);
-             it.currentIndex = static_cast<char*>(it.currentIndex) + 1;
-             it.value = it.interpretPointer(it.valueWidth);
-             char* columnData = (char*)calloc(it.numRows, sizeof(T));
+            //Reseets iterator to the beginning and sends it to the corresponding column
+            Iterator it = *this;
+            it.index = 0;
+            it.goToColumn(column);
+            it.currentIndex = static_cast<char*>(it.currentIndex) + 1;
+            it.value = it.interpretPointer(it.valueWidth);
+            char* columnData = (char*)calloc(it.numRows, sizeof(T));
 
-             if (numColumns != 1) it.endOfData = static_cast<char*>(data) + *(static_cast<uint64_t*>(data) + META_DATA_SIZE + ((column + 1) * 8));
+            if (numColumns != 1) it.endOfData = static_cast<char*>(data) + *(static_cast<uint64_t*>(data) + META_DATA_SIZE + ((column + 1) * 8));
 
-             //copy data into new array
-             while (it) {
-                 it++;
-                 columnData[it.index] = value;
-             }
+            //copy data into new array
+            while (it) {
+                it++;
+                columnData[it.index] = value;
+            }
 
-             return columnData;
-         }
-
-         /**
-          * @brief Returns an iterator to the specified column (WIP)
-          *
-          * @param column
-          * @return CSF::Iterator<T>
-          */
-
-        // CSF::Iterator<T, indexType, compressionLevel> getColumn(uint64_t column) {
-        //     Iterator* it = new Iterator(*this); //Creates a shallow copy of the iterator
-        //     it.goToColumn(column);
-        //     it.setEnd(goToColumn(column + 1));
-
-        //     return *it;
-        // }
-
+            return columnData;
+        }
 
         /**
-         * @brief Sets a new value at the current run. NOTE: This will set the value for all indices in the run
+         * @brief Returns an iterator to the specified column (WIP)
          *
-         * @param newValue
+         * @param column
+         * @return CSF::Iterator<T>
          */
+
+         // CSF::Iterator<T, indexType, compressionLevel> getColumn(uint64_t column) {
+         //     Iterator* it = new Iterator(*this); //Creates a shallow copy of the iterator
+         //     it.goToColumn(column);
+         //     it.setEnd(goToColumn(column + 1));
+
+         //     return *it;
+         // }
+
+
+         /**
+          * @brief Sets a new value at the current run. NOTE: This will set the value for all indices in the run
+          *
+          * @param newValue
+          */
 
         void setRunValue(T newValue) {
             *value = newValue;
@@ -278,7 +278,7 @@ template <typename T, typename indexType, int compressionLevel>
             /*
             char* data + METADATASIZE + column * sizeof(uint64_t) goes to the column pointer specified
             Why char*? -> so we only add 1 * the rest of the sum of metadatasize and column * sizeof(uint64_t)
-            
+
             cast to uint64_t so that we grab 8 bytes from memory.
             dereference the pointer to get the value of the pointer.
             Then we add temp to data to go to the column we need. Data is casted to char* because we only want to add 1 * temp.
@@ -286,7 +286,7 @@ template <typename T, typename indexType, int compressionLevel>
 
             */
             //  uint64_t temp = *((uint64_t*)((char*)data + METADATASIZE + (column * sizeof(uint64_t))))
-            return (void*)((char*)data +  *((uint64_t*)((char*)data + META_DATA_SIZE + (column * sizeof(uint64_t)))));
+            return (void*)((char*)data + *((uint64_t*)((char*)data + META_DATA_SIZE + (column * sizeof(uint64_t)))));
         }
 
         /**
@@ -296,22 +296,22 @@ template <typename T, typename indexType, int compressionLevel>
 
         void goToColumn(int column) {
             currentIndex = getColumnAddress(column);
-            
+
             //Grab the current value and move the pointer further
             value = static_cast<T*>(currentIndex);
             currentIndex = static_cast<char*>(currentIndex) + valueWidth;
-            
+
             //Grab the current index width and move the pointer further
             newIndexWidth = *static_cast<uint8_t*>(currentIndex);
             currentIndex = static_cast<char*>(currentIndex) + 1;
 
             atFirstIndex = true;
             firstIndex = true;
-            
+
         }
 
         /**
-         * @brief Compares the address of the iterator with a given address. 
+         * @brief Compares the address of the iterator with a given address.
          * NOTE: This should only be used to compare with an iterator pointing
          * to the same CSF::SparseMatrix.
          *
@@ -325,26 +325,36 @@ template <typename T, typename indexType, int compressionLevel>
 
         inline int compareAddress(void* address) {
 
-            if (currentIndex < address){
+            if (currentIndex < address) {
                 return -1;
             }
-            else if(currentIndex == address){
+            else if (currentIndex == address) {
                 return 0;
             }
-            
+
             //else return greater than
             return 1;
         }
 
+        /**
+         * @brief Checks validity of matrix with the assumption that metadata has been read
+         *
+         */
+
+        bool isValid() {
+            return currentIndex < endOfData;
+        }
+
 
     private:
+
         /**
          * @brief Read a file into memory
          *
          * @param filePath
          */
 
-        void readMetaData(){
+        void readMetaData() {
             uint32_t params[7];
             memcpy(&params, currentIndex, META_DATA_SIZE);
             // params[0] compression type
@@ -354,7 +364,7 @@ template <typename T, typename indexType, int compressionLevel>
             // params[4] # of rows
             // params[5] # of columns
             // params[6] # of nonzeros
-            
+
             valueWidth = params[3] & 0xFFFF;
             numRows = params[4];
             numColumns = params[5];

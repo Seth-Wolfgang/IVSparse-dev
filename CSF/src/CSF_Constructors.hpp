@@ -225,7 +225,7 @@ namespace CSF {
     //     uint32_t metaData[7] = iter.getMetaData();
 
     //     // compression_level = metaData[0]; -> I don't know how to do this
-        
+
     //     row_t = metaData[1];
     //     col_t = metaData[2];
     //     val_t = metaData[3];
@@ -235,11 +235,11 @@ namespace CSF {
 
     // }
 
-    template <typename T, typename T_index, int compression_level>
-    SparseMatrix<T, T_index, compression_level>::~SparseMatrix() {
-        if (begin_ptr != NULL)
-            free(begin_ptr);
-    }
+    // template <typename T, typename T_index, int compression_level>
+    // SparseMatrix<T, T_index, compression_level>::~SparseMatrix() {
+    //     if (begin_ptr != NULL)
+    //         free(begin_ptr);
+    // }
 
 
     // Constructor Helper Functions ---------------------------------------------------------------------------

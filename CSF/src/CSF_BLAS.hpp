@@ -67,6 +67,7 @@ namespace CSF {
         //Iterate through the matrix and multiply each value by the scalar at the index of the vector
         while (vecIter && matIter) {
             vecIter++;
+            // std::cout << "vecIter index: " << vecIter.getIndex() << std::endl;
             matIter.goToColumn(vecIter.getIndex());
             addressOfNextColumn = matIter.getColumnAddress(vecIter.getIndex() + 1);
 
@@ -76,12 +77,12 @@ namespace CSF {
 
                     // std::cout << "multiplying " << *matIter << " by " << *vecIter << " = " << *matIter * *vecIter << std::endl;
                     matIter.setRunValue(*matIter * *vecIter);
-                    
+
                     // if the last of the binary data is an index, the function might continue
                     // So we have a safeguard here. If this statement is in the while loop, it will not
                     // be successful in multiplying the last value. 
                     // Ex. A run where -> (3) [0] *end* where 0 is where the end pointer points to. 3 is a value, and 0 is the final index of the CSF matrix.
-                    if(matIter)
+                    if (matIter)
                         break;
                 }
                 matIter++;
