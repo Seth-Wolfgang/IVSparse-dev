@@ -93,6 +93,12 @@ namespace CSF {
 
             void* getEnd() { return endOfData; }
 
+            /**
+             * @brief Returns the value of the run.
+             *
+             * @return 
+             */
+
             T& operator * () {
                 return *value;
             };
