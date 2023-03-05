@@ -34,25 +34,15 @@ template <typename T, typename indexType, int compressionLevel>
             endOfData = matrix.endPtr();
             currentIndex = data;
 
+            // To make sure the matrix isn't empty or in some way invalid
+            assert(currentIndex < endOfData);
+
             //Reads in the metadata
             readMetaData();
 
             //Skips metadata and goes to first column
             currentIndex = static_cast<char*>(currentIndex) + META_DATA_SIZE;
             goToColumn(0);
-
-            //Insures the matrix is not empty
-            assert(currentIndex < endOfData);
-
-            value = static_cast<T*>(currentIndex);
-            currentIndex = static_cast<char*>(currentIndex) + valueWidth;
-
-            // Read in the width of this run's indices and go to first index
-            newIndexWidth = *static_cast<uint8_t*>(currentIndex);
-            currentIndex = static_cast<char*>(currentIndex) + 1;
-
-            // std::cout << "value: " << value << std::endl;
-            // std::cout << "newIndexWidth: " << (int)newIndexWidth << std::endl;
         }
 
         /**
@@ -70,19 +60,11 @@ template <typename T, typename indexType, int compressionLevel>
             memcpy(&params, currentIndex, META_DATA_SIZE);
             currentIndex = static_cast<char*>(currentIndex) + META_DATA_SIZE;
 
-            // valueWidth is set and the first value is read in
-            valueWidth = params[4];
+            // Sets the metadata based on the file
+            readMetaData();
+
+            //Uses the column pointer to go to the first column
             goToColumn(0);
-
-            value = static_cast<T*>(currentIndex);
-            currentIndex = static_cast<char*>(currentIndex) + valueWidth;
-
-            // Read in the width of this run's indices and go to first index
-            newIndexWidth = *static_cast<uint8_t*>(currentIndex);
-            currentIndex = static_cast<char*>(currentIndex) + 1;
-
-            // std::cout << "value: " << value << std::endl;
-            // std::cout << "newIndexWidth: " << (int)newIndexWidth << std::endl;
         }
 
         /**
@@ -314,21 +296,18 @@ template <typename T, typename indexType, int compressionLevel>
 
         void goToColumn(int column) {
             currentIndex = getColumnAddress(column);
+            
+            //Grab the current value and move the pointer further
+            value = static_cast<T*>(currentIndex);
+            currentIndex = static_cast<char*>(currentIndex) + valueWidth;
+            
+            //Grab the current index width and move the pointer further
+            newIndexWidth = *static_cast<uint8_t*>(currentIndex);
+            currentIndex = static_cast<char*>(currentIndex) + 1;
 
-                // Value is the first index of the run
-                value = static_cast<T*>(currentIndex);
-                currentIndex = static_cast<char*>(currentIndex) + valueWidth;
-
-                // newIndexWidth is the second value in the run
-                newIndexWidth = *static_cast<uint8_t*>(currentIndex);
-                currentIndex = static_cast<char*>(currentIndex) + 1;
-
-                // Make index 0 as it is a new run
-                memset(&index, 0, 8);
-
-                // Returns the first index of the run
-                index = interpretPointer(newIndexWidth);
-                atFirstIndex = true;
+            atFirstIndex = true;
+            firstIndex = true;
+            
         }
 
         /**
@@ -352,11 +331,9 @@ template <typename T, typename indexType, int compressionLevel>
             else if(currentIndex == address){
                 return 0;
             }
-            else if (currentIndex > address){
-                return 1;
-            }
-
-            return -2;
+            
+            //else return greater than
+            return 1;
         }
 
 

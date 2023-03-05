@@ -40,7 +40,9 @@ namespace CSF {
     */
 
     template <typename T, typename indexType, int compressionLevel>
-    void vectorMultiply(CSF::SparseMatrix<T, indexType, compressionLevel>& matrix, CSF::SparseMatrix<T, indexType, compressionLevel>& vector) {
+    void vectorMultiply(CSF::SparseMatrix<T, indexType, compressionLevel>& matrix, CSF::SparseMatrix<T, indexType, compressionLevel> vector) {
+
+        //Check that the matrix and vector dimensions match or if the vector is actually a vector
         if (matrix.cols() != vector.rows() || vector.cols() != 1) {
             std::cerr << "Matrix and vector dimensions do not match" << std::endl;
 
@@ -62,21 +64,25 @@ namespace CSF {
         //We need to keep track of the address of the next column
         void* addressOfNextColumn = matIter.getColumnAddress(vecIter.getIndex() + 1);
 
-        //Iterate through the matrix and multiply each value by the scalar
+        //Iterate through the matrix and multiply each value by the scalar at the index of the vector
         while (vecIter && matIter) {
+            vecIter++;
             matIter.goToColumn(vecIter.getIndex());
+            addressOfNextColumn = matIter.getColumnAddress(vecIter.getIndex() + 1);
 
-            while (matIter.compareAddress(addressOfNextColumn) == -1 && matIter) {
+            // While mateIter is less than the address of the next column
+            while (matIter.compareAddress(addressOfNextColumn) == -1) {
                 if (matIter.atBeginningOfRun()) {
 
-                    std::cout << "multiplying " << *matIter << " by " << *vecIter << " = " << *matIter * *vecIter << std::endl;
+                    // std::cout << "multiplying " << *matIter << " by " << *vecIter << " = " << *matIter * *vecIter << std::endl;
                     matIter.setRunValue(*matIter * *vecIter);
-
+                    
+                    if(matIter)
+                        break;
                 }
                 matIter++;
             }
-            vecIter++;
-            addressOfNextColumn = matIter.getColumnAddress(vecIter.getIndex() + 1);
+
         }
     }
 
