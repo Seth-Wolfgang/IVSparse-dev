@@ -24,11 +24,11 @@ template<typename T> void testDriver(std::function<T(T, T, T, T, T)> lambda, int
 
 int main() {
 
-    testDriver<int>(iteratorBenchmark<int>, 100, 3);
+    testDriver<int>(iteratorBenchmark<int>, 10000, 3);
     std::cout << "Finished iterator Test" << std::endl << std::endl;
-    testDriver<int>(ScalarMultiplicationBench<int>, 100, 3);
+    testDriver<int>(ScalarMultiplicationBench<int>, 10000, 3);
     std::cout << "Finished Scalar Test" << std::endl << std::endl;
-    testDriver<int>(vectorMultiplicationBench<int>, 100, 3);
+    testDriver<int>(vectorMultiplicationBench<int>, 10000, 3);
     std::cout << "Finished Vector/Matrix Multiplication Test" << std::endl << std::endl;
 
     // vectorMultiplicationBench<int>(1, 7, 1, 113974112 + 1, 3);
@@ -50,7 +50,7 @@ void testDriver(std::function<T(T, T, T, T, T)> lambda, int iterations, int comp
         numRows = rand() % 100 + 1;
         numCols = rand() % 100 + 1;
         sparsity = rand() % 1 + 1;
-        // std::cout << "i: " << i << std::endl;
+        std::cout << "i: " << i << std::endl;
         // std::cout << "numRows: " << numRows << std::endl;
         // std::cout << "numCols: " << numCols << std::endl;
         // std::cout << "sparsity: " << sparsity << std::endl;
