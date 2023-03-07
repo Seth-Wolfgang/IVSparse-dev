@@ -1,6 +1,8 @@
     #include <gtest/gtest.h>
-    #include "CSFTests2.cpp"
+    #include "CSFTests.cpp"
     
+
+
     
     GTEST_API_ int main(int argc, char** argv) {
         ::testing::InitGoogleTest(&argc, argv);
