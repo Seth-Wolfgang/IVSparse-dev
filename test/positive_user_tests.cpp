@@ -9,6 +9,7 @@ Things to test/get working:
 4. CSF vectors
 6. << operator
 8. redundancy checker
+1. write a constructor that casts to different types
 */
 
 int main (int argc, char** argv) {

@@ -40,7 +40,7 @@ namespace CSF
     }
 
     template <typename T, typename T_index, int compression_level>
-    void SparseMatrix<T, T_index, compression_level>::sanity_checks() {
+    void SparseMatrix<T, T_index, compression_level>::user_checks() {
         // throw an error if the matrix has less than one rows or columns or nonzero values
         if (num_rows < 1 || num_cols < 1 || num_nonzeros < 1)
             throw std::invalid_argument("The matrix must have at least one row, column, and nonzero value");
@@ -232,7 +232,7 @@ namespace CSF
     }
 
     template <typename T, typename T_index>
-    void SparseMatrix<T, T_index, 1>::sanity_checks()
+    void SparseMatrix<T, T_index, 1>::user_checks()
     {
         // throw an error if the matrix has less than one rows or columns or nonzero values
         if (num_rows < 1 || num_cols < 1 || num_nonzeros < 1)
@@ -247,7 +247,7 @@ namespace CSF
             throw std::invalid_argument("The value and index types must be numeric types");
 
         // check that the value type or index type is not a bool
-        if (std::is_same<T, bool>::value || std::is_same<T_index, bool>::value)
+        if (std::is_same<T_index, bool>::value)
             throw std::invalid_argument("The value and index types must not be bool");
 
         check_valt(val_t);

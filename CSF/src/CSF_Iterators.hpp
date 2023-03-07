@@ -9,17 +9,15 @@ namespace CSF
 {
 
 
-    template <typename T, typename T_index>
-    template <typename Ti, typename Ti_index>
-    class SparseMatrix<T, T_index, 1>::Iterator<Ti, Ti_index, 1>
-    {
-    public:
-        int hi = 8;
-    };
+    // template <typename T, typename T_index>
+    // class SparseMatrix<T, T_index, 1>::Iterator
+    // {
+    //     public:
+    //     int hi = 8;
+    // };
 
     // General case iterator (compression levels 2 and 3)
     template <typename T, typename T_index, int compression_level>
-    template <typename Ti, typename Ti_index, uint32_t compression_leveli>
     class SparseMatrix<T, T_index, compression_level>::Iterator
     {
 

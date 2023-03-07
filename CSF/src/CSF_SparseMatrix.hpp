@@ -1,6 +1,6 @@
 /**
  * @file CSF_SparseMatrix.hpp
- * @author Skyler Ruiter
+ * @author Skyler Ruiter (ruitersk@mail.gvsu.edu)
  * @brief Definitions for the CSF SparseMatrix class
  * @version 0.1
  * @date 2023-02-27
@@ -159,7 +159,7 @@ namespace CSF {
          * 
          * @return void
          */
-        void sanity_checks();
+        void user_checks();
 
         /**
          * @brief The primiary workhorse function that compresses the matrix
@@ -176,7 +176,7 @@ namespace CSF {
          * 
          * @return void
          * 
-         * @ref sanity_checks() is called as a part of this function.
+         * @ref user_checks() is called as a part of this function.
          * @ref create_metadata() is called as a part of this function.
          * @ref byte_width() is called as a part of this function.
          * 
@@ -285,7 +285,7 @@ namespace CSF {
          * 
          * @return CSF::SparseMatrix<T, T_index, 1> The decompressed matrix
          */
-        CSF::SparseMatrix<T, T_index, 1> to_csf1(); //! TODO: Implement this w/ iterator
+        CSF::SparseMatrix<T, T_index, 1> to_csf1();
 
         /**
          * @brief Turns the CSF matrix into an equivalent Eigen::SparseMatrix<T>
@@ -347,8 +347,15 @@ namespace CSF {
          * @brief The iterator class for the CSF::SparseMatrix
          * 
          */
-        template <typename Ti = T, typename Ti_index=T_index, uint32_t compression_leveli = compression_level>
         class Iterator;
+
+
+        // TO ADD
+        // 1. colstack (append) and splice functions
+        // 2. .rows() and .cols() functions
+        // 3. .coeff() function
+        // 4. overload () operator (numpy or splicing syntax)
+        // col subclass (to work as a vector) matrix.col(i).dot(yada...)
     };
 
     /**
@@ -469,7 +476,7 @@ namespace CSF {
          *
          * @return void
          */
-        void sanity_checks();
+        void user_checks();
 
         /**
          * @brief Private function that encodes the val_t variable
@@ -674,8 +681,7 @@ namespace CSF {
          * @brief The iterator class for the CSF::SparseMatrix, this one is specialized for CSF 1
          *
          */
-        template <typename Ti = T, typename Ti_index = T_index, uint32_t compression_leveli = 1>
-        class Iterator;
+        class Iterator {};
     };
 
 }

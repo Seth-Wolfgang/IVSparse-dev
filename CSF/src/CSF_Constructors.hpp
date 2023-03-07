@@ -1,20 +1,36 @@
-#pragma once 
+/**
+ * @file CSF_Constructors.hpp
+ * @author Skyler Ruiter
+ * @brief 
+ * @version 0.1
+ * @date 2023-02-28
+ * 
+ * @copyright Copyright (c) 2023
+ * 
+ */
 
+#pragma once
+
+// Debug flag for performance testing
 #define DEBUG 1
 
+// Standard Libraries for include
 #include <type_traits>
 #include <iostream>
 #include <iomanip>
 
+// Namespace CSF Start
 namespace CSF {
 
-    // General Constructors
+    // ------------------ General Constructors ------------------ //
 
+    // Default Constructor (Empty)
     template <typename T, typename T_index, int compression_level>
     SparseMatrix<T, T_index, compression_level>::SparseMatrix()
     {
     }
 
+    // Eigen --> CSF Constructor
     template <typename T, typename T_index, int compression_level>
     SparseMatrix<T, T_index, compression_level>::SparseMatrix(Eigen::SparseMatrix<T> &mat, bool destroy)
     {
@@ -31,10 +47,13 @@ namespace CSF {
         num_cols = mat.cols();
         num_nonzeros = mat.nonZeros();
 
+        // create pointers for vals, indexes, and col_p
         T *vals;
         int *indexes;
         int *col_p;
 
+        // if destroy is true then just set the pointers to the existing eigen ones
+        // if destroy is false copy the values first and then set the pointers
         if (destroy) {
             vals = mat.valuePtr();
             indexes = mat.innerIndexPtr();
@@ -54,6 +73,7 @@ namespace CSF {
             }
         }
 
+        // call the compression algorithm
         compress(vals, indexes, col_p);
 
         // free the memory if the matrix was destroyed
@@ -63,6 +83,7 @@ namespace CSF {
         
     }
 
+    // Raw CSC --> CSF Constructor (Takes in raw CSC arrays and compresses them)
     template <typename T, typename T_index, int compression_level>
     template <typename values_t, typename row_ind, typename col_ind>
     SparseMatrix<T, T_index, compression_level>::SparseMatrix(values_t **vals, row_ind **indexes, col_ind **col_p,
@@ -70,13 +91,16 @@ namespace CSF {
                                                               bool destroy)
     {
         // Check that templates T and values_t are the same
-        static_assert(std::is_same<T, values_t>::value, "Your matrix must be of the same type as the constructor");
+        if (!std::is_same<T, values_t>::value)
+            throw std::invalid_argument("The values type must be the same as the template type");
 
         // intialize the matrix
         num_rows = row_num;
         num_cols = col_num;
         num_nonzeros = non_zeros;
 
+        // if destroy is false copy the values first and then set the pointers
+        // if destroy is true then just set the pointers to the passed in ones
         if (!destroy) {
             
             // allocate space for a copy of vals
@@ -97,11 +121,13 @@ namespace CSF {
             // free vals_copy
             free(vals_copy);
         } else {
+            // call compress with vals
             compress(*vals, *indexes, *col_p);
         }
 
     }
 
+    // Existing File Constructor (takes in a file name and loads the matrix from the file)
     template <typename T, typename T_index, int compression_level>
     SparseMatrix<T, T_index, compression_level>::SparseMatrix(const char *filename)
     {
@@ -131,21 +157,21 @@ namespace CSF {
         // close file
         fclose(fp);
 
-        // set pointers
+        // set pointers for end of file and a help pointer for reading in data
         comp_ptr = (void *)((uint8_t *)(begin_ptr) + compression_size);
         void *help_ptr = begin_ptr;
 
-        // get metadata
+        // ------------ Get metadata from file ------------ //
+
+        // get the compression level of the file
         compression = *(uint32_t *)(help_ptr);
         help_ptr = (uint32_t *)(help_ptr) + 1;
 
-        // assert that the compression level is the same and throw error
-        if (compression != compression_level) {
-            printf("Compression level of file does not match the compression level of the constructor\n");
-            printf("The compression level of the file is %d and the compression level of the constructor is %d", compression, compression_level);
-            exit(1);
-        }
+        // assert that the compression level is the same and throw error if not true
+        if (compression != compression_level)
+            throw std::invalid_argument("The compression level of the file does not match the compression level of the class");
 
+        // get the types of data and number of rows and columns and number of nonzeros from the file
         row_t = *(uint32_t *)(help_ptr);
         help_ptr = (uint32_t *)(help_ptr) + 1;
 
@@ -164,35 +190,42 @@ namespace CSF {
         num_nonzeros = *(uint32_t *)(help_ptr);
         help_ptr = (uint32_t *)(help_ptr) + 1;
 
-        sanity_checks();
+        // ------------ End of Metadata ------------ //
+
+        // run user checks on the data that came in to ensure that it is valid
+        user_checks();
 
     }
 
+    // Deep copy constructor
     template <typename T, typename T_index, int compression_level>
     SparseMatrix<T, T_index, compression_level>::SparseMatrix(CSF::SparseMatrix<T, T_index, compression_level> &mat) 
     {
-        // create a deep copy of the matrix
+        // initialize the matrix variables
         num_rows = mat.rows();
         num_cols = mat.cols();
         num_nonzeros = mat.nonzeros();
 
         compression_size = mat.byte_size();
 
+        // allocate memory for the matrix
         try {
             begin_ptr = malloc(mat.byte_size());
         } catch (std::bad_alloc &e) {
             std::cerr << "Error: " << e.what() << std::endl;
             exit(1);
         }
+
+        // set the end pointer
         comp_ptr = (uint8_t *)begin_ptr + mat.byte_size();
 
-        // copy the data
+        // copy the data from the matrix into the new matrix
         memcpy(begin_ptr, mat.beginPtr(), mat.byte_size());
 
-        // set the pointers
+        // set the pointer to help with reading in the data
         void *help_ptr = begin_ptr;
 
-        // get metadata
+        // ------- Get metadata from file ------- //
         compression = *(uint32_t *)(help_ptr);
         help_ptr = (uint32_t *)(help_ptr) + 1;
 
@@ -205,12 +238,17 @@ namespace CSF {
         val_t = *(uint32_t *)(help_ptr);
         help_ptr = (uint32_t *)(help_ptr) + 1;
 
-        sanity_checks();
+        // ------- End of Metadata ------- //
+
+        // run user checks on the data that came in to ensure that it is valid
+        user_checks();
     }
 
+    // Destructor
     template <typename T, typename T_index, int compression_level>
     SparseMatrix<T, T_index, compression_level>::~SparseMatrix()
-    {
+    {   
+        // if the begin_ptr was assigned, free it (only place where memory is allocated)
         if (begin_ptr != NULL)
             free(begin_ptr);
     }
@@ -221,12 +259,13 @@ namespace CSF {
     template <typename T, typename T_index, int compression_level>
     uint64_t* SparseMatrix<T, T_index, compression_level>::create_metadata()
     {
-        // Construct Metadata --------------------
-        // * <compression, row_t, col_t, val_t, num_rows, num_cols, num_nonzeros, [col_pointers], {...runs...}>
+        // ------------------- Construct Metadata -------------------- //
+        // * <compression, row_t, col_t, val_t, num_rows, num_cols, num_nonzeros, [col_pointers], {...runs...}> * //
 
         // Compression Level onto compression
         *(uint32_t *)(comp_ptr) = compression;
         comp_ptr = (uint32_t *)(comp_ptr) + 1;
+
 
         // Row, Col, and Val sizes onto compression
         *(uint32_t *)(comp_ptr) = row_t;
@@ -238,6 +277,7 @@ namespace CSF {
         *(uint32_t *)(comp_ptr) = val_t;
         comp_ptr = (uint32_t *)(comp_ptr) + 1;
 
+
         // Number of Rows and Cols onto compression and num nonzeros
         *(uint32_t *)(comp_ptr) = num_rows;
         comp_ptr = (uint32_t *)(comp_ptr) + 1;
@@ -248,18 +288,24 @@ namespace CSF {
         *(uint32_t *)(comp_ptr) = num_nonzeros;
         comp_ptr = (uint32_t *)(comp_ptr) + 1;
 
+
         // Create a space for col pointers
         uint64_t *col_pointers = (uint64_t *)(comp_ptr);
         comp_ptr = (uint64_t *)(comp_ptr) + (uint64_t)(num_cols);
 
+
         // Put a delim at the end of the metadata
         *(uint32_t *)(comp_ptr) = delim;
         comp_ptr = (uint32_t *)(comp_ptr) + 1;
-        // End of Metadata --------------------
+        
+        
+        // ----------------- End of Metadata -------------------- //
 
+        // return a pointer to the start of the column pointers
         return col_pointers;
     }
 
+    // Main workhorse method that takes in CSC data and comresses it to CSF
     template <typename T, typename T_index, int compression_level>
     template <typename values_type, typename rows_type, typename cols_type>
     void SparseMatrix<T, T_index, compression_level>::compress(values_type *vals, rows_type *indexes, cols_type *col_p)
@@ -269,18 +315,22 @@ namespace CSF {
         if (std::is_floating_point<rows_type>::value || std::is_floating_point<cols_type>::value)
             throw std::invalid_argument("The row and column types must be non-floating point types");
 
+        //! Run more user checks on values_type, rows_type, and cols_type
+
         // determine the type of each value
         if (compression_level == 2) {
             row_t = sizeof(T_index);
             col_t = sizeof(T_index);
-        } else {
+        } else { // compression_level == 3
             row_t = byte_width(num_rows);
             col_t = byte_width(num_cols);
         }
 
+        // encode the val_t with the sizeof(T), floating point, and signedness
         val_t = encode_valt();
 
-        sanity_checks();
+        // run user checks on the data that came in to ensure that it is valid
+        user_checks();
 
         // allocate memory for the matrix
         allocate_memory();
@@ -288,18 +338,22 @@ namespace CSF {
         // create pointer to update col pointers
         uint64_t *col_pointers = create_metadata();
 
+        // create last_col_index to know how many zeros to cut off at end of compression
         uint8_t last_col_index = sizeof(T_index);
 
+        // ----------------- Main Column Loop (iterate through each column) ----------------- //
         for (size_t i = 0; i < num_cols; i++) {
 
             // Update the col pointer
             col_pointers[i] = (uint64_t)(comp_ptr) - (uint64_t)(begin_ptr);
 
+            // ----------------- Value Loop (find unique values in col) ----------------- //
             for (size_t j = col_p[i]; j < col_p[i + 1]; j++) {
 
+                // if the value is not zero, add it to the run
                 if ((vals)[j] != 0)
                 {
-                    // New unique value found
+                    // New unique value found! //
 
                     // Add the found value to run
                     *(T *)(comp_ptr) = (vals)[j];
@@ -308,7 +362,7 @@ namespace CSF {
                     // Create an index pointer to update index type later
                     void *help_ptr = comp_ptr;
 
-                    // default index type to row index type and iterate pointer
+                    // default index type to T_index and iterate pointer
                     *(uint8_t *)help_ptr = (uint8_t)sizeof(T_index);
                     comp_ptr = (uint8_t *)(comp_ptr) + 1;
 
@@ -319,26 +373,27 @@ namespace CSF {
                     // Loop through rest of column to get rest of indices
                     for (size_t k = j + 1; k < (col_p)[i + 1]; k++)
                     {
-
+                        // found the same value again
                         if ((vals)[k] == (vals)[j])
                         {
 
-                            // Found value again
+                            // Found value again! //
 
                             // add index of value to run
                             *(T_index *)(comp_ptr) = (indexes)[k];
                             comp_ptr = (T_index *)(comp_ptr) + 1;
 
-                            // set value to zero
+                            // set value to zero so we don't see it again later
                             (vals)[k] = 0;
                         }
                     }
 
-                    // Set first index found to 0
+                    // Set first index found to 0 since we are finished with it
                     (vals)[j] = 0;
 
-                    //* Positive delta encode the indices -----------
+                    //* --------- Positive delta encode the indices ----------- *//
 
+                    // Branch depending on compression level, 2 doesn't get positive delta or 
                     if (compression_level == 3)
                     {
 
@@ -498,7 +553,7 @@ namespace CSF {
         col_t = sizeof(T_index);
         val_t = encode_valt();
 
-        sanity_checks();
+        user_checks();
 
         // if destroy is false copy the data
         if (!destroy) {
@@ -561,7 +616,7 @@ namespace CSF {
         col_t = sizeof(T_index);
         val_t = encode_valt();
 
-        sanity_checks();
+        user_checks();
 
         // if destroy is false copy the data
         if (!destroy) {
@@ -639,7 +694,7 @@ namespace CSF {
 
         compression_size = num_nonzeros * sizeof(T) + num_nonzeros * sizeof(T_index) + (num_cols + 1) * sizeof(T_index);
 
-        sanity_checks();
+        user_checks();
     }
 
     template <typename T, typename T_index>
@@ -657,7 +712,7 @@ namespace CSF {
         col_t = sizeof(T_index);
         val_t = encode_valt();
 
-        sanity_checks();
+        user_checks();
 
         // copy data
         try {
