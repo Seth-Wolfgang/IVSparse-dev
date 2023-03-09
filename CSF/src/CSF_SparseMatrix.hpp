@@ -13,6 +13,8 @@
 
 #define DELIM 0
 
+#define NUM_META_DATA 7
+
 namespace CSF {
 
     /**
@@ -266,6 +268,13 @@ namespace CSF {
         SparseMatrix(CSF::SparseMatrix<T, T_index, compression_level> &mat);
 
         /**
+         * @brief Construct a new Sparse Matrix object
+         * 
+         * @param iter 
+         */
+        SparseMatrix(typename CSF::SparseMatrix<T, T_index, compression_level>::Iterator &iter);
+
+        /**
          * @brief Destroy the Sparse Matrix object
          * 
          */
@@ -374,7 +383,7 @@ namespace CSF {
         bool firstIndex = true;   // boolean check for first index
         bool atFirstIndex = true; // boolean check for if at first index
 
-        uint32_t metadata[7]; // array for the metadata
+        uint32_t metadata[NUM_META_DATA]; // array for the metadata
 
     public:
         /**

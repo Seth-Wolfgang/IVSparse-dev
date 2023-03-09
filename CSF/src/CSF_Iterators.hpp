@@ -41,13 +41,13 @@ namespace CSF
         readFile(filePath);
 
         // read first 28 bytes of fileData put it into params -> metadata
-        uint32_t params[NUM_META_DATA];
+        // uint32_t params[NUM_META_DATA];
 
-        memcpy(&params, currentIndex, META_DATA_SIZE);
+        memcpy(&metadata, currentIndex, META_DATA_SIZE);
         currentIndex = (char *)(currentIndex) + META_DATA_SIZE;
 
         // valueWidth is set and the first value is read in
-        valueWidth = params[4];
+        valueWidth = metadata[4];
         goToColumn(0);
 
         value = (T *)(currentIndex);
@@ -181,25 +181,24 @@ namespace CSF
 
     // ---------------- Private Methods ---------------- //
 
-    //! doesn't actually update the metadata variable?
     template <typename T, typename T_index, int compression_level>
     void SparseMatrix<T, T_index, compression_level>::Iterator::readMetaData() {
         
-        uint32_t params[NUM_META_DATA];
-        memcpy(&params, currentIndex, META_DATA_SIZE);
+        //uint32_t params[NUM_META_DATA];
+        memcpy(&metadata, currentIndex, META_DATA_SIZE);
         
         
-        // params[0] compression type
-        // params[1] row type
-        // params[2] column type
-        // params[3] value type
-        // params[4] # of rows
-        // params[5] # of columns
-        // params[6] # of nonzeros
+        // metadata[0] compression type
+        // metadata[1] row type
+        // metadata[2] column type
+        // metadata[3] value type
+        // metadata[4] # of rows
+        // metadata[5] # of columns
+        // metadata[6] # of nonzeros
 
-        valueWidth = params[3] & 0xFFFF;
-        numRows = params[4];
-        numColumns = params[5];
+        valueWidth = metadata[3] & 0xFFFF;
+        numRows = metadata[4];
+        numColumns = metadata[5];
     }
 
     template <typename T, typename T_index, int compression_level>

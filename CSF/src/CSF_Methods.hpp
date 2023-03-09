@@ -63,9 +63,13 @@ namespace CSF
         if (!std::is_arithmetic<T>::value || !std::is_arithmetic<T_index>::value)
             throw std::invalid_argument("The value and index types must be numeric types");
 
-        // check that the value type or index type is not a bool
-        if (std::is_same<T, bool>::value || std::is_same<T_index, bool>::value)
+        // check that the index type is not a bool
+        if (std::is_same<T_index, bool>::value)
             throw std::invalid_argument("The value and index types must not be bool");
+
+        // check that the row and col types can hold the number of rows and columns
+        if (num_rows > std::numeric_limits<T_index>::max() || num_cols > std::numeric_limits<T_index>::max())
+            throw std::invalid_argument("The number of rows and columns must be less than the maximum value of the index type");
 
         check_valt(val_t);
     }

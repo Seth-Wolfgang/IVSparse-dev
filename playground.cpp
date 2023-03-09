@@ -41,7 +41,7 @@ int main(int argc, char** argv) {
     // // print out the value at the end minus 1
     // std::cout << "Value at end - 1: " << (int)*ending << std::endl;
 
-    myMatrix_csf.write("myMatrix_csf.csf");
+    //myMatrix_csf.write("myMatrix_csf.csf");
 
     // create an iterator for the sparse matrix
     CSF::SparseMatrix<int>::Iterator iter(myMatrix_csf);
@@ -91,6 +91,15 @@ int main(int argc, char** argv) {
     std::cout << "Number of nonzeros in CSF matrix: " << myMatrix_csf.nonzeros() << std::endl;
 
     std::cout << "Number of bytes for CSF: " << myMatrix_csf.byte_size() << std::endl;
+
+    // construct a new matrix with the iterator
+    CSF::SparseMatrix<int> myMatrix_csf2(iter);
+
+    // print out the first value in the new matrix
+    std::cout << "compression level: " << *(uint32_t *)(myMatrix_csf2.beginPtr()) << std::endl;
+
+    // write it to file
+    //myMatrix_csf2.write("myMatrix_csf2.csf");
 
     return 0;
 }

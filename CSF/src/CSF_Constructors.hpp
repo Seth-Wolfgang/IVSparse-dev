@@ -247,30 +247,47 @@ namespace CSF {
     }
 
     // TODO add a constructor that takes a CSF::Iterator (WIP)
-    // template <typename T, typename T_index, int compression_level>
-    // SparseMatrix<T, T_index, compression_level>::SparseMatrix(Iterator<T, T_index, compression_level> &iter){
+    template <typename T, typename T_index, int compression_level>
+    SparseMatrix<T, T_index, compression_level>::SparseMatrix(typename CSF::SparseMatrix<T, T_index, compression_level>::Iterator &iter){
 
-    //     try {
-    //         begin_ptr = malloc(iter.getEnd() + iter.getData());
-    //     }
-    //     catch (std::bad_alloc& e) {
-    //         std::cerr << "Error: " << e.what() << std::endl;
-    //         exit(1);
-    //     }
+        // find compression size
+        compression_size = (uint8_t *)(iter.getEnd()) - (uint8_t *)(iter.getData());
 
-    //     begin_ptr = iter.getData;
-    //     uint32_t metaData[7] = iter.getMetaData();
+        // check that compression size is above zero
+        if (compression_size <= 0)
+            throw std::invalid_argument("The compression size must be greater than zero");
 
-    //     // compression_level = metaData[0]; -> I don't know how to do this
+        // allocate memory for the matrix
+        try {
+            begin_ptr = malloc(compression_size);
+        }
+        catch (std::bad_alloc& e) {
+            std::cerr << "Error: " << e.what() << std::endl;
+            exit(1);
+        }
 
-    //     row_t = metaData[1];
-    //     col_t = metaData[2];
-    //     val_t = metaData[3];
-    //     num_rows = metaData[4];
-    //     num_cols = metaData[5];
-    //     num_nonzeros = metaData[6];
+        // set the end pointer
+        comp_ptr = (uint8_t *)begin_ptr + compression_size;
 
-    // }
+        // copy the data from the matrix into the new matrix
+        memcpy(begin_ptr, iter.getData(), compression_size);
+
+        // get the metadata
+        uint32_t metaData[NUM_META_DATA];
+
+        // copy over the metadata
+        memcpy(metaData, iter.getMetaData(), NUM_META_DATA * sizeof(uint32_t));
+
+        row_t = metaData[1];
+        col_t = metaData[2];
+        val_t = metaData[3];
+        num_rows = metaData[4];
+        num_cols = metaData[5];
+        num_nonzeros = metaData[6];
+
+        // run user checks on the data that came in to ensure that it is valid
+        user_checks();
+    }
 
     // Destructor
     template <typename T, typename T_index, int compression_level>
@@ -714,8 +731,8 @@ namespace CSF {
             throw std::invalid_argument("The file could not be opened");
 
         // read in metadata which is 7 uint32_t values
-        uint32_t metadata[META_DATA_SIZE];
-        fread(metadata, sizeof(uint32_t), META_DATA_SIZE, file);
+        uint32_t metadata[NUM_META_DATA];
+        fread(metadata, sizeof(uint32_t), NUM_META_DATA, file);
 
         // set variables
         if (metadata[0] != 1)
