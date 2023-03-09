@@ -75,7 +75,7 @@ namespace CSF {
 
         SparseMatrix(CSF::SparseMatrix<T, T_index, compression_level> &mat);
 
-        // ~SparseMatrix();
+        ~SparseMatrix();
 
         void write(const char *filename);
 

@@ -79,82 +79,65 @@ namespace {
 
     }
 
-    TYPED_TEST(CSFTest, GeneralCaseRandomMatrixSum) {
+    TYPED_TEST(CSFTest, GeneralCaseRandomDenseMatrixSum) {
         // Solution from
         // https://stackoverflow.com/questions/29382157/how-to-test-c-template-class-with-multiple-template-parameters-using-gtest
-        Eigen::SparseMatrix<typename std::tuple_element<0, decltype(TypeParam())>::type> eigen = generateEigenMatrix<typename std::tuple_element<0, decltype(TypeParam())>::type>(100, 100, 20, 10);
+        uint64_t seed = rand() % 10000 + 1;
+        int failCounter = 0;
+        typename std::tuple_element<0, decltype(TypeParam())>::type csfTotal;
+        typename std::tuple_element<0, decltype(TypeParam())>::type eigenTotal;
 
-        CSF::SparseMatrix<
-            typename std::tuple_element<0, decltype(TypeParam())>::type,
-            typename std::tuple_element<1, decltype(TypeParam())>::type,
-            3> csf(eigen);
+        Eigen::SparseMatrix<typename std::tuple_element<0, decltype(TypeParam())>::type> eigen = generateEigenMatrix<typename std::tuple_element<0, decltype(TypeParam())>::type>(100, 100, 1, seed);
 
 
-        uint64_t eigenTotal = getSum<typename std::tuple_element<0, decltype(TypeParam())>::type>(eigen);
-        if (eigenTotal != 0) {
-            uint64_t csfTotal = getSum<typename std::tuple_element<0, decltype(TypeParam())>::type, typename std::tuple_element<1, decltype(TypeParam())>::type, 3>(csf);
-            ASSERT_EQ(eigenTotal, csfTotal);
+        for(int i = 0; i < 1000; i++) {
+            seed = rand() % 10000 + 1;
+            while(getSum<typename std::tuple_element<0, decltype(TypeParam())>::type>(eigen) == 0){
+                seed = rand() % 10000 + 1;
+                eigen = generateEigenMatrix<typename std::tuple_element<0, decltype(TypeParam())>::type>(100, 100, 20, seed);
+            }
+            CSF::SparseMatrix<
+                typename std::tuple_element<0, decltype(TypeParam())>::type,
+                typename std::tuple_element<1, decltype(TypeParam())>::type,
+                3> csf(eigen);
+            csfTotal = getSum<typename std::tuple_element<0, decltype(TypeParam())>::type, typename std::tuple_element<1, decltype(TypeParam())>::type, 3>(csf);
+            eigenTotal = getSum<typename std::tuple_element<0, decltype(TypeParam())>::type>(eigen);
+            if (csfTotal != eigenTotal) {
+                failCounter++;
+            }
         }
-        else {
-            ASSERT_TRUE(true);
-            //Assert death in all cases except for a seg fault
-        //     ASSERT_DEATH({
-        //         uint64_t = getSum<typename std::tuple_element<0, decltype(TypeParam())>::type, typename std::tuple_element<1, decltype(TypeParam())>::type, 3>(csf);
-        //         }, ".*");
-        // }
-        }
+        ASSERT_EQ(failCounter, 0);
     }
+    
 
-    TYPED_TEST(CSFTest, GeneralCaseSparseMatrixSum) {
+    TYPED_TEST(CSFTest, GeneralCaseRandomSparseMatrixSum) {
         // Solution from
         // https://stackoverflow.com/questions/29382157/how-to-test-c-template-class-with-multiple-template-parameters-using-gtest
-        Eigen::SparseMatrix<typename std::tuple_element<0, decltype(TypeParam())>::type> eigen = generateEigenMatrix<typename std::tuple_element<0, decltype(TypeParam())>::type>(100, 100, 20, 10);
+        uint64_t seed = rand() % 10000 + 1;
+        int failCounter = 0;
+        typename std::tuple_element<0, decltype(TypeParam())>::type csfTotal;
+        typename std::tuple_element<0, decltype(TypeParam())>::type eigenTotal;
 
-        CSF::SparseMatrix<
-            typename std::tuple_element<0, decltype(TypeParam())>::type,
-            typename std::tuple_element<1, decltype(TypeParam())>::type,
-            3> csf(eigen);
+        Eigen::SparseMatrix<typename std::tuple_element<0, decltype(TypeParam())>::type> eigen = generateEigenMatrix<typename std::tuple_element<0, decltype(TypeParam())>::type>(100, 100, 50, seed);
 
 
-        uint64_t eigenTotal = getSum<typename std::tuple_element<0, decltype(TypeParam())>::type>(eigen);
-        if (eigenTotal != 0) {
-            uint64_t csfTotal = getSum<typename std::tuple_element<0, decltype(TypeParam())>::type, typename std::tuple_element<1, decltype(TypeParam())>::type, 3>(csf);
-            ASSERT_EQ(eigenTotal, csfTotal);
+        for(int i = 0; i < 1000; i++) {
+            seed = rand() % 10000 + 1;
+            while(getSum<typename std::tuple_element<0, decltype(TypeParam())>::type>(eigen) == 0){
+                seed = rand() % 10000 + 1;
+                eigen = generateEigenMatrix<typename std::tuple_element<0, decltype(TypeParam())>::type>(100, 100, 20, seed);
+            }
+            CSF::SparseMatrix<
+                typename std::tuple_element<0, decltype(TypeParam())>::type,
+                typename std::tuple_element<1, decltype(TypeParam())>::type,
+                3> csf(eigen);
+            csfTotal = getSum<typename std::tuple_element<0, decltype(TypeParam())>::type, typename std::tuple_element<1, decltype(TypeParam())>::type, 3>(csf);
+            eigenTotal = getSum<typename std::tuple_element<0, decltype(TypeParam())>::type>(eigen);
+            if (csfTotal != eigenTotal) {
+                failCounter++;
+            }
         }
-        else {
-            ASSERT_TRUE(true);
-            //Assert death in all cases except for a seg fault
-        //     ASSERT_DEATH({
-        //         uint64_t = getSum<typename std::tuple_element<0, decltype(TypeParam())>::type, typename std::tuple_element<1, decltype(TypeParam())>::type, 3>(csf);
-        //         }, ".*");
-        // }
-        }
-    }
-
-    TYPED_TEST(CSFTest, GeneralCaseDenseMatrixSum) {
-        // Solution from
-        // https://stackoverflow.com/questions/29382157/how-to-test-c-template-class-with-multiple-template-parameters-using-gtest
-        Eigen::SparseMatrix<typename std::tuple_element<0, decltype(TypeParam())>::type> eigen = generateEigenMatrix<typename std::tuple_element<0, decltype(TypeParam())>::type>(100, 100, 1, 10);
-
-        CSF::SparseMatrix<
-            typename std::tuple_element<0, decltype(TypeParam())>::type,
-            typename std::tuple_element<1, decltype(TypeParam())>::type,
-            3> csf(eigen);
-
-
-        uint64_t eigenTotal = getSum<typename std::tuple_element<0, decltype(TypeParam())>::type>(eigen);
-        if (eigenTotal != 0) {
-            uint64_t csfTotal = getSum<typename std::tuple_element<0, decltype(TypeParam())>::type, typename std::tuple_element<1, decltype(TypeParam())>::type, 3>(csf);
-            ASSERT_EQ(eigenTotal, csfTotal);
-        }
-        else {
-            ASSERT_TRUE(true);
-            //Assert death in all cases except for a seg fault
-        //     ASSERT_DEATH({
-        //         uint64_t = getSum<typename std::tuple_element<0, decltype(TypeParam())>::type, typename std::tuple_element<1, decltype(TypeParam())>::type, 3>(csf);
-        //         }, ".*");
-        // }
-        }
+        ASSERT_EQ(failCounter, 0);
     }
 
     TYPED_TEST(CSFTest, DeepCopyIsSameAsOriginal){
