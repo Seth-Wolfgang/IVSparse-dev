@@ -1,6 +1,6 @@
 #include <iostream>
 #include <Eigen/Sparse>
-#include "misc/matrix_creator.cpp"
+#include "../misc/matrix_creator.cpp"
 
 template <typename T2>
 void test3(T2 *vals)

@@ -1,12 +1,34 @@
+/**
+ * @file CSF_SparseMatrix.hpp
+ * @author Skyler Ruiter (ruitersk@mail.gvsu.edu) & Seth Wolfgang (wolfgans@mail.gvsu.edu)
+ * @brief Definitions for the CSF SparseMatrix class
+ * @version 0.1
+ * @date 2023-02-27
+ * 
+ * @copyright Copyright (c) 2023
+ * 
+ */
+
 #pragma once
 
+#define DELIM 0
 
 namespace CSF {
 
-
-    template <typename T, typename T_index = uint64_t, int compression_level = 3>
+    /**
+     * @brief Default class definition of the CSF::SparseMatrix class
+     * 
+     * The CSF Sparse Matrix is a compressed sparse matrix format that is designed to be
+     * 
+     * optimized to real world redundant data with a strong negative binomial distribution.
+     * 
+     * @tparam T The value type of the matrix
+     * @tparam T_index The index type of the matrix
+     * @tparam compression_level The compression level of the matrix
+     */
+    template <typename T, typename T_index=uint64_t, int compression_level=3>
     class SparseMatrix {
-        const uint8_t delim = 0;
+        const uint8_t delim = DELIM;
 
         uint32_t num_rows = 0;
         uint32_t num_cols = 0;
@@ -19,9 +41,8 @@ namespace CSF {
         size_t compression_size;
         uint32_t compression = compression_level;
 
-        void* comp_ptr;
-        void* begin_ptr;
-
+        void *begin_ptr;
+        void *comp_ptr;
 
         void allocate_memory();
 
@@ -33,47 +54,38 @@ namespace CSF {
 
         uint64_t* create_metadata();
 
-        void sanity_checks();
+        void user_checks();
 
         template <typename values_type, typename rows_type, typename cols_type>
-        void compress(values_type* vals, rows_type* indexes, cols_type* col_p);
+        void compress(values_type *vals, rows_type *indexes, cols_type *col_p);
 
         double redundancy_check();
 
     public:
         SparseMatrix();
 
-        SparseMatrix(Eigen::SparseMatrix<T>& mat, bool destroy = false);
+        SparseMatrix(Eigen::SparseMatrix<T> &mat, bool destroy = false);
 
         template <typename values_t, typename row_ind, typename col_ind>
-        SparseMatrix(values_t** vals, row_ind** indexes, col_ind** col_p,
+        SparseMatrix(values_t **vals, row_ind **indexes, col_ind **col_p,
                      size_t non_zeros, size_t row_num, size_t col_num,
                      bool destroy = false);
 
-        SparseMatrix(const char* filename);
+        SparseMatrix(const char *filename);
 
-        SparseMatrix(CSF::SparseMatrix<T, T_index, compression_level>& mat);
-
-        // SparseMatrix(Iterator<T, T_index, compression_level>& iter); //(WIP)
+        SparseMatrix(CSF::SparseMatrix<T, T_index, compression_level> &mat);
 
         // ~SparseMatrix();
 
-        void write(const char* filename);
+        void write(const char *filename);
 
         CSF::SparseMatrix<T, T_index, 1> to_csf1();
 
-        // as<CSF::SparseMatrix<T, T_index, 3>(){};
-
-        // template <class to>
-        // to as(){
-
-        // }
-
         Eigen::SparseMatrix<T> to_eigen();
 
-        void* beginPtr();
+        void *beginPtr();
 
-        void* endPtr();
+        void *endPtr();
 
         size_t byte_size();
 
@@ -84,19 +96,92 @@ namespace CSF {
         uint32_t nonzeros();
 
         uint32_t compLvl();
-        
-        class Iterator{};
+
+        class Iterator;
     };
 
+    template <typename T, typename T_index, int compression_level>
+    class SparseMatrix<T, T_index, compression_level>::Iterator {
+        private:
+        uint64_t index = 0;
+
+        uint32_t valueWidth;
+        uint32_t numRows;    // of matrix
+        uint32_t numColumns; // of matrix
+
+        uint8_t newIndexWidth;
+
+        void *data;      // beginptr
+        void *endOfData; // endptr
+
+        void *currentIndex; //* ITERATOR MOVEMENT POINTER
+
+        T *value;
+
+        bool firstIndex = true;   // boolean check for first index
+        bool atFirstIndex = true; // boolean check for if at first index
+
+        uint32_t metadata[7]; // array for the metadata
+
+    public:
+        Iterator(CSF::SparseMatrix<T, T_index, compression_level> &matrix);
+
+        Iterator(const char *filePath);
+
+        uint32_t *getMetaData();
+
+        void *getData();
+
+        void *getEnd();
+
+        T &operator*();
+
+        bool operator==(const Iterator &other);
+
+        bool operator!=(const Iterator &other);
+
+        bool operator<(const Iterator &other);
+
+        bool operator>(const Iterator &other);
+
+        uint64_t getIndex();
+
+        bool atBeginningOfRun();
+
+        uint64_t operator++(int);
+
+        operator bool() { return endOfData != currentIndex; }
+
+        char *getColumn(uint64_t column);
+
+        // CSF::Iterator<T, T_index, compression_level> getColumn(uint64_t column);
+
+        void setRunValue(T newValue);
+
+        inline void *getColumnAddress(uint64_t column);
+
+        void goToColumn(int column);
+
+        bool compareAddress(void *address);
+
+    private:
+        void readMetaData();
+
+        inline void readFile(const char *filePath);
+
+        inline uint64_t interpretPointer(int width);
+
+        void setEnd(void *end);
+    };
 
 
     template <typename T, typename T_index>
     class SparseMatrix<T, T_index, 1> {
         const uint8_t delim = 0;
 
-        uint32_t num_rows;
-        uint32_t num_cols;
-        uint32_t num_nonzeros;
+        uint32_t num_rows = 0;
+        uint32_t num_cols = 0;
+        uint32_t num_nonzeros = 0;
 
         uint32_t row_t;
         uint32_t col_t;
@@ -105,8 +190,8 @@ namespace CSF {
         size_t compression_size;
         uint32_t compression = 1;
 
-        void* comp_ptr;
-        void* begin_ptr;
+        void *begin_ptr;
+        void *comp_ptr;
 
         T* vals;
         T_index* indexes;
@@ -114,7 +199,7 @@ namespace CSF {
 
         void allocate_memory();
 
-        void sanity_checks();
+        void user_checks();
 
         uint32_t encode_valt();
 
@@ -125,18 +210,16 @@ namespace CSF {
     public:
         SparseMatrix();
 
-        SparseMatrix(Eigen::SparseMatrix<T>& mat, bool destroy = false);
+        SparseMatrix(Eigen::SparseMatrix<T> &mat, bool destroy = false);
 
         template <typename values_t, typename row_ind, typename col_ind>
-        SparseMatrix(values_t** vals, row_ind** indexes, col_ind** col_p,
+        SparseMatrix(values_t **vals, row_ind **indexes, col_ind **col_p,
                      size_t non_zeros, size_t row_num, size_t col_num,
                      bool destroy = false);
 
-        SparseMatrix(CSF::SparseMatrix<T, T_index, 1>& mat);
+        SparseMatrix(CSF::SparseMatrix<T, T_index, 1> &mat);
 
-        SparseMatrix(const char* filename);
-
-        // SparseMatrix(SparseMatrix::Iterator<T, T_index, compression_level>& iter); //(WIP)
+        SparseMatrix(const char *filename);
 
         ~SparseMatrix();
 
@@ -147,14 +230,14 @@ namespace CSF {
         Eigen::SparseMatrix<T> to_eigen();
 
         void* valuePtr();
-
+    
         void* indexPtr();
 
         void* colPtr();
 
         size_t byte_size();
 
-        void write(const char* filename);
+        void write(const char *filename);
 
         uint32_t rows();
 
@@ -164,74 +247,7 @@ namespace CSF {
 
         uint32_t compLvl();
 
-        class Iterator{};
+        class Iterator {};
     };
-
-    // template<typename T, typename T_index, int compression_level>
-    // class Iterator {
-        
-    //     private:
-    //         uint64_t index = 0;
-    //         uint32_t valueWidth;
-    //         uint32_t numRows;
-    //         uint32_t numColumns;
-    //         uint8_t newIndexWidth;
-    //         void* data;
-    //         void* endOfData;
-    //         void* currentIndex;
-    //         T* value;
-    //         bool firstIndex = true; 
-    //         bool atFirstIndex = true;
-    //         uint32_t metadata[7];
-
-    //         void readMetaData();
-
-    //         inline void readFile(const char* filePath);
-
-    //         inline uint64_t interpretPointer(int width);
-
-    //         void setEnd(void* end);
-
-    //     public:
-
-    //         Iterator(CSF::SparseMatrix<T, indexType, compression_level> matrix);
-
-    //         Iterator(const char* filePath);
-
-    //         uint32_t* getMetaData();
-
-    //         void* getData();
-
-    //         void* getEnd();
-
-    //         T& operator * ();
-
-    //         bool operator == (const Iterator& other);
-
-    //         bool operator != (const Iterator& other);
-
-    //         bool operator < (const Iterator& other);
-
-    //         bool operator > (const Iterator& other);
-
-    //         uint64_t getIndex();
-
-    //         bool atBeginningOfRun();
-
-    //         uint64_t operator++(int);
-
-    //         operator bool();
-
-    //         char* getColumn(uint64_t column);
-
-    //         void setRunValue(T newValue);
-
-    //         inline void* getColumnAddress(uint64_t column);
-
-    //         void goToColumn(int column);
-
-    //         bool compareAddress(void* address);
-
-    // }; // end of Iterator class
 
 }
