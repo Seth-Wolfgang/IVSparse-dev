@@ -68,9 +68,8 @@ CSF::SparseMatrix<T, indexType, compressionLevel> getCSFMatrix(int numRows, int 
 template <typename T, typename indexType, int compressionLevel>
 T getSum(CSF::SparseMatrix<T, indexType, compressionLevel> matrix) {
     T CSFTotal = 0;
-    CSF::Iterator<T, T, compressionLevel> newIter = CSF::Iterator<T, T, compressionLevel>(matrix);
+    CSF::Iterator<T, indexType, compressionLevel> newIter = CSF::Iterator<T, indexType, compressionLevel>(matrix);
     T value = *newIter;
-    // std::cout << newIter.getColumnAddress(0) << std::endl;
     while (newIter) {
         newIter++;
         CSFTotal += *newIter;
@@ -111,8 +110,8 @@ T getSum(Eigen::SparseMatrix<T> matrix) {
  * @return 
  */
 
-template <typename T>
-CSF::SparseMatrix<T, T, 3> generateVector(int numRows, int value) {
+template <typename T, typename indexType, int compressionLevel>
+CSF::SparseMatrix<T, indexType, compressionLevel> generateVector(int numRows, int value) {
     // generating a large random eigen sparse
     Eigen::SparseMatrix<T> eigenMatrix(numRows, 1);
 
@@ -128,7 +127,7 @@ CSF::SparseMatrix<T, T, 3> generateVector(int numRows, int value) {
     eigenVector.makeCompressed();
 
     // Converting to CSF
-    CSF::SparseMatrix<T, T, 3> CSFVector(eigenVector);
+    CSF::SparseMatrix<T, indexType, compressionLevel> CSFVector(eigenVector);
     return CSFVector;
 }
 
@@ -156,6 +155,6 @@ CSF::SparseMatrix<T, T, 3> generateVector(int numRows, T* array){
     eigenVector.makeCompressed();
 
     // Converting to CSF
-    CSF::SparseMatrix<T, T, 3> CSFVector(eigenVector);
+    CSF::SparseMatrix<T, indexType, compressionLevel> CSFVector(eigenVector);
     return CSFVector;
 }
