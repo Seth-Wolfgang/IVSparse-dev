@@ -14,9 +14,9 @@ namespace CSF {
       * @return CSF::SparseMatrix
       */
 
-    template <typename T, typename indexType, int compressionLevel>
-    void scalarMultiply(CSF::SparseMatrix<T, indexType, compressionLevel>& matrix, int scalar) {
-        CSF::Iterator<T, T, compressionLevel> iter = CSF::Iterator<T, T, compressionLevel>(matrix);
+    template <typename T, typename T_index, int compression_level>
+    void scalarMultiply(CSF::SparseMatrix<T, T_index, compression_level>& matrix, int scalar) {
+        typename CSF::SparseMatrix<T, T_index, compression_level>::Iterator iter(matrix);
 
         //Iterate through the matrix and multiply each value by the scalar
         while (iter) {
