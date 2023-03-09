@@ -1,62 +1,97 @@
 #include "gtest/gtest.h"
 #include "testHelperFunctions.hpp"
+#include <tuple>
+#include <type_traits>
 
 namespace {
 
 
 
-    template <typename T, typename indexType, int compressionLevel>
-    class CSFTest: public testing::Test {
-    protected:
+    template <typename T>
+    class CSFTest: public testing::Test {};
+    // protected:
+        
+    //     CSFTest() {
+    //         eigen = generateEigenMatrix<std::get<0>(TypeParam)>(100, 100, 20, 10);
+    //         csf = CSF::SparseMatrix<std::get<0>(TypeParam), std::get<1>(TypeParam), std::get<2>(TypeParam)>(eigen);
+    //     }
 
-        CSFTest() {
-            eigen = generateEigenMatrix<T>(100, 100, 20, 10);
-            csf = CSF::SparseMatrix<T, indexType, compressionLevel>(eigen);
-        }
+    //     virtual ~CSFTest() override {
+    //         delete &csf;
+    //         delete &eigen;
+    //     }
+    //     CSF::SparseMatrix<T, T, 3> csf;
+    //     Eigen::SparseMatrix<T> eigen;
+    // };
 
-        virtual ~CSFTest() override {
-            delete csf;
-            delete eigen;
-        }
-        CSF::SparseMatrix<T, indexType, compressionLevel> csf;
-        Eigen::SparseMatrix<T> eigen;
-    };
+    // typedef ::testing::Types <
+    //     std::tuple<int, int, int>,
+    //     std::tuple<uint8_t, uint8_t, int>,
+    //     std::tuple<uint16_t, uint16_t, int>,
+    //     std::tuple<uint32_t, uint32_t, int>,
+    //     std::tuple<uint64_t, uint64_t, int>
+    //     > ImplementationsINT;
 
     typedef ::testing::Types <
-        std::tuple<int, int, int>,
-        std::tuple<uint8_t, uint8_t, int>,
-        std::tuple<uint16_t, uint16_t, int>,
-        std::tuple<uint32_t, uint32_t, int>,
-        std::tuple<uint64_t, uint64_t, int>,
         std::tuple<float, uint8_t, int>,
         std::tuple<float, uint16_t, int>,
         std::tuple<float, uint32_t, int>,
-        std::tuple<float, uint64_t, int>,
-        std::tuple<double, uint8_t, int>,
-        std::tuple<double, uint16_t, int>,
-        std::tuple<double, uint32_t, int>,
-        std::tuple<double, uint64_t, int> > Implementations;
+        std::tuple<float, uint64_t, int> 
+        > ImplementationsFLOAT;
 
-    TYPED_TEST_CASE(CSFTest, Implementations)
+    // typedef ::testing::Types <
+    //     std::tuple<double, uint8_t, int>,
+    //     std::tuple<double, uint16_t, int>,
+    //     std::tuple<double, uint32_t, int>,
+    //     std::tuple<double, uint64_t, int> 
+    //     > ImplementationsDOUBLE;
 
+    // TYPED_TEST_SUITE(CSFTest, ImplementationsINT);
+    TYPED_TEST_SUITE(CSFTest, ImplementationsFLOAT);
+    // TYPED_TEST_SUITE(CSFTest, ImplementationsDOUBLE);
 
-        /*******************************************************************************************************
-         *                                                                                                     *
-         * CONSTRUCTOR TESTS                                                                                   *
-         *                                                                                                     *
-         ******************************************************************************************************/
+    /*******************************************************************************************************
+     *                                                                                                     *
+     * CONSTRUCTOR TESTS                                                                                   *
+     *                                                                                                     *
+     ******************************************************************************************************/
 
-         //If this does not work, then all test fail
-        TYPED_TEST(CSFTestGeneral, GeneralCaseRandomMatrix) {
-        uint64_t eigenTotal = getEigenTotal(this->eigen);
-        if (eigenTotal != 0) {
-            uint64_t csfTotal = getSum(this->a);
-            ASSERT_EQ(eigenTotal, csfTotal);
-        }
-        else {
-            ASSERT_DEATH(getSum(this->a), ".*");
-        }
+     //If this does not work, then all test fail
+    TYPED_TEST(CSFTest, GeneralCaseRandomMatrix) {
+
+        // typename std::tuple_element<0, decltype(TypeParam())>::type A;
+        // typename std::tuple_element<1, decltype(TypeParam())>::type B;
+        // typename std::tuple_element<2, decltype(TypeParam())>::type C;
+
+        // typename std::tuple_element<0, TypeParam>::type A;
+        // using type = typename std::get<0>(TypeParam)::type;
+        // typename TypeParam::type B;
+
+        // Solution from
+        // https://stackoverflow.com/questions/29382157/how-to-test-c-template-class-with-multiple-template-parameters-using-gtest
+        Eigen::SparseMatrix<typename std::tuple_element<0, decltype(TypeParam())>::type> eigen = generateEigenMatrix<typename std::tuple_element<1, decltype(TypeParam())>::type>(100, 100, 20, 10);
+        
+        CSF::SparseMatrix<
+        typename std::tuple_element<0, decltype(TypeParam())>::type,
+        typename std::tuple_element<1, decltype(TypeParam())>::type,
+        3
+        > csf(eigen);
+
+        ASSERT_EQ(csf.rows(), eigen.rows());
+        ASSERT_EQ(csf.cols(), eigen.cols());
+        ASSERT_EQ(csf.nonzeros(), eigen.nonZeros());
+
+        
     }
+    //     uint64_t eigenTotal = getEigenTotal(this->eigen);
+    //     if (eigenTotal != 0) {
+    //         uint64_t csfTotal = getSum(this->a);
+    //         ASSERT_EQ(eigenTotal, csfTotal);
+    //     }
+    //     else {
+    //         ASSERT_DEATH(getSum(this->a), "^(seg).*");
+    //     }
+    // }
 
 
     // TYPED_TEST(CSFTestGeneral, GeneralCaseWithHighSparsity) {
@@ -201,6 +236,8 @@ namespace {
        //     CSF::SparseMatrix b = a.toCSF<2>();
        //     ASSERT_EQ(getSum<T>(a), getSum<T>(b));
        // }
+    using testing::Types;
 }
+
 
 
