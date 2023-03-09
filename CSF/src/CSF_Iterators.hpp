@@ -183,6 +183,13 @@ namespace CSF {
                 newIndexWidth = *static_cast<uint8_t*>(currentIndex);
                 currentIndex = static_cast<char*>(currentIndex) + 1;
 
+                std::cout << "New index width: " << (int)newIndexWidth << std::endl;
+                std::cout << "Value: " << *value << std::endl;
+                if (*value == 0) {
+                    std::cout << "End of data" << std::endl;
+                    exit(0);
+                }
+
                 // Make index 0 as it is a new run
                 memset(&index, 0, 8);
 
@@ -365,7 +372,7 @@ namespace CSF {
             // params[5] # of columns
             // params[6] # of nonzeros
 
-            valueWidth = params[3] & 0xFFFF;
+            valueWidth = params[3] & 0xF;
             numRows = params[4];
             numColumns = params[5];
         }

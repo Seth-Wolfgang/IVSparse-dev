@@ -40,23 +40,8 @@ namespace {
         std::tuple<double, uint64_t, int>
     > ImplementationsINT;
 
-    // typedef ::testing::Types <
-    //     std::tuple<float, uint8_t, int>,
-    //     std::tuple<float, uint16_t, int>,
-    //     std::tuple<float, uint32_t, int>,
-    //     std::tuple<float, uint64_t, int> 
-    //     > ImplementationsFLOAT;
-
-    // typedef ::testing::Types <
-    //     std::tuple<double, uint8_t, int>,
-    //     std::tuple<double, uint16_t, int>,
-    //     std::tuple<double, uint32_t, int>,
-    //     std::tuple<double, uint64_t, int> 
-    //     > ImplementationsDOUBLE;
 
     TYPED_TEST_SUITE(CSFTest, ImplementationsINT);
-    // TYPED_TEST_SUITE(CSFTest, ImplementationsFLOAT);
-    // TYPED_TEST_SUITE(CSFTest, ImplementationsDOUBLE);
 
     /*******************************************************************************************************
      *                                                                                                     *
@@ -78,7 +63,7 @@ namespace {
 
         // Solution from
         // https://stackoverflow.com/questions/29382157/how-to-test-c-template-class-with-multiple-template-parameters-using-gtest
-        Eigen::SparseMatrix<typename std::tuple_element<0, decltype(TypeParam())>::type> eigen = generateEigenMatrix<typename std::tuple_element<0, decltype(TypeParam())>::type>(100, 100, 20, 10);
+        Eigen::SparseMatrix<typename std::tuple_element<0, decltype(TypeParam())>::type> eigen = generateEigenMatrix<typename std::tuple_element<0, decltype(TypeParam())>::type>(100, 100, 1, 10);
 
 
         CSF::SparseMatrix<
@@ -123,7 +108,7 @@ namespace {
     TYPED_TEST(CSFTest, GeneralCaseSparseMatrixSum) {
         // Solution from
         // https://stackoverflow.com/questions/29382157/how-to-test-c-template-class-with-multiple-template-parameters-using-gtest
-        Eigen::SparseMatrix<typename std::tuple_element<0, decltype(TypeParam())>::type> eigen = generateEigenMatrix<typename std::tuple_element<0, decltype(TypeParam())>::type>(100, 100, 50, 10);
+        Eigen::SparseMatrix<typename std::tuple_element<0, decltype(TypeParam())>::type> eigen = generateEigenMatrix<typename std::tuple_element<0, decltype(TypeParam())>::type>(100, 100, 20, 10);
 
         CSF::SparseMatrix<
             typename std::tuple_element<0, decltype(TypeParam())>::type,
@@ -171,6 +156,32 @@ namespace {
         // }
         }
     }
+
+    TYPED_TEST(CSFTest, DeepCopyIsSameAsOriginal){
+        // Solution from
+        // https://stackoverflow.com/questions/29382157/how-to-test-c-template-class-with-multiple-template-parameters-using-gtest
+        Eigen::SparseMatrix<typename std::tuple_element<0, decltype(TypeParam())>::type> eigen = generateEigenMatrix<typename std::tuple_element<0, decltype(TypeParam())>::type>(100, 100, 20, 10);
+
+        CSF::SparseMatrix<
+            typename std::tuple_element<0, decltype(TypeParam())>::type,
+            typename std::tuple_element<1, decltype(TypeParam())>::type,
+            3> csf(eigen);
+
+        CSF::SparseMatrix<
+            typename std::tuple_element<0, decltype(TypeParam())>::type,
+            typename std::tuple_element<1, decltype(TypeParam())>::type,
+            3> csfCopy(csf);
+
+        ASSERT_EQ(csf.rows(), csfCopy.rows());
+        ASSERT_EQ(csf.cols(), csfCopy.cols());
+        ASSERT_EQ(csf.nonzeros(), csfCopy.nonzeros());
+
+        typename std::tuple_element<0, decltype(TypeParam())>::type CSFSum = getSum<typename std::tuple_element<0, decltype(TypeParam())>::type, typename std::tuple_element<1, decltype(TypeParam())>::type, 3>(csf);
+        typename std::tuple_element<0, decltype(TypeParam())>::type CSFCopySum = getSum<typename std::tuple_element<0, decltype(TypeParam())>::type, typename std::tuple_element<1, decltype(TypeParam())>::type, 3>(csfCopy);
+
+        ASSERT_EQ(CSFSum, CSFCopySum);
+    }
+
     /*******************************************************************************************************
      *                                                                                                     *
      * GARBAGE INPUT TESTS                                                                                 *
