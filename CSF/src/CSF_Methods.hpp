@@ -86,7 +86,7 @@ namespace CSF
     {
         uint8_t byte0 = sizeof(T);
         uint8_t byte1 = std::is_floating_point<T>::value ? 1 : 0;
-        uint8_t byte2 = std::is_signed_v<T> ? 1 : 0;
+        uint8_t byte2 = std::is_signed<T>::value ? 1 : 0;
         uint8_t byte3 = 0;
 
         return (byte3 << 24) | (byte2 << 16) | (byte1 << 8) | byte0;
@@ -106,13 +106,13 @@ namespace CSF
             throw std::runtime_error("Value type size does not match, correct size is " + std::to_string(sizeof(T)) + "");
         }
 
-        if (byte1 != std::is_floating_point_v<T>)
+        if (byte1 != std::is_floating_point<T>::value)
         {
             std::cout << "Error: Value type is not floating point" << std::endl;
             throw std::runtime_error("Value type is not floating point when it should be");
         }
 
-        if (byte2 != std::is_signed_v<T>)
+        if (byte2 != std::is_signed<T>::value)
         {
             std::cout << "Error: Value type is not signed" << std::endl;
             throw std::runtime_error("Value type is not signed when it should be");
@@ -239,8 +239,8 @@ namespace CSF
     uint32_t SparseMatrix<T, T_index, 1>::encode_valt()
     {
         uint8_t byte0 = sizeof(T);
-        uint8_t byte1 = std::is_floating_point_v<T> ? 1 : 0;
-        uint8_t byte2 = std::is_signed_v<T> ? 1 : 0;
+        uint8_t byte1 = std::is_floating_point<T>::value ? 1 : 0;
+        uint8_t byte2 = std::is_signed<T>::value ? 1 : 0;
         uint8_t byte3 = 0;
 
         return (byte3 << 24) | (byte2 << 16) | (byte1 << 8) | byte0;
@@ -260,13 +260,13 @@ namespace CSF
             throw std::runtime_error("Value type size does not match, correct size is " + std::to_string(sizeof(T)) + "");
         }
 
-        if (byte1 != std::is_floating_point_v<T>)
+        if (byte1 != std::is_floating_point<T>::value)
         {
             std::cout << "Error: Value type is not floating point" << std::endl;
             throw std::runtime_error("Value type is not floating point when it should be");
         }
 
-        if (byte2 != std::is_signed_v<T>)
+        if (byte2 != std::is_signed<T>::value)
         {
             std::cout << "Error: Value type is not signed" << std::endl;
             throw std::runtime_error("Value type is not signed when it should be");

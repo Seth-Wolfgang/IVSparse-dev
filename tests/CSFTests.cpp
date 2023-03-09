@@ -297,8 +297,22 @@ namespace {
        //     ASSERT_EQ(getSum<T>(a), getSum<T>(b));
        // }
 
-
+//     REGISTER_TYPED_TEST_SUITE_P(CSFTest,
+//         SameDimensions,
+//         GeneralCaseRandomMatrixSum
+//         // UserEntersZeroRows,
+//         // UserEntersZeroColumns,
+//         // ScalarMultplication,
+//         // ScalarDivision,
+//         // ScalarMultiplicationByZero,
+//         // ScalarDivisionByZero,
+//         // CSF1toCSF2,
+//         // CSF1toCSF3,
+//         // CSF2toCSF1,
+//         // CSF2toCSF3,
+//         // CSF3toCSF1,
+//         // CSF3toCSF2
+//     );
 }
-
 
 

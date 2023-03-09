@@ -201,7 +201,7 @@ namespace CSF
         // params[5] # of columns
         // params[6] # of nonzeros
 
-        valueWidth = params[3] & 0xFFFF;
+        valueWidth = params[3] & 0xF;
         numRows = params[4];
         numColumns = params[5];
     }
