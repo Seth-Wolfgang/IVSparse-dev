@@ -1,5 +1,5 @@
 make:
-	g++ -o playground.exe playground.cpp
+	g++ -Wall -o playground.exe playground.cpp
 
 clean:
 	rm -f playground.exe

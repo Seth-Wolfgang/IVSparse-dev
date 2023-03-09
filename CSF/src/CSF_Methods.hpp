@@ -3,6 +3,12 @@
 #include <vector>
 #include <iostream>
 
+#define META_DATA_SIZE 28
+#define NUM_META_DATA 7
+#define ONE_BYTE_MAX 255
+#define TWO_BYTE_MAX 65535
+#define FOUR_BYTE_MAX 4294967295
+
 namespace CSF
 {
     template <typename T, typename T_index, int compression_level>
@@ -12,7 +18,7 @@ namespace CSF
         // plus space for the value and row, col indicies, and a buffer zone
 
         size_t csc_size = num_nonzeros * sizeof(T) + num_nonzeros * sizeof(T_index) + num_cols * sizeof(T_index);
-        size_t comp_size_guess = 28 + (8 * num_cols) + csc_size;
+        size_t comp_size_guess = META_DATA_SIZE + (sizeof(uint64_t) * num_cols) + csc_size;
 
         try {
             begin_ptr = malloc(comp_size_guess);
@@ -28,11 +34,11 @@ namespace CSF
     template <typename T, typename T_index, int compression_level>
     uint8_t SparseMatrix<T, T_index, compression_level>::byte_width(size_t size)
     {
-        if (size <= 255) {
+        if (size <= ONE_BYTE_MAX) {
             return 1;
-        } else if (size <= 65535) {
+        } else if (size <= TWO_BYTE_MAX) {
             return 2;
-        } else if (size <= 4294967295) {
+        } else if (size <= FOUR_BYTE_MAX) {
             return 4;
         } else {
             return 8;
@@ -79,7 +85,7 @@ namespace CSF
         uint8_t byte0 = valt & 0xFF;
         uint8_t byte1 = (valt >> 8) & 0xFF;
         uint8_t byte2 = (valt >> 16) & 0xFF;
-        uint8_t byte3 = (valt >> 24) & 0xFF;
+        //uint8_t byte3 = (valt >> 24) & 0xFF;
 
         if (byte0 != sizeof(T)) {
             std::cout << "Error: Value type size does not match" << std::endl;
@@ -99,22 +105,13 @@ namespace CSF
 
     // ---- Member Functions ----
     template <typename T, typename T_index, int compression_level>
-    size_t SparseMatrix<T, T_index, compression_level>::byte_size()
-    {
-        return compression_size;
-    }
+    size_t SparseMatrix<T, T_index, compression_level>::byte_size() { return compression_size; }
 
     template <typename T, typename T_index, int compression_level>
-    void *SparseMatrix<T, T_index, compression_level>::beginPtr()
-    {
-        return begin_ptr;
-    }
+    void *SparseMatrix<T, T_index, compression_level>::beginPtr() { return begin_ptr; }
 
     template <typename T, typename T_index, int compression_level>
-    void *SparseMatrix<T, T_index, compression_level>::endPtr()
-    {
-        return comp_ptr;
-    }
+    void *SparseMatrix<T, T_index, compression_level>::endPtr() { return comp_ptr; }
 
     // write data to file
     template <typename T, typename T_index, int compression_level>
@@ -127,28 +124,16 @@ namespace CSF
     }
 
     template <typename T, typename T_index, int compression_level>
-    uint32_t SparseMatrix<T, T_index, compression_level>::rows()
-    {
-        return num_rows;
-    }
+    uint32_t SparseMatrix<T, T_index, compression_level>::rows() { return num_rows; }
 
     template <typename T, typename T_index, int compression_level>
-    uint32_t SparseMatrix<T, T_index, compression_level>::cols()
-    {
-        return num_cols;
-    }
+    uint32_t SparseMatrix<T, T_index, compression_level>::cols() { return num_cols; }
 
     template <typename T, typename T_index, int compression_level>
-    uint32_t SparseMatrix<T, T_index, compression_level>::nonzeros()
-    {
-        return num_nonzeros;
-    }
+    uint32_t SparseMatrix<T, T_index, compression_level>::nonzeros() { return num_nonzeros; }
 
     template <typename T, typename T_index, int compression_level>
-    uint32_t SparseMatrix<T, T_index, compression_level>::compLvl()
-    {
-        return compression_level;
-    }
+    uint32_t SparseMatrix<T, T_index, compression_level>::compLvl() { return compression_level; }
 
     template <typename T, typename T_index, int compression_level>
     CSF::SparseMatrix<T, T_index, 1> SparseMatrix<T, T_index, compression_level>::to_csf1()
@@ -172,11 +157,11 @@ namespace CSF
     template <typename T, typename T_index>
     uint8_t SparseMatrix<T, T_index, 1>::byte_width(size_t size)
     {
-        if (size <= 255) {
+        if (size <= ONE_BYTE_MAX) {
             return 1;
-        } else if (size <= 65535) {
+        } else if (size <= TWO_BYTE_MAX) {
             return 2;
-        } else if (size <= 4294967295) {
+        } else if (size <= FOUR_BYTE_MAX) {
             return 4;
         } else {
             return 8;
@@ -184,52 +169,28 @@ namespace CSF
     }
 
     template <typename T, typename T_index>
-    uint32_t SparseMatrix<T, T_index, 1>::rows()
-    {
-        return num_rows;
-    }
+    uint32_t SparseMatrix<T, T_index, 1>::rows() { return num_rows; }
 
     template <typename T, typename T_index>
-    uint32_t SparseMatrix<T, T_index, 1>::cols()
-    {
-        return num_cols;
-    }
+    uint32_t SparseMatrix<T, T_index, 1>::cols() { return num_cols; }
 
     template <typename T, typename T_index>
-    uint32_t SparseMatrix<T, T_index, 1>::nonzeros()
-    {
-        return num_nonzeros;
-    }
+    uint32_t SparseMatrix<T, T_index, 1>::nonzeros() { return num_nonzeros; }
 
     template <typename T, typename T_index>
-    uint32_t SparseMatrix<T, T_index, 1>::compLvl()
-    {
-        return compression;
-    }
+    uint32_t SparseMatrix<T, T_index, 1>::compLvl() { return compression; }
 
     template <typename T, typename T_index>
-    size_t SparseMatrix<T, T_index, 1>::byte_size()
-    {
-        return compression_size;
-    }
+    size_t SparseMatrix<T, T_index, 1>::byte_size() { return compression_size; }
 
     template <typename T, typename T_index>
-    void *SparseMatrix<T, T_index, 1>::valuePtr()
-    {
-        return vals;
-    }
+    void *SparseMatrix<T, T_index, 1>::valuePtr() { return vals; }
 
     template <typename T, typename T_index>
-    void *SparseMatrix<T, T_index, 1>::indexPtr()
-    {
-        return indexes;
-    }
+    void *SparseMatrix<T, T_index, 1>::indexPtr() { return indexes; }
 
     template <typename T, typename T_index>
-    void *SparseMatrix<T, T_index, 1>::colPtr()
-    {
-        return col_p;
-    }
+    void *SparseMatrix<T, T_index, 1>::colPtr() { return col_p; }
 
     template <typename T, typename T_index>
     void SparseMatrix<T, T_index, 1>::user_checks()
@@ -270,7 +231,7 @@ namespace CSF
         uint8_t byte0 = valt & 0xFF;
         uint8_t byte1 = (valt >> 8) & 0xFF;
         uint8_t byte2 = (valt >> 16) & 0xFF;
-        uint8_t byte3 = (valt >> 24) & 0xFF;
+        //uint8_t byte3 = (valt >> 24) & 0xFF;
 
         if (byte0 != sizeof(T))
         {
@@ -299,10 +260,10 @@ namespace CSF
 
         // construct the metadata
         // * <compression, row_t, col_t, val_t, num_rows, num_cols, num_nonzeros, [[col_pointers] [vals] [indexes]]>
-        uint32_t metadata[7] = {compression, row_t, col_t, val_t, num_rows, num_cols, num_nonzeros};
+        uint32_t metadata[NUM_META_DATA] = {compression, row_t, col_t, val_t, num_rows, num_cols, num_nonzeros};
 
         // write the metadata
-        fwrite(metadata, sizeof(uint32_t), 7, fp);
+        fwrite(metadata, sizeof(uint32_t), NUM_META_DATA, fp);
 
         // write the col_p
         fwrite(col_p, sizeof(T_index), num_cols + 1, fp);

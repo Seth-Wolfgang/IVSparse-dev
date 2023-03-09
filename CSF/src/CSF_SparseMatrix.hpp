@@ -1,6 +1,6 @@
 /**
  * @file CSF_SparseMatrix.hpp
- * @author Skyler Ruiter (ruitersk@mail.gvsu.edu)
+ * @author Skyler Ruiter (ruitersk@mail.gvsu.edu) & Seth Wolfgang (wolfgans@mail.gvsu.edu)
  * @brief Definitions for the CSF SparseMatrix class
  * @version 0.1
  * @date 2023-02-27
@@ -10,6 +10,8 @@
  */
 
 #pragma once
+
+#define DELIM 0
 
 namespace CSF {
 
@@ -30,7 +32,7 @@ namespace CSF {
          * @brief The delimiter used to separate runs of values
          * 
          */
-        const uint8_t delim = 0;
+        const uint8_t delim = DELIM;
 
         /**
          * @brief The number of rows in the matrix
@@ -349,14 +351,221 @@ namespace CSF {
          */
         class Iterator;
 
-
-        // TO ADD
-        // 1. colstack (append) and splice functions
-        // 2. .rows() and .cols() functions
-        // 3. .coeff() function
-        // 4. overload () operator (numpy or splicing syntax)
-        // col subclass (to work as a vector) matrix.col(i).dot(yada...)
     };
+
+    template <typename T, typename T_index, int compression_level>
+    class SparseMatrix<T, T_index, compression_level>::Iterator {
+        private:
+        uint64_t index = 0;
+
+        uint32_t valueWidth;
+        uint32_t numRows;    // of matrix
+        uint32_t numColumns; // of matrix
+
+        uint8_t newIndexWidth;
+
+        void *data;      // beginptr
+        void *endOfData; // endptr
+
+        void *currentIndex; //* ITERATOR MOVEMENT POINTER
+
+        T *value;
+
+        bool firstIndex = true;   // boolean check for first index
+        bool atFirstIndex = true; // boolean check for if at first index
+
+        uint32_t metadata[7]; // array for the metadata
+
+    public:
+        /**
+         * @brief Construct a new CSFiterator object using a CSF::SparseMatrix
+         *
+         * @param filePath
+         */
+
+        Iterator(CSF::SparseMatrix<T, T_index, compression_level> &matrix);
+
+        /**
+         * @brief Construct a new Iterator object using a file
+         *
+         * @param filePath
+         */
+
+        Iterator(const char *filePath);
+
+        /**
+         * @brief Reads in the metadata from the file
+         *
+         */
+        uint32_t *getMetaData();
+
+        /**
+         * @brief Getter for matrix data
+         *
+         *
+         */
+        void *getData();
+
+        /**
+         * @brief Returns the value of the run.
+         *
+         * @return T&
+         */
+        void *getEnd();
+
+        T &operator*();
+
+        /**
+         * @brief Equality operator of this iterator and another iterator
+         *
+         * @param other
+         * @return true
+         * @return false
+         */
+        bool operator==(const Iterator &other);
+
+        /**
+         * @brief Inequality operator of this iterator and another iterator
+         *
+         * @param other
+         * @return true
+         * @return false
+         */
+        bool operator!=(const Iterator &other);
+
+        /**
+         * @brief Less than operator of this iterator and another iterator
+         *
+         * @param other
+         * @return true
+         * @return false
+         */
+        bool operator<(const Iterator &other);
+
+        /**
+         * @brief Greater than operator of this iterator and another iterator
+         *
+         * @param other
+         * @return true
+         * @return false
+         */
+        bool operator>(const Iterator &other);
+
+        /**
+         * @brief Getter for the index of the iterator
+         *
+         */
+        uint64_t getIndex();
+
+        /**
+         * @brief TODO: I do not want this in the final product
+         *
+         * @return true
+         * @return false
+         */
+        bool atBeginningOfRun();
+
+        /**
+         * @brief Increment operator for the iterator
+         *
+         * This handles the basic usage of the iterator. The iterator will go through each index of the CSF::SparseMatrix and return the index of where it is.
+         * The iterator will change value when it hits the assigned delimitor as set by the CSF::SparseMatrix. Each delimitor is a collection of 0s that are the size
+         * of the index. Only the first index may be a zero, in which case the iterator will return a zero, but not recognize it as a delimitor.
+         *
+         *
+         * @return uint64_t
+         */
+        uint64_t operator++(int);
+
+        /**
+         * @brief Check if the iterator is at the end of the the data
+         *
+         * @return true
+         * @return false
+         */
+        operator bool() { return endOfData != currentIndex; }
+
+        /**
+         * @brief Gets the data of a specified column (WIP)
+         *
+         * @param column
+         * @return char*
+         */
+        char *getColumn(uint64_t column);
+
+        /**
+         * @brief Returns an iterator to the specified column (WIP)
+         *
+         * @param column
+         * @return CSF::Iterator<T>
+         */
+        // CSF::Iterator<T, T_index, compression_level> getColumn(uint64_t column);
+
+        /**
+         * @brief Sets a new value at the current run. NOTE: This will set the value for all indices in the run
+         *
+         * @param newValue
+         */
+        void setRunValue(T newValue);
+
+        /**
+         * @brief Get the address of a specified column
+         *
+         * @param column
+         * @return void*
+         */
+        inline void *getColumnAddress(uint64_t column);
+
+        /**
+         * @brief Sends the iterator to a specific column.
+         * @param column
+         */
+
+        void goToColumn(int column);
+
+        /**
+         * @brief Compares the address of the iterator with a given address.
+         * NOTE: This should only be used to compare with an iterator pointing
+         * to the same CSF::SparseMatrix.
+         *
+         * address will be less than currentIndex when we need a true.
+         * This is becasue operator++ will be set to the first index of a run
+         * and address will point to the first byte of the value
+         *
+         * @param address
+         * @return
+         */
+
+        bool compareAddress(void *address);
+
+    private:
+        /**
+         * @brief Read a file into memory
+         *
+         * @param filePath
+         */
+
+        void readMetaData();
+
+        inline void readFile(const char *filePath);
+
+        /**
+         * @brief Read in the next index from the file based on a variable width
+         *
+         * @param width
+         * @return uint64_t
+         */
+        inline uint64_t interpretPointer(int width);
+
+        /**
+         * @brief Set the ending address of the iterator
+         *
+         * @param end
+         */
+        void setEnd(void *end);
+    };
+
+
 
     /**
      * @brief compression level 1 specialization of the CSF::SparseMatrix class which is CSC format

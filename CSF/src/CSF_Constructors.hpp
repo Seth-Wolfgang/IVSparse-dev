@@ -12,7 +12,9 @@
 #pragma once
 
 // Debug flag for performance testing
-#define DEBUG 1
+#define DEBUG false
+
+#define NUM_META_DATA 7
 
 // Standard Libraries for include
 #include <type_traits>
@@ -244,6 +246,32 @@ namespace CSF {
         user_checks();
     }
 
+    // TODO add a constructor that takes a CSF::Iterator (WIP)
+    // template <typename T, typename T_index, int compression_level>
+    // SparseMatrix<T, T_index, compression_level>::SparseMatrix(Iterator<T, T_index, compression_level> &iter){
+
+    //     try {
+    //         begin_ptr = malloc(iter.getEnd() + iter.getData());
+    //     }
+    //     catch (std::bad_alloc& e) {
+    //         std::cerr << "Error: " << e.what() << std::endl;
+    //         exit(1);
+    //     }
+
+    //     begin_ptr = iter.getData;
+    //     uint32_t metaData[7] = iter.getMetaData();
+
+    //     // compression_level = metaData[0]; -> I don't know how to do this
+
+    //     row_t = metaData[1];
+    //     col_t = metaData[2];
+    //     val_t = metaData[3];
+    //     num_rows = metaData[4];
+    //     num_cols = metaData[5];
+    //     num_nonzeros = metaData[6];
+
+    // }
+
     // Destructor
     template <typename T, typename T_index, int compression_level>
     SparseMatrix<T, T_index, compression_level>::~SparseMatrix()
@@ -348,7 +376,7 @@ namespace CSF {
             col_pointers[i] = (uint64_t)(comp_ptr) - (uint64_t)(begin_ptr);
 
             // ----------------- Value Loop (find unique values in col) ----------------- //
-            for (size_t j = col_p[i]; j < col_p[i + 1]; j++) {
+            for (cols_type j = col_p[i]; j < col_p[i + 1]; j++) {
 
                 // if the value is not zero, add it to the run
                 if ((vals)[j] != 0)
@@ -371,7 +399,7 @@ namespace CSF {
                     comp_ptr = (T_index *)(comp_ptr) + 1;
 
                     // Loop through rest of column to get rest of indices
-                    for (size_t k = j + 1; k < (col_p)[i + 1]; k++)
+                    for (cols_type k = j + 1; k < (col_p)[i + 1]; k++)
                     {
                         // found the same value again
                         if ((vals)[k] == (vals)[j])
@@ -398,13 +426,13 @@ namespace CSF {
                     {
 
                         // set variable for max element
-                        size_t max_index = 0;
+                        T_index max_index = 0;
 
                         // find number of elements found for unique value
                         size_t num_elements = (T_index *)(comp_ptr) - ((T_index *)(help_ptr));
 
                         // bring comp_ptr back to being pointed at last found index
-                        comp_ptr = (T_index *)(comp_ptr)-1;
+                        comp_ptr = (T_index *)(comp_ptr) - 1;
 
                         // loop moves comp_ptr backwards through indices and positive delta encodes them
                         for (size_t k = 0; k < num_elements - 1; k++)
@@ -510,19 +538,51 @@ namespace CSF {
         // remove ending zeros
         for (uint8_t i = 0; i < last_col_index + 1; i++)
         {
-            comp_ptr = (uint8_t *)(comp_ptr)-1;
+            comp_ptr = (uint8_t *)(comp_ptr) - 1;
         }
 
         // find size of file in bytes
-        compression_size = (uint8_t *)(comp_ptr) - ((uint8_t *)(begin_ptr)-1);
+        compression_size = (uint8_t *)(comp_ptr) - (uint8_t *)(begin_ptr) + 1;
 
-        // resize data to fit actual size
-        try {
-            begin_ptr = realloc(begin_ptr, compression_size);
-        } catch (std::bad_alloc &e) {
-            std::cout << "Error: " << e.what() << std::endl;
-            exit(1);
+        // move comp pointer by one
+        comp_ptr = (uint8_t *)(comp_ptr) + 1;
+
+        //! vvvvv HERE BECAUSE VALGRIND DOESN'T REALLOC PROPERLY vvvvv !//
+        void* begin_ptr_temp;
+        if (DEBUG) {
+            // resize data to fit actual size
+            try {
+                begin_ptr_temp = realloc(begin_ptr, compression_size);
+            } catch (std::bad_alloc &e) {
+                std::cout << "Error: " << e.what() << std::endl;
+                exit(1);
+            }
+
+            if (begin_ptr_temp != (void *)((uint8_t *)(comp_ptr) - compression_size)) {
+                std::cout << "Error: realloc moved memory" << std::endl;
+
+                // copy data to new location
+                memmove(begin_ptr_temp, begin_ptr, compression_size);
+
+                // move comp_ptr to new location
+                comp_ptr = (uint8_t *)(begin_ptr_temp) + compression_size;
+
+                // free old memory
+                free(begin_ptr);
+
+                // set begin_ptr to new location
+                begin_ptr = begin_ptr_temp;
+            }
+        } else {
+            
+            try {
+                begin_ptr = realloc(begin_ptr, compression_size);
+            } catch (std::bad_alloc &e) {
+                std::cout << "Error: " << e.what() << std::endl;
+                exit(1);
+            }
         }
+        //! ^^^^^ HERE BECAUSE VALGRIND DOESN'T REALLOC PROPERLY ^^^^^ !//
     }
 
 
@@ -654,8 +714,8 @@ namespace CSF {
             throw std::invalid_argument("The file could not be opened");
 
         // read in metadata which is 7 uint32_t values
-        uint32_t metadata[7];
-        fread(metadata, sizeof(uint32_t), 7, file);
+        uint32_t metadata[META_DATA_SIZE];
+        fread(metadata, sizeof(uint32_t), META_DATA_SIZE, file);
 
         // set variables
         if (metadata[0] != 1)
