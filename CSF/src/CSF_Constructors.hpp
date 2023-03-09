@@ -446,6 +446,11 @@ namespace CSF
                         // find number of elements found for unique value
                         size_t num_elements = (T_index *)(comp_ptr) - ((T_index *)(help_ptr));
 
+                        if (sizeof(T_index) == 1)
+                        {
+                            num_elements = num_elements - 1;
+                        }
+
                         // bring comp_ptr back to being pointed at last found index
                         comp_ptr = (T_index *)(comp_ptr)-1;
 
