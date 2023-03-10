@@ -39,31 +39,57 @@ namespace CSF {
     * @return
     */
 
-    // template <typename T, typename, indexType, int compressionLevel>
-    // void vectorMultiply(CSF::SparseMatrix<T, indexType, compressionLevel> matrix, CSF::SparseMatrix<T, indexType, compressionLevel> vector) {
-    //     if (matrix.getNumCols() == vector.getNumRows()) {
-    //         std::cerr << "Matrix and vector dimensions do not match" << std::endl;
-    //     }
+    template <typename T, typename indexType, int compressionLevel>
+    void vectorMultiply(CSF::SparseMatrix<T, indexType, compressionLevel>& matrix, CSF::SparseMatrix<T, indexType, compressionLevel> vector) {
 
-    //     CSF::Iterator<T> matIter = CSF::Iterator<T>(matrix);
-    //     CSF::Iterator<T> vecIter = CSF::Iterator<T>(vector);
-    //     void* addressOfNextColumn = matIter.getColumnAddress(vecIter.getIndex() + 1);
+        //Check that the matrix and vector dimensions match or if the vector is actually a vector
+        if (matrix.cols() != vector.rows() || vector.cols() != 1) {
+            std::cerr << "Matrix and vector dimensions do not match" << std::endl;
 
-    //     //Iterate through the matrix and multiply each value by the scalar
-    //     while (vecIter) {
-    //         matIter.goToColumn(vecIter.getIndex());
+            if (matrix.cols() != vector.rows()) {
+                std::cerr << "Matrix and vector dimensions do not match" << std::endl;
+                std::cerr << "Matrix has " << matrix.cols() << " columns and vector has " << vector.rows() << " rows" << std::endl;
+            }
+            else {
+                std::cerr << "Given vector parameter is not a column vector" << std::endl;
+                std::cerr << "Vector has " << vector.cols() << " columns" << std::endl;
+            }
+            exit(-1);
+        }
 
-    //         //TODO: check to see if we're at address of next column
-    //         while (matIter.compareAddress(addressOfNextColumn)) {
-    //             if (matIter.atBeginningOfRun())
-    //                 iter.setRunValue(*iter * *vecIter)
-    //                 matIter++;
-    //         }
-    //         vecIter++;
-    //         addressOfNextColumn = matIter.getColumnAddress(vecIter.getIndex() + 1);
-    //     }
+        //We need two iterators to iterate through the matrix and vector
+        typename CSF::SparseMatrix<T, indexType, compressionLevel>::Iterator matIter(matrix);
+        typename CSF::SparseMatrix<T, indexType, compressionLevel>::Iterator vecIter(vector);
 
-    // }
+        //We need to keep track of the address of the next column
+        void* addressOfNextColumn = matIter.getColumnAddress(vecIter.getIndex() + 1);
+
+        //Iterate through the matrix and multiply each value by the scalar at the index of the vector
+        while (vecIter && matIter) {
+            vecIter++;
+            // std::cout << "vecIter index: " << vecIter.getIndex() << std::endl;
+            matIter.goToColumn(vecIter.getIndex());
+            addressOfNextColumn = matIter.getColumnAddress(vecIter.getIndex() + 1);
+
+            // While mateIter is less than the address of the next column
+            while (matIter.compareAddress(addressOfNextColumn) == -1) {
+                if (matIter.atBeginningOfRun()) {
+
+                    // std::cout << "multiplying " << *matIter << " by " << *vecIter << " = " << *matIter * *vecIter << std::endl;
+                    matIter.setRunValue(*matIter * *vecIter);
+
+                    // if the last of the binary data is an index, the function might continue
+                    // So we have a safeguard here. If this statement is in the while loop, it will not
+                    // be successful in multiplying the last value. 
+                    // Ex. A run where -> (3) [0] *end* where 0 is where the end pointer points to. 3 is a value, and 0 is the final index of the CSF matrix.
+                    if (matIter)
+                        break;
+                }
+                matIter++;
+            }
+
+        }
+    }
 
 
     /**
@@ -80,8 +106,8 @@ namespace CSF {
      // template <typename T>
      // T dotProduct(CSF::SparseMatrix<T> vec1, CSF::SparseMatrix<T> vec2) {
      //     T result = 0;
-     //     CSF::Iterator<T> iter1 = CSF::Iterator<T>(vec1);
-     //     CSF::Iterator<T> iter2 = CSF::Iterator<T>(vec2);
+        // typename CSF::SparseMatrix<T, indexType, compressionLevel>::Iterator iter1(vector);
+        // typename CSF::SparseMatrix<T, indexType, compressionLevel>::Iterator iter2(matrix);
 
      //     while (iter1 && iter2) {
 
