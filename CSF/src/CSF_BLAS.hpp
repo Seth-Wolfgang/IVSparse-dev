@@ -58,8 +58,8 @@ namespace CSF {
         }
 
         //We need two iterators to iterate through the matrix and vector
-        CSF::Iterator<T, indexType, compressionLevel> matIter = CSF::Iterator<T, indexType, compressionLevel>(matrix);
-        CSF::Iterator<T, indexType, compressionLevel> vecIter = CSF::Iterator<T, indexType, compressionLevel>(vector);
+        typename CSF::SparseMatrix<T, indexType, compressionLevel>::Iterator matIter(matrix);
+        typename CSF::SparseMatrix<T, indexType, compressionLevel>::Iterator vecIter(vector);
 
         //We need to keep track of the address of the next column
         void* addressOfNextColumn = matIter.getColumnAddress(vecIter.getIndex() + 1);
@@ -106,8 +106,8 @@ namespace CSF {
      // template <typename T>
      // T dotProduct(CSF::SparseMatrix<T> vec1, CSF::SparseMatrix<T> vec2) {
      //     T result = 0;
-     //     CSF::Iterator<T> iter1 = CSF::Iterator<T>(vec1);
-     //     CSF::Iterator<T> iter2 = CSF::Iterator<T>(vec2);
+        // typename CSF::SparseMatrix<T, indexType, compressionLevel>::Iterator iter1(vector);
+        // typename CSF::SparseMatrix<T, indexType, compressionLevel>::Iterator iter2(matrix);
 
      //     while (iter1 && iter2) {
 

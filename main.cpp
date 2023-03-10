@@ -27,10 +27,10 @@ int main() {
 
     testDriver<int>(iteratorBenchmark<int>, 100, 3);
     std::cout << "Finished iterator Test" << std::endl << std::endl;
-    // testDriver<int>(ScalarMultiplicationBench<int>, 100, 3);
-    // std::cout << "Finished Scalar Test" << std::endl << std::endl;
-    // testDriver<int>(vectorMultiplicationBench<int>, 100, 3);
-    // std::cout << "Finished Vector/Matrix Multiplication Test" << std::endl << std::endl;
+    testDriver<int>(ScalarMultiplicationBench<int>, 100, 3);
+    std::cout << "Finished Scalar Test" << std::endl << std::endl;
+    testDriver<int>(vectorMultiplicationBench<int>, 100, 3);
+    std::cout << "Finished Vector/Matrix Multiplication Test" << std::endl << std::endl;
 
     std::cout << "\u001b[32mEverything works!!\u001b[0m" << std::endl;
     return 1;
@@ -49,21 +49,21 @@ void testDriver(std::function<T(T, T, T, T, T)> lambda, int iterations, int comp
         numRows = rand() % 100 + 1;
         numCols = rand() % 100 + 1;
         sparsity = rand() % 1 + 1;
-        std::cout << "i: " << i << std::endl;
-        std::cout << "numRows: " << numRows << std::endl;
-        std::cout << "numCols: " << numCols << std::endl;
-        std::cout << "sparsity: " << sparsity << std::endl;
-        std::cout << "Matrix seed: " << matrixSeed << std::endl;
+        // std::cout << "i: " << i << std::endl;
+        // std::cout << "numRows: " << numRows << std::endl;
+        // std::cout << "numCols: " << numCols << std::endl;
+        // std::cout << "sparsity: " << sparsity << std::endl;
+        // std::cout << "Matrix seed: " << matrixSeed << std::endl;
 
 
         if (!lambda(numRows, numCols, sparsity, matrixSeed, 3)) {
 
-            std::cerr << "Something went wrong" << std::endl;
-            std::cerr << "numRows: " << numRows << std::endl;
-            std::cerr << "numCols: " << numCols << std::endl;
-            std::cerr << "sparsity: " << sparsity << std::endl;
-            std::cerr << "Matrix seed: " << matrixSeed << std::endl;
-            std::cerr << "i: " << i << std::endl;
+            // std::cerr << "Something went wrong" << std::endl;
+            // std::cerr << "numRows: " << numRows << std::endl;
+            // std::cerr << "numCols: " << numCols << std::endl;
+            // std::cerr << "sparsity: " << sparsity << std::endl;
+            // std::cerr << "Matrix seed: " << matrixSeed << std::endl;
+            // std::cerr << "i: " << i << std::endl;
             fails++;
             // exit(1);
         }
@@ -97,11 +97,13 @@ bool iteratorBenchmark(int numRows, int numCols, int sparsity, uint64_t seed, in
     // Converting to CSF
     CSF::SparseMatrix<T, uint8_t, 3> CSFMatrix(eigenMatrix);
 
-    CSF::Iterator<T, uint8_t, 3> it(CSFMatrix);
-    if(!it.isValid()){
-        std::cout << "Matrix is not valid" << std::endl;
+    // Check if the matrix is empty
+    if(getSum<T>(eigenMatrix) == 0){
         return true;
     }
+
+    
+
     CSFMatrix.write("matrix.bin");
 
     //Getting totals
@@ -112,9 +114,9 @@ bool iteratorBenchmark(int numRows, int numCols, int sparsity, uint64_t seed, in
         return true;
     }
     else {
-        std::cout << "CSF Total: " << CSFTotal << std::endl;
-        std::cout << "Eigen Total: " << eigenTotal << std::endl;
-        std::cout << "off by: " << CSFTotal - eigenTotal << std::endl;
+        // std::cout << "CSF Total: " << CSFTotal << std::endl;
+        // std::cout << "Eigen Total: " << eigenTotal << std::endl;
+        // std::cout << "off by: " << CSFTotal - eigenTotal << std::endl;
         return false;
     }
 }
@@ -144,11 +146,11 @@ bool ScalarMultiplicationBench(int numRows, int numCols, int sparsity, uint64_t 
     CSF::SparseMatrix<T, T, 3> CSFMatrix(eigenMatrix);
     CSF::SparseMatrix<T, T, 3> CSFMatrix2(eigenMatrix);
 
-    CSF::Iterator<T, T, 3> it(CSFMatrix);
-    if(!it.isValid()){
-        std::cout << "Matrix is not valid" << std::endl;
+    // Check if the matrix is empty
+    if(getSum<T>(eigenMatrix) == 0){
         return true;
     }
+
 
     // Getting totals
     T eigenTotal = getSum<T>(eigenMatrix);
@@ -178,11 +180,10 @@ bool vectorMultiplicationBench(int numRows, int numCols, int sparsity, uint64_t 
     CSF::SparseMatrix<T, T, 3> CSFMatrix(eigenMatrix);
     CSF::SparseMatrix<T, T, 3> CSFVector(generateVector<T>(numCols, 2));
     
-    CSF::Iterator<T, T, 3> it(CSFMatrix);
-    if(!it.isValid()){
-        std::cout << "Matrix is not valid" << std::endl;
+    // Check if the matrix is empty
+    if(getSum<T>(eigenMatrix) == 0){
         return true;
-    }
+    }    
 
     CSFVector.write("vector.bin");
     CSFMatrix.write("matrix.bin");
@@ -197,10 +198,10 @@ bool vectorMultiplicationBench(int numRows, int numCols, int sparsity, uint64_t 
     T scaledTotal = getSum<T>(CSFMatrix);
 
 
-    if (scaledTotal - (2 * originalTotal) != 0) {
-        std::cout << "Original Matrix: " << originalTotal << "\tScaled Matrix: " << scaledTotal << std::endl;
-        std::cout << "Off by: " << scaledTotal - (2 * originalTotal) << std::endl;
-    }
+    // if (scaledTotal - (2 * originalTotal) != 0) {
+    //     std::cout << "Original Matrix: " << originalTotal << "\tScaled Matrix: " << scaledTotal << std::endl;
+    //     std::cout << "Off by: " << scaledTotal - (2 * originalTotal) << std::endl;
+    // }
 
     if (scaledTotal == 2 * originalTotal) {
         return true;
@@ -300,7 +301,7 @@ void printValuesInTwo(CSF::SparseMatrix<T, indexType, compressionLevel> matrix, 
 
 template<typename T, typename indexType, int compressionLevel>
 void printIndices(CSF::SparseMatrix<T, indexType, compressionLevel> matrix) {
-    CSF::Iterator<T, indexType, compressionLevel> newIter(matrix);
+    typename CSF::SparseMatrix<T, uint64_t, 3>::Iterator newIter(matrix);
     T value = *newIter;
     std::cout << "Value: " << value << std::endl;
     while (newIter) {
@@ -324,7 +325,7 @@ void printIndices(CSF::SparseMatrix<T, indexType, compressionLevel> matrix) {
 template <typename T, typename indexType, int compressionLevel>
 T getSum(CSF::SparseMatrix<T, indexType, compressionLevel> matrix) {
     T CSFTotal = 0;
-    typename CSF::SparseMatrix<T, T, compressionLevel>::Iterator newIter(matrix);
+    typename CSF::SparseMatrix<T, indexType, compressionLevel>::Iterator newIter(matrix);
     T value = *newIter;
     // std::cout << newIter.getColumnAddress(0) << std::endl;
     while (newIter)
