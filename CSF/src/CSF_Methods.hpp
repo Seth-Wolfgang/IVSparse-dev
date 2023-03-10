@@ -150,9 +150,52 @@ namespace CSF
         // reserve space for the triplet vector
         triplet.reserve(num_nonzeros);
 
-        // use iterator to go through the data
-        //CSF::SparseMatrix<T, T_index, compression_level>::Iterator;
+        // create an iterator for the matrix
+        CSF::SparseMatrix<T, T_index, compression_level>::Iterator it(*this);
 
+        // iterate over the matrix
+        while (it) {
+
+            it++;
+            triplet.push_back(Eigen::Triplet<T>(it.getIndex(), it.getColIndex(), *it));
+        }
+
+        // create an eigen sparse matrix
+        Eigen::SparseMatrix<T> eigen_mat(num_rows, num_cols);
+
+        // set the triplet vector
+        eigen_mat.setFromTriplets(triplet.begin(), triplet.end());
+
+        // convert to CSF1
+        return CSF::SparseMatrix<T, T_index, 1>(eigen_mat, true);
+
+    }
+
+    template <typename T, typename T_index, int compression_level>
+    Eigen::SparseMatrix<T> SparseMatrix<T, T_index, compression_level>::to_eigen() {
+        // create a triplet vector
+        std::vector<Eigen::Triplet<T>> triplet;
+
+        // reserve space for the triplet vector
+        triplet.reserve(num_nonzeros);
+
+        // create an iterator for the matrix
+        CSF::SparseMatrix<T, T_index, compression_level>::Iterator it(*this);
+
+        // iterate over the matrix
+        while (it) {
+            it++;
+            triplet.push_back(Eigen::Triplet<T>(it.getIndex(), it.getColIndex(), *it));
+            std::cout << it.getIndex() << " " << it.getColIndex() << " " << *it << std::endl;
+        }
+
+        // create an eigen sparse matrix
+        Eigen::SparseMatrix<T> eigen_mat(num_rows, num_cols);
+
+        // set the triplet vector
+        eigen_mat.setFromTriplets(triplet.begin(), triplet.end());
+
+        return eigen_mat;
     }
 
 

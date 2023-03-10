@@ -73,33 +73,79 @@ int main(int argc, char** argv) {
     while (iter)
     {
         iter++;
-        std::cout << *iter << " ";
+        //std::cout << "(" << iter.getIndex() << "," << iter.getColIndex() << "," << *iter << ") ";
         csf_count += *iter;
         csf_count2++;
     }
 
-
     std::cout << std::endl;
 
-    std::cout << "Eigen count: " << eigen_count << std::endl;
-    std::cout << "CSF count: " << csf_count << std::endl;
+    std::cout << myMatrix_e << std::endl;
 
-    std::cout << "Eigen count2: " << eigen_count2 << std::endl;
-    std::cout << "CSF count2: " << csf_count2 << std::endl;
 
-    std::cout << "Number of nonzeros in Eigen matrix: " << myMatrix_e.nonZeros() << std::endl;
-    std::cout << "Number of nonzeros in CSF matrix: " << myMatrix_csf.nonzeros() << std::endl;
+    // std::cout << std::endl;
 
-    std::cout << "Number of bytes for CSF: " << myMatrix_csf.byte_size() << std::endl;
+    // std::cout << "Eigen count: " << eigen_count << std::endl;
+    // std::cout << "CSF count: " << csf_count << std::endl;
+
+    // std::cout << "Eigen count2: " << eigen_count2 << std::endl;
+    // std::cout << "CSF count2: " << csf_count2 << std::endl;
+
+    // std::cout << "Number of nonzeros in Eigen matrix: " << myMatrix_e.nonZeros() << std::endl;
+    // std::cout << "Number of nonzeros in CSF matrix: " << myMatrix_csf.nonzeros() << std::endl;
+
+    // std::cout << "Number of bytes for CSF: " << myMatrix_csf.byte_size() << std::endl;
 
     // construct a new matrix with the iterator
     CSF::SparseMatrix<int> myMatrix_csf2(iter);
 
     // print out the first value in the new matrix
-    std::cout << "compression level: " << *(uint32_t *)(myMatrix_csf2.beginPtr()) << std::endl;
+    // std::cout << "compression level: " << *(uint32_t *)(myMatrix_csf2.beginPtr()) << std::endl;
 
     // write it to file
     //myMatrix_csf2.write("myMatrix_csf2.csf");
+
+    // create a csf1 matrix from the csf2 matrix
+    CSF::SparseMatrix<int, uint64_t, 1> myMatrix_csf1 = myMatrix_csf2.to_csf1();
+
+    // convert it to eigen
+    Eigen::SparseMatrix<int> myMatrix_e2 = myMatrix_csf1.to_eigen();
+
+    // print out the eigen matrix
+    std::cout << myMatrix_e2 << std::endl;
+
+
+
+
+    // int numRows2 = 94;
+    // int numCols2 = 36;
+    // int sparsity2 = 1;
+    // uint64_t seed2 = 1714636915;
+    // // uint64_t seed = rand();
+
+    // // generating a large random eigen sparse
+    // Eigen::SparseMatrix<double> myMatrix_e2(numRows2, numCols2);
+    // myMatrix_e2.reserve(Eigen::VectorXi::Constant(numRows2, numCols2));
+    // myMatrix_e2 = generateMatrix<double>(numRows2, numCols2, sparsity2, seed2);
+    // //myMatrix_e2.prune(0);
+    // myMatrix_e2.makeCompressed();
+
+    // // print out the matrix
+    // std::cout << myMatrix_e2 << std::endl;
+
+    // // create a sparse matrix from the eigen sparse matrix
+    // CSF::SparseMatrix<double, uint8_t, 3> myMatrix_csf3(myMatrix_e2);
+
+    // // get the begin and end pointers
+    // void * begin2 = myMatrix_csf3.beginPtr();
+    // void * end2 = myMatrix_csf3.endPtr();
+
+    // // print begin and end
+    // std::cout << "Begin: " << begin2 << std::endl;
+    // std::cout << "End: " << end2 << std::endl;
+
+    // // write it to file
+    // myMatrix_csf3.write("myMatrix_csf3.csf");
 
     return 0;
 }

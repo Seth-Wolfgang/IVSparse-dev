@@ -24,6 +24,7 @@ namespace CSF
         // Skips metadata and goes to first column
         currentIndex = (void *)((char *)(currentIndex) + META_DATA_SIZE); // ?goes to first col pointer?
         goToColumn(0); // skips past col_p and delim to the start of actual data
+        currentCol = 0;
 
         // Insures the matrix is not empty
         assert(currentIndex < endOfData);
@@ -49,6 +50,7 @@ namespace CSF
         // valueWidth is set and the first value is read in
         valueWidth = metadata[4];
         goToColumn(0);
+        currentCol = 0;
 
         value = (T *)(currentIndex);
         currentIndex = (char *)(currentIndex) + valueWidth;
@@ -64,6 +66,9 @@ namespace CSF
 
     template <typename T, typename T_index, int compression_level>
     uint32_t *SparseMatrix<T, T_index, compression_level>::Iterator::getMetaData() { return metadata; }
+
+    template <typename T, typename T_index, int compression_level>
+    T_index SparseMatrix<T, T_index, compression_level>::Iterator::getColIndex() { return currentCol; }
 
     template <typename T, typename T_index, int compression_level>
     void *SparseMatrix<T, T_index, compression_level>::Iterator::getData() { return data; }
@@ -94,6 +99,7 @@ namespace CSF
 
     template <typename T, typename T_index, int compression_level>
     uint64_t SparseMatrix<T, T_index, compression_level>::Iterator::operator++(int) {
+        
         uint64_t newIndex = interpretPointer(newIndexWidth);
 
         // If newIndex is 0 and not the first index, then the index is a delimitor
@@ -107,6 +113,11 @@ namespace CSF
             // newIndexWidth is the second value in the run
             newIndexWidth = *(uint8_t *)(currentIndex);
             currentIndex = (char *)(currentIndex) + 1;
+
+            // update currentCol to the next column
+            while (currentIndex > getColumnAddress(currentCol + 1)) {
+                currentCol++;
+            }
 
             // Make index 0 as it is a new run
             memset(&index, 0, 8);
@@ -196,7 +207,7 @@ namespace CSF
         // metadata[5] # of columns
         // metadata[6] # of nonzeros
 
-        valueWidth = metadata[3] & 0xFFFF;
+        valueWidth = metadata[3] & 0xFF;
         numRows = metadata[4];
         numColumns = metadata[5];
     }
@@ -221,6 +232,7 @@ namespace CSF
 
     template <typename T, typename T_index, int compression_level>
     uint64_t SparseMatrix<T, T_index, compression_level>::Iterator::interpretPointer(int width) {
+        
         uint64_t newIndex = 0;
 
         // Case statement takes in 1,2,4, or 8 otherwise the width is invalid

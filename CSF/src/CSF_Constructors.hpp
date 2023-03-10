@@ -246,7 +246,7 @@ namespace CSF {
         user_checks();
     }
 
-    // TODO add a constructor that takes a CSF::Iterator (WIP)
+    // TODO: add a constructor that takes a CSF::Iterator (WIP)
     template <typename T, typename T_index, int compression_level>
     SparseMatrix<T, T_index, compression_level>::SparseMatrix(typename CSF::SparseMatrix<T, T_index, compression_level>::Iterator &iter){
 
@@ -287,6 +287,23 @@ namespace CSF {
 
         // run user checks on the data that came in to ensure that it is valid
         user_checks();
+    }
+
+    template <typename T, typename T_index, int compression_level>
+    template <typename T2, typename T_index2, int compression_level2>
+    SparseMatrix<T, T_index, compression_level>::SparseMatrix(CSF::SparseMatrix<T2, T_index2, compression_level2> &mat) {
+
+        // initialize the matrix variables
+        num_rows = mat.rows();
+        num_cols = mat.cols();
+        num_nonzeros = mat.nonzeros();
+
+        
+
+        
+        
+
+
     }
 
     // Destructor
@@ -447,6 +464,10 @@ namespace CSF {
 
                         // find number of elements found for unique value
                         size_t num_elements = (T_index *)(comp_ptr) - ((T_index *)(help_ptr));
+
+                        if (sizeof(T_index) == 1) {
+                            num_elements = num_elements - 1;
+                        }
 
                         // bring comp_ptr back to being pointed at last found index
                         comp_ptr = (T_index *)(comp_ptr) - 1;

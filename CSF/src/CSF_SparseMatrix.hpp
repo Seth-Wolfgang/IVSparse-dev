@@ -274,6 +274,19 @@ namespace CSF {
          */
         SparseMatrix(typename CSF::SparseMatrix<T, T_index, compression_level>::Iterator &iter);
 
+        // --------- Swapping between types and levels constructors --------- //
+
+        /**
+         * @brief Construct a new Sparse Matrix object from another of a different type
+         * 
+         * @tparam T2 
+         * @tparam T_index2 
+         * @tparam compression_level2 
+         * @param mat 
+         */
+        template <typename T2, typename T_index2, int compression_level2>
+        SparseMatrix(CSF::SparseMatrix<T2, T_index2, compression_level2> &mat);
+
         /**
          * @brief Destroy the Sparse Matrix object
          * 
@@ -377,7 +390,8 @@ namespace CSF {
         void *endOfData; // endptr
 
         void *currentIndex; //* ITERATOR MOVEMENT POINTER
-
+        
+        T_index currentCol;
         T *value;
 
         bool firstIndex = true;   // boolean check for first index
@@ -407,6 +421,13 @@ namespace CSF {
          *
          */
         uint32_t *getMetaData();
+
+        /**
+         * @brief Get the current column index
+         * 
+         * @return T_index 
+         */
+        T_index getColIndex();
 
         /**
          * @brief Getter for matrix data
