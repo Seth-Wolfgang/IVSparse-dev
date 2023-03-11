@@ -196,13 +196,13 @@ int main(int argc, char** argv) {
     CSF::SparseMatrix<int, uint64_t, 1> mytest2(myMatrix_e);
 
     // check that the matrices are the same
-    // if (mytest1 != mytest2) {
-    //     std::cout << "ERROR: csf1 matrices are not the same" << std::endl;
-    //     return 1;
-    // }
+    if (mytest1 != mytest2) {
+        std::cout << "ERROR: csf1 matrices are not the same" << std::endl;
+        return 1;
+    }
 
-    // // print out a confirmation
-    // std::cout << "SUCCESS: csf1 matrices are the same" << std::endl;
+    // print out a confirmation
+    std::cout << "SUCCESS: csf1 matrices are the same" << std::endl;
 
     return 0;
 }

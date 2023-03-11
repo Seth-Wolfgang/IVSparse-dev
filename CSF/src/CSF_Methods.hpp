@@ -5,6 +5,7 @@
 
 #define META_DATA_SIZE 28
 #define NUM_META_DATA 7
+
 #define ONE_BYTE_MAX 255
 #define TWO_BYTE_MAX 65535
 #define FOUR_BYTE_MAX 4294967295
@@ -143,6 +144,8 @@ namespace CSF
         return !(*this == other);
     }
 
+    
+
     // write data to file
     template <typename T, typename T_index, int compression_level>
     void SparseMatrix<T, T_index, compression_level>::write(const char *filename)
@@ -263,15 +266,8 @@ namespace CSF
     template <typename T, typename T_index>
     void *SparseMatrix<T, T_index, 1>::colPtr() { return col_p; }
 
-    // beginPtr() method but const
     template <typename T, typename T_index>
-    const void *SparseMatrix<T, T_index, 1>::beginPtr() const { return begin_ptr; }
-
-    // TODO: WORK IN PROGRESS -- CURRENTLY BUGGED
-    template <typename T, typename T_index>
-    bool SparseMatrix<T, T_index, 1>::operator==(const SparseMatrix<T, T_index, 1> &other) {
-        std::cout << "Currently Bugged DON'T USE" << std::endl;
-        
+    bool SparseMatrix<T, T_index, 1>::operator==(const SparseMatrix<T, T_index, 1> &other) {        
         // check that the number of rows, columns, and nonzeros are the same
         if (num_rows != other.num_rows || num_cols != other.num_cols || num_nonzeros != other.num_nonzeros)
             return false;
@@ -281,7 +277,15 @@ namespace CSF
             return false;
 
         // check that the data is the same
-        if (memcmp(begin_ptr, other.beginPtr(), compression_size - 1) != 0)
+        if (memcmp(vals, other.vals, num_nonzeros * sizeof(T)) != 0)
+            return false;
+
+        // check that the indexes are the same
+        if (memcmp(indexes, other.indexes, num_nonzeros * sizeof(T_index)) != 0)
+            return false;
+
+        // check that the column pointers are the same
+        if (memcmp(col_p, other.col_p, (num_cols + 1) * sizeof(T_index)) != 0)
             return false;
 
         return true;
