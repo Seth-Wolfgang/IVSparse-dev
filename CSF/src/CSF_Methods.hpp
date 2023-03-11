@@ -114,8 +114,34 @@ namespace CSF
     template <typename T, typename T_index, int compression_level>
     void *SparseMatrix<T, T_index, compression_level>::beginPtr() { return begin_ptr; }
 
+    // beginPtr() method but const
+    template <typename T, typename T_index, int compression_level>
+    const void *SparseMatrix<T, T_index, compression_level>::beginPtr() const { return begin_ptr; }
+
     template <typename T, typename T_index, int compression_level>
     void *SparseMatrix<T, T_index, compression_level>::endPtr() { return comp_ptr; }
+
+    template <typename T, typename T_index, int compression_level>
+    bool SparseMatrix<T, T_index, compression_level>::operator==(const SparseMatrix<T, T_index, compression_level> &other) {
+        // check that the number of rows, columns, and nonzeros are the same
+        if (num_rows != other.num_rows || num_cols != other.num_cols || num_nonzeros != other.num_nonzeros)
+            return false;
+
+        // check that the value type is the same
+        if (val_t != other.val_t)
+            return false;
+
+        // check that the data is the same
+        if (memcmp(begin_ptr, other.beginPtr(), compression_size) != 0)
+            return false;
+
+        return true;
+    }
+
+    template <typename T, typename T_index, int compression_level>
+    bool SparseMatrix<T, T_index, compression_level>::operator!=(const SparseMatrix<T, T_index, compression_level> &other) {
+        return !(*this == other);
+    }
 
     // write data to file
     template <typename T, typename T_index, int compression_level>
@@ -155,7 +181,6 @@ namespace CSF
 
         // iterate over the matrix
         while (it) {
-
             it++;
             triplet.push_back(Eigen::Triplet<T>(it.getIndex(), it.getColIndex(), *it));
         }
@@ -167,7 +192,7 @@ namespace CSF
         eigen_mat.setFromTriplets(triplet.begin(), triplet.end());
 
         // convert to CSF1
-        return CSF::SparseMatrix<T, T_index, 1>(eigen_mat, true);
+        return CSF::SparseMatrix<T, T_index, 1>(eigen_mat);
 
     }
 
@@ -186,7 +211,6 @@ namespace CSF
         while (it) {
             it++;
             triplet.push_back(Eigen::Triplet<T>(it.getIndex(), it.getColIndex(), *it));
-            std::cout << it.getIndex() << " " << it.getColIndex() << " " << *it << std::endl;
         }
 
         // create an eigen sparse matrix
@@ -238,6 +262,35 @@ namespace CSF
 
     template <typename T, typename T_index>
     void *SparseMatrix<T, T_index, 1>::colPtr() { return col_p; }
+
+    // beginPtr() method but const
+    template <typename T, typename T_index>
+    const void *SparseMatrix<T, T_index, 1>::beginPtr() const { return begin_ptr; }
+
+    // TODO: WORK IN PROGRESS -- CURRENTLY BUGGED
+    template <typename T, typename T_index>
+    bool SparseMatrix<T, T_index, 1>::operator==(const SparseMatrix<T, T_index, 1> &other) {
+        std::cout << "Currently Bugged DON'T USE" << std::endl;
+        
+        // check that the number of rows, columns, and nonzeros are the same
+        if (num_rows != other.num_rows || num_cols != other.num_cols || num_nonzeros != other.num_nonzeros)
+            return false;
+
+        // check that the value type is the same
+        if (val_t != other.val_t)
+            return false;
+
+        // check that the data is the same
+        if (memcmp(begin_ptr, other.beginPtr(), compression_size - 1) != 0)
+            return false;
+
+        return true;
+    }
+
+    template <typename T, typename T_index>
+    bool SparseMatrix<T, T_index, 1>::operator!=(const SparseMatrix<T, T_index, 1> &other) {
+        return !(*this == other);
+    }
 
     template <typename T, typename T_index>
     void SparseMatrix<T, T_index, 1>::user_checks()
@@ -307,10 +360,10 @@ namespace CSF
 
         // construct the metadata
         // * <compression, row_t, col_t, val_t, num_rows, num_cols, num_nonzeros, [[col_pointers] [vals] [indexes]]>
-        uint32_t metadata[NUM_META_DATA] = {compression, row_t, col_t, val_t, num_rows, num_cols, num_nonzeros};
+        uint32_t meta[NUM_META_DATA] = {compression, row_t, col_t, val_t, num_rows, num_cols, num_nonzeros};
 
         // write the metadata
-        fwrite(metadata, sizeof(uint32_t), NUM_META_DATA, fp);
+        fwrite(meta, sizeof(uint32_t), NUM_META_DATA, fp);
 
         // write the col_p
         fwrite(col_p, sizeof(T_index), num_cols + 1, fp);

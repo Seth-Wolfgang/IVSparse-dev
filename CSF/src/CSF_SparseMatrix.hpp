@@ -326,6 +326,13 @@ namespace CSF {
         void *beginPtr();
 
         /**
+         * @brief Returns a pointer to the beginning of the compressed matrix
+         * 
+         * @return void* 
+         */
+        const void *beginPtr() const;
+
+        /**
          * @brief Returns a pointer to the end of the compressed matrix
          * 
          * @return void* 
@@ -366,6 +373,24 @@ namespace CSF {
          * @return uint32_t the compression level of the matrix
          */
         uint32_t compLvl();
+
+        /**
+         * @brief 
+         * 
+         * @param other 
+         * @return true 
+         * @return false 
+         */
+        bool operator==(const CSF::SparseMatrix<T, T_index, compression_level> &other);
+
+        /**
+         * @brief 
+         * 
+         * @param other 
+         * @return true 
+         * @return false 
+         */
+        bool operator!=(const CSF::SparseMatrix<T, T_index, compression_level> &other);
 
         /**
          * @brief The iterator class for the CSF::SparseMatrix
@@ -415,6 +440,12 @@ namespace CSF {
          */
 
         Iterator(const char *filePath);
+
+        /**
+         * @brief reset the iterator to the beginning of the matrix
+         * 
+         */
+        void reset();
 
         /**
          * @brief Reads in the metadata from the file
@@ -873,6 +904,13 @@ namespace CSF {
         void* colPtr();
 
         /**
+         * @brief returns a pointer to the values of the matrix
+         * 
+         * @return const void* 
+         */
+        const void *beginPtr() const;
+
+        /**
          * @brief returns the size of the values array in bytes
          * 
          * @return size_t the size of the values array in bytes
@@ -915,6 +953,24 @@ namespace CSF {
          * @return uint32_t the compression level of the matrix
          */
         uint32_t compLvl();
+
+        /**
+         * @brief
+         *
+         * @param other
+         * @return true
+         * @return false
+         */
+        bool operator==(const CSF::SparseMatrix<T, T_index, 1> &other);
+
+        /**
+         * @brief
+         *
+         * @param other
+         * @return true
+         * @return false
+         */
+        bool operator!=(const CSF::SparseMatrix<T, T_index, 1> &other);
 
         /**
          * @brief The iterator class for the CSF::SparseMatrix, this one is specialized for CSF 1

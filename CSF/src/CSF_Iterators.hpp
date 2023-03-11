@@ -98,6 +98,21 @@ namespace CSF
     bool SparseMatrix<T, T_index, compression_level>::Iterator::atBeginningOfRun() { return atFirstIndex; }
 
     template <typename T, typename T_index, int compression_level>
+    void SparseMatrix<T, T_index, compression_level>::Iterator::reset() {
+        currentIndex = data;
+
+        goToColumn(0);
+        currentCol = 0;
+
+        value = (T *)(currentIndex);
+        currentIndex = (char *)(currentIndex) + valueWidth;
+
+        // Read in the width of this run's indices and go to first index
+        newIndexWidth = *(uint8_t *)(currentIndex);
+        currentIndex = (char *)(currentIndex) + 1;
+    }
+
+    template <typename T, typename T_index, int compression_level>
     uint64_t SparseMatrix<T, T_index, compression_level>::Iterator::operator++(int) {
         
         uint64_t newIndex = interpretPointer(newIndexWidth);
@@ -133,9 +148,10 @@ namespace CSF
 
         // Depending on if the CSF::SparseMatrix is at compression level 2 or 3, we handle the index differently
         // Compression level 3 is postive delta encoded, so we return the sum of the current index and the previous ones
-        if constexpr (compression_level == 2)
+        if constexpr (compression_level == 2) {
+            index = newIndex;
             return newIndex;
-        else
+        } else
             return index += newIndex;
     }
 

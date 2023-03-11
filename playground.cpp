@@ -18,134 +18,191 @@ int main(int argc, char** argv) {
     myMatrix_e.prune(0);
     myMatrix_e.makeCompressed();
 
+    // print out the matrix
+    //std::cout << myMatrix_e << std::endl;
 
-    // create a sparse matrix from the eigen sparse matrix
-    CSF::SparseMatrix<int> myMatrix_csf(myMatrix_e);
 
-    // get the begin and end pointers
-    void * begin = myMatrix_csf.beginPtr();
-    void * end = myMatrix_csf.endPtr();
+    // create a csf sparse matrix
+    CSF::SparseMatrix<int, uint64_t, 3> myMatrix_csf3(myMatrix_e);
+    CSF::SparseMatrix<int, uint64_t, 2> myMatrix_csf2(myMatrix_e);
+    CSF::SparseMatrix<int, uint64_t, 1> myMatrix_csf1(myMatrix_e);
 
-    // print begin and end
-    std::cout << "Begin: " << begin << std::endl;
-    std::cout << "End: " << end << std::endl;
+    // write the matrix to a file
+    // myMatrix_csf3.write("test3.csf");
+    // myMatrix_csf2.write("test2.csf");
 
-    // find the distance between the begin and end pointers
-    std::cout << "Distance between begin and end: " << (int)((char*)end - (char*)begin) << std::endl;
+    // create iterators for 2 and 3
+    CSF::SparseMatrix<int, uint64_t, 3>::Iterator it3(myMatrix_csf3);
+    CSF::SparseMatrix<int, uint64_t, 2>::Iterator it2(myMatrix_csf2);
 
-    std::cout << "byte size: " << myMatrix_csf.byte_size() << std::endl;
-
-    // // get the value at end minus 1
-    // uint8_t * ending = (uint8_t*)end - 1;
-
-    // // print out the value at the end minus 1
-    // std::cout << "Value at end - 1: " << (int)*ending << std::endl;
-
-    //myMatrix_csf.write("myMatrix_csf.csf");
-
-    // create an iterator for the sparse matrix
-    CSF::SparseMatrix<int>::Iterator iter(myMatrix_csf);
-    // //CSF::Iterator<int, uint64_t, 3> iter = CSF::Iterator<int, uint64_t, 3>(myMatrix_csf);
-
-    // // print out each value in the eigen matrix
-    // //std::cout << myMatrix_e << std::endl;
-
-    // get a count
-    int eigen_count = 0;
-    int eigen_count2 = 0;
-
-    for (int i = 0; i < myMatrix_e.outerSize(); ++i) {
-        for (Eigen::SparseMatrix<int>::InnerIterator it(myMatrix_e, i); it; ++it) {
-            std::cout << it.value() << " ";
-            eigen_count += it.value();
-            eigen_count2++;
+    // check that all values are the same for 2 and 3 using the iterator
+    while (it3) {
+        it3++;
+        it2++;
+        if (*it3 != *it2) {
+            std::cout << "ERROR: values are not the same" << std::endl;
+            return 1;
         }
     }
 
-    std::cout << std::endl;
+    // print out a confirmation
+    std::cout << "SUCCESS: values are the same" << std::endl;
 
-    // get a count
-    int csf_count = 0;
-    int csf_count2 = 0;
-
-
-    // iterate over the matrix
-    while (iter)
-    {
-        iter++;
-        //std::cout << "(" << iter.getIndex() << "," << iter.getColIndex() << "," << *iter << ") ";
-        csf_count += *iter;
-        csf_count2++;
+    // loop through all values in the eigen matrix and add them together
+    int eigensum = 0;
+    for (int k = 0; k < myMatrix_e.outerSize(); ++k) {
+        for (Eigen::SparseMatrix<int>::InnerIterator it(myMatrix_e, k); it; ++it) {
+            eigensum += it.value();
+        }
     }
 
-    std::cout << std::endl;
+    // reset the iterators
+    it3.reset();
+    it2.reset();
 
-    std::cout << myMatrix_e << std::endl;
+    // loop through all values in the csf matrix and add them together
+    int csfsum3 = 0;
+    int csfsum2 = 0;
+    while (it3) {
+        it3++;
+        it2++;
+        csfsum3 += *it3;
+        csfsum2 += *it2;
+    }
+
+    // check that the sums are the same
+    if (eigensum != csfsum3 || eigensum != csfsum2) {
+        std::cout << "ERROR: sums are not the same" << std::endl;
+
+        std::cout << "eigensum: " << eigensum << std::endl;
+        std::cout << "csfsum3: " << csfsum3 << std::endl;
+        std::cout << "csfsum2: " << csfsum2 << std::endl;
+
+        return 1;
+    }
+
+    // print out a confirmation
+    std::cout << "SUCCESS: sums are the same" << std::endl;
+
+    // create a matrix from the iterator
+    CSF::SparseMatrix<int, uint64_t, 3> myMatrix_csf3_2(it3);
+    CSF::SparseMatrix<int, uint64_t, 2> myMatrix_csf2_2(it2);
+
+    // write the matrix to a file
+    // myMatrix_csf3_2.write("test3_2.csf");
+    // myMayrix_csf_2_2.write("test2_2.csf");
+
+    // check that the matrices are the same
+    if (myMatrix_csf3 != myMatrix_csf3_2 || myMatrix_csf2 != myMatrix_csf2_2) {
+        std::cout << "ERROR: matrices are not the same" << std::endl;
+        return 1;
+    }
+
+    // print out a confirmation
+    std::cout << "SUCCESS: matrices are the same" << std::endl;
 
 
-    // std::cout << std::endl;
+    // convert the matricies to other matrices
 
-    // std::cout << "Eigen count: " << eigen_count << std::endl;
-    // std::cout << "CSF count: " << csf_count << std::endl;
+    // csf 3 -> eigen
+    Eigen::SparseMatrix<int> myMatrix_e_3 = myMatrix_csf3.to_eigen();
 
-    // std::cout << "Eigen count2: " << eigen_count2 << std::endl;
-    // std::cout << "CSF count2: " << csf_count2 << std::endl;
+    // csf 2 -> eigen
+    Eigen::SparseMatrix<int> myMatrix_e_2 = myMatrix_csf2.to_eigen();
 
-    // std::cout << "Number of nonzeros in Eigen matrix: " << myMatrix_e.nonZeros() << std::endl;
-    // std::cout << "Number of nonzeros in CSF matrix: " << myMatrix_csf.nonzeros() << std::endl;
+    // make an iterator for the 2nd csf matrix
+    CSF::SparseMatrix<int, uint64_t, 2>::Iterator it2_2(myMatrix_csf2);
 
-    // std::cout << "Number of bytes for CSF: " << myMatrix_csf.byte_size() << std::endl;
+    // csf 1 -> eigen
+    Eigen::SparseMatrix<int> myMatrix_e_1 = myMatrix_csf1.to_eigen();
 
-    // construct a new matrix with the iterator
-    CSF::SparseMatrix<int> myMatrix_csf2(iter);
+    // check that the matrices are the same so check if the output of << is the same
 
-    // print out the first value in the new matrix
-    // std::cout << "compression level: " << *(uint32_t *)(myMatrix_csf2.beginPtr()) << std::endl;
+    // load the output of << into a string
+    std::stringstream ss3;
+    ss3 << myMatrix_e_3;
+    std::string str3 = ss3.str();
 
-    // write it to file
-    //myMatrix_csf2.write("myMatrix_csf2.csf");
+    std::stringstream ss2;
+    ss2 << myMatrix_e_2;
+    std::string str2 = ss2.str();
 
-    // create a csf1 matrix from the csf2 matrix
-    CSF::SparseMatrix<int, uint64_t, 1> myMatrix_csf1 = myMatrix_csf2.to_csf1();
+    std::stringstream ss1;
+    ss1 << myMatrix_e_1;
+    std::string str1 = ss1.str();
 
-    // convert it to eigen
-    Eigen::SparseMatrix<int> myMatrix_e2 = myMatrix_csf1.to_eigen();
+    // check that the strings are the same
+    if (str3 != str2 || str3 != str1) {
+        std::cout << "ERROR: eigen matrices are not the same" << std::endl;
 
-    // print out the eigen matrix
-    std::cout << myMatrix_e2 << std::endl;
+        std::cout << myMatrix_e << std::endl;
+        std::cout << "str3: " << str3 << std::endl;
+        std::cout << "str2: " << str2 << std::endl;
+        std::cout << "str1: " << str1 << std::endl;
+
+        return 1;
+    }
+
+    // print out a confirmation
+    std::cout << "SUCCESS: eigen matrices are the same" << std::endl;
 
 
+    // convert from csf1 to csf2
+
+    CSF::SparseMatrix<int, uint64_t, 2> myMatrix_csf2_1 = myMatrix_csf1.to_csf2();
+
+    // check that the matrices are the same
+    if (myMatrix_csf2 != myMatrix_csf2_1) {
+        std::cout << "ERROR: csf2 matrices are not the same" << std::endl;
+        return 1;
+    }
+
+    // print out a confirmation
+    std::cout << "SUCCESS: csf2 matrices are the same" << std::endl;
+
+    
+    // convert from csf2 to csf3
+
+    CSF::SparseMatrix<int, uint64_t, 3> myMatrix_csf3_2_2 = myMatrix_csf2_2.to_csf1().to_csf3();
+
+    // check that the matrices are the same 
+    if (myMatrix_csf3 != myMatrix_csf3_2_2) {
+        std::cout << "ERROR: csf3 matrices are not the same" << std::endl;
+        return 1;
+    }
+
+    // print out a confirmation
+    std::cout << "SUCCESS: csf3 matrices are the same" << std::endl;
 
 
-    // int numRows2 = 94;
-    // int numCols2 = 36;
-    // int sparsity2 = 1;
-    // uint64_t seed2 = 1714636915;
-    // // uint64_t seed = rand();
+    // convert from csf3 to csf2
 
-    // // generating a large random eigen sparse
-    // Eigen::SparseMatrix<double> myMatrix_e2(numRows2, numCols2);
-    // myMatrix_e2.reserve(Eigen::VectorXi::Constant(numRows2, numCols2));
-    // myMatrix_e2 = generateMatrix<double>(numRows2, numCols2, sparsity2, seed2);
-    // //myMatrix_e2.prune(0);
-    // myMatrix_e2.makeCompressed();
+    CSF::SparseMatrix<int, uint64_t, 2> myMatrix_csf2_3 = myMatrix_csf3.to_csf1().to_csf2();
 
-    // // print out the matrix
-    // std::cout << myMatrix_e2 << std::endl;
+    // check that the matrices are the same
+    if (myMatrix_csf2 != myMatrix_csf2_3) {
+        std::cout << "ERROR: csf2 matrices are not the same" << std::endl;
+        return 1;
+    }
 
-    // // create a sparse matrix from the eigen sparse matrix
-    // CSF::SparseMatrix<double, uint8_t, 3> myMatrix_csf3(myMatrix_e2);
+    // print out a confirmation
+    std::cout << "SUCCESS: csf2 matrices are the same" << std::endl;
 
-    // // get the begin and end pointers
-    // void * begin2 = myMatrix_csf3.beginPtr();
-    // void * end2 = myMatrix_csf3.endPtr();
 
-    // // print begin and end
-    // std::cout << "Begin: " << begin2 << std::endl;
-    // std::cout << "End: " << end2 << std::endl;
+    // compare two csf1 matricies that are the exact same
 
-    // // write it to file
-    // myMatrix_csf3.write("myMatrix_csf3.csf");
+    // create 2 csf1 matrices from eigen with different names
+    CSF::SparseMatrix<int, uint64_t, 1> mytest1(myMatrix_e);
+    CSF::SparseMatrix<int, uint64_t, 1> mytest2(myMatrix_e);
+
+    // check that the matrices are the same
+    // if (mytest1 != mytest2) {
+    //     std::cout << "ERROR: csf1 matrices are not the same" << std::endl;
+    //     return 1;
+    // }
+
+    // // print out a confirmation
+    // std::cout << "SUCCESS: csf1 matrices are the same" << std::endl;
 
     return 0;
 }

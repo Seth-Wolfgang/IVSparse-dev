@@ -685,7 +685,7 @@ namespace CSF {
         }
 
         // set compression size
-        compression_size = num_nonzeros * sizeof(T) + num_nonzeros * sizeof(T_index) + (num_cols + 1) * sizeof(T_index);
+        compression_size = (num_nonzeros * sizeof(T)) + (num_nonzeros * sizeof(T_index)) + ((num_cols + 1) * sizeof(T_index)) + META_DATA_SIZE;
 
     }
 
@@ -738,7 +738,7 @@ namespace CSF {
             this->col_p = *col_p;
         }
 
-        compression_size = num_nonzeros * sizeof(T) + num_nonzeros * sizeof(T_index) + (num_cols + 1) * sizeof(T_index);
+        compression_size = num_nonzeros * sizeof(T) + num_nonzeros * sizeof(T_index) + (num_cols + 1) * sizeof(T_index) + META_DATA_SIZE;
     }
 
     template <typename T, typename T_index>
@@ -790,7 +790,7 @@ namespace CSF {
         // close file
         fclose(file);
 
-        compression_size = num_nonzeros * sizeof(T) + num_nonzeros * sizeof(T_index) + (num_cols + 1) * sizeof(T_index);
+        compression_size = num_nonzeros * sizeof(T) + num_nonzeros * sizeof(T_index) + (num_cols + 1) * sizeof(T_index) + META_DATA_SIZE;
 
         user_checks();
     }
@@ -803,7 +803,7 @@ namespace CSF {
         num_rows = mat.rows();
         num_cols = mat.cols();
         num_nonzeros = mat.nonzeros();
-        compression_size = num_nonzeros * sizeof(T) + num_nonzeros * sizeof(T_index) + (num_cols + 1) * sizeof(T_index);
+        compression_size = num_nonzeros * sizeof(T) + num_nonzeros * sizeof(T_index) + (num_cols + 1) * sizeof(T_index) + META_DATA_SIZE;
 
         // set types
         row_t = sizeof(T_index);
