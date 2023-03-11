@@ -11,7 +11,7 @@
 
 #pragma once
 
-// Debug flag for performance testing
+// Debug flag for performance testing (set to true to be faster)
 #define DEBUG false
 
 #define NUM_META_DATA 7
@@ -36,13 +36,15 @@ namespace CSF {
     template <typename T, typename T_index, int compression_level>
     SparseMatrix<T, T_index, compression_level>::SparseMatrix(Eigen::SparseMatrix<T> &mat, bool destroy)
     {
-        // check that the matrix is in column major order
-        if (mat.IsRowMajor)
-            throw std::invalid_argument("The matrix must be in column major order");
+        if constexpr (DEBUG) {
+            // check that the matrix is in column major order
+            if (mat.IsRowMajor)
+                throw std::invalid_argument("The matrix must be in column major order");
 
-        // check that the matrix is in compressed format
-        if (mat.isCompressed() == false)
-            mat.makeCompressed();
+            // check that the matrix is in compressed format
+            if (mat.isCompressed() == false)
+                mat.makeCompressed();
+        }
 
         // intialize the matrix
         num_rows = mat.rows();
@@ -92,9 +94,11 @@ namespace CSF {
                                                               size_t non_zeros, size_t row_num, size_t col_num,
                                                               bool destroy)
     {
-        // Check that templates T and values_t are the same
-        if (!std::is_same<T, values_t>::value)
-            throw std::invalid_argument("The values type must be the same as the template type");
+        if constexpr (DEBUG) {
+            // Check that templates T and values_t are the same
+            if (!std::is_same<T, values_t>::value)
+                throw std::invalid_argument("The values type must be the same as the template type");
+        }
 
         // intialize the matrix
         num_rows = row_num;
@@ -195,7 +199,9 @@ namespace CSF {
         // ------------ End of Metadata ------------ //
 
         // run user checks on the data that came in to ensure that it is valid
-        user_checks();
+        if constexpr (DEBUG) {
+            user_checks();
+        }
 
     }
 
@@ -243,7 +249,9 @@ namespace CSF {
         // ------- End of Metadata ------- //
 
         // run user checks on the data that came in to ensure that it is valid
-        user_checks();
+        if constexpr (DEBUG) {
+            user_checks();
+        }
     }
 
     // TODO: add a constructor that takes a CSF::Iterator (WIP)
@@ -286,7 +294,9 @@ namespace CSF {
         num_nonzeros = metaData[6];
 
         // run user checks on the data that came in to ensure that it is valid
-        user_checks();
+        if constexpr (DEBUG) {
+            user_checks();
+        }
     }
 
     template <typename T, typename T_index, int compression_level>
@@ -373,11 +383,14 @@ namespace CSF {
     void SparseMatrix<T, T_index, compression_level>::compress(values_type *vals, rows_type *indexes, cols_type *col_p)
     {
 
-        // check that row or col type isn't float or double
-        if (std::is_floating_point<rows_type>::value || std::is_floating_point<cols_type>::value)
-            throw std::invalid_argument("The row and column types must be non-floating point types");
+        if constexpr (DEBUG) {
+            // check that row or col type isn't float or double
+            if (std::is_floating_point<rows_type>::value || std::is_floating_point<cols_type>::value)
+                throw std::invalid_argument("The row and column types must be non-floating point types");
 
-        //! Run more user checks on values_type, rows_type, and cols_type
+            //! Run more user checks on values_type, rows_type, and cols_type
+
+        }
 
         // determine the type of each value
         if (compression_level == 2) {
@@ -392,7 +405,9 @@ namespace CSF {
         val_t = encode_valt();
 
         // run user checks on the data that came in to ensure that it is valid
-        user_checks();
+        if constexpr (DEBUG) {
+            user_checks();
+        }
 
         // allocate memory for the matrix
         allocate_memory();
@@ -634,12 +649,14 @@ namespace CSF {
     template <typename T, typename T_index>
     SparseMatrix<T, T_index, 1>::SparseMatrix(Eigen::SparseMatrix<T> &mat, bool destroy)
     {
-        if (mat.IsRowMajor)
-            throw std::invalid_argument("The matrix must be in column major order");
+        if constexpr (DEBUG) {
+            if (mat.IsRowMajor)
+                throw std::invalid_argument("The matrix must be in column major order");
 
-        // check that the matrix is in compressed format
-        if (mat.isCompressed() == false)
-            mat.makeCompressed();
+            // check that the matrix is in compressed format
+            if (mat.isCompressed() == false)
+                mat.makeCompressed();
+        }
 
         // set size variables
         num_rows = mat.rows();
@@ -651,7 +668,9 @@ namespace CSF {
         col_t = sizeof(T_index);
         val_t = encode_valt();
 
-        user_checks();
+        if constexpr (DEBUG) {
+            user_checks();
+        }
 
         // if destroy is false copy the data
         if (!destroy) {
@@ -695,14 +714,16 @@ namespace CSF {
                                                 size_t non_zeros, size_t row_num, size_t col_num,
                                                 bool destroy)
     {
-        // assert that values_t is the same as T
-        static_assert(std::is_same<values_t, T>::value, "type of value array must be the same as value template parameter");
+        if constexpr (DEBUG) {
+            // assert that values_t is the same as T
+            static_assert(std::is_same<values_t, T>::value, "type of value array must be the same as value template parameter");
 
-        // assert that row_ind is the same size as T_index
-        static_assert(sizeof(row_ind) == sizeof(T_index), "type of row index array must be the same size as row index template parameter");
+            // assert that row_ind is the same size as T_index
+            static_assert(sizeof(row_ind) == sizeof(T_index), "type of row index array must be the same size as row index template parameter");
 
-        // assert that col_ind is the same size as T_index
-        static_assert(sizeof(col_ind) == sizeof(T_index), "type of column index array must be the same size as column index template parameter");
+            // assert that col_ind is the same size as T_index
+            static_assert(sizeof(col_ind) == sizeof(T_index), "type of column index array must be the same size as column index template parameter");
+        }
 
         // set variables
         num_rows = row_num;
@@ -714,7 +735,9 @@ namespace CSF {
         col_t = sizeof(T_index);
         val_t = encode_valt();
 
-        user_checks();
+        if constexpr (DEBUG) {
+            user_checks();
+        }
 
         // if destroy is false copy the data
         if (!destroy) {
@@ -792,7 +815,9 @@ namespace CSF {
 
         compression_size = num_nonzeros * sizeof(T) + num_nonzeros * sizeof(T_index) + (num_cols + 1) * sizeof(T_index) + META_DATA_SIZE;
 
-        user_checks();
+        if constexpr (DEBUG) {
+            user_checks();
+        }
     }
 
     template <typename T, typename T_index>
@@ -810,7 +835,9 @@ namespace CSF {
         col_t = sizeof(T_index);
         val_t = encode_valt();
 
-        user_checks();
+        if constexpr (DEBUG) {
+            user_checks();
+        }
 
         // copy data
         try {
