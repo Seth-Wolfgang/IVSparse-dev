@@ -254,7 +254,7 @@ namespace CSF {
         }
     }
 
-    // TODO: add a constructor that takes a CSF::Iterator (WIP)
+    // TODO: Needs more testing and user checks
     template <typename T, typename T_index, int compression_level>
     SparseMatrix<T, T_index, compression_level>::SparseMatrix(typename CSF::SparseMatrix<T, T_index, compression_level>::Iterator &iter){
 
@@ -297,20 +297,6 @@ namespace CSF {
         if constexpr (DEBUG) {
             user_checks();
         }
-    }
-
-    template <typename T, typename T_index, int compression_level>
-    template <typename T2, typename T_index2, int compression_level2>
-    SparseMatrix<T, T_index, compression_level>::SparseMatrix(CSF::SparseMatrix<T2, T_index2, compression_level2> &mat) {
-
-        // initialize the matrix variables
-        num_rows = mat.rows();
-        num_cols = mat.cols();
-        num_nonzeros = mat.nonzeros();
-
-        
-
-
     }
 
     // Destructor
@@ -759,6 +745,58 @@ namespace CSF {
         }
 
         compression_size = num_nonzeros * sizeof(T) + num_nonzeros * sizeof(T_index) + (num_cols + 1) * sizeof(T_index) + META_DATA_SIZE;
+    }
+
+    template <typename T, typename T_index>
+    template <typename T2, typename T_index2, int compression_level>
+    SparseMatrix<T, T_index, 1>::SparseMatrix(CSF::SparseMatrix<T2, T_index2, compression_level> &mat) {
+        // if mat is not compression level 1 convert it
+        CSF::SparseMatrix<T2, T_index2, 1> mat2 = mat.to_csf1();
+        
+
+        // malloc space for vals, indexes, and col_p
+        try {
+            vals = (T *)malloc(mat2.nonzeros() * sizeof(T));
+            indexes = (T_index *)malloc(mat2.nonzeros() * sizeof(T_index));
+            col_p = (T_index *)malloc((mat2.cols() + 1) * sizeof(T_index));
+        } catch (std::bad_alloc &e) {
+            std::cout << "Error: " << e.what() << std::endl;
+            exit(1);
+        }
+
+        // copy data
+        if (std::is_same<T, T2>::value) {
+            memcpy(vals, mat2.valuePtr(), mat2.nonzeros() * sizeof(T));
+        } else {
+            for (size_t i = 0; i < mat2.nonzeros(); i++)
+                vals[i] = (T)((T2*)mat2.valuePtr())[i];
+        }
+
+        if (std::is_same<T_index, T_index2>::value) {
+            memcpy(indexes, mat2.indexPtr(), mat2.nonzeros() * sizeof(T_index));
+            memcpy(col_p, mat2.colPtr(), (mat2.cols() + 1) * sizeof(T_index));
+        } else {
+            for (size_t i = 0; i < mat2.nonzeros(); i++)
+                indexes[i] = (T_index)((T_index2 *)mat2.indexPtr())[i];
+
+            for (size_t i = 0; i < mat2.cols() + 1; i++)
+                col_p[i] = (T_index)((T_index2 *)mat2.colPtr())[i];
+        }
+
+        // set variables
+        num_rows = mat2.rows();
+        num_cols = mat2.cols();
+        num_nonzeros = mat2.nonzeros();
+        compression_size = num_nonzeros * sizeof(T) + num_nonzeros * sizeof(T_index) + (num_cols + 1) * sizeof(T_index) + META_DATA_SIZE;
+
+        // set types
+        row_t = sizeof(T_index);
+        col_t = sizeof(T_index);
+        val_t = encode_valt();
+
+        if constexpr (DEBUG) {
+            user_checks();
+        }
     }
 
     template <typename T, typename T_index>

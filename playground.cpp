@@ -260,5 +260,30 @@ int main(int argc, char** argv) {
     // print out a confirmation
     std::cout << "SUCCESS: csf2 matrices are the same!!!!!!!!!!!! AGAIN" << std::endl;
 
+
+    // test the new CSF1 constructor
+    CSF::SparseMatrix<uint32_t, uint32_t, 1> testing(myMatrix_csf3);
+
+    // write to file
+    testing.write("testing.csf");
+
+    // convert myMatrix_csf3 to CSF1
+    CSF::SparseMatrix<int, uint64_t, 1> myMatrix_csf1_4 = myMatrix_csf3.to_csf1();
+
+    // change the value type
+    CSF::SparseMatrix<uint32_t, uint64_t, 1> myMatrix_csf1_5 = myMatrix_csf1_4.change_val_type<uint32_t>();
+
+    // change the index type
+    CSF::SparseMatrix<uint32_t, uint32_t, 1> myMatrix_csf1_6 = myMatrix_csf1_5.change_idx_type<uint32_t>();
+
+    // compare the matrices
+    if (myMatrix_csf1_6 != testing) {
+        std::cout << "ERROR: csf1 matrices are not the same" << std::endl;
+        return 1;
+    }
+
+    // print out a confirmation
+    std::cout << "SUCCESS: csf1 matrices are the same!!!!!!!!!!!! AGAIN AGAIN" << std::endl;
+
     return 0;
 }
