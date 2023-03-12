@@ -29,6 +29,7 @@ namespace CSF
         }
 
         // Set the pointer to the start of the data
+        compression_size = comp_size_guess;
         comp_ptr = begin_ptr;
     }
 
@@ -170,7 +171,7 @@ namespace CSF
         // while the iterator hasn't hit the next column keep going
         while (it.getColIndex() == col) {
             it++;
-
+            std::cout << "Value at row: " << it.getIndex() << ", col: " << it.getColIndex() << " is " << *it << std::endl;
             // if the row matches the row we are looking for, return the value
             if (it.getIndex() == row) {
                 val = *it;

@@ -12,8 +12,12 @@
 #pragma once
 
 // Debug flag for performance testing (set to true to be faster)
-#define DEBUG false
+#define DEBUG true
 
+// valgrind flag because it likes to mess with realloc
+#define VALGRIND true
+
+// Number of meta data values
 #define NUM_META_DATA 7
 
 // Standard Libraries for include
@@ -443,6 +447,12 @@ namespace CSF {
                             *(T_index *)(comp_ptr) = (indexes)[k];
                             comp_ptr = (T_index *)(comp_ptr) + 1;
 
+                            if constexpr (DEBUG) {
+                                // check that we didn't overflow the malloc'd memory
+                                if (comp_ptr > (void *)((uint8_t *)begin_ptr + compression_size))
+                                    throw std::invalid_argument("The compression size is too small");
+                            }
+
                             // set value to zero so we don't see it again later
                             (vals)[k] = 0;
                         }
@@ -585,30 +595,23 @@ namespace CSF {
 
         //! vvvvv HERE BECAUSE VALGRIND DOESN'T REALLOC PROPERLY vvvvv !//
         void* begin_ptr_temp;
-        if (DEBUG) {
-            // resize data to fit actual size
-            try {
-                begin_ptr_temp = realloc(begin_ptr, compression_size);
-            } catch (std::bad_alloc &e) {
-                std::cout << "Error: " << e.what() << std::endl;
-                exit(1);
-            }
+        if (VALGRIND) {
+            // handle if realloc moves the pointer
+            
+            // malloc new space
+            begin_ptr_temp = malloc(compression_size);
 
-            if (begin_ptr_temp != (void *)((uint8_t *)(comp_ptr) - compression_size)) {
-                std::cout << "Error: realloc moved memory" << std::endl;
+            // copy data to new space
+            memcpy(begin_ptr_temp, begin_ptr, compression_size);
 
-                // copy data to new location
-                memmove(begin_ptr_temp, begin_ptr, compression_size);
+            // free old space
+            free(begin_ptr);
 
-                // move comp_ptr to new location
-                comp_ptr = (uint8_t *)(begin_ptr_temp) + compression_size;
+            // set begin_ptr to new space
+            begin_ptr = begin_ptr_temp;
 
-                // free old memory
-                free(begin_ptr);
-
-                // set begin_ptr to new location
-                begin_ptr = begin_ptr_temp;
-            }
+            // set comp_ptr to new space
+            comp_ptr = (uint8_t *)(begin_ptr) + compression_size;
         } else {
             
             try {

@@ -24,7 +24,6 @@ namespace CSF
         // Skips metadata and goes to first column
         currentIndex = (void *)((char *)(currentIndex) + META_DATA_SIZE); // ?goes to first col pointer?
         goToColumn(0); // skips past col_p and delim to the start of actual data
-        currentCol = 0;
 
         // Insures the matrix is not empty
         assert(currentIndex < endOfData);
@@ -50,7 +49,6 @@ namespace CSF
         // valueWidth is set and the first value is read in
         valueWidth = metadata[4];
         goToColumn(0);
-        currentCol = 0;
 
         value = (T *)(currentIndex);
         currentIndex = (char *)(currentIndex) + valueWidth;
@@ -102,7 +100,6 @@ namespace CSF
         currentIndex = data;
 
         goToColumn(0);
-        currentCol = 0;
 
         value = (T *)(currentIndex);
         currentIndex = (char *)(currentIndex) + valueWidth;
@@ -200,7 +197,10 @@ namespace CSF
     }
 
     template <typename T, typename T_index, int compression_level>
-    void SparseMatrix<T, T_index, compression_level>::Iterator::goToColumn(int column) { currentIndex = getColumnAddress(column); }
+    void SparseMatrix<T, T_index, compression_level>::Iterator::goToColumn(int column) { 
+        currentIndex = getColumnAddress(column);
+        currentCol = column;
+    }
 
     template <typename T, typename T_index, int compression_level>
     bool SparseMatrix<T, T_index, compression_level>::Iterator::compareAddress(void *address) { return currentIndex >= address; }

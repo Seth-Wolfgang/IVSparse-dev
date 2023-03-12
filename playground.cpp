@@ -293,7 +293,7 @@ int main(int argc, char** argv) {
     // get the value in the csf3 matrix at (5, 8)
     int csf3_val = myMatrix_csf3.coeff(8, 0);
 
-    myMatrix_csf3.write("test.csf");
+    //myMatrix_csf3.write("test.csf");
 
     // check that the values are the same
     if (eigen_val != csf3_val) {
