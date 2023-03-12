@@ -393,6 +393,12 @@ namespace CSF {
         bool operator!=(const CSF::SparseMatrix<T, T_index, compression_level> &other);
 
         /**
+         * @brief prints matrix details to stdout
+         * 
+         */
+        void print();
+
+        /**
          * @brief The iterator class for the CSF::SparseMatrix
          * 
          */

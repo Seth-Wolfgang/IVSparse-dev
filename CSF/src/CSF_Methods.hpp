@@ -144,7 +144,14 @@ namespace CSF
         return !(*this == other);
     }
 
-    
+    template <typename T, typename T_index, int compression_level>
+    void SparseMatrix<T, T_index, compression_level>::print() {
+        std::cout << "Number of rows: " << num_rows << std::endl;
+        std::cout << "Number of columns: " << num_cols << std::endl;
+        std::cout << "Number of nonzeros: " << num_nonzeros << std::endl;
+        std::cout << "Compression level: " << compression_level << std::endl;
+        std::cout << "Compression size: " << compression_size << std::endl;
+    }
 
     // write data to file
     template <typename T, typename T_index, int compression_level>

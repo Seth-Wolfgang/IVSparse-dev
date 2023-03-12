@@ -285,5 +285,7 @@ int main(int argc, char** argv) {
     // print out a confirmation
     std::cout << "SUCCESS: csf1 matrices are the same!!!!!!!!!!!! AGAIN AGAIN" << std::endl;
 
+    //myMatrix_csf3.print();
+
     return 0;
 }
