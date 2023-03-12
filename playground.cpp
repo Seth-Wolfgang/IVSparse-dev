@@ -18,9 +18,6 @@ int main(int argc, char** argv) {
     myMatrix_e.prune(0);
     myMatrix_e.makeCompressed();
 
-    // print out the matrix
-    //std::cout << myMatrix_e << std::endl;
-
 
     // create a csf sparse matrix
     CSF::SparseMatrix<int, uint64_t, 3> myMatrix_csf3(myMatrix_e);
@@ -265,7 +262,7 @@ int main(int argc, char** argv) {
     CSF::SparseMatrix<uint32_t, uint32_t, 1> testing(myMatrix_csf3);
 
     // write to file
-    testing.write("testing.csf");
+    // testing.write("testing.csf");
 
     // convert myMatrix_csf3 to CSF1
     CSF::SparseMatrix<int, uint64_t, 1> myMatrix_csf1_4 = myMatrix_csf3.to_csf1();
@@ -286,6 +283,29 @@ int main(int argc, char** argv) {
     std::cout << "SUCCESS: csf1 matrices are the same!!!!!!!!!!!! AGAIN AGAIN" << std::endl;
 
     //myMatrix_csf3.print();
+
+
+    // test the coeff() function on a csf3 matrix
+    
+    // get the value in the eigen matrix at (5, 8)
+    int eigen_val = myMatrix_e.coeff(8, 0);
+
+    // get the value in the csf3 matrix at (5, 8)
+    int csf3_val = myMatrix_csf3.coeff(8, 0);
+
+    myMatrix_csf3.write("test.csf");
+
+    // check that the values are the same
+    if (eigen_val != csf3_val) {
+        std::cout << "ERROR: csf3 values are not the same" << std::endl;
+        std::cout << eigen_val << " " << csf3_val << std::endl;
+        return 1;
+    }
+
+    // print out a confirmation
+    std::cout << "SUCCESS: " << eigen_val << " " << csf3_val << std::endl;
+
+    //std::cout << myMatrix_e << std::endl;
 
     return 0;
 }

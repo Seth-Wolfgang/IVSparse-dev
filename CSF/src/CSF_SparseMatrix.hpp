@@ -399,6 +399,15 @@ namespace CSF {
         void print();
 
         /**
+         * @brief gets the element at the given row and column
+         * 
+         * @param row 
+         * @param col 
+         * @return T 
+         */
+        T coeff(size_t row, size_t col);
+
+        /**
          * @brief The iterator class for the CSF::SparseMatrix
          * 
          */

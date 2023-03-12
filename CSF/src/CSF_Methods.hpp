@@ -153,6 +153,34 @@ namespace CSF
         std::cout << "Compression size: " << compression_size << std::endl;
     }
 
+    template <typename T, typename T_index, int compression_level>
+    T SparseMatrix<T, T_index, compression_level>::coeff(size_t row, size_t col) {
+        // check that the row and column are within bounds
+        if (row >= num_rows || col >= num_cols)
+            throw std::out_of_range("The row and column must be within the bounds of the matrix");
+        
+        // get an iterator to the first element in the col
+        CSF::SparseMatrix<T, T_index, compression_level>::Iterator it(*this);
+
+        if (col > 0)
+            it.goToColumn(col);
+
+        T val = 0;
+
+        // while the iterator hasn't hit the next column keep going
+        while (it.getColIndex() == col) {
+            it++;
+
+            // if the row matches the row we are looking for, return the value
+            if (it.getIndex() == row) {
+                val = *it;
+                break;
+            }
+        }
+
+        return val;
+    }
+
     // write data to file
     template <typename T, typename T_index, int compression_level>
     void SparseMatrix<T, T_index, compression_level>::write(const char *filename)
