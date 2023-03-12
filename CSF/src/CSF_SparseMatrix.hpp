@@ -398,6 +398,12 @@ namespace CSF {
          */
         class Iterator;
 
+        /**
+         * @brief Vector representation of a column
+         * 
+         */
+        class Column;
+
     };
 
     template <typename T, typename T_index, int compression_level>
@@ -881,6 +887,24 @@ namespace CSF {
          * @return Eigen::SparseMatrix<T> the Eigen matrix from CSF 1
          */
         Eigen::SparseMatrix<T> to_eigen();
+
+        /**
+         * @brief returns a new CSF1 matrix with the new value type //TODO: Add user checks
+         * 
+         * @tparam new_T 
+         * @return CSF::SparseMatrix<new_T, T_index, 1> 
+         */
+        template <typename new_T>
+        CSF::SparseMatrix<new_T, T_index, 1> change_val_type();
+
+        /**
+         * @brief returns a new CSF1 matrix with the new index type //TODO: Add user checks
+         * 
+         * @tparam new_T_index 
+         * @return CSF::SparseMatrix<T, new_T_index, 1> 
+         */
+        template <typename new_T_index>
+        CSF::SparseMatrix<T, new_T_index, 1> change_idx_type();
 
         /**
          * @brief returns a pointer to the values of the matrix

@@ -243,6 +243,83 @@ namespace CSF
     }
 
     template <typename T, typename T_index>
+    template <typename new_T>
+    CSF::SparseMatrix<new_T, T_index, 1> SparseMatrix<T, T_index, 1>::change_val_type() {
+        // ensure that the new value type is not the same as the old value type
+        if (std::is_same<new_T, T>::value)
+            throw std::invalid_argument("The new value type must be different than the old value type.");
+
+        // ensure that the new value type is arithmetic or throw an error
+        if (!std::is_arithmetic<new_T>::value)
+            throw std::invalid_argument("The new value type must be arithmetic. (int, float, double, etc.)");
+        
+        // create a new matrix with the new value type and return it
+        
+        // create an array to convert the values to
+        new_T *new_values = new new_T[num_nonzeros];
+
+        // get a pointer to the values in the matrix
+        T *old_values = vals;
+
+        // convert the values
+        for (size_t i = 0; i < num_nonzeros; i++) {
+            new_values[i] = (new_T)(old_values[i]);
+        }
+
+        // create a new matrix
+        CSF::SparseMatrix<new_T, T_index, 1> new_mat(&new_values, &indexes, &col_p, num_nonzeros, num_rows, num_cols);
+
+        // free the memory
+        delete[] new_values;
+
+        return new_mat;
+    }
+
+    template <typename T, typename T_index>
+    template <typename new_T_index>
+    CSF::SparseMatrix<T, new_T_index, 1> SparseMatrix<T, T_index, 1>::change_idx_type() {
+        // ensure that the new index type is not the same as the old index type
+        if (std::is_same<new_T_index, T_index>::value)
+            throw std::invalid_argument("The new index type must be different than the old index type.");
+
+        // ensure that the new index type is arithmetic or throw an error
+        if (!std::is_arithmetic<new_T_index>::value)
+            throw std::invalid_argument("The new index type must be arithmetic. (int, float, double, etc.)");
+
+        // ensure the the new index type is not floating point or bool
+        if (std::is_floating_point<new_T_index>::value || std::is_same<new_T_index, bool>::value)
+            throw std::invalid_argument("The new index type must be an integer type.");
+        
+        // create a new matrix with the new index type and return it
+
+        // create an array to convert the indexes to
+        new_T_index *new_indexes = new new_T_index[num_nonzeros];
+        new_T_index *new_col_p = new new_T_index[num_cols + 1];
+
+        // get a pointer to the indexes in the matrix
+        T_index *old_indexes = indexes;
+        T_index *old_col_p = col_p;
+
+        // convert the indexes
+        for (size_t i = 0; i < num_nonzeros; i++) {
+            new_indexes[i] = (new_T_index)(old_indexes[i]);
+        }
+
+        for (size_t i = 0; i < num_cols + 1; i++) {
+            new_col_p[i] = (new_T_index)(old_col_p[i]);
+        }
+
+        // create a new matrix
+        CSF::SparseMatrix<T, new_T_index, 1> new_mat(&vals, &new_indexes, &new_col_p, num_nonzeros, num_rows, num_cols);
+
+        // free the memory
+        delete[] new_indexes;
+        delete[] new_col_p;
+
+        return new_mat;
+    }
+
+    template <typename T, typename T_index>
     uint32_t SparseMatrix<T, T_index, 1>::rows() { return num_rows; }
 
     template <typename T, typename T_index>
@@ -311,7 +388,7 @@ namespace CSF
         if (!std::is_arithmetic<T>::value || !std::is_arithmetic<T_index>::value)
             throw std::invalid_argument("The value and index types must be numeric types");
 
-        // check that the value type or index type is not a bool
+        // check that the index type is not a bool
         if (std::is_same<T_index, bool>::value)
             throw std::invalid_argument("The value and index types must not be bool");
 

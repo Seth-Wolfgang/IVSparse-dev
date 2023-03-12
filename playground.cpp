@@ -204,5 +204,61 @@ int main(int argc, char** argv) {
     // print out a confirmation
     std::cout << "SUCCESS: csf1 matrices are the same" << std::endl;
 
+
+    // change the value type of a CSF1 matrix using change_value_type()
+    CSF::SparseMatrix<uint32_t, uint64_t, 1> myMatrix_csf1_2 = myMatrix_csf1.change_val_type<uint32_t>();
+
+    // write the matrix to a file
+    //myMatrix_csf1_2.write("test1_2.csf");
+
+    // convert to CSF3
+    CSF::SparseMatrix<uint32_t, uint64_t, 3> myMatrix_csf3_22 = myMatrix_csf1_2.to_csf3();
+
+    // write the matrix to a file
+    //myMatrix_csf3_22.write("test3_22.csf");
+
+    // convert back to CSF1
+    CSF::SparseMatrix<uint32_t, uint64_t, 1> myMatrix_csf1_22 = myMatrix_csf3_22.to_csf1();
+
+    // change the value type back to int
+    CSF::SparseMatrix<int, uint64_t, 1> myMatrix_csf1_222 = myMatrix_csf1_22.change_val_type<int>();
+
+    // compress it to csf2
+    CSF::SparseMatrix<int, uint64_t, 2> myMatrix_csf2_222 = myMatrix_csf1_222.to_csf2();
+
+    // see if the matrices are the same
+    if (myMatrix_csf2_222 != myMatrix_csf2) {
+        std::cout << "ERROR: csf2 matrices are not the same" << std::endl;
+        return 1;
+    }
+
+    // print out a confirmation
+    std::cout << "SUCCESS: csf2 matrices are the same!!!!!!!!!!!!" << std::endl;
+
+
+    // Test changing index type
+    CSF::SparseMatrix<int, uint32_t, 1> myMatrix_csf1_3 = myMatrix_csf1.change_idx_type<uint32_t>();
+
+    // convert to CSF3
+    CSF::SparseMatrix<int, uint32_t, 3> myMatrix_csf3_3 = myMatrix_csf1_3.to_csf3();
+
+    // convert back to CSF1
+    CSF::SparseMatrix<int, uint32_t, 1> myMatrix_csf1_33 = myMatrix_csf3_3.to_csf1();
+
+    // change the index type back to uint64_t
+    CSF::SparseMatrix<int, uint64_t, 1> myMatrix_csf1_333 = myMatrix_csf1_33.change_idx_type<uint64_t>();
+
+    // compress it to csf2
+    CSF::SparseMatrix<int, uint64_t, 2> myMatrix_csf2_333 = myMatrix_csf1_333.to_csf2();
+
+    // see if the matrices are the same
+    if (myMatrix_csf2_333 != myMatrix_csf2) {
+        std::cout << "ERROR: csf2 matrices are not the same" << std::endl;
+        return 1;
+    }
+
+    // print out a confirmation
+    std::cout << "SUCCESS: csf2 matrices are the same!!!!!!!!!!!! AGAIN" << std::endl;
+
     return 0;
 }
