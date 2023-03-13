@@ -13,7 +13,7 @@ project(CSF)
 enable_testing()
 
 # Required for googletest
-set(CMAKE_CXX_STANDARD 14)
+set(CMAKE_CXX_STANDARD 17)
 
 include(FetchContent)
 FetchContent_Declare(

@@ -98,11 +98,9 @@ bool iteratorBenchmark(int numRows, int numCols, int sparsity, uint64_t seed, in
     CSF::SparseMatrix<T, uint8_t, 3> CSFMatrix(eigenMatrix);
 
     // Check if the matrix is empty
-    if(getSum<T>(eigenMatrix) == 0){
+    if (getSum<T>(eigenMatrix) == 0) {
         return true;
     }
-
-    
 
     CSFMatrix.write("matrix.bin");
 
@@ -141,36 +139,32 @@ bool ScalarMultiplicationBench(int numRows, int numCols, int sparsity, uint64_t 
     Eigen::SparseMatrix<T> eigenMatrix(numRows, numCols);
     eigenMatrix = generateMatrix<T>(numRows, numCols, sparsity, seed);
     eigenMatrix.makeCompressed();
-
     // Converting to CSF
     CSF::SparseMatrix<T, T, 3> CSFMatrix(eigenMatrix);
-    CSF::SparseMatrix<T, T, 3> CSFMatrix2(eigenMatrix);
 
     // Check if the matrix is empty
-    if(getSum<T>(eigenMatrix) == 0){
+    if (getSum<T>(eigenMatrix) == 0) {
         return true;
     }
-
 
     // Getting totals
     T eigenTotal = getSum<T>(eigenMatrix);
     T originalTotal = getSum<T>(CSFMatrix);
     assert(originalTotal == eigenTotal);
-
-    CSF::scalarMultiply<T, T, 3>(CSFMatrix, 2);
+    
+    CSFMatrix = CSF::scalarMultiply<T, T, 3>(CSFMatrix, 2);
     T scaledTotal = getSum<T>(CSFMatrix);
 
-    // std::cout << "Original Matrix: " << originalTotal << "\tScaled Matrix: " << scaledTotal << std::endl;
-    // std::cout << "should be: : " << 2 * originalTotal << std::endl;
-    // std::cout << "Off by: " << scaledTotal - (2 * originalTotal) << std::endl;
-
-    // printValuesInTwo<T, T, 3>(CSFMatrix, CSFMatrix2);
+    std::cout << "Original Matrix: " << originalTotal << "\tScaled Matrix: " << scaledTotal << std::endl;
+    std::cout << "should be: : " << 2 * originalTotal << std::endl;
+    std::cout << "Off by: " << scaledTotal - (2 * originalTotal) << std::endl;
+    
     return (scaledTotal == 2 * originalTotal);
 }
 
 template<typename T>
 bool vectorMultiplicationBench(int numRows, int numCols, int sparsity, uint64_t seed, int compressionLevel) {
-
+    int value = 2;
     //Generate the test matrix
     Eigen::SparseMatrix<T> eigenMatrix(numRows, numCols);
     eigenMatrix = generateMatrix<T>(numRows, numCols, sparsity, seed);
@@ -178,30 +172,29 @@ bool vectorMultiplicationBench(int numRows, int numCols, int sparsity, uint64_t 
 
     // Converting to CSF
     CSF::SparseMatrix<T, T, 3> CSFMatrix(eigenMatrix);
-    CSF::SparseMatrix<T, T, 3> CSFVector(generateVector<T>(numCols, 2));
-    
-    // Check if the matrix is empty
-    if(getSum<T>(eigenMatrix) == 0){
-        return true;
-    }    
+    CSF::SparseMatrix<T, T, 3> CSFVector(generateVector<T>(numCols, value));
 
-    CSFVector.write("vector.bin");
-    CSFMatrix.write("matrix.bin");
+    // Check if the matrix is empty
+    if (getSum<T>(eigenMatrix) == 0) {
+        return true;
+    }
+
+    // CSFVector.write("vector.bin");
+    // CSFMatrix.write("matrix.bin");
 
     // Getting totals
     T eigenTotal = getSum<T>(eigenMatrix);
     T originalTotal = getSum<T>(CSFMatrix);
     assert(originalTotal == eigenTotal);
 
-
-    CSF::vectorMultiply<T, T, 3>(CSFMatrix, CSFVector);
+    CSFMatrix = CSF::vectorMultiply<T, T, 3>(CSFMatrix, CSFVector);
     T scaledTotal = getSum<T>(CSFMatrix);
 
 
-    // if (scaledTotal - (2 * originalTotal) != 0) {
-    //     std::cout << "Original Matrix: " << originalTotal << "\tScaled Matrix: " << scaledTotal << std::endl;
-    //     std::cout << "Off by: " << scaledTotal - (2 * originalTotal) << std::endl;
-    // }
+    if (scaledTotal - (2 * originalTotal) != 0) {
+        std::cout << "Original Matrix: " << originalTotal << "\tScaled Matrix: " << scaledTotal << std::endl;
+        std::cout << "Off by: " << scaledTotal - (2 * originalTotal) << std::endl;
+    }
 
     if (scaledTotal == 2 * originalTotal) {
         return true;
@@ -230,7 +223,7 @@ bool vectorMultiplicationBench(int numRows, int numCols, int sparsity, uint64_t 
   * @return CSF::SparseMatrix<T, T, 3>
   */
 
-
+  //Doesn't work???
 template <typename T>
 CSF::SparseMatrix<T, T, 3> generateVector(int numRows, int value) {
     // generating a large random eigen sparse
@@ -252,7 +245,6 @@ CSF::SparseMatrix<T, T, 3> generateVector(int numRows, int value) {
     return CSFVector;
 }
 
-
 /**
  * @brief Prints all values in CSF matrix
  *
@@ -272,8 +264,8 @@ void printValues(CSF::SparseMatrix<T, indexType, compressionLevel> matrix) {
 }
 
 
-template<typename T, typename indexType, int compressionLevel> 
-void printValuesInTwo(CSF::SparseMatrix<T, indexType, compressionLevel> matrix, CSF::SparseMatrix<T, indexType, compressionLevel> matrix2){
+template<typename T, typename indexType, int compressionLevel>
+void printValuesInTwo(CSF::SparseMatrix<T, indexType, compressionLevel> matrix, CSF::SparseMatrix<T, indexType, compressionLevel> matrix2) {
     typename CSF::SparseMatrix<T, indexType, compressionLevel>::Iterator newIter(matrix);
     typename CSF::SparseMatrix<T, indexType, compressionLevel>::Iterator newIter2(matrix2);
     T value = *newIter;
@@ -327,13 +319,12 @@ T getSum(CSF::SparseMatrix<T, indexType, compressionLevel> matrix) {
     T CSFTotal = 0;
     typename CSF::SparseMatrix<T, indexType, compressionLevel>::Iterator newIter(matrix);
     T value = *newIter;
+
     // std::cout << newIter.getColumnAddress(0) << std::endl;
-    while (newIter)
-    {
+    while (newIter) {
         newIter++;
         CSFTotal += *newIter;
-        if (*newIter != value)
-        {
+        if (*newIter != value) {
             value = *newIter;
         }
     }

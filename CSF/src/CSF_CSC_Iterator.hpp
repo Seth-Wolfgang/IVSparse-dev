@@ -4,7 +4,7 @@
 
 namespace CSF {
     template <typename T, typename IndexType, 1>
-    class Iterator<T, IndexType, 3> {
+    class Iterator<T, IndexType, 1> {
 
     private:
         uint64_t index = 0;
@@ -166,16 +166,6 @@ namespace CSF {
              */
 
             bool atBeginningOfRun() { return atFirstIndex; }
-
-
-
-
-
-
-
-
-
-
 
         }
     }

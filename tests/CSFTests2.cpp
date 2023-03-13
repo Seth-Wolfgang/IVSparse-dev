@@ -192,12 +192,3 @@ TEST(CSFTest, UserEntersZeroColumnsFloat) {
 
 
 
-// test for high and low sparsity on matrix/vector multiplication
-// test the deep copy constructor -> check sizes, sums, etc
-// check scalar multiplication across types, check * 0, * -1, * 1, * 2, * 0.5, * 10000
-// check vector multiplication across types, check * 0, * -1, * 1, * 2, * 0.5, * 10000 and random vectors compared to eigen
-// check each constructor
-// check that I can grab each column of a matrix as well as invalid columns. negatives should start from the back -> like python
-// check that I can access a random element of a matrix -> negatives should start from back like python
-// check that I can convert a matrix
-// check splicig matrices -> like python... arr[1:3] 

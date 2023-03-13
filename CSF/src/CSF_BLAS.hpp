@@ -1,6 +1,7 @@
 
 
 namespace CSF {
+
     // testing ground for simple linear algebra operations
     // will be replaced by operators when they are all operational
 
@@ -14,9 +15,10 @@ namespace CSF {
       * @return CSF::SparseMatrix
       */
 
-    template <typename T, typename T_index, int compression_level>
-    void scalarMultiply(CSF::SparseMatrix<T, T_index, compression_level>& matrix, int scalar) {
-        typename CSF::SparseMatrix<T, T_index, compression_level>::Iterator iter(matrix);
+    template <typename T, typename indexType, int compressionLevel>
+    CSF::SparseMatrix<T, indexType, compressionLevel> scalarMultiply(CSF::SparseMatrix<T, indexType, compressionLevel>& matrix, int scalar) {
+        // void scalarMultiply(CSF::SparseMatrix<T, indexType, compressionLevel>& matrix, int scalar) {
+        typename CSF::SparseMatrix<T, indexType, compressionLevel>::Iterator iter(matrix);
 
         //Iterate through the matrix and multiply each value by the scalar
         while (iter) {
@@ -26,7 +28,7 @@ namespace CSF {
             iter++;
         }
 
-        // return CSF::SparseMatrix<T, indexType, compressionLevel>(iter);
+        return CSF::SparseMatrix<T, indexType, compressionLevel>(iter);
     }
 
     /**
@@ -40,7 +42,7 @@ namespace CSF {
     */
 
     template <typename T, typename indexType, int compressionLevel>
-    void vectorMultiply(CSF::SparseMatrix<T, indexType, compressionLevel>& matrix, CSF::SparseMatrix<T, indexType, compressionLevel> vector) {
+    CSF::SparseMatrix<T, indexType, compressionLevel> vectorMultiply(CSF::SparseMatrix<T, indexType, compressionLevel>& matrix, CSF::SparseMatrix<T, indexType, compressionLevel> vector) {
 
         //Check that the matrix and vector dimensions match or if the vector is actually a vector
         if (matrix.cols() != vector.rows() || vector.cols() != 1) {
@@ -89,6 +91,8 @@ namespace CSF {
             }
 
         }
+        
+        return CSF::SparseMatrix<T, indexType, compressionLevel>(matIter);
     }
 
 
