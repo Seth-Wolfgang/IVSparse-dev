@@ -291,7 +291,7 @@ namespace CSF {
          * @brief Destroy the Sparse Matrix object
          *
          */
-        ~SparseMatrix();
+        // ~SparseMatrix();
 
         /**
          * @brief writes the sparse matrix to a file
@@ -391,6 +391,15 @@ namespace CSF {
          * @return false
          */
         bool operator!=(const CSF::SparseMatrix<T, T_index, compression_level>& other);
+
+        /**
+         * @brief Scalar multiplication operator for CSF::SparseMatrix
+         * 
+         * @param scalar 
+         * @return CSF::SparseMatrix<T, T_index, compression_level> 
+         */
+
+        CSF::SparseMatrix<T, T_index, compression_level> operator * (T scalar);
 
         /**
          * @brief prints matrix details to stdout
@@ -566,6 +575,7 @@ namespace CSF {
          * @return false
          */
         operator bool() { return endOfData != currentIndex; }
+        
 
         /**
          * @brief Gets the data of a specified column (WIP)
@@ -886,7 +896,7 @@ namespace CSF {
          * @brief Destroy the Sparse Matrix object
          *
          */
-        ~SparseMatrix();
+        // ~SparseMatrix();
 
         /**
          * @brief compresses the matrix to compression level 3 (CSF) and returns it
@@ -1020,6 +1030,15 @@ namespace CSF {
          * @return false
          */
         bool operator!=(const CSF::SparseMatrix<T, T_index, 1>& other);
+
+                /**
+         * @brief Scalar multiplication operator for CSF::SparseMatrix
+         * 
+         * @param scalar 
+         * @return CSF::SparseMatrix<T, T_index, compression_level> 
+         */
+
+        CSF::SparseMatrix<T, T_index, 1> operator * (T scalar);
 
         /**
          * @brief The iterator class for the CSF::SparseMatrix, this one is specialized for CSF 1

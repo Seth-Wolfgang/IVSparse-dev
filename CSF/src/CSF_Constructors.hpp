@@ -213,43 +213,50 @@ namespace CSF {
     // Deep copy constructor
     template <typename T, typename T_index, int compression_level>
     SparseMatrix<T, T_index, compression_level>::SparseMatrix(CSF::SparseMatrix<T, T_index, compression_level>& mat) {
-        // initialize the matrix variables
+
         num_rows = mat.rows();
         num_cols = mat.cols();
         num_nonzeros = mat.nonzeros();
 
-        compression_size = mat.byte_size();
+        //Checking to see if they are the same matrix
+        if (begin_ptr != mat.beginPtr()) {
+            // initialize the matrix variables
 
-        // allocate memory for the matrix
-        try {
-            begin_ptr = malloc(mat.byte_size());
+
+            compression_size = mat.byte_size();
+
+            // allocate memory for the matrix
+            try {
+                begin_ptr = malloc(mat.byte_size());
+            }
+            catch (std::bad_alloc& e) {
+                std::cerr << "Error: " << e.what() << std::endl;
+                exit(1);
+            }
+
+            // set the end pointer
+            comp_ptr = (uint8_t*)begin_ptr + mat.byte_size();
+
+            // copy the data from the matrix into the new matrix
+            memcpy(begin_ptr, mat.beginPtr(), mat.byte_size());
+
+            // set the pointer to help with reading in the data
+            void* help_ptr = begin_ptr;
+
+            // ------- Get metadata from file ------- //
+            compression = *(uint32_t*)(help_ptr);
+            help_ptr = (uint32_t*)(help_ptr)+1;
+
+            row_t = *(uint32_t*)(help_ptr);
+            help_ptr = (uint32_t*)(help_ptr)+1;
+
+            col_t = *(uint32_t*)(help_ptr);
+            help_ptr = (uint32_t*)(help_ptr)+1;
+
+            val_t = *(uint32_t*)(help_ptr);
+            help_ptr = (uint32_t*)(help_ptr)+1;
         }
-        catch (std::bad_alloc& e) {
-            std::cerr << "Error: " << e.what() << std::endl;
-            exit(1);
-        }
 
-        // set the end pointer
-        comp_ptr = (uint8_t*)begin_ptr + mat.byte_size();
-
-        // copy the data from the matrix into the new matrix
-        memcpy(begin_ptr, mat.beginPtr(), mat.byte_size());
-
-        // set the pointer to help with reading in the data
-        void* help_ptr = begin_ptr;
-
-        // ------- Get metadata from file ------- //
-        compression = *(uint32_t*)(help_ptr);
-        help_ptr = (uint32_t*)(help_ptr)+1;
-
-        row_t = *(uint32_t*)(help_ptr);
-        help_ptr = (uint32_t*)(help_ptr)+1;
-
-        col_t = *(uint32_t*)(help_ptr);
-        help_ptr = (uint32_t*)(help_ptr)+1;
-
-        val_t = *(uint32_t*)(help_ptr);
-        help_ptr = (uint32_t*)(help_ptr)+1;
 
         // ------- End of Metadata ------- //
 
@@ -298,19 +305,21 @@ namespace CSF {
         num_cols = metaData[5];
         num_nonzeros = metaData[6];
 
+        create_metadata();
+
         // run user checks on the data that came in to ensure that it is valid
         if constexpr (DEBUG) {
             user_checks();
         }
     }
 
-    // Destructor
-    template <typename T, typename T_index, int compression_level>
-    SparseMatrix<T, T_index, compression_level>::~SparseMatrix() {
-        // if the begin_ptr was assigned, free it (only place where memory is allocated)
-        if (begin_ptr != NULL)
-            free(begin_ptr);
-    }
+    // // Destructor
+    // template <typename T, typename T_index, int compression_level>
+    // SparseMatrix<T, T_index, compression_level>::~SparseMatrix() {
+    //     // if the begin_ptr was assigned, free it (only place where memory is allocated)
+    //     if (begin_ptr != NULL)
+    //         free(begin_ptr);
+    // }
 
 
     // Constructor Helper Functions ---------------------------------------------------------------------------
@@ -885,13 +894,13 @@ namespace CSF {
         memcpy(col_p, mat.col_p, (num_cols + 1) * sizeof(T_index));
     }
 
-    template <typename T, typename T_index>
-    SparseMatrix<T, T_index, 1>::~SparseMatrix() {
-        if (vals != nullptr)
-            free(vals);
-        if (indexes != nullptr)
-            free(indexes);
-        if (col_p != nullptr)
-            free(col_p);
-    }
+    // template <typename T, typename T_index>
+    // SparseMatrix<T, T_index, 1>::~SparseMatrix() {
+    //     if (vals != nullptr)
+    //         free(vals);
+    //     if (indexes != nullptr)
+    //         free(indexes);
+    //     if (col_p != nullptr)
+    //         free(col_p);
+    // }
 }

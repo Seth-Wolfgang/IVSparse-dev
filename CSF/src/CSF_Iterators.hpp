@@ -43,7 +43,7 @@ namespace CSF {
         // uint32_t params[NUM_META_DATA];
 
         memcpy(&metadata, currentIndex, META_DATA_SIZE);
-        currentIndex = (char*)(currentIndex)+META_DATA_SIZE;
+        currentIndex = (char*)(currentIndex) + META_DATA_SIZE;
 
         // valueWidth is set and the first value is read in
         valueWidth = metadata[4];
@@ -220,8 +220,8 @@ namespace CSF {
         // metadata[4] # of rows
         // metadata[5] # of columns
         // metadata[6] # of nonzeros
-
-        valueWidth = metadata[3] & 0xFF;
+        
+        valueWidth = metadata[3] & 0xF;
         numRows = metadata[4];
         numColumns = metadata[5];
     }

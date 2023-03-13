@@ -89,10 +89,14 @@ namespace CSF {
 
     template <typename T, typename T_index, int compression_level>
     void SparseMatrix<T, T_index, compression_level>::check_valt(uint32_t valt) {
-        uint8_t byte0 = valt & 0xFF;
-        uint8_t byte1 = (valt >> 8) & 0xFF;
-        uint8_t byte2 = (valt >> 16) & 0xFF;
+        uint8_t byte0 = valt & 0xF;
+        uint8_t byte1 = (valt >> 8) & 0xF;
+        uint8_t byte2 = (valt >> 16) & 0xF;
         //uint8_t byte3 = (valt >> 24) & 0xFF;
+
+        // std::cout << "byte0: " << (int)byte0 << std::endl;
+        // std::cout << "byte1: " << (int)byte1 << std::endl;
+        // std::cout << "byte2: " << (int)byte2 << std::endl;
 
         if (byte0 != sizeof(T)) {
             std::cout << "Error: Value type size does not match" << std::endl;
@@ -410,6 +414,21 @@ namespace CSF {
         return !(*this == other);
     }
 
+        template <typename T, typename indexType, int compressionLevel>
+    CSF::SparseMatrix<T, indexType, compressionLevel> SparseMatrix<T, indexType, compressionLevel>::operator * (T scalar) {
+        typename CSF::SparseMatrix<T, indexType, compressionLevel>::Iterator iter(*this);
+
+        //Iterate through the matrix and multiply each value by the scalar
+        while (iter) {
+            if (iter.atBeginningOfRun()) {
+                iter.setRunValue(scalar * *iter);
+            }
+            iter++;
+        }
+
+        return CSF::SparseMatrix<T, indexType, compressionLevel>(iter);
+    }
+
     template <typename T, typename T_index>
     void SparseMatrix<T, T_index, 1>::user_checks() {
         // throw an error if the matrix has less than one rows or columns or nonzero values
@@ -447,6 +466,10 @@ namespace CSF {
         uint8_t byte1 = (valt >> 8) & 0xFF;
         uint8_t byte2 = (valt >> 16) & 0xFF;
         //uint8_t byte3 = (valt >> 24) & 0xFF;
+
+        // std::cout << "Value type size: " << (int)byte0 << std::endl;
+        // std::cout << "Value type is floating point: " << (int)byte1 << std::endl;
+        // std::cout << "Value type is signed: " << (int)byte2 << std::endl << std::endl;
 
         if (byte0 != sizeof(T)) {
             std::cout << "Error: Value type size does not match" << std::endl;

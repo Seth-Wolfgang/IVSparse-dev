@@ -152,7 +152,7 @@ bool ScalarMultiplicationBench(int numRows, int numCols, int sparsity, uint64_t 
     T originalTotal = getSum<T>(CSFMatrix);
     assert(originalTotal == eigenTotal);
     
-    CSFMatrix = CSF::scalarMultiply<T, T, 3>(CSFMatrix, 2);
+    CSFMatrix = CSFMatrix * 2;
     T scaledTotal = getSum<T>(CSFMatrix);
 
     std::cout << "Original Matrix: " << originalTotal << "\tScaled Matrix: " << scaledTotal << std::endl;
