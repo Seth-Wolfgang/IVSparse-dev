@@ -75,6 +75,8 @@ namespace CSF {
 
         SparseMatrix(CSF::SparseMatrix<T, T_index, compression_level> &mat);
 
+        SparseMatrix(typename CSF::SparseMatrix<T, T_index, compression_level>::Iterator &iter);
+
         ~SparseMatrix();
 
         void write(const char *filename);
@@ -83,7 +85,11 @@ namespace CSF {
 
         Eigen::SparseMatrix<T> to_eigen();
 
+        T coeff(size_t row, size_t col);
+
         void *beginPtr();
+
+        const void *beginPtr() const;
 
         void *endPtr();
 
@@ -96,6 +102,12 @@ namespace CSF {
         uint32_t nonzeros();
 
         uint32_t compLvl();
+
+        void print();
+
+        bool operator==(const CSF::SparseMatrix<T, T_index, compression_level> &other);
+
+        bool operator!=(const CSF::SparseMatrix<T, T_index, compression_level> &other);
 
         class Iterator;
     };
@@ -116,6 +128,7 @@ namespace CSF {
 
         void *currentIndex; //* ITERATOR MOVEMENT POINTER
 
+        T_index currentCol;
         T *value;
 
         bool firstIndex = true;   // boolean check for first index
@@ -130,7 +143,11 @@ namespace CSF {
 
         uint32_t *getMetaData();
 
+        void reset();
+
         void *getData();
+
+        T getValue();
 
         void *getEnd();
 
@@ -145,6 +162,8 @@ namespace CSF {
         bool operator>(const Iterator &other);
 
         uint64_t getIndex();
+
+        T_index getColIndex();
 
         bool atBeginningOfRun();
 
@@ -212,6 +231,9 @@ namespace CSF {
 
         SparseMatrix(Eigen::SparseMatrix<T> &mat, bool destroy = false);
 
+        template <typename T2, typename T_index2, int compression_level>
+        SparseMatrix(CSF::SparseMatrix<T2, T_index2, compression_level> &mat);
+
         template <typename values_t, typename row_ind, typename col_ind>
         SparseMatrix(values_t **vals, row_ind **indexes, col_ind **col_p,
                      size_t non_zeros, size_t row_num, size_t col_num,
@@ -246,6 +268,16 @@ namespace CSF {
         uint32_t nonzeros();
 
         uint32_t compLvl();
+
+        template <typename new_T>
+        CSF::SparseMatrix<new_T, T_index, 1> change_val_type();
+
+        template <typename new_T_index>
+        CSF::SparseMatrix<T, new_T_index, 1> change_idx_type();
+
+        bool operator==(const CSF::SparseMatrix<T, T_index, 1> &other);
+
+        bool operator!=(const CSF::SparseMatrix<T, T_index, 1> &other);
 
         class Iterator {};
     };

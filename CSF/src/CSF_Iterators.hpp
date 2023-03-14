@@ -28,13 +28,6 @@ namespace CSF
 
         // Insures the matrix is not empty
         assert(currentIndex < endOfData);
-
-        value = (T *)(currentIndex);
-        currentIndex = (char *)(currentIndex) + valueWidth;
-
-        // Read in the width of this run's indices and go to first index
-        newIndexWidth = *(uint8_t *)(currentIndex);
-        currentIndex = (char *)(currentIndex) + 1;
     }
 
     template <typename T, typename T_index, int compression_level>
@@ -43,21 +36,14 @@ namespace CSF
         readFile(filePath);
 
         // read first 28 bytes of fileData put it into params -> metadata
-        uint32_t params[NUM_META_DATA];
+        // uint32_t params[NUM_META_DATA];
 
-        memcpy(&params, currentIndex, META_DATA_SIZE);
+        memcpy(&metadata, currentIndex, META_DATA_SIZE);
         currentIndex = (char *)(currentIndex) + META_DATA_SIZE;
 
         // valueWidth is set and the first value is read in
-        valueWidth = params[4];
+        valueWidth = metadata[4];
         goToColumn(0);
-
-        value = (T *)(currentIndex);
-        currentIndex = (char *)(currentIndex) + valueWidth;
-
-        // Read in the width of this run's indices and go to first index
-        newIndexWidth = *(uint8_t *)(currentIndex);
-        currentIndex = (char *)(currentIndex) + 1;
     }
 
     // ------------------------------- Iterator Methods ----------------------------------- //
@@ -68,6 +54,9 @@ namespace CSF
     uint32_t *SparseMatrix<T, T_index, compression_level>::Iterator::getMetaData() { return metadata; }
 
     template <typename T, typename T_index, int compression_level>
+    T_index SparseMatrix<T, T_index, compression_level>::Iterator::getColIndex() { return currentCol; }
+
+    template <typename T, typename T_index, int compression_level>
     void *SparseMatrix<T, T_index, compression_level>::Iterator::getData() { return data; }
 
     template <typename T, typename T_index, int compression_level>
@@ -75,6 +64,9 @@ namespace CSF
 
     template <typename T, typename T_index, int compression_level>
     T &SparseMatrix<T, T_index, compression_level>::Iterator::operator*() { return *value; }
+
+    template <typename T, typename T_index, int compression_level>
+    T SparseMatrix<T, T_index, compression_level>::Iterator::getValue() { return *value; }
 
     template <typename T, typename T_index, int compression_level>
     bool SparseMatrix<T, T_index, compression_level>::Iterator::operator==(const Iterator &other) { return currentIndex == other.getIndex(); }
@@ -95,8 +87,24 @@ namespace CSF
     bool SparseMatrix<T, T_index, compression_level>::Iterator::atBeginningOfRun() { return atFirstIndex; }
 
     template <typename T, typename T_index, int compression_level>
+    void SparseMatrix<T, T_index, compression_level>::Iterator::reset()
+    {
+        currentIndex = data;
+
+        goToColumn(0);
+
+        value = (T *)(currentIndex);
+        currentIndex = (char *)(currentIndex) + valueWidth;
+
+        // Read in the width of this run's indices and go to first index
+        newIndexWidth = *(uint8_t *)(currentIndex);
+        currentIndex = (char *)(currentIndex) + 1;
+    }
+
+    template <typename T, typename T_index, int compression_level>
     uint64_t SparseMatrix<T, T_index, compression_level>::Iterator::operator++(int)
     {
+
         uint64_t newIndex = interpretPointer(newIndexWidth);
 
         // If newIndex is 0 and not the first index, then the index is a delimitor
@@ -110,6 +118,12 @@ namespace CSF
             // newIndexWidth is the second value in the run
             newIndexWidth = *(uint8_t *)(currentIndex);
             currentIndex = (char *)(currentIndex) + 1;
+
+            // update currentCol to the next column
+            while (currentIndex > getColumnAddress(currentCol + 1))
+            {
+                currentCol++;
+            }
 
             // Make index 0 as it is a new run
             memset(&index, 0, 8);
@@ -126,7 +140,10 @@ namespace CSF
         // Depending on if the CSF::SparseMatrix is at compression level 2 or 3, we handle the index differently
         // Compression level 3 is postive delta encoded, so we return the sum of the current index and the previous ones
         if constexpr (compression_level == 2)
+        {
+            index = newIndex;
             return newIndex;
+        }
         else
             return index += newIndex;
     }
@@ -178,32 +195,42 @@ namespace CSF
     }
 
     template <typename T, typename T_index, int compression_level>
-    void SparseMatrix<T, T_index, compression_level>::Iterator::goToColumn(int column) { currentIndex = getColumnAddress(column); }
+    void SparseMatrix<T, T_index, compression_level>::Iterator::goToColumn(int column)
+    {
+        currentIndex = getColumnAddress(column);
+        currentCol = column;
+
+        value = (T *)(currentIndex);
+        currentIndex = (char *)(currentIndex) + valueWidth;
+
+        // Read in the width of this run's indices and go to first index
+        newIndexWidth = *(uint8_t *)(currentIndex);
+        currentIndex = (char *)(currentIndex) + 1;
+    }
 
     template <typename T, typename T_index, int compression_level>
     bool SparseMatrix<T, T_index, compression_level>::Iterator::compareAddress(void *address) { return currentIndex >= address; }
 
     // ---------------- Private Methods ---------------- //
 
-    //! doesn't actually update the metadata variable?
     template <typename T, typename T_index, int compression_level>
     void SparseMatrix<T, T_index, compression_level>::Iterator::readMetaData()
     {
 
-        uint32_t params[NUM_META_DATA];
-        memcpy(&params, currentIndex, META_DATA_SIZE);
+        // uint32_t params[NUM_META_DATA];
+        memcpy(&metadata, currentIndex, META_DATA_SIZE);
 
-        // params[0] compression type
-        // params[1] row type
-        // params[2] column type
-        // params[3] value type
-        // params[4] # of rows
-        // params[5] # of columns
-        // params[6] # of nonzeros
+        // metadata[0] compression type
+        // metadata[1] row type
+        // metadata[2] column type
+        // metadata[3] value type
+        // metadata[4] # of rows
+        // metadata[5] # of columns
+        // metadata[6] # of nonzeros
 
-        valueWidth = params[3] & 0xF;
-        numRows = params[4];
-        numColumns = params[5];
+        valueWidth = metadata[3] & 0xFF;
+        numRows = metadata[4];
+        numColumns = metadata[5];
     }
 
     template <typename T, typename T_index, int compression_level>
@@ -228,6 +255,7 @@ namespace CSF
     template <typename T, typename T_index, int compression_level>
     uint64_t SparseMatrix<T, T_index, compression_level>::Iterator::interpretPointer(int width)
     {
+
         uint64_t newIndex = 0;
 
         // Case statement takes in 1,2,4, or 8 otherwise the width is invalid
