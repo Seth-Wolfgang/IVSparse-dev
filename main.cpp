@@ -89,6 +89,8 @@ void testDriver(std::function<T(T, T, T, T, T)> lambda, int iterations, int comp
 template<typename T>
 bool iteratorBenchmark(int numRows, int numCols, int sparsity, uint64_t seed, int compressionLevel) {
 
+
+
     // generating a large random eigen sparse
     Eigen::SparseMatrix<T> eigenMatrix(numRows, numCols);
     eigenMatrix = generateMatrix<T>(numRows, numCols, sparsity, seed);
@@ -96,6 +98,10 @@ bool iteratorBenchmark(int numRows, int numCols, int sparsity, uint64_t seed, in
 
     // Converting to CSF
     CSF::SparseMatrix<T, uint8_t, 3> CSFMatrix(eigenMatrix);
+
+    std::cout << "Before" << std::endl;
+    CSFMatrix = CSFMatrix;
+    std::cout << "after" << std::endl;
 
     // Check if the matrix is empty
     if (getSum<T>(eigenMatrix) == 0) {

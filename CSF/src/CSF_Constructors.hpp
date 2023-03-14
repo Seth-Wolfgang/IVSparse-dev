@@ -219,43 +219,43 @@ namespace CSF {
         num_nonzeros = mat.nonzeros();
 
         //Checking to see if they are the same matrix
-        if (begin_ptr != mat.beginPtr()) {
+        // if (begin_ptr != mat.beginPtr()) {
             // initialize the matrix variables
 
 
-            compression_size = mat.byte_size();
+        compression_size = mat.byte_size();
 
-            // allocate memory for the matrix
-            try {
-                begin_ptr = malloc(mat.byte_size());
-            }
-            catch (std::bad_alloc& e) {
-                std::cerr << "Error: " << e.what() << std::endl;
-                exit(1);
-            }
-
-            // set the end pointer
-            comp_ptr = (uint8_t*)begin_ptr + mat.byte_size();
-
-            // copy the data from the matrix into the new matrix
-            memcpy(begin_ptr, mat.beginPtr(), mat.byte_size());
-
-            // set the pointer to help with reading in the data
-            void* help_ptr = begin_ptr;
-
-            // ------- Get metadata from file ------- //
-            compression = *(uint32_t*)(help_ptr);
-            help_ptr = (uint32_t*)(help_ptr)+1;
-
-            row_t = *(uint32_t*)(help_ptr);
-            help_ptr = (uint32_t*)(help_ptr)+1;
-
-            col_t = *(uint32_t*)(help_ptr);
-            help_ptr = (uint32_t*)(help_ptr)+1;
-
-            val_t = *(uint32_t*)(help_ptr);
-            help_ptr = (uint32_t*)(help_ptr)+1;
+        // allocate memory for the matrix
+        try {
+            begin_ptr = malloc(mat.byte_size());
         }
+        catch (std::bad_alloc& e) {
+            std::cerr << "Error: " << e.what() << std::endl;
+            exit(1);
+        }
+
+        // set the end pointer
+        comp_ptr = (uint8_t*)begin_ptr + mat.byte_size();
+
+        // copy the data from the matrix into the new matrix
+        memcpy(begin_ptr, mat.beginPtr(), mat.byte_size());
+
+        // set the pointer to help with reading in the data
+        void* help_ptr = begin_ptr;
+
+        // ------- Get metadata from file ------- //
+        compression = *(uint32_t*)(help_ptr);
+        help_ptr = (uint32_t*)(help_ptr)+1;
+
+        row_t = *(uint32_t*)(help_ptr);
+        help_ptr = (uint32_t*)(help_ptr)+1;
+
+        col_t = *(uint32_t*)(help_ptr);
+        help_ptr = (uint32_t*)(help_ptr)+1;
+
+        val_t = *(uint32_t*)(help_ptr);
+        help_ptr = (uint32_t*)(help_ptr)+1;
+        // }
 
 
         // ------- End of Metadata ------- //
