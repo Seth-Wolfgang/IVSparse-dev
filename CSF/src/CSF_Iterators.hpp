@@ -92,13 +92,6 @@ namespace CSF
         currentIndex = data;
 
         goToColumn(0);
-
-        value = (T *)(currentIndex);
-        currentIndex = (char *)(currentIndex) + valueWidth;
-
-        // Read in the width of this run's indices and go to first index
-        newIndexWidth = *(uint8_t *)(currentIndex);
-        currentIndex = (char *)(currentIndex) + 1;
     }
 
     template <typename T, typename T_index, int compression_level>
