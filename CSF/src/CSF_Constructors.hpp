@@ -267,51 +267,51 @@ namespace CSF {
     }
 
     // TODO: Needs more testing and user checks
-    template <typename T, typename T_index, int compression_level>
-    SparseMatrix<T, T_index, compression_level>::SparseMatrix(typename CSF::SparseMatrix<T, T_index, compression_level>::Iterator& iter) {
+    // template <typename T, typename T_index, int compression_level>
+    // SparseMatrix<T, T_index, compression_level>::SparseMatrix(typename CSF::SparseMatrix<T, T_index, compression_level>::InnerIterator& iter) {
 
-        // find compression size
-        compression_size = (uint8_t*)(iter.getEnd()) - (uint8_t*)(iter.getData());
+    //     // find compression size
+    //     compression_size = (uint8_t*)(iter.getEnd()) - (uint8_t*)(iter.getData());
 
-        // check that compression size is above zero
-        if (compression_size <= 0)
-            throw std::invalid_argument("The compression size must be greater than zero");
+    //     // check that compression size is above zero
+    //     if (compression_size <= 0)
+    //         throw std::invalid_argument("The compression size must be greater than zero");
 
-        // allocate memory for the matrix
-        try {
-            begin_ptr = malloc(compression_size);
-        }
-        catch (std::bad_alloc& e) {
-            std::cerr << "Error: " << e.what() << std::endl;
-            exit(1);
-        }
+    //     // allocate memory for the matrix
+    //     try {
+    //         begin_ptr = malloc(compression_size);
+    //     }
+    //     catch (std::bad_alloc& e) {
+    //         std::cerr << "Error: " << e.what() << std::endl;
+    //         exit(1);
+    //     }
 
-        // set the end pointer
-        comp_ptr = (uint8_t*)begin_ptr + compression_size;
+    //     // set the end pointer
+    //     comp_ptr = (uint8_t*)begin_ptr + compression_size;
 
-        // copy the data from the matrix into the new matrix
-        memcpy(begin_ptr, iter.getData(), compression_size);
+    //     // copy the data from the matrix into the new matrix
+    //     memcpy(begin_ptr, iter.getData(), compression_size);
 
-        // get the metadata
-        uint32_t metaData[NUM_META_DATA];
+    //     // get the metadata
+    //     uint32_t metaData[NUM_META_DATA];
 
-        // copy over the metadata
-        memcpy(metaData, iter.getMetaData(), NUM_META_DATA * sizeof(uint32_t));
+    //     // copy over the metadata
+    //     memcpy(metaData, iter.getMetaData(), NUM_META_DATA * sizeof(uint32_t));
 
-        row_t = metaData[1];
-        col_t = metaData[2];
-        val_t = metaData[3];
-        num_rows = metaData[4];
-        num_cols = metaData[5];
-        num_nonzeros = metaData[6];
+    //     row_t = metaData[1];
+    //     col_t = metaData[2];
+    //     val_t = metaData[3];
+    //     num_rows = metaData[4];
+    //     num_cols = metaData[5];
+    //     num_nonzeros = metaData[6];
 
-        create_metadata();
+    //     // create_metadata();
 
-        // run user checks on the data that came in to ensure that it is valid
-        if constexpr (DEBUG) {
-            user_checks();
-        }
-    }
+    //     // run user checks on the data that came in to ensure that it is valid
+    //     if constexpr (DEBUG) {
+    //         user_checks();
+    //     }
+    // }
 
     // // Destructor
     // template <typename T, typename T_index, int compression_level>

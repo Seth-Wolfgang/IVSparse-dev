@@ -87,7 +87,7 @@ namespace CSF {
             while (matIter.compareAddress(addressOfNextColumn) == -1) {
                 if (matIter.atBeginningOfRun()) {
 
-                    // std::cout << "multiplying " << *matIter << " by " << *vecIter << " = " << *matIter * *vecIter << std::endl;
+                    std::cout << "multiplying " << *matIter << " by " << *vecIter << " = " << *matIter * *vecIter << std::endl;
                     matIter.setRunValue(*matIter * *vecIter);
 
                     // if the last of the binary data is an index, the function might continue

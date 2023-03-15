@@ -68,14 +68,10 @@ CSF::SparseMatrix<T, indexType, compressionLevel> getCSFMatrix(int numRows, int 
 template <typename T, typename indexType, int compressionLevel>
 T getSum(CSF::SparseMatrix<T, indexType, compressionLevel> matrix) {
     T CSFTotal = 0;
-    typename CSF::SparseMatrix<T, indexType, compressionLevel>::Iterator newIter(matrix);
-    T value = *newIter;
-    // std::cout << newIter.getColumnAddress(0) << std::endl;
-    while (newIter) {
-        newIter++;
-        CSFTotal += *newIter;
-        if (*newIter != value) {
-            value = *newIter;
+
+    for (int i = 0; i < matrix.cols(); ++i) {
+        for (typename CSF::SparseMatrix<T, indexType, compressionLevel>::InnerIterator it(matrix, i); it; it++) {
+            CSFTotal += *it;
         }
     }
 

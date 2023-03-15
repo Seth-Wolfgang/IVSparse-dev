@@ -166,24 +166,19 @@ namespace CSF {
             throw std::out_of_range("The row and column must be within the bounds of the matrix");
 
         // get an iterator to the first element in the col
-        CSF::SparseMatrix<T, T_index, compression_level>::Iterator it(*this);
-
-        if (col > 0)
-            it.goToColumn(col);
 
         T val = 0;
 
         // while the iterator hasn't hit the next column keep going
-        while (it.getColIndex() == col) {
-            it++;
-            std::cout << "Value at row: " << it.getIndex() << ", col: " << it.getColIndex() << " is " << *it << std::endl;
-            // if the row matches the row we are looking for, return the value
-            if (it.getIndex() == row) {
-                val = *it;
-                break;
+        for(int i = 0; i < this->num_cols; i++){
+            for(typename SparseMatrix<T, T_index, compression_level>::InnerIterator it(*this, i); it; it++) {
+                // if the row matches the row we are looking for, return the value
+                if (it.getIndex() == row) {
+                    val = *it;
+                    break;
+                }
             }
         }
-
         return val;
     }
 
@@ -219,12 +214,10 @@ namespace CSF {
         triplet.reserve(num_nonzeros);
 
         // create an iterator for the matrix
-        CSF::SparseMatrix<T, T_index, compression_level>::Iterator it(*this);
-
-        // iterate over the matrix
-        while (it) {
-            it++;
-            triplet.push_back(Eigen::Triplet<T>(it.getIndex(), it.getColIndex(), *it));
+        for(int i = 0; i < this->num_cols; i++) {
+            for(typename SparseMatrix<T, T_index, compression_level>::InnerIterator it(*this, i); it; it++) {
+                triplet.push_back(Eigen::Triplet<T>(it.getIndex(), it.getColIndex(), *it));
+            }
         }
 
         // create an eigen sparse matrix
@@ -246,13 +239,11 @@ namespace CSF {
         // reserve space for the triplet vector
         triplet.reserve(num_nonzeros);
 
-        // create an iterator for the matrix
-        CSF::SparseMatrix<T, T_index, compression_level>::Iterator it(*this);
-
         // iterate over the matrix
-        while (it) {
-            it++;
-            triplet.push_back(Eigen::Triplet<T>(it.getIndex(), it.getColIndex(), *it));
+        for(int i = 0; i < this->num_cols; i++) {
+            for(typename SparseMatrix<T, T_index, compression_level>::InnerIterator it(*this, i); it; it++) {
+                triplet.push_back(Eigen::Triplet<T>(it.getIndex(), it.getColIndex(), *it));
+            }
         }
 
         // create an eigen sparse matrix
@@ -414,20 +405,30 @@ namespace CSF {
         return !(*this == other);
     }
 
-        template <typename T, typename indexType, int compressionLevel>
-    CSF::SparseMatrix<T, indexType, compressionLevel> SparseMatrix<T, indexType, compressionLevel>::operator * (T scalar) {
-        typename CSF::SparseMatrix<T, indexType, compressionLevel>::Iterator iter(*this);
+    /**
+     * @brief Overloads the * operator to multiply the matrix by a scalar
+     * 
+     * @tparam T 
+     * @tparam indexType 
+     * @tparam compressionLevel 
+     * @param scalar 
+     * @return CSF::SparseMatrix<T, indexType, compressionLevel> 
+     */
+    
+    // template <typename T, typename indexType, int compressionLevel>
+    // CSF::SparseMatrix<T, indexType, compressionLevel> SparseMatrix<T, indexType, compressionLevel>::operator * (T scalar) {
+    //     typename CSF::SparseMatrix<T, indexType, compressionLevel>::Iterator iter(*this);
 
-        //Iterate through the matrix and multiply each value by the scalar
-        while (iter) {
-            if (iter.atBeginningOfRun()) {
-                iter.setRunValue(scalar * *iter);
-            }
-            iter++;
-        }
+    //     //Iterate through the matrix and multiply each value by the scalar
+    //     while (iter) {
+    //         if (iter.atBeginningOfRun()) {
+    //             iter.setRunValue(scalar * *iter);
+    //         }
+    //         iter++;
+    //     }
 
-        return CSF::SparseMatrix<T, indexType, compressionLevel>(iter);
-    }
+    //     return CSF::SparseMatrix<T, indexType, compressionLevel>(iter);
+    // }
 
     template <typename T, typename T_index>
     void SparseMatrix<T, T_index, 1>::user_checks() {
