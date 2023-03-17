@@ -26,10 +26,10 @@ template<typename T> T getSum(Eigen::SparseMatrix<T> matrix);
 template<typename T> void testDriver(std::function<T(T, T, T, T)> lambda, int iterations);
 
 int main() {
-    // InnerIteratorBenchmark<int>(1, 47, 1, 364319529);
+    InnerIteratorBenchmark<double>(100,100, 50, 4868);
 
-    testDriver<uint32_t>(InnerIteratorBenchmark<uint32_t>, 50);
-    std::cout << "Finished InnerIterator Test" << std::endl << std::endl;
+    // testDriver<int>(InnerIteratorBenchmark<uint32_t>, 1000);
+    // std::cout << "Finished InnerIterator Test" << std::endl << std::endl;
     // testDriver<int>(ScalarMultiplicationBench<int>, 100);
     // std::cout << "Finished Scalar Test" << std::endl << std::endl;
     // testDriver<int>(vectorMultiplicationBench<int>, 100);
@@ -49,8 +49,8 @@ void testDriver(std::function<T(T, T, T, T)> lambda, int iterations) {
 
     for (int i = 0; i <= iterations; i++) {
         matrixSeed = rand();
-        numRows = rand() % 1000 + 1;
-        numCols = rand() % 1000 + 1;
+        // numRows = rand() % 1000 + 1;
+        // numCols = rand() % 1000 + 1;
         sparsity = rand() % 1 + 1;
         std::cout << "i: " << i << std::endl;
         // std::cout << "numRows: " << numRows << std::endl;
@@ -59,7 +59,7 @@ void testDriver(std::function<T(T, T, T, T)> lambda, int iterations) {
         // std::cout << "Matrix seed: " << matrixSeed << std::endl;
 
 
-        if (!lambda(numRows, numCols, sparsity, matrixSeed)) {
+        if (!lambda(1, 1, sparsity, matrixSeed)) {
 
             // std::cerr << "Something went wrong" << std::endl;
             // std::cerr << "numRows: " << numRows << std::endl;
@@ -92,8 +92,8 @@ void testDriver(std::function<T(T, T, T, T)> lambda, int iterations) {
 template<typename T>
 bool InnerIteratorBenchmark(int numRows, int numCols, int sparsity, uint64_t seed) {
     // generating a large random eigen sparse
-    Eigen::SparseMatrix<T> eigenMatrix(numRows, numCols);
-    eigenMatrix = generateMatrix<T>(eigenMatrix, sparsity, seed);
+    Eigen::SparseMatrix<double> eigenMatrix(numRows, numCols);
+    eigenMatrix = generateMatrix<double>(eigenMatrix, sparsity, seed);
     eigenMatrix.makeCompressed();
 
 
@@ -104,14 +104,14 @@ bool InnerIteratorBenchmark(int numRows, int numCols, int sparsity, uint64_t see
     }
 
     // Converting to CSF
-    CSF::SparseMatrix<T, T, COMPRESSION_LEVEL> CSFMatrix(eigenMatrix);
+    CSF::SparseMatrix<double, unsigned short, 3> CSFMatrix(eigenMatrix);
 
     // std::cout << eigenMatrix << std::endl;
     // CSFMatrix.write("matrix.bin");
 
     //Getting totals
-    T CSFTotal = getSum<T, T, COMPRESSION_LEVEL>(CSFMatrix);
-    T eigenTotal = getSum<T>(eigenMatrix);
+    T CSFTotal = getSum<double, unsigned short, 3>(CSFMatrix);
+    T eigenTotal = getSum<double>(eigenMatrix);
 
 
     if (CSFTotal == eigenTotal) {
@@ -372,11 +372,11 @@ Eigen::SparseMatrix<T> generateMatrix(Eigen::SparseMatrix<T>& eigenMatrix, int s
     int numRows = eigenMatrix.rows();
     int numCols = eigenMatrix.cols();
 
-    eigenMatrix.reserve(Eigen::VectorXi::Constant(numRows * 1000, numCols * 1000));
+    eigenMatrix.reserve(Eigen::VectorXi::Constant(numRows * numRows, numCols * numCols));
     for (int i = 0; i < numRows; i++) {
         for (int j = 0; j < numCols; j++) {
             if (randMatrixGen.draw<int>(i, j, sparsity)) {
-                eigenMatrix.insert(i, j) = 100 * randMatrixGen.uniform<double>(j);
+                eigenMatrix.insert(i, j) = ceil(100 * randMatrixGen.uniform<double>(j));
             }
         }
     }

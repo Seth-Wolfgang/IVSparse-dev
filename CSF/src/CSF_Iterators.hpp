@@ -14,11 +14,6 @@ namespace CSF {
         data = matrix.beginPtr();
         assert(col < matrix.cols());
 
-        //Here I grab the address of the start of the next column or the end of the matrix.
-        //I subtract sizeof(T) because the iterator will need to look for the very last delimitor of the column
-        //to know when to stop; otherwise it will go past the end and cause a segfault.
-        endOfCol = (col == matrix.cols() - 1) ? matrix.endPtr() : (char*)getColumnAddress(col + 1) - sizeof(T_index);
-        
         // matrix.write("matrix.bin");
         // set to begining of data
         currentIndex = data;
@@ -30,6 +25,15 @@ namespace CSF {
         currentIndex = (void*)((char*)(currentIndex)+META_DATA_SIZE); // ?goes to first col pointer?
         goToColumn(col); // skips past col_p and delim to the start of actual data
 
+        /*
+            Here I grab the address of the start of the next column or the end of the matrix.
+            I subtract index size of the run because the iterator will need to look for the very last delimitor of the column
+            to know when to stop; otherwise it will go past the end and cause a segfault.
+
+            index size of the run    ->    *((char*)currentIndex + valueWidth);
+        */
+        int indexWidth = *((char*)currentIndex + valueWidth);
+        endOfCol = (col == matrix.cols() - 1) ? matrix.endPtr() : (char*)getColumnAddress(col + 1) - indexWidth;
 
         //A zero vector exists within the matrix if the column pointer is equal to the previous pointer
         // std::cout << "col: " << col << "/" << matrix.cols() - 1 << std::endl;
@@ -44,7 +48,7 @@ namespace CSF {
 
         }
         //end of matrix
-        else if ((char*)currentIndex - sizeof(T_index) == endOfCol) {
+        else if ((char*)currentIndex >= (char*)endOfCol - indexWidth) {
             // std::cout << "At end: " << col << std::endl;
             currentIndex = endOfCol;
             *value = 0;

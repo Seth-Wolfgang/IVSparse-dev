@@ -115,7 +115,7 @@ namespace {
             //For the case of a zero matrix, we will skip this and look at one in a future test
             while (getSum<typename std::tuple_element<0, decltype(TypeParam())>::type>(eigen) == 0) {
                 seed = rand() % 10000 + 1;
-                eigen = generateEigenMatrix<typename std::tuple_element<0, decltype(TypeParam())>::type>(100, 100, 20, seed);
+                eigen = generateEigenMatrix<typename std::tuple_element<0, decltype(TypeParam())>::type>(100, 100, 1, seed);
             }
 
             // Compression level 1
@@ -158,7 +158,7 @@ namespace {
         // https://stackoverflow.com/questions/29382157/how-to-test-c-template-class-with-multiple-template-parameters-using-gtest
         uint64_t seed = rand() % 10000 + 1;
         // typename std::tuple_element<0, decltype(TypeParam())>::type csfTotal1;
-        // typename std::tuple_element<0, decltype(TypeParam())>::type csfTotal2;
+        typename std::tuple_element<0, decltype(TypeParam())>::type csfTotal2;
         typename std::tuple_element<0, decltype(TypeParam())>::type csfTotal3;
         typename std::tuple_element<0, decltype(TypeParam())>::type eigenTotal;
         Eigen::SparseMatrix<typename std::tuple_element<0, decltype(TypeParam())>::type> eigen = generateEigenMatrix<typename std::tuple_element<0, decltype(TypeParam())>::type>(100, 100, 50, seed);
@@ -166,11 +166,14 @@ namespace {
         //For a thorough test, we will use 1000 random matrices
         for (int i = 0; i < 1000; i++) {
             seed = rand() % 10000 + 1;
+            std::cout << "Seed: " << seed << std::endl;
 
             //For the case of a zero matrix, we will skip this and look at one in a future test
             while (getSum<typename std::tuple_element<0, decltype(TypeParam())>::type>(eigen) == 0) {
                 seed = rand() % 10000 + 1;
-                eigen = generateEigenMatrix<typename std::tuple_element<0, decltype(TypeParam())>::type>(100, 100, 20, seed);
+                            std::cout << "Seed: " << seed << std::endl;
+
+                eigen = generateEigenMatrix<typename std::tuple_element<0, decltype(TypeParam())>::type>(100, 100, 50, seed);
             }
 
             // // Compression level 1
@@ -181,11 +184,11 @@ namespace {
             // > csf1(eigen);
 
             // //Compression level 2
-            // CSF::SparseMatrix<
-            //     typename std::tuple_element<0, decltype(TypeParam())>::type,
-            //     typename std::tuple_element<1, decltype(TypeParam())>::type,
-            //     2
-            // > csf2(eigen);
+            CSF::SparseMatrix<
+                typename std::tuple_element<0, decltype(TypeParam())>::type,
+                typename std::tuple_element<1, decltype(TypeParam())>::type,
+                2
+            > csf2(eigen);
 
             //Compression level 3
             CSF::SparseMatrix<
@@ -196,7 +199,7 @@ namespace {
 
             //Get the totals
             // csfTotal1 = getSum<typename std::tuple_element<0, decltype(TypeParam())>::type, typename std::tuple_element<1, decltype(TypeParam())>::type, 1>(csf1);
-            // csfTotal2 = getSum<typename std::tuple_element<0, decltype(TypeParam())>::type, typename std::tuple_element<1, decltype(TypeParam())>::type, 2>(csf2);
+            csfTotal2 = getSum<typename std::tuple_element<0, decltype(TypeParam())>::type, typename std::tuple_element<1, decltype(TypeParam())>::type, 2>(csf2);
             csfTotal3 = getSum<typename std::tuple_element<0, decltype(TypeParam())>::type, typename std::tuple_element<1, decltype(TypeParam())>::type, 3>(csf3);
 
             eigenTotal = getSum<typename std::tuple_element<0, decltype(TypeParam())>::type>(eigen);
@@ -217,11 +220,11 @@ namespace {
         //     typename std::tuple_element<1, decltype(TypeParam())>::type,
         //     1> csf1(eigen);
 
-        // //Compression level 2
-        // CSF::SparseMatrix<
-        //     typename std::tuple_element<0, decltype(TypeParam())>::type,
-        //     typename std::tuple_element<1, decltype(TypeParam())>::type,
-        //     2> csf2(eigen);
+        //Compression level 2
+        CSF::SparseMatrix<
+            typename std::tuple_element<0, decltype(TypeParam())>::type,
+            typename std::tuple_element<1, decltype(TypeParam())>::type,
+            2> csf2(eigen);
 
         //Compression level 3
         CSF::SparseMatrix<
@@ -235,11 +238,11 @@ namespace {
         //     typename std::tuple_element<1, decltype(TypeParam())>::type,
         //     1> csfCopy1(csf1);
 
-        // //Copy of compression level 2
-        // CSF::SparseMatrix<
-        //     typename std::tuple_element<0, decltype(TypeParam())>::type,
-        //     typename std::tuple_element<1, decltype(TypeParam())>::type,
-        //     2> csfCopy2(csf2);
+        //Copy of compression level 2
+        CSF::SparseMatrix<
+            typename std::tuple_element<0, decltype(TypeParam())>::type,
+            typename std::tuple_element<1, decltype(TypeParam())>::type,
+            2> csfCopy2(csf2);
 
         //Copy of compression level 3
         CSF::SparseMatrix<
@@ -252,9 +255,9 @@ namespace {
         // ASSERT_EQ(csf1.cols(), csfCopy1.cols());
         // ASSERT_EQ(csf1.nonzeros(), csfCopy1.nonzeros());
 
-        // ASSERT_EQ(csf2.rows(), csfCopy2.rows());
-        // ASSERT_EQ(csf2.cols(), csfCopy2.cols());
-        // ASSERT_EQ(csf2.nonzeros(), csfCopy2.nonzeros());
+        ASSERT_EQ(csf2.rows(), csfCopy2.rows());
+        ASSERT_EQ(csf2.cols(), csfCopy2.cols());
+        ASSERT_EQ(csf2.nonzeros(), csfCopy2.nonzeros());
 
         ASSERT_EQ(csf3.rows(), csfCopy3.rows());
         ASSERT_EQ(csf3.cols(), csfCopy3.cols());
@@ -263,8 +266,8 @@ namespace {
         // typename std::tuple_element<0, decltype(TypeParam())>::type CSFSum1 = getSum<typename std::tuple_element<0, decltype(TypeParam())>::type, typename std::tuple_element<1, decltype(TypeParam())>::type, 1>(csf1);
         // typename std::tuple_element<0, decltype(TypeParam())>::type CSFCopySum1 = getSum<typename std::tuple_element<0, decltype(TypeParam())>::type, typename std::tuple_element<1, decltype(TypeParam())>::type, 1>(csfCopy1);
 
-        // typename std::tuple_element<0, decltype(TypeParam())>::type CSFSum2 = getSum<typename std::tuple_element<0, decltype(TypeParam())>::type, typename std::tuple_element<1, decltype(TypeParam())>::type, 2>(csf2);
-        // typename std::tuple_element<0, decltype(TypeParam())>::type CSFCopySum2 = getSum<typename std::tuple_element<0, decltype(TypeParam())>::type, typename std::tuple_element<1, decltype(TypeParam())>::type, 2>(csfCopy2);
+        typename std::tuple_element<0, decltype(TypeParam())>::type CSFSum2 = getSum<typename std::tuple_element<0, decltype(TypeParam())>::type, typename std::tuple_element<1, decltype(TypeParam())>::type, 2>(csf2);
+        typename std::tuple_element<0, decltype(TypeParam())>::type CSFCopySum2 = getSum<typename std::tuple_element<0, decltype(TypeParam())>::type, typename std::tuple_element<1, decltype(TypeParam())>::type, 2>(csfCopy2);
 
         typename std::tuple_element<0, decltype(TypeParam())>::type CSFSum3 = getSum<typename std::tuple_element<0, decltype(TypeParam())>::type, typename std::tuple_element<1, decltype(TypeParam())>::type, 3>(csf3);
         typename std::tuple_element<0, decltype(TypeParam())>::type CSFCopySum3 = getSum<typename std::tuple_element<0, decltype(TypeParam())>::type, typename std::tuple_element<1, decltype(TypeParam())>::type, 3>(csfCopy3);
@@ -274,6 +277,224 @@ namespace {
         ASSERT_EQ(CSFSum3, CSFCopySum3);
     }
 
+
+    // TYPED_TEST(CSFTest, LargeMatrixColumnSum) {
+    //     // Solution from
+    //     // https://stackoverflow.com/questions/29382157/how-to-test-c-template-class-with-multiple-template-parameters-using-gtest
+    //     uint64_t seed = rand() % 10000 + 1;
+    //     typename std::tuple_element<0, decltype(TypeParam())>::type csfTotal1;
+    //     typename std::tuple_element<0, decltype(TypeParam())>::type csfTotal2;
+    //     typename std::tuple_element<0, decltype(TypeParam())>::type csfTotal3;
+    //     typename std::tuple_element<0, decltype(TypeParam())>::type eigenTotal;
+    //     Eigen::SparseMatrix<typename std::tuple_element<0, decltype(TypeParam())>::type> eigen = generateEigenMatrix<typename std::tuple_element<0, decltype(TypeParam())>::type>(getLargeNumber<typename std::tuple_element<1, decltype(TypeParam())>::type>(),
+    //                                                                                                                                                                               getLargeNumber<typename std::tuple_element<1, decltype(TypeParam())>::type>(), 1, seed);
+
+    //     //For a thorough test, we will use 1000 random matrices
+    //     for (int i = 0; i < 100; i++) {
+    //         seed = rand() % 10000 + 1;
+
+    //         //For the case of a zero matrix, we will skip this and look at one in a future test
+    //         while (getSum<typename std::tuple_element<0, decltype(TypeParam())>::type>(eigen) == 0) {
+    //             seed = rand() % 10000 + 1;
+    //             std::cout << "Zero matrix generated, regenerating" << std::endl;
+    //             eigen = generateEigenMatrix<typename std::tuple_element<0, decltype(TypeParam())>::type>(getLargeNumber<typename std::tuple_element<1, decltype(TypeParam())>::type>(),
+    //                                                                                                      getLargeNumber<typename std::tuple_element<1, decltype(TypeParam())>::type>(), 1, seed);
+    //         }
+
+    //         // Compression level 1
+    //         // typename std::tuple_element<0, decltype(TypeParam())>::type,
+    //             // typename std::tuple_element<1, decltype(TypeParam())>::type,
+    //             // 1
+    //             // > csf1(eigen);
+
+    //         //Compression level 2
+    //         CSF::SparseMatrix<
+    //             typename std::tuple_element<0, decltype(TypeParam())>::type,
+    //             typename std::tuple_element<1, decltype(TypeParam())>::type,
+    //             2
+    //         > csf2(eigen);
+
+    //         //Compression level 3
+    //         CSF::SparseMatrix<
+    //             typename std::tuple_element<0, decltype(TypeParam())>::type,
+    //             typename std::tuple_element<1, decltype(TypeParam())>::type,
+    //             3
+    //         > csf3(eigen);
+    //         //Get the totals
+    //         // csfTotal1 = getSum<typename std::tuple_element<0, decltype(TypeParam())>::type, typename std::tuple_element<1, decltype(TypeParam())>::type, 1>(csf1);
+    //         csfTotal2 = getSum<typename std::tuple_element<0, decltype(TypeParam())>::type, typename std::tuple_element<1, decltype(TypeParam())>::type, 2>(csf2);
+    //         csfTotal3 = getSum<typename std::tuple_element<0, decltype(TypeParam())>::type, typename std::tuple_element<1, decltype(TypeParam())>::type, 3>(csf3);
+    //         eigenTotal = getSum<typename std::tuple_element<0, decltype(TypeParam())>::type>(eigen);
+
+    //         // If a singular total is off, the test will fail
+    //         // ASSERT_EQ(csfTotal1, eigenTotal);
+    //         ASSERT_EQ(csfTotal2, eigenTotal);
+    //         ASSERT_EQ(csfTotal3, eigenTotal);
+    //     }
+    // }
+
+    TYPED_TEST(CSFTest, 1RowColumnSum) {
+        // Solution from
+        // https://stackoverflow.com/questions/29382157/how-to-test-c-template-class-with-multiple-template-parameters-using-gtest
+        uint64_t seed = rand() % 10000 + 1;
+        typename std::tuple_element<0, decltype(TypeParam())>::type csfTotal1;
+        typename std::tuple_element<0, decltype(TypeParam())>::type csfTotal2;
+        typename std::tuple_element<0, decltype(TypeParam())>::type csfTotal3;
+        typename std::tuple_element<0, decltype(TypeParam())>::type eigenTotal;
+        Eigen::SparseMatrix<typename std::tuple_element<0, decltype(TypeParam())>::type> eigen = generateEigenMatrix<typename std::tuple_element<0, decltype(TypeParam())>::type>(1, 100, 1, seed);
+
+
+        //For a thorough test, we will use 1000 random matrices
+        for (int i = 0; i < 1000; i++) {
+            seed = rand() % 10000 + 1;
+
+            //For the case of a zero matrix, we will skip this and look at one in a future test
+            while (getSum<typename std::tuple_element<0, decltype(TypeParam())>::type>(eigen) == 0) {
+                seed = rand() % 10000 + 1;
+                eigen = generateEigenMatrix<typename std::tuple_element<0, decltype(TypeParam())>::type>(1, 100, 1, seed);
+            }
+
+            // Compression level 1
+            CSF::SparseMatrix<
+                typename std::tuple_element<0, decltype(TypeParam())>::type,
+                typename std::tuple_element<1, decltype(TypeParam())>::type,
+                1
+            > csf1(eigen);
+
+            //Compression level 2
+            CSF::SparseMatrix<
+                typename std::tuple_element<0, decltype(TypeParam())>::type,
+                typename std::tuple_element<1, decltype(TypeParam())>::type,
+                2
+            > csf2(eigen);
+
+            //Compression level 3
+            CSF::SparseMatrix<
+                typename std::tuple_element<0, decltype(TypeParam())>::type,
+                typename std::tuple_element<1, decltype(TypeParam())>::type,
+                3
+            > csf3(eigen);
+
+            //Get the totals
+            // csfTotal1 = getSum<typename std::tuple_element<0, decltype(TypeParam())>::type, typename std::tuple_element<1, decltype(TypeParam())>::type, 1>(csf1);
+            csfTotal2 = getSum<typename std::tuple_element<0, decltype(TypeParam())>::type, typename std::tuple_element<1, decltype(TypeParam())>::type, 2>(csf2);
+            csfTotal3 = getSum<typename std::tuple_element<0, decltype(TypeParam())>::type, typename std::tuple_element<1, decltype(TypeParam())>::type, 3>(csf3);
+            eigenTotal = getSum<typename std::tuple_element<0, decltype(TypeParam())>::type>(eigen);
+
+            // If a singular total is off, the test will fail
+            // ASSERT_EQ(csfTotal1, eigenTotal);
+            ASSERT_EQ(csfTotal2, eigenTotal);
+            ASSERT_EQ(csfTotal3, eigenTotal);
+        }
+    }
+
+    TYPED_TEST(CSFTest, 1ColumnSum) {
+        // Solution from
+        // https://stackoverflow.com/questions/29382157/how-to-test-c-template-class-with-multiple-template-parameters-using-gtest
+        uint64_t seed = rand() % 10000 + 1;
+        typename std::tuple_element<0, decltype(TypeParam())>::type csfTotal1;
+        typename std::tuple_element<0, decltype(TypeParam())>::type csfTotal2;
+        typename std::tuple_element<0, decltype(TypeParam())>::type csfTotal3;
+        typename std::tuple_element<0, decltype(TypeParam())>::type eigenTotal;
+        Eigen::SparseMatrix<typename std::tuple_element<0, decltype(TypeParam())>::type> eigen = generateEigenMatrix<typename std::tuple_element<0, decltype(TypeParam())>::type>(100, 1, 1, seed);
+
+        //For a thorough test, we will use 1000 random matrices
+        for (int i = 0; i < 1000; i++) {
+            seed = rand() % 10000 + 1;
+
+            //For the case of a zero matrix, we will skip this and look at one in a future test
+            while (getSum<typename std::tuple_element<0, decltype(TypeParam())>::type>(eigen) == 0) {
+                seed = rand() % 10000 + 1;
+                eigen = generateEigenMatrix<typename std::tuple_element<0, decltype(TypeParam())>::type>(100, 1, 1, seed);
+            }
+
+            // Compression level 1
+            CSF::SparseMatrix<
+                typename std::tuple_element<0, decltype(TypeParam())>::type,
+                typename std::tuple_element<1, decltype(TypeParam())>::type,
+                1
+            > csf1(eigen);
+
+            //Compression level 2
+            CSF::SparseMatrix<
+                typename std::tuple_element<0, decltype(TypeParam())>::type,
+                typename std::tuple_element<1, decltype(TypeParam())>::type,
+                2
+            > csf2(eigen);
+
+            //Compression level 3
+            CSF::SparseMatrix<
+                typename std::tuple_element<0, decltype(TypeParam())>::type,
+                typename std::tuple_element<1, decltype(TypeParam())>::type,
+                3
+            > csf3(eigen);
+
+            //Get the totals
+            // csfTotal1 = getSum<typename std::tuple_element<0, decltype(TypeParam())>::type, typename std::tuple_element<1, decltype(TypeParam())>::type, 1>(csf1);
+            csfTotal2 = getSum<typename std::tuple_element<0, decltype(TypeParam())>::type, typename std::tuple_element<1, decltype(TypeParam())>::type, 2>(csf2);
+            csfTotal3 = getSum<typename std::tuple_element<0, decltype(TypeParam())>::type, typename std::tuple_element<1, decltype(TypeParam())>::type, 3>(csf3);
+            eigenTotal = getSum<typename std::tuple_element<0, decltype(TypeParam())>::type>(eigen);
+
+            // If a singular total is off, the test will fail
+            // ASSERT_EQ(csfTotal1, eigenTotal);
+            ASSERT_EQ(csfTotal2, eigenTotal);
+            ASSERT_EQ(csfTotal3, eigenTotal);
+        }
+    }
+
+    TYPED_TEST(CSFTest, 1x1Sum) {
+        // Solution from
+        // https://stackoverflow.com/questions/29382157/how-to-test-c-template-class-with-multiple-template-parameters-using-gtest
+        uint64_t seed = rand() % 10000 + 1;
+        typename std::tuple_element<0, decltype(TypeParam())>::type csfTotal1;
+        typename std::tuple_element<0, decltype(TypeParam())>::type csfTotal2;
+        typename std::tuple_element<0, decltype(TypeParam())>::type csfTotal3;
+        typename std::tuple_element<0, decltype(TypeParam())>::type eigenTotal;
+        Eigen::SparseMatrix<typename std::tuple_element<0, decltype(TypeParam())>::type> eigen = generateEigenMatrix<typename std::tuple_element<0, decltype(TypeParam())>::type>(1, 1, 1, seed);
+
+        //For a thorough test, we will use 1000 random matrices
+        for (int i = 0; i < 1000; i++) {
+            seed = rand() % 10000 + 1;
+
+            //For the case of a zero matrix, we will skip this and look at one in a future test
+            while (getSum<typename std::tuple_element<0, decltype(TypeParam())>::type>(eigen) == 0) {
+                seed = rand() % 10000 + 1;
+                eigen = generateEigenMatrix<typename std::tuple_element<0, decltype(TypeParam())>::type>(1, 1, 1, seed);
+            }
+
+            // Compression level 1
+            CSF::SparseMatrix<
+                typename std::tuple_element<0, decltype(TypeParam())>::type,
+                typename std::tuple_element<1, decltype(TypeParam())>::type,
+                1
+            > csf1(eigen);
+
+            //Compression level 2
+            CSF::SparseMatrix<
+                typename std::tuple_element<0, decltype(TypeParam())>::type,
+                typename std::tuple_element<1, decltype(TypeParam())>::type,
+                2
+            > csf2(eigen);
+
+            //Compression level 3
+            CSF::SparseMatrix<
+                typename std::tuple_element<0, decltype(TypeParam())>::type,
+                typename std::tuple_element<1, decltype(TypeParam())>::type,
+                3
+            > csf3(eigen);
+
+            //Get the totals
+            // csfTotal1 = getSum<typename std::tuple_element<0, decltype(TypeParam())>::type, typename std::tuple_element<1, decltype(TypeParam())>::type, 1>(csf1);
+            csfTotal2 = getSum<typename std::tuple_element<0, decltype(TypeParam())>::type, typename std::tuple_element<1, decltype(TypeParam())>::type, 2>(csf2);
+            csfTotal3 = getSum<typename std::tuple_element<0, decltype(TypeParam())>::type, typename std::tuple_element<1, decltype(TypeParam())>::type, 3>(csf3);
+            eigenTotal = getSum<typename std::tuple_element<0, decltype(TypeParam())>::type>(eigen);
+
+            // If a singular total is off, the test will fail
+            // ASSERT_EQ(csfTotal1, eigenTotal);
+            ASSERT_EQ(csfTotal2, eigenTotal);
+            ASSERT_EQ(csfTotal3, eigenTotal);
+        }
+    }
 
 
     /*******************************************************************************************************

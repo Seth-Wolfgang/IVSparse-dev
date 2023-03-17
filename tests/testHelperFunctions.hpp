@@ -1,6 +1,6 @@
 #include "../CSF/SparseMatrix"
 #include "../misc/matrix_creator.cpp"
-
+#include <limits>
 
 /**
  * @brief Genearates a random sparse matrix using Eigen
@@ -21,11 +21,11 @@ Eigen::SparseMatrix<T> generateEigenMatrix(int numRows, int numCols, int sparsit
     rng randMatrixGen = rng(seed);
 
     Eigen::SparseMatrix<T> myMatrix(numRows, numCols);
-    myMatrix.reserve(Eigen::VectorXi::Constant(numRows * numRows, numCols * numCols));
+    myMatrix.reserve(Eigen::VectorXi::Constant(50000, 50000));
     for (int i = 0; i < numRows; i++) {
         for (int j = 0; j < numCols; j++) {
             if (randMatrixGen.draw<int>(i, j, sparsity)) {
-                myMatrix.insert(i, j) = 100 * randMatrixGen.uniform<double>(j);
+                myMatrix.insert(i, j) = ceil(100 * randMatrixGen.uniform<double>(j));
             }
         }
     }
@@ -154,4 +154,25 @@ CSF::SparseMatrix<T, T, 3> generateVector(int numRows, T* array) {
     // Converting to CSF
     CSF::SparseMatrix<T, indexType, compressionLevel> CSFVector(eigenVector);
     return CSFVector;
+}
+
+/**
+ * @brief Returns a large number based on the type of the template
+ *        For larger types, a sufficiently large number is returned. 
+ *        i.e. uint32_t and uint64_t return 50,000
+ * 
+ * @return T 
+ */
+
+template <typename T>
+T getLargeNumber() {
+    T max = std::numeric_limits<T>::max();
+
+    if(max > 50000) {
+        return 50000;
+    } else if (max > 10000) {
+        return 10000;
+    } else {
+        return max;
+    }
 }
