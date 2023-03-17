@@ -64,19 +64,19 @@ namespace {
         // https://stackoverflow.com/questions/29382157/how-to-test-c-template-class-with-multiple-template-parameters-using-gtest
         Eigen::SparseMatrix<typename std::tuple_element<0, decltype(TypeParam())>::type> eigen = generateEigenMatrix<typename std::tuple_element<0, decltype(TypeParam())>::type>(100, 100, 1, 10);
 
-        // //Compression level 1
-        // CSF::SparseMatrix<
-        //     typename std::tuple_element<0, decltype(TypeParam())>::type,
-        //     typename std::tuple_element<1, decltype(TypeParam())>::type,
-        //     1
-        // > csf1(eigen);
+        //Compression level 1
+        CSF::SparseMatrix<
+            typename std::tuple_element<0, decltype(TypeParam())>::type,
+            typename std::tuple_element<1, decltype(TypeParam())>::type,
+            1
+        > csf1(eigen);
 
-        // //Compression level 2
-        // CSF::SparseMatrix<
-        //     typename std::tuple_element<0, decltype(TypeParam())>::type,
-        //     typename std::tuple_element<1, decltype(TypeParam())>::type,
-        //     2
-        // > csf2(eigen);
+        //Compression level 2
+        CSF::SparseMatrix<
+            typename std::tuple_element<0, decltype(TypeParam())>::type,
+            typename std::tuple_element<1, decltype(TypeParam())>::type,
+            2
+        > csf2(eigen);
 
         //Compression level 3
         CSF::SparseMatrix<
@@ -85,13 +85,13 @@ namespace {
             3
         > csf3(eigen);
 
-        // ASSERT_EQ(csf1.rows(), eigen.rows());
-        // ASSERT_EQ(csf1.cols(), eigen.cols());
-        // ASSERT_EQ(csf1.nonzeros(), eigen.nonZeros());
+        ASSERT_EQ(csf1.rows(), eigen.rows());
+        ASSERT_EQ(csf1.cols(), eigen.cols());
+        ASSERT_EQ(csf1.nonzeros(), eigen.nonZeros());
 
-        // ASSERT_EQ(csf2.rows(), eigen.rows());
-        // ASSERT_EQ(csf2.cols(), eigen.cols());
-        // ASSERT_EQ(csf2.nonzeros(), eigen.nonZeros());
+        ASSERT_EQ(csf2.rows(), eigen.rows());
+        ASSERT_EQ(csf2.cols(), eigen.cols());
+        ASSERT_EQ(csf2.nonzeros(), eigen.nonZeros());
 
         ASSERT_EQ(csf3.rows(), eigen.rows());
         ASSERT_EQ(csf3.cols(), eigen.cols());
@@ -102,8 +102,8 @@ namespace {
         // Solution from
         // https://stackoverflow.com/questions/29382157/how-to-test-c-template-class-with-multiple-template-parameters-using-gtest
         uint64_t seed = rand() % 10000 + 1;
-        // typename std::tuple_element<0, decltype(TypeParam())>::type csfTotal1;
-        // typename std::tuple_element<0, decltype(TypeParam())>::type csfTotal2;
+        typename std::tuple_element<0, decltype(TypeParam())>::type csfTotal1;
+        typename std::tuple_element<0, decltype(TypeParam())>::type csfTotal2;
         typename std::tuple_element<0, decltype(TypeParam())>::type csfTotal3;
         typename std::tuple_element<0, decltype(TypeParam())>::type eigenTotal;
         Eigen::SparseMatrix<typename std::tuple_element<0, decltype(TypeParam())>::type> eigen = generateEigenMatrix<typename std::tuple_element<0, decltype(TypeParam())>::type>(100, 100, 1, seed);
@@ -118,19 +118,19 @@ namespace {
                 eigen = generateEigenMatrix<typename std::tuple_element<0, decltype(TypeParam())>::type>(100, 100, 20, seed);
             }
 
-            // // Compression level 1
-            // CSF::SparseMatrix<
-            //     typename std::tuple_element<0, decltype(TypeParam())>::type,
-            //     typename std::tuple_element<1, decltype(TypeParam())>::type,
-            //     1
-            // > csf1(eigen);
+            // Compression level 1
+            CSF::SparseMatrix<
+                typename std::tuple_element<0, decltype(TypeParam())>::type,
+                typename std::tuple_element<1, decltype(TypeParam())>::type,
+                1
+            > csf1(eigen);
 
-            // //Compression level 2
-            // CSF::SparseMatrix<
-            //     typename std::tuple_element<0, decltype(TypeParam())>::type,
-            //     typename std::tuple_element<1, decltype(TypeParam())>::type,
-            //     2
-            // > csf2(eigen);
+            //Compression level 2
+            CSF::SparseMatrix<
+                typename std::tuple_element<0, decltype(TypeParam())>::type,
+                typename std::tuple_element<1, decltype(TypeParam())>::type,
+                2
+            > csf2(eigen);
 
             //Compression level 3
             CSF::SparseMatrix<
@@ -141,13 +141,13 @@ namespace {
 
             //Get the totals
             // csfTotal1 = getSum<typename std::tuple_element<0, decltype(TypeParam())>::type, typename std::tuple_element<1, decltype(TypeParam())>::type, 1>(csf1);
-            // csfTotal2 = getSum<typename std::tuple_element<0, decltype(TypeParam())>::type, typename std::tuple_element<1, decltype(TypeParam())>::type, 2>(csf2);
+            csfTotal2 = getSum<typename std::tuple_element<0, decltype(TypeParam())>::type, typename std::tuple_element<1, decltype(TypeParam())>::type, 2>(csf2);
             csfTotal3 = getSum<typename std::tuple_element<0, decltype(TypeParam())>::type, typename std::tuple_element<1, decltype(TypeParam())>::type, 3>(csf3);
             eigenTotal = getSum<typename std::tuple_element<0, decltype(TypeParam())>::type>(eigen);
 
             // If a singular total is off, the test will fail
             // ASSERT_EQ(csfTotal1, eigenTotal);
-            // ASSERT_EQ(csfTotal2, eigenTotal);
+            ASSERT_EQ(csfTotal2, eigenTotal);
             ASSERT_EQ(csfTotal3, eigenTotal);
         }
     }

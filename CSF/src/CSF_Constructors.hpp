@@ -15,7 +15,7 @@
 #define DEBUG true
 
 // valgrind flag because it likes to mess with realloc
-#define VALGRIND true
+#define VALGRIND false
 
 // Number of meta data values
 #define NUM_META_DATA 7

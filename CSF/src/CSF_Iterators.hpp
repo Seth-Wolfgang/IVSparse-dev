@@ -14,8 +14,12 @@ namespace CSF {
         data = matrix.beginPtr();
         assert(col < matrix.cols());
 
-        endOfCol = (col == matrix.cols() - 1) ? matrix.endPtr() : (char*)getColumnAddress(col + 1) - 1;
-        matrix.write("matrix.bin");
+        //Here I grab the address of the start of the next column or the end of the matrix.
+        //I subtract sizeof(T) because the iterator will need to look for the very last delimitor of the column
+        //to know when to stop; otherwise it will go past the end and cause a segfault.
+        endOfCol = (col == matrix.cols() - 1) ? matrix.endPtr() : (char*)getColumnAddress(col + 1) - sizeof(T_index);
+        
+        // matrix.write("matrix.bin");
         // set to begining of data
         currentIndex = data;
 
@@ -32,19 +36,23 @@ namespace CSF {
         // std::cout << "currentIndex: " << currentIndex << std::endl;
         // std::cout << "getColumnAddress(col - 1): " << getColumnAddress(col + 1) << std::endl << std::endl;
 
+        //zero column
         if (col != matrix.cols() - 1 && currentIndex == getColumnAddress(col + 1)) {
             // std::cout << "Zero vector exists at column: " << col << std::endl;
             currentIndex = endOfCol;
             value = (T*)index;
+
         }
-        else if ((char*)currentIndex - 1 == endOfCol) {
+        //end of matrix
+        else if ((char*)currentIndex - sizeof(T_index) == endOfCol) {
             // std::cout << "At end: " << col << std::endl;
             currentIndex = endOfCol;
             *value = 0;
+
         }
         else {
-            // Insures the matrix is not empty
-            // std::cout << "endOfCol: " << endOfCol << std::endl;
+            // Ensures the matrix is not empty
+            // std::cout << "endOfCol: " << endOfCol << " Matrix end" << matrix.endPtr() << std::endl;
             // std::cout << "currentIndex: " << currentIndex << std::endl;
             // std::cout << "cols: " << matrix.cols() << std::endl;
 
@@ -156,11 +164,13 @@ namespace CSF {
                 currentCol++;
             }
 
-            // std::cout << "currentCol: " << currentCol << std::endl;
-            // std::cout << "endOfCol: " << endOfCol << std::endl;
-            // std::cout << "Value: " << *value << std::endl;
-            // std::cout << "newIndexWidth: " << (int)newIndexWidth << std::endl;
 
+            // std::cout << "currentIndex: " << currentIndex << std::endl;
+            // std::cout << "endOfCol: " << endOfCol << std::endl;
+
+            // if (currentIndex >= endOfCol) {
+            //     exit(1);
+            // }
 
             // Make index 0 as it is a new run
             memset(&index, 0, 8);
@@ -271,6 +281,7 @@ namespace CSF {
         // metadata[6] # of nonzeros
 
         valueWidth = metadata[3] & 0xF;
+        // std::cout << "valueWidth: " << (int)valueWidth << std::endl;
         numRows = metadata[4];
         numColumns = metadata[5];
     }
@@ -322,10 +333,6 @@ namespace CSF {
         currentIndex = (char*)(currentIndex)+width;
         return newIndex;
     }
-
-    template <typename T, typename T_index, int compression_level>
-    void SparseMatrix<T, T_index, compression_level>::InnerIterator::setEnd(void* end) { endOfCol = end; }
-
 
 
     //** ------------------------------------------------------------------------------------------------------------------ **//

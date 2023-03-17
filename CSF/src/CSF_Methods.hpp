@@ -17,7 +17,7 @@ namespace CSF {
         // plus space for the value and row, col indicies, and a buffer zone
 
         size_t csc_size = num_nonzeros * sizeof(T) + num_nonzeros * sizeof(T_index) + num_cols * sizeof(T_index);
-        size_t comp_size_guess = META_DATA_SIZE + (sizeof(uint64_t) * num_cols) + csc_size;
+        size_t comp_size_guess = META_DATA_SIZE + (sizeof(uint64_t) * num_cols) + csc_size + 1000;
 
         try {
             begin_ptr = malloc(comp_size_guess);
