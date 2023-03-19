@@ -1,5 +1,7 @@
 {
     "files.associations": {
+        "*.erb": "erb",
+        "*.rmd": "markdown",
         "*.asm": "asm",
         "array": "cpp",
         "string": "cpp",
@@ -76,6 +78,11 @@
         "streambuf": "cpp",
         "thread": "cpp",
         "typeindex": "cpp",
-        "typeinfo": "cpp"
+        "typeinfo": "cpp",
+        "compare": "cpp",
+        "concepts": "cpp",
+        "numbers": "cpp",
+        "semaphore": "cpp",
+        "stop_token": "cpp"
     }
 }
