@@ -141,7 +141,7 @@ Eigen::SparseMatrix<T> generateMatrix(int numRows, int numCols, int sparsity, ui
         {
             if (randMatrixGen.draw<int>(i, j, sparsity))
             {
-                myMatrix.insert(i, j) = 10 * randMatrixGen.uniform<double>(j);
+                myMatrix.insert(i, j) = rand() % 5 + 1;
             }
         }
     }
