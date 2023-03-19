@@ -170,8 +170,8 @@ namespace CSF {
         T val = 0;
 
         // while the iterator hasn't hit the next column keep going
-        for(int i = 0; i < this->num_cols; i++){
-            for(typename SparseMatrix<T, T_index, compression_level>::InnerIterator it(*this, i); it; it++) {
+        for (int i = 0; i < this->num_cols; i++) {
+            for (typename SparseMatrix<T, T_index, compression_level>::InnerIterator it(*this, i); it; it++) {
                 // if the row matches the row we are looking for, return the value
                 if (it.getIndex() == row) {
                     val = *it;
@@ -214,8 +214,8 @@ namespace CSF {
         triplet.reserve(num_nonzeros);
 
         // create an iterator for the matrix
-        for(int i = 0; i < this->num_cols; i++) {
-            for(typename SparseMatrix<T, T_index, compression_level>::InnerIterator it(*this, i); it; it++) {
+        for (int i = 0; i < this->num_cols; i++) {
+            for (typename SparseMatrix<T, T_index, compression_level>::InnerIterator it(*this, i); it; it++) {
                 triplet.push_back(Eigen::Triplet<T>(it.getIndex(), it.getColIndex(), *it));
             }
         }
@@ -240,8 +240,8 @@ namespace CSF {
         triplet.reserve(num_nonzeros);
 
         // iterate over the matrix
-        for(int i = 0; i < this->num_cols; i++) {
-            for(typename SparseMatrix<T, T_index, compression_level>::InnerIterator it(*this, i); it; it++) {
+        for (int i = 0; i < this->num_cols; i++) {
+            for (typename SparseMatrix<T, T_index, compression_level>::InnerIterator it(*this, i); it; it++) {
                 triplet.push_back(Eigen::Triplet<T>(it.getIndex(), it.getColIndex(), *it));
             }
         }
@@ -407,28 +407,84 @@ namespace CSF {
 
     /**
      * @brief Overloads the * operator to multiply the matrix by a scalar
-     * 
-     * @tparam T 
-     * @tparam indexType 
-     * @tparam compressionLevel 
-     * @param scalar 
-     * @return CSF::SparseMatrix<T, indexType, compressionLevel> 
+     *
+     * @tparam T
+     * @tparam indexType
+     * @tparam compressionLevel
+     * @param scalar
+     * @return CSF::SparseMatrix<T, indexType, compressionLevel>
      */
-    
-    // template <typename T, typename indexType, int compressionLevel>
+
+    template <typename T, typename indexType, int compressionLevel>
     // CSF::SparseMatrix<T, indexType, compressionLevel> SparseMatrix<T, indexType, compressionLevel>::operator * (T scalar) {
-    //     typename CSF::SparseMatrix<T, indexType, compressionLevel>::Iterator iter(*this);
+    void SparseMatrix<T, indexType, compressionLevel>::operator * (T scalar) {
+        typename SparseMatrix<T, indexType, compressionLevel>::InnerIterator iter(*this, 0);
 
-    //     //Iterate through the matrix and multiply each value by the scalar
-    //     while (iter) {
-    //         if (iter.atBeginningOfRun()) {
-    //             iter.setRunValue(scalar * *iter);
-    //         }
-    //         iter++;
-    //     }
+        //Iterate through the matrix and multiply each value by the scalar
+        for (uint32_t i = 0; i < this->cols(); i++) {
+            for (typename SparseMatrix<T, indexType, compressionLevel>::InnerIterator iter(*this, i); iter; iter++) {
+                if (iter.atBeginningOfRun()) {
+                    iter.setRunValue(scalar * *iter);
 
-    //     return CSF::SparseMatrix<T, indexType, compressionLevel>(iter);
-    // }
+                    //TODO handle this better - There is overflow
+                    // if(*iter != (scalar * (uint64_t)*iter)){
+                    //     std::cout << "Negative value: " << *iter << std::endl;
+                    // }
+                }
+                iter++;
+            }
+        }
+
+        // return *this;
+    }
+
+    /**
+     * @brief Vector matrix multiplication operator overload
+     * //TODO CHANGE PARAMTER TO CSF::SparseVector WHEN IT EXISTS
+     *
+     * @tparam T
+     * @tparam indexType
+     * @tparam compressionLevel
+     * @param scalar
+     */
+
+    template <typename T, typename indexType, int compressionLevel>
+    void operator * (CSF::SparseMatrix<T, indexType, compressionLevel>& matrix, CSF::SparseMatrix<T, indexType, compressionLevel> vector) {
+
+        //Check that the matrix and vector dimensions match or if the vector is actually a vector
+        if (matrix.cols() != vector.rows() || vector.cols() != 1) {
+            std::cerr << "Matrix and vector dimensions do not match" << std::endl;
+
+            if (matrix.cols() != vector.rows()) {
+                std::cerr << "Matrix and vector dimensions do not match" << std::endl;
+                std::cerr << "Matrix has " << matrix.cols() << " columns and vector has " << vector.rows() << " rows" << std::endl;
+            }
+            else {
+                std::cerr << "Given vector parameter is not a column vector" << std::endl;
+                std::cerr << "Vector has " << vector.cols() << " columns" << std::endl;
+            }
+            exit(-1);
+        }
+
+        typename CSF::SparseMatrix<T, indexType, compressionLevel>::InnerIterator vecIter(vector, 0);
+        vecIter++;
+        vecIter.shiftEnd(1); //TODO this is a bandaid and will be undone when the vector class is implemented or Skyler finishes the new constructor implementation
+        for (; vecIter; vecIter++) {
+            // std::cout << "vecIter: " << vecIter.getIndex() << std::endl;
+            for (typename CSF::SparseMatrix<T, indexType, compressionLevel>::InnerIterator matIter(matrix, vecIter.getIndex()); matIter; matIter++) {
+                if (matIter.atBeginningOfRun()) {
+                    // std::cout << "matIter: " << matIter.getColIndex() << std::endl;
+                    // std::cout << "Setting run value to " << *matIter << " * " << *vecIter << " = " << *matIter * *vecIter << std::endl;
+                    matIter.setRunValue(*matIter * *vecIter);
+                }
+            }
+        }
+
+        // return CSF::SparseMatrix<T, indexType, compressionLevel>(matIter);
+    }
+
+
+
 
     template <typename T, typename T_index>
     void SparseMatrix<T, T_index, 1>::user_checks() {

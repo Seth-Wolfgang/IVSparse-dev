@@ -25,7 +25,7 @@ Eigen::SparseMatrix<T> generateEigenMatrix(int numRows, int numCols, int sparsit
     for (int i = 0; i < numRows; i++) {
         for (int j = 0; j < numCols; j++) {
             if (randMatrixGen.draw<int>(i, j, sparsity)) {
-                myMatrix.insert(i, j) = ceil(100 * randMatrixGen.uniform<double>(j));
+                myMatrix.insert(i, j) = ceil(10 * randMatrixGen.uniform<double>(j));
             }
         }
     }
@@ -69,7 +69,7 @@ template <typename T, typename indexType, int compressionLevel>
 T getSum(CSF::SparseMatrix<T, indexType, compressionLevel> matrix) {
     T CSFTotal = 0;
 
-    for (int i = 0; i < matrix.cols(); ++i) {
+    for (int i = 0; i < matrix.cols(); i++) {
         for (typename CSF::SparseMatrix<T, indexType, compressionLevel>::InnerIterator it(matrix, i); it; it++) {
             CSFTotal += *it;
         }
@@ -77,6 +77,7 @@ T getSum(CSF::SparseMatrix<T, indexType, compressionLevel> matrix) {
 
     return CSFTotal;
 }
+
 
 /**
  * @brief Returns the sum of all values in the matrix

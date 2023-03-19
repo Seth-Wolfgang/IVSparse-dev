@@ -272,7 +272,7 @@ namespace CSF {
          *
          * @param iter
          */
-        // SparseMatrix(typename CSF::SparseMatrix<T, T_index, compression_level>::InnerIterator& iter);
+        SparseMatrix(typename CSF::SparseMatrix<T, T_index, compression_level>::InnerIterator& iter);
 
         // --------- Swapping between types and levels constructors --------- //
 
@@ -291,15 +291,15 @@ namespace CSF {
          * @brief Destroy the Sparse Matrix object
          *
          */
-        // ~SparseMatrix();
+         // ~SparseMatrix();
 
-        /**
-         * @brief writes the sparse matrix to a file
-         *
-         * @param filename the file to write the matrix to
-         *
-         * @return void
-         */
+         /**
+          * @brief writes the sparse matrix to a file
+          *
+          * @param filename the file to write the matrix to
+          *
+          * @return void
+          */
         void write(const char* filename);
 
         /**
@@ -394,13 +394,13 @@ namespace CSF {
 
         /**
          * @brief Scalar multiplication operator for CSF::SparseMatrix
-         * 
-         * @param scalar 
-         * @return CSF::SparseMatrix<T, T_index, compression_level> 
+         *
+         * @param scalar
+         * @return CSF::SparseMatrix<T, T_index, compression_level>
          */
 
-        CSF::SparseMatrix<T, T_index, compression_level> operator * (T scalar);
-
+         // CSF::SparseMatrix<T, T_index, compression_level> operator * (T scalar);
+        void operator * (T scalar);
         /**
          * @brief prints matrix details to stdout
          *
@@ -442,7 +442,8 @@ namespace CSF {
         uint8_t newIndexWidth;
 
         void* data;      // beginptr
-        void* endOfCol; // endptr
+        void* endOfCol; // last delimitor of column
+        void* endOfMatrix;// endptr
 
         void* currentIndex; //* InnerIterator MOVEMENT POINTER
 
@@ -574,8 +575,8 @@ namespace CSF {
          * @return true
          * @return false
          */
-        operator bool() { return endOfCol != currentIndex; }
-        
+        operator bool() { return endOfCol > currentIndex; }
+
 
         /**
          * @brief Gets the data of a specified column (WIP)
@@ -613,7 +614,7 @@ namespace CSF {
          * @param column
          */
 
-        void goToColumn(int column);
+        void goToColumn(uint32_t column);
 
         /**
          * @brief Compares the address of the InnerIterator with a given address.
@@ -629,6 +630,9 @@ namespace CSF {
          */
 
         int compareAddress(void* address);
+
+        //TODO remove this later
+        void shiftEnd(uint64_t shift) { endOfCol = (char*)endOfCol + shift; }
 
     private:
         /**
@@ -656,7 +660,6 @@ namespace CSF {
          */
         void setEnd(void* end);
     };
-
 
 
     /**
@@ -896,15 +899,15 @@ namespace CSF {
          * @brief Destroy the Sparse Matrix object
          *
          */
-        // ~SparseMatrix();
+         // ~SparseMatrix();
 
-        /**
-         * @brief compresses the matrix to compression level 3 (CSF) and returns it
-         *
-         * @param destroy if the original matrix is allowed to be destroyed
-         *
-         * @return CSF::SparseMatrix<T, T_index, 3> the compressed matrix
-         */
+         /**
+          * @brief compresses the matrix to compression level 3 (CSF) and returns it
+          *
+          * @param destroy if the original matrix is allowed to be destroyed
+          *
+          * @return CSF::SparseMatrix<T, T_index, 3> the compressed matrix
+          */
         CSF::SparseMatrix<T, T_index, 3> to_csf3(bool destroy = false);
 
         /**
@@ -1031,19 +1034,19 @@ namespace CSF {
          */
         bool operator!=(const CSF::SparseMatrix<T, T_index, 1>& other);
 
-                /**
-         * @brief Scalar multiplication operator for CSF::SparseMatrix
-         * 
-         * @param scalar 
-         * @return CSF::SparseMatrix<T, T_index, compression_level> 
-         */
-
-        // CSF::SparseMatrix<T, T_index, 1> operator * (T scalar);
-
         /**
-         * @brief The InnerInnerIterator class for the CSF::SparseMatrix, this one is specialized for CSF 1
-         *
-         */
+ * @brief Scalar multiplication operator for CSF::SparseMatrix
+ *
+ * @param scalar
+ * @return CSF::SparseMatrix<T, T_index, compression_level>
+ */
+
+ // CSF::SparseMatrix<T, T_index, 1> operator * (T scalar);
+
+ /**
+  * @brief The InnerInnerIterator class for the CSF::SparseMatrix, this one is specialized for CSF 1
+  *
+  */
         class InnerIterator {};
     };
 
