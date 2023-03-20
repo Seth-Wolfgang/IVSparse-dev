@@ -56,7 +56,7 @@ namespace CSF {
 
         uint32_t outerSize();
 
-        class Column{};
+        class Vector;
 
         class InnerIterator;
     };
@@ -139,8 +139,6 @@ namespace CSF {
         void *data;
         void *end_ptr;
 
-        bool atFirst = true;
-
         void decodeIndex();
 
         public:
@@ -148,6 +146,8 @@ namespace CSF {
         InnerIterator();
 
         InnerIterator(SparseMatrix<T, T_index, compression_level> &mat, uint32_t col);
+
+        InnerIterator(SparseMatrix<T, T_index, compression_level>::Vector &vec);
 
         void operator++(int);
 
@@ -168,6 +168,30 @@ namespace CSF {
         T operator*();
 
         operator bool() { return end_ptr >= data; };
+        
+    };
+
+    template <typename T, typename T_index, uint8_t compression_level>
+    class SparseMatrix<T, T_index, compression_level>::Vector {
+        private:
+
+        size_t size;
+        void *data;
+        void *end_ptr;
+
+        public:
+
+        Vector();
+
+        Vector(CSF::SparseMatrix<T, T_index, compression_level> &mat, uint32_t col);
+
+        T operator[](uint32_t index);
+
+        void *begin();
+
+        void *end();
+
+        size_t byteSize();
         
     };
 

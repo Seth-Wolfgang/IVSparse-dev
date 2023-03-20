@@ -149,7 +149,7 @@ namespace CSF {
                 }
 
                 // write the indices
-                for (auto k = 0; k < pair.second.size(); k++) {
+                for (size_t k = 0; k < pair.second.size(); k++) {
                     if (compression == 3) {
                         if (k == 0) {
                             continue;
@@ -242,7 +242,7 @@ namespace CSF {
         fwrite(meta_data, 1, sizeof(uint32_t) * NUM_META_DATA, fp);
 
         // write the distance between the end and start pointers
-        for (auto i = 0; i < cols; i++) {
+        for (uint32_t i = 0; i < cols; i++) {
             size_t size = (char *)end_pointers[i] - (char *)data[i];
             fwrite(&size, 1, sizeof(size_t), fp);
         }
@@ -251,7 +251,7 @@ namespace CSF {
         // fwrite(data[test], 1, (char *)end_pointers[test] - (char *)data[test], fp);
 
         // write each column
-        for (auto i = 0; i < cols; i++) {
+        for (uint32_t i = 0; i < cols; i++) {
             fwrite(data[i], 1, (char *)end_pointers[i] - (char *)data[i], fp);
         }
 
