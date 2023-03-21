@@ -130,11 +130,13 @@ namespace CSF {
 
         T_index column;
         T_index row;
-        T val;
+        T* val;
 
         T_index new_row;
 
-        uint8_t index_width = 1;
+        uint8_t indexWidth = 1;
+
+        bool firstIndex = true;
 
         void *data;
         void *end_ptr;
@@ -167,7 +169,13 @@ namespace CSF {
 
         T operator*();
 
-        operator bool() { return end_ptr >= data; };
+        operator bool() { return end_ptr > data; };
+
+        // void readMetaData();
+
+        bool atBeginningOfRun();
+
+        // uint32_t* getMetaData();
         
     };
 

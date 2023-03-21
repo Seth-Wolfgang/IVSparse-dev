@@ -8,6 +8,9 @@
 #include "src/CSF_SparseMatrix.hpp"
 #include "src/CSF_Methods.hpp"
 #include "src/CSF_Constructors.hpp"
-#include "src/CSF_Iterators.hpp"
+
+// #include "src/CSF_Iterators.hpp"
+#include "src/CSF_NewIterator.hpp"
+
 #include "src/CSF_Vector.hpp"
 #include "src/CSF_BLAS.hpp"

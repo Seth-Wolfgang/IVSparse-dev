@@ -6,7 +6,6 @@
  * @brief Genearates a random sparse matrix using Eigen
  *
  *
- *
  * @tparam T
  * @param numRows
  * @param numCols
@@ -70,7 +69,7 @@ T getSum(CSF::SparseMatrix<T, indexType, compressionLevel> matrix) {
     T CSFTotal = 0;
 
     for (uint32_t k = 0; k < matrix.outerSize(); ++k) {
-        for (typename CSF::SparseMatrix<T>::InnerIterator it(matrix, k); it; it++) {
+        for (typename CSF::SparseMatrix<T, indexType, compressionLevel>::InnerIterator it(matrix, k); it; it++) {
             CSFTotal += it.value();
         }
     }
