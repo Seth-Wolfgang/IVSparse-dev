@@ -52,17 +52,18 @@ namespace CSF {
             // create a std::map that holds value as the key and a vector of indices as the value
             std::map<T2, std::vector<T_index2>> dict;
 
+            // check if the column is empty
+            if (col_ptr[i] == col_ptr[i + 1]) {
+                
+                // set the data and end pointers to null
+                data[i] = nullptr;
+                end_pointers[i] = nullptr;
+                
+                continue;
+            }
+
             for (T_index2 j = col_ptr[i]; j < col_ptr[i + 1]; j++) {
 
-                // check if the column is empty
-                if (col_ptr[i] == col_ptr[i + 1]) {
-                    
-                    // set the data and end pointers to null
-                    data[i] = nullptr;
-                    end_pointers[i] = nullptr;
-                    
-                    break;
-                }
 
                 // if the value is already in the dictionary
                 if (dict.find(vals[j]) != dict.end()) {
@@ -99,6 +100,8 @@ namespace CSF {
 
             size_t col_size = 0;
 
+            //! change for parallel compression since col_size is being accessed by multiple threads
+
             // malloc space for the column
             if (compression == 3) {
                 for (auto &pair : dict) {
@@ -124,7 +127,7 @@ namespace CSF {
             //! print out the dictionary
             // for (auto &pair : dict) {
             //     std::cout << pair.first << ": ";
-            //     for (auto k = 0; k < pair.second.size(); k++) {
+            //     for (T_index k = 0; k < pair.second.size(); k++) {
             //         std::cout << pair.second[k] << " ";
             //     }
             //     std::cout << std::endl;
@@ -338,5 +341,11 @@ namespace CSF {
 
     template <typename T, typename T_index, uint8_t compression_level>
     uint32_t SparseMatrix<T, T_index, compression_level>::outerSize() { return cols; }
+
+    template <typename T, typename T_index, uint8_t compression_level>
+    uint32_t SparseMatrix<T, T_index, compression_level>::nonZeros() { return nnz; }
+
+    template <typename T, typename T_index, uint8_t compression_level>
+    size_t SparseMatrix<T, T_index, compression_level>::compressionSize() { return compression_size; }
 
 } // end namespace CSF

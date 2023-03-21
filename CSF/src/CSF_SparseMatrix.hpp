@@ -17,7 +17,7 @@ namespace CSF {
         uint32_t val_t;
         uint32_t index_t;
 
-        size_t compression_size;
+        size_t compression_size = 0;
         uint8_t compression = compression_level;
 
         void **data;
@@ -55,6 +55,10 @@ namespace CSF {
         uint32_t innerSize();
 
         uint32_t outerSize();
+
+        uint32_t nonZeros();
+
+        size_t compressionSize();
 
         class Vector;
 
@@ -136,8 +140,6 @@ namespace CSF {
 
         uint8_t indexWidth = 1;
 
-        bool firstIndex = true;
-
         void *data;
         void *end_ptr;
 
@@ -153,6 +155,8 @@ namespace CSF {
 
         void operator++(int);
 
+        void operator++();
+
         T_index index();
 
         T_index col();
@@ -167,16 +171,12 @@ namespace CSF {
 
         bool operator>(const InnerIterator &other);
 
-        T operator*();
+        T& operator*();
 
-        operator bool() { return end_ptr > data; };
-
-        // void readMetaData();
+        operator bool() { return (char*)end_ptr - indexWidth > data; };
 
         bool atBeginningOfRun();
 
-        // uint32_t* getMetaData();
-        
     };
 
     template <typename T, typename T_index, uint8_t compression_level>
