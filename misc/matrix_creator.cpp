@@ -1,27 +1,23 @@
 #include <Eigen/Sparse>
 
-class rng
-{
+class rng {
 private:
     uint64_t state;
 
 public:
-    rng(uint64_t state) : state(state) {}
+    rng(uint64_t state): state(state) {}
 
-    void advance_state()
-    {
+    void advance_state() {
         state ^= state << 19;
         state ^= state >> 7;
         state ^= state << 36;
     }
 
-    uint64_t operator*() const
-    {
+    uint64_t operator*() const {
         return state;
     }
 
-    uint64_t rand()
-    {
+    uint64_t rand() {
         uint64_t x = state ^ (state << 38);
         x ^= x >> 13;
         x ^= x << 23;
@@ -29,8 +25,7 @@ public:
         return x;
     }
 
-    uint64_t rand(uint64_t i)
-    {
+    uint64_t rand(uint64_t i) {
         // advance i
         i ^= i << 19;
         i ^= i >> 7;
@@ -47,8 +42,7 @@ public:
         return x;
     }
 
-    uint64_t rand(uint64_t i, uint64_t j)
-    {
+    uint64_t rand(uint64_t i, uint64_t j) {
         uint64_t x = rand(i);
 
         // advance j
@@ -68,82 +62,70 @@ public:
     }
 
     template <typename T>
-    T sample(T max_value)
-    {
+    T sample(T max_value) {
         return rand() % max_value;
     }
 
     template <typename T>
-    T sample(uint64_t i, T max_value)
-    {
+    T sample(uint64_t i, T max_value) {
         return rand(i) % max_value;
     }
 
     template <typename T>
-    T sample(uint64_t i, uint64_t j, T max_value)
-    {
+    T sample(uint64_t i, uint64_t j, T max_value) {
         return rand(i, j) % max_value;
     }
 
     template <typename T>
-    bool draw(T probability)
-    {
+    bool draw(T probability) {
         return sample(probability) == 0;
     }
 
     template <typename T>
-    bool draw(uint64_t i, T probability)
-    {
+    bool draw(uint64_t i, T probability) {
         return sample(i, probability) == 0;
     }
 
     template <typename T>
-    bool draw(uint64_t i, uint64_t j, T probability)
-    {
+    bool draw(uint64_t i, uint64_t j, T probability) {
         sample(i, j, probability);
         return sample(i, j, probability) == 0;
     }
 
     template <typename T>
-    double uniform()
-    {
+    double uniform() {
         T x = (T)rand() / UINT64_MAX;
         return x - std::floor(x);
     }
 
     template <typename T>
-    double uniform(uint64_t i)
-    {
+    double uniform(uint64_t i) {
         T x = (T)rand(i) / UINT64_MAX;
         return x - std::floor(x);
     }
 
     template <typename T>
-    double uniform(uint64_t i, uint64_t j)
-    {
+    double uniform(uint64_t i, uint64_t j) {
         T x = (T)rand(i, j) / UINT64_MAX;
         return x - std::floor(x);
     }
 };
 
 template <typename T>
-Eigen::SparseMatrix<T> generateMatrix(int numRows, int numCols, int sparsity, uint64_t seed)
-{
+Eigen::SparseMatrix<T> generateMatrix(int numRows, int numCols, int sparsity, uint64_t seed) {
     // generate a random sparse matrix
     rng randMatrixGen = rng(seed);
 
     Eigen::SparseMatrix<T> myMatrix(numRows, numCols);
-    myMatrix.reserve(Eigen::VectorXi::Constant(numRows, numCols));
+    myMatrix.reserve(Eigen::VectorXi::Constant(numCols, numRows));
 
-    for (int i = 0; i < numRows; i++)
-    {
-        for (int j = 0; j < numCols; j++)
-        {
-            if (randMatrixGen.draw<int>(i, j, sparsity))
-            {
-                myMatrix.insert(i, j) = rand() % 5 + 1;
+    for (int i = 0; i < numRows; i++) {
+        for (int j = 0; j < numCols; j++) {
+            if (randMatrixGen.draw<int>(i, j, sparsity)) {
+                myMatrix.insert(i, j) = ((T) rand()*(5-1)/(T)RAND_MAX-1);
             }
         }
     }
+    myMatrix.makeCompressed();
     return myMatrix;
 }

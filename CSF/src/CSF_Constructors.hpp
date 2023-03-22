@@ -24,6 +24,15 @@ namespace CSF {
         nnz = mat.nonZeros();
 
         compressCSC(mat.valuePtr(), mat.innerIndexPtr(), mat.outerIndexPtr());
+        
+        // for (size_t i = 0; i < cols; i++) {
+            // std::cout << "Col " << getColSize(i) << std::endl;
+            // std::cout << ((uint64_t*)data[i]) << " To " << ((uint64_t*)data[i] + getColSize(i)) << std::endl;
+        // }
+
+
+
+
     }
 
     template <typename T, typename T_index, uint8_t compression_level>

@@ -105,8 +105,8 @@ namespace CSF {
     template <typename T, typename T_index, uint8_t compression_level>
     T_index SparseMatrix<T, T_index, compression_level>::InnerIterator::index() { return row; }
 
-    template <typename T, typename T_index, uint8_t compression_level>
-    bool SparseMatrix<T, T_index, compression_level>::InnerIterator::atBeginningOfRun() { return firstIndex; }
+    // template <typename T, typename T_index, uint8_t compression_level>
+    // bool SparseMatrix<T, T_index, compression_level>::InnerIterator::atBeginningOfRun() { return firstIndex; }
 
     // template <typename T, typename T_index, uint8_t compression_level>
     // void SparseMatrix<T, T_index, compression_level>::InnerIterator::operator++(int) {
@@ -169,6 +169,14 @@ namespace CSF {
             }
 
             data = (uint8_t *)data + indexWidth;
+
+            if(indexWidth != 0) {
+                std::cout << "value: " << *val << std::endl;
+                std::cout << "data: " << ((uint64_t *)data) << std::endl;
+                std::cout << "end_ptr: " << ((uint64_t *)end_ptr) << std::endl;
+                std::cout << "indexWidth: " << (int)indexWidth << std::endl;
+            }
+          
 
 
             // val is the first row of the run
