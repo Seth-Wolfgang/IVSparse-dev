@@ -9,53 +9,78 @@
 
 runCPPBenchmark() {
     # if next file is not done, wait
-    while [! -f nextFile.rb ] do
+    while [! -f nextFile.rb ] 
+    do
         sleep 0.2
     done
 
     # if current file is not done, wait
-    while [ -f currentFile.rb ] do
+    while [ -f currentFile.rb ] 
+    do
         sleep 0.2
     done
 
     # Then rename it to currentFile.rb
     mv nextFile.rb currentFile.rb
     echo "Running C++ benchmark"
-    ./runBenchmark.sh
+    ./runBenchmark.sh 
     rm currentFile.rb 
 }
 
-runSSGET(){
+# runSSGET(){
 
 
 
-}
+# }
+
+
 
 # read parameters
-while [ "$#" -gt 0 ] do
-    case "$0" in
+while [ $# -gt 0 ] 
+do
+    case $1 in
         "-c")
             shift
-            numCols=$0
+            numCols=$1
             ;;
-        "-n")
+        "-r")
             shift
-            numRows=$0
+            numRows=$1
             ;;
         "-v")
             shift
-            numNonzeros=$0
+            numNonzeros=$1
             ;;
         "-i")
             shift
-            numMatrices=$0
+            numMatrices=$1
             ;;
         "-p")
             shift
-            problemKind=$0
+            problemKind=$1
             ;;
-        5)
     esac
     shift
+
 done
 
+echo "Running benchmark with $numCols columns, $numRows rows, $numNonzeros nonzeros, $numMatrices matrices, and \"$problemKind\" problem kind"
+
+# Compiling benchmark
+g++ benchmark.cpp -o benchmark
+
+# Downloading matrices and running benchmark at the same time
+for i in $(seq 1 $numMatrices)
+do
+    # Download matrix
+    echo "Downloading matrix $i"
+    #TODO establish ssget with proper parameters
+    #TODO ensure file downloaded is labeled as "nextFile.rb"
+
+    # ssget -c $numCols -r $numRows -v $numNonzeros -p $problemKind -i $i -f nextFile.rb & runCPPBenchmark
+done
+
+# Clean up
+rm -r currentFile.*
+rm -r nextFile.*
+rm -r *.tar.gz
