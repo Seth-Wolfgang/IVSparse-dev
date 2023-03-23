@@ -25,12 +25,21 @@ int main() {
     myMatrix_e_row.prune(0);
     myMatrix_e_row.makeCompressed();
 
-    std::cout << myMatrix_e << std::endl;
+    // std::cout << myMatrix_e << std::endl;
 
     CSF::SparseMatrix<int> myMatrix_csf(myMatrix_e);
 
+    // convert the matrix back to eigen
+    //Eigen::SparseMatrix<int> myMatrix_e2 = myMatrix_csf.toEigen();
+
+    std::cout << myMatrix_e2 << std::endl;
+
     CSF::SparseMatrix<int, uint32_t, 3, false> myMatrix_csf_row(myMatrix_e_row);
 
+    // write the matrix to a file
+    myMatrix_csf_row.write("test2.csf");
+
+    // std::cout << myMatrix_e_row << std::endl;
 
     // print out the byte size of the matrix
     std::cout << "size: " << myMatrix_csf.compressionSize() << std::endl;

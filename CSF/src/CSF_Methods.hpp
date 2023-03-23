@@ -11,6 +11,9 @@
 #define TWO_BYTE_MAX 65535
 #define FOUR_BYTE_MAX 4294967295
 
+// Debug flag for performance testing (set to true to be faster)
+#define DEBUG false
+
 namespace CSF
 {
 
@@ -35,7 +38,8 @@ namespace CSF
         metadata[5] = index_t;
 
         // run the user checks
-        userChecks();
+        if constexpr (DEBUG)
+            userChecks();
 
         // malloc space for the data
         try
@@ -50,7 +54,7 @@ namespace CSF
         }
 
         // loop through each column
-        // #pragma omp parallel for
+        //#pragma omp parallel for
         for (size_t i = 0; i < outerDim; i++)
         {
             // construct the dictionary
@@ -77,7 +81,7 @@ namespace CSF
                 {
 
                     // add the index to the vector
-                    if (compressionLevel == 3)
+                    if constexpr (compressionLevel == 3)
                     {
 
                         // positive delta encode
@@ -102,7 +106,7 @@ namespace CSF
                     // create a new vector with the index
                     dict[vals[j]] = std::vector<indexT2>{rowIdx[j]};
 
-                    if (compressionLevel == 3)
+                    if constexpr (compressionLevel == 3)
                     {
 
                         dict[vals[j]].push_back(rowIdx[j]);
@@ -114,7 +118,7 @@ namespace CSF
             size_t outerByteSize = 0;
 
             // malloc space for the column
-            if (compressionLevel == 3)
+            if constexpr (compressionLevel == 3)
             {
                 for (auto &pair : dict)
                 {
@@ -161,7 +165,7 @@ namespace CSF
                 helpPtr = (T *)helpPtr + 1;
 
                 // write the index width
-                if (compressionLevel == 3)
+                if constexpr (compressionLevel == 3)
                 {
                     *(uint8_t *)helpPtr = (uint8_t)pair.second[0];
                     helpPtr = (uint8_t *)helpPtr + 1;
@@ -175,7 +179,7 @@ namespace CSF
                 // write the indices
                 for (size_t k = 0; k < pair.second.size(); k++)
                 {
-                    if (compressionLevel == 3)
+                    if constexpr (compressionLevel == 3)
                     {
                         if (k == 0)
                         {
@@ -211,7 +215,7 @@ namespace CSF
                 }
 
                 // write the delimiter
-                if (compressionLevel == 3)
+                if constexpr (compressionLevel == 3)
                 {
                     // write a delimiter of the correct width
                     switch (pair.second[0])
@@ -392,5 +396,32 @@ namespace CSF
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     size_t SparseMatrix<T, indexT, compressionLevel, columnMajor>::compressionSize() { return compSize; }
+
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector SparseMatrix<T, indexT, compressionLevel, columnMajor>::getVector(uint32_t vec)
+    {
+        // return a CSF vector
+        CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector test(*this, vec);
+
+        return test;
+    }
+
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    Eigen::SparseMatrix<T, columnMajor ? Eigen::ColMajor : Eigen::RowMajor> SparseMatrix<T, indexT, compressionLevel, columnMajor>::toEigen()
+    {
+        // create an eigen sparse matrix
+        Eigen::SparseMatrix<T, columnMajor ? Eigen::ColMajor : Eigen::RowMajor> mat(innerDim, outerDim);
+
+        // reserve the correct number of nonzeros
+        mat.reserve(nnz);
+
+        for (indexT i = 0; i < outerDim; ++i) {
+            for (CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator it(*this, i); it; ++it)
+                mat.insert(it.getIndex(), it.outerDim()) = it.value();
+        }
+
+        // return the eigen matrix
+        return mat;
+    }
 
 } // end namespace CSF

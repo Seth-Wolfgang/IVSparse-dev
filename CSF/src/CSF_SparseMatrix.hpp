@@ -56,6 +56,8 @@ namespace CSF {
 
         void *getVecPointer(uint32_t vec);
 
+        typename CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector getVector(uint32_t vec);
+
         size_t getVecSize(uint32_t vec);
 
         uint32_t innerSize();
@@ -72,7 +74,7 @@ namespace CSF {
 
         CSF::SparseMatrix<T, indexT, 1, columnMajor> toCSF1();
 
-        Eigen::SparseMatrix<T> toEigen();
+        Eigen::SparseMatrix<T, columnMajor ? Eigen::ColMajor : Eigen::RowMajor> toEigen();
 
         CSF::SparseMatrix<T, indexT, compressionLevel, !columnMajor> transpose();
 
