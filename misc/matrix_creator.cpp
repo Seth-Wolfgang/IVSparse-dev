@@ -122,7 +122,7 @@ Eigen::SparseMatrix<T> generateMatrix(int numRows, int numCols, int sparsity, ui
     for (int i = 0; i < numRows; i++) {
         for (int j = 0; j < numCols; j++) {
             if (randMatrixGen.draw<int>(i, j, sparsity)) {
-                myMatrix.insert(i, j) = ((T) rand()*(5-1)/(T)RAND_MAX-1);
+                myMatrix.insert(i, j) = rand() % 8 + 1;
             }
         }
     }

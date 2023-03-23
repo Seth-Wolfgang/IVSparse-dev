@@ -40,6 +40,8 @@ namespace CSF {
 
         SparseMatrix(Eigen::SparseMatrix<T> &mat);
 
+        SparseMatrix(Eigen::SparseMatrix<T, Eigen::RowMajor> &mat);
+
         SparseMatrix(const char *filename);
 
         ~SparseMatrix();
@@ -71,6 +73,8 @@ namespace CSF {
         CSF::SparseMatrix<T, indexT, 1, columnMajor> toCSF1();
 
         Eigen::SparseMatrix<T> toEigen();
+
+        CSF::SparseMatrix<T, indexT, compressionLevel, !columnMajor> transpose();
 
         class Vector;
 
@@ -110,6 +114,8 @@ namespace CSF {
         SparseMatrix();
 
         SparseMatrix(Eigen::SparseMatrix<T> &mat);
+
+        SparseMatrix(Eigen::SparseMatrix<T, Eigen::RowMajor> &mat);
 
         SparseMatrix(const char *filename);
 

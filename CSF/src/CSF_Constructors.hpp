@@ -21,13 +21,25 @@ namespace CSF
     SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(Eigen::SparseMatrix<T> &mat)
     {
         // Set the number of rows, columns and non-zero elements
+        innerDim = mat.rows();
+        outerDim = mat.cols();
+
+        nnz = mat.nonZeros();
+
         if (columnMajor) {
-            innerDim = mat.rows();
-            outerDim = mat.cols();
+            compress(mat.valuePtr(), mat.innerIndexPtr(), mat.outerIndexPtr());
         } else {
-            innerDim = mat.cols();
-            outerDim = mat.rows();
+            compress(mat.valuePtr(), mat.outerIndexPtr(), mat.innerIndexPtr());
         }
+    }
+
+        template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(Eigen::SparseMatrix<T, Eigen::RowMajor> &mat)
+    {
+        // Set the number of rows, columns and non-zero elements
+        innerDim = mat.cols();
+        outerDim = mat.rows();
+
         nnz = mat.nonZeros();
 
         if (columnMajor) {
