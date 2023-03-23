@@ -3,7 +3,7 @@
 #include "misc/matrix_creator.cpp"
 #include <chrono>
 
-template <typename T, typename T_index, int compressionLevel> void iteratorTest();
+template <typename T, typename indexT, int compressionLevel> void iteratorTest();
 
 int main() {
 
@@ -31,7 +31,7 @@ int main() {
     myMatrix_csf.write("test.csf");
 
     // get the column size of column 8
-    std::cout << "col size: " << myMatrix_csf.getColSize(8) << std::endl;
+    std::cout << "col size: " << myMatrix_csf.getVecSize(8) << std::endl;
 
 
     // sum all values in the eigen matrix
@@ -42,14 +42,14 @@ int main() {
 
     // sum all values in the CSF matrix
     int sum_csf = 0;
-    for (uint32_t k = 0; k < myMatrix_csf.innerSize(); ++k)
+    for (uint32_t k = 0; k < myMatrix_csf.outerSize(); ++k)
         for (CSF::SparseMatrix<int>::InnerIterator it(myMatrix_csf, k); it; ++it) {
             // std::cout << it.value() << " " << it.index() << " " << it.col() << std::endl;
             sum_csf += it.value();
         }
     // sum_csf += it.value();
 
-// compare the sums
+    // compare the sums
     std::cout << "sum_e: " << sum_e << std::endl;
     std::cout << "sum_csf: " << sum_csf << std::endl;
 
@@ -62,7 +62,7 @@ int main() {
     return 0;
 }
 
-template <typename T, typename T_index, int compressionLevel>
+template <typename T, typename indexT, int compressionLevel>
 void iteratorTest() {
 
     int numRows = rand() % 1000 + 10;
@@ -78,13 +78,13 @@ void iteratorTest() {
 
     // std::cout << myMatrix_e << std::endl;
 
-    CSF::SparseMatrix<T, T_index, compressionLevel> myMatrix_csf(myMatrix_e);
+    CSF::SparseMatrix<T, indexT, compressionLevel> myMatrix_csf(myMatrix_e);
 
     // myMatrix_csf.write("test.csf");
 
     T sum_csf = 0;
     for (uint32_t k = 0; k < myMatrix_csf.outerSize(); ++k)
-        for (typename CSF::SparseMatrix<T, T_index, compressionLevel>::InnerIterator it(myMatrix_csf, k); it; ++it)
+        for (typename CSF::SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(myMatrix_csf, k); it; ++it)
             sum_csf += it.value();
 
     T sum_e = 0;

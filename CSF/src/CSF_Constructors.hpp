@@ -11,37 +11,41 @@
 #include <iostream>
 #include <iomanip>
 
-namespace CSF {
+namespace CSF
+{
 
-    template <typename T, typename T_index, uint8_t compression_level>
-    SparseMatrix<T, T_index, compression_level>::SparseMatrix() {}
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix() {}
 
-    template <typename T, typename T_index, uint8_t compression_level>
-    SparseMatrix<T, T_index, compression_level>::SparseMatrix(Eigen::SparseMatrix<T> &mat) {
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(Eigen::SparseMatrix<T> &mat)
+    {
         // Set the number of rows, columns and non-zero elements
-        rows = mat.rows();
-        cols = mat.cols();
+        if (columnMajor) {
+            innerDim = mat.rows();
+            outerDim = mat.cols();
+        } else {
+            innerDim = mat.cols();
+            outerDim = mat.rows();
+        }
         nnz = mat.nonZeros();
 
-        compressCSC(mat.valuePtr(), mat.innerIndexPtr(), mat.outerIndexPtr());
-        
-        // for (size_t i = 0; i < cols; i++) {
-            // std::cout << "Col " << getColSize(i) << std::endl;
-            // std::cout << ((uint64_t*)data[i]) << " To " << ((uint64_t*)data[i] + getColSize(i)) << std::endl;
-        // }
-
-
-
-
+        if (columnMajor) {
+            compress(mat.valuePtr(), mat.innerIndexPtr(), mat.outerIndexPtr());
+        } else {
+            compress(mat.valuePtr(), mat.outerIndexPtr(), mat.innerIndexPtr());
+        }
     }
 
-    template <typename T, typename T_index, uint8_t compression_level>
-    SparseMatrix<T, T_index, compression_level>::~SparseMatrix() {
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    SparseMatrix<T, indexT, compressionLevel, columnMajor>::~SparseMatrix()
+    {
         // delete the meta data
-        delete[] meta_data;
+        delete[] metadata;
 
         // free the data
-        for (size_t i = 0; i < cols; i++) {
+        for (size_t i = 0; i < outerDim; i++)
+        {
             free(data[i]);
         }
 
@@ -49,7 +53,7 @@ namespace CSF {
         free(data);
 
         // free the end pointers
-        free(end_pointers);
+        free(endPointers);
     }
 
 }

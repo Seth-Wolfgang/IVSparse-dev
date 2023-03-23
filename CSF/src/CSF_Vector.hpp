@@ -4,37 +4,37 @@
 
 namespace CSF {
 
-    template <typename T, typename T_index, uint8_t compression_level>
-    SparseMatrix<T, T_index, compression_level>::Vector::Vector(CSF::SparseMatrix<T, T_index, compression_level> &mat, uint32_t col) {
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::Vector(CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor> &mat, uint32_t vec) {
         // set data pointer
-        data = mat.getColPointer(col);
+        data = mat.getVecPointer(vec);
 
         // get the length of the vector
-        size = mat.getColSize(col);
+        size = mat.getVecSize(vec);
 
         // if the size is 0 then the vector is empty
         if (size == 0) {
-            end_ptr = nullptr;
+            endPtr = nullptr;
             return;
         }
 
         // set the end pointer
-        end_ptr = (uint8_t *)data + size;
+        endPtr = (uint8_t *)data + size;
     }
 
-    template <typename T, typename T_index, uint8_t compression_level>
-    void *SparseMatrix<T, T_index, compression_level>::Vector::begin() { return data; }
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    void *SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::begin() { return data; }
 
-    template <typename T, typename T_index, uint8_t compression_level>
-    void *SparseMatrix<T, T_index, compression_level>::Vector::end() { return end_ptr; }
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    void *SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::end() { return endPtr; }
 
-    template <typename T, typename T_index, uint8_t compression_level>
-    size_t SparseMatrix<T, T_index, compression_level>::Vector::byteSize() { return size; }
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    size_t SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::byteSize() { return size; }
 
-    template <typename T, typename T_index, uint8_t compression_level>
-    T SparseMatrix<T, T_index, compression_level>::Vector::operator[](uint32_t index) {
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    T SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::operator[](uint32_t index) {
         // make an iterator for the vector
-        CSF::SparseMatrix<T, T_index, compression_level>::InnerIterator it(*this);
+        CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator it(*this);
 
         // iterate through the vector until the index is found
         while (it) {
