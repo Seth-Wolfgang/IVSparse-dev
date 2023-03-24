@@ -78,6 +78,10 @@ namespace CSF
 
         bool operator!=(const SparseMatrix<T, indexT, compressionLevel, columnMajor> &other);
 
+        void operator * (T scalar);
+
+        
+
         CSF::SparseMatrix<T, indexT, 1, columnMajor> toCSF1();
 
         Eigen::SparseMatrix<T, columnMajor ? Eigen::ColMajor : Eigen::RowMajor> toEigen();
@@ -171,6 +175,8 @@ namespace CSF
 
         void decodeIndex();
 
+        bool firstIndex = true;
+
     public:
         InnerIterator();
 
@@ -200,7 +206,11 @@ namespace CSF
 
         bool operator>(const InnerIterator &other);
 
+        void coeff(T newValue);
+
         T &operator*();
+
+        bool isNewRun();
 
         operator bool() { return (char *)endPtr - indexWidth > data; };
     };

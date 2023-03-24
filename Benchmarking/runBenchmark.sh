@@ -22,16 +22,24 @@ runCPPBenchmark() {
 
     # Then rename it to currentFile.rb
     mv nextFile.rb currentFile.rb
-    echo "Running C++ benchmark"
-    ./runBenchmark.sh 
-    rm currentFile.rb 
+
+    id=$(grep -oP '(?<=id: ).*' currentFile.rb)
+    echo "id: $id"
+
+    echo "Running C++ benchmark for matrix $id"
+
+    ./runBenchmark.sh currentFile.mtx $id
+    rm currentFile.mtx 
 }
 
-# runSSGET(){
+runSSGET(){
 
 
-
-# }
+# decompress the tar.gz file and rename it to nextFile.rb
+    # tar -xzf *.tar.gz
+    # rm nextFile.tar.gz
+    # mv *.mtx nextFile.mtx
+}
 
 
 

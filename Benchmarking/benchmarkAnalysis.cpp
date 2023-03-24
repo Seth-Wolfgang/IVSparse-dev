@@ -25,7 +25,7 @@ private:
     matrix* myMatrix;
 
     // CSF 1 Data
-    std::vector<uint64_t> CSFConstructorTimes = {};
+    std::vector<uint64_t> CSFConstructorTimes;
     std::vector<uint64_t> CSFInnerIteratorTimes;
     std::vector<uint64_t> CSFScalarMultiplicationTimes;
     std::vector<uint64_t> CSFVectorMultiplicationTimes;
@@ -52,7 +52,6 @@ private:
     std::vector<uint64_t> EigenVectorMultiplicationTimes;
     std::vector<uint64_t> EigenMatrixMultiplicationTimes;
 
-
     //memory usage (in bytes)
     std::vector<uint64_t> CSFMemoryUsage;
     std::vector<uint64_t> CSF2MemoryUsage;
@@ -65,15 +64,14 @@ public:
     // Constructor
     BenchAnalysis(std::vector<uint32_t> matrixData, double matrixRedundancy, double matrixDensity) {
         myMatrix = (matrix*)malloc(sizeof(matrix));
-
-        //TODO: Look back over rb file format
-        // myMatrix->matrixNum = matrixNum;
-        // myMatrix->matrixRows = matrixRows;
-        // myMatrix->matrixCols = matrixCols;
-        // myMatrix->matrixNonzeros = matrixNonzeros;
+        
+        // Assigning the matrix data to the struct
+        myMatrix->matrixNum = matrixNum;
+        myMatrix->matrixRows = matrixRows;
+        myMatrix->matrixCols = matrixCols;
+        myMatrix->matrixNonzeros = matrixNonzeros;
         myMatrix->matrixRedundancy = matrixRedundancy;
         myMatrix->matrixDensity = matrixDensity;
-
 
         //Checking to see if the files we're writing to exist in the directory
         //if not, we write the headers at the top of the file.

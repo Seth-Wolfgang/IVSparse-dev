@@ -415,5 +415,49 @@ namespace CSF
         return test;
     }
 
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    void SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator * (T scalar) {
+        T oldValue;
+        T sum = 0;
+        for(uint32_t i = 0; i < this->outerDim; ++i) {
+            for(typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(*this, i); it; ++it) {
+                if(it.isNewRun()) {
+                    // std::cout << "Multiplying " << it.value() << " by " << scalar << " to get " << it.value() * scalar << std::endl;
+                    it.coeff(it.value() * scalar);
+                    oldValue = it.value();
+                }
+                sum += it.value();
+            }
+        }
+    }
+
+    // template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    // void SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator * (Vector<T, indexT, compressionLevel> &vec)
+    // {
+    //     // check that the vector is the correct size
+    //     if (vec.size() != innerDim)
+    //         throw std::invalid_argument("The vector must be the same size as the number of columns in the matrix");
+
+    //     // create a new vector to store the result
+    //     Vector<T, indexT, compressionLevel> result(innerDim);
+    //     oldValue;
+
+    //     // loop over the rows of the matrix
+    //     for (uint32_t i = 0; i < outerDim; i++)
+    //     {
+    //         // loop over the columns of the matrix
+    //         for (typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator it(*this, i); it; ++it)
+    //         {
+    //             if(it.coeff() != oldValue) {
+    //                 oldValue = it.coeff();
+    //                 vec.coeff() = oldValue * vec.coeff(it.index());
+    //             }
+    //         }
+    //     }
+
+    //     // copy the result vector to the input vector
+    //     return result;
+    // }
+  
 
 } // end namespace CSF
