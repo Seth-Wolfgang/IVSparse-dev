@@ -103,6 +103,22 @@ namespace CSF
     indexT SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator::getIndex() { return index; }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    indexT SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator::row() {
+        if constexpr (!columnMajor)
+            return outer;
+        else
+            return index;
+    }
+
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    indexT SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator::col() {
+        if constexpr (!columnMajor)
+            return index;
+        else
+            return outer;
+    }
+
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     void SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator::operator++(int)
     {
         data = (uint8_t *)data + indexWidth;

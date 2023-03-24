@@ -19,7 +19,7 @@ namespace CSF
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     template <typename T2, typename indexT2>
-    void SparseMatrix<T, indexT, compressionLevel, columnMajor>::compress(T2 *vals, indexT2 *rowIdx, indexT2 *colPtr)
+    void SparseMatrix<T, indexT, compressionLevel, columnMajor>::compress(T2 *vals, indexT2 *innerIndices, indexT2 *outerPtr)
     {
 
         // set the val_t and index_t
@@ -54,7 +54,7 @@ namespace CSF
         }
 
         // loop through each column
-        //#pragma omp parallel for
+        // #pragma omp parallel for
         for (size_t i = 0; i < outerDim; i++)
         {
             // construct the dictionary
@@ -63,7 +63,7 @@ namespace CSF
             std::map<T2, std::vector<indexT2>> dict;
 
             // check if the column is empty
-            if (colPtr[i] == colPtr[i + 1])
+            if (outerPtr[i] == outerPtr[i + 1])
             {
 
                 // set the data and end pointers to null
@@ -73,7 +73,7 @@ namespace CSF
                 continue;
             }
 
-            for (indexT2 j = colPtr[i]; j < colPtr[i + 1]; j++)
+            for (indexT2 j = outerPtr[i]; j < outerPtr[i + 1]; j++)
             {
 
                 // if the value is already in the dictionary
@@ -85,31 +85,34 @@ namespace CSF
                     {
 
                         // positive delta encode
-                        dict[vals[j]].push_back(rowIdx[j] - rowIdx[j - 1]);
+                        dict[vals[j]].push_back(innerIndices[j] - dict[vals[j]][1]);
+
+                        // update the last index
+                        dict[vals[j]][1] = innerIndices[j];
 
                         // update the max delta
-                        if ((rowIdx[j] - rowIdx[j - 1]) > dict[vals[j]][0])
+                        if (dict[vals[j]][dict[vals[j]].size() - 1] > dict[vals[j]][0])
                         {
 
-                            dict[vals[j]][0] = rowIdx[j] - rowIdx[j - 1];
+                            dict[vals[j]][0] = dict[vals[j]][dict[vals[j]].size() - 1];
                         }
                     }
                     else
                     {
-
-                        dict[vals[j]].push_back(rowIdx[j]);
+                        dict[vals[j]].push_back(innerIndices[j]);
                     }
                 }
                 else
                 {
 
                     // create a new vector with the index
-                    dict[vals[j]] = std::vector<indexT2>{rowIdx[j]};
+                    dict[vals[j]] = std::vector<indexT2>{innerIndices[j]};
 
                     if constexpr (compressionLevel == 3)
                     {
 
-                        dict[vals[j]].push_back(rowIdx[j]);
+                        dict[vals[j]].push_back(innerIndices[j]);
+                        dict[vals[j]].push_back(innerIndices[j]);
                     }
                 }
 
@@ -123,7 +126,7 @@ namespace CSF
                 for (auto &pair : dict)
                 {
                     pair.second[0] = byteWidth(pair.second[0]);
-                    outerByteSize += sizeof(T) + 1 + (pair.second[0] * (pair.second.size() - 1)) + pair.second[0];
+                    outerByteSize += sizeof(T) + 1 + (pair.second[0] * (pair.second.size() - 2)) + pair.second[0];
                 }
             }
             else
@@ -181,7 +184,7 @@ namespace CSF
                 {
                     if constexpr (compressionLevel == 3)
                     {
-                        if (k == 0)
+                        if (k == 0 || k == 1)
                         {
                             continue;
                         }
@@ -249,7 +252,7 @@ namespace CSF
 
             } // end dict loop
 
-        } // end col loop
+        } // end outer loop
 
         compSize += META_DATA_SIZE + (sizeof(void *) * outerDim) * 2;
 
@@ -259,7 +262,7 @@ namespace CSF
             compSize += (size_t)endPointers[i] - (size_t)data[i];
         }
 
-    } // end compressCSC
+    } // end compress
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     uint8_t SparseMatrix<T, indexT, compressionLevel, columnMajor>::byteWidth(size_t size)
@@ -392,6 +395,12 @@ namespace CSF
     uint32_t SparseMatrix<T, indexT, compressionLevel, columnMajor>::outerSize() { return outerDim; }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    uint32_t SparseMatrix<T, indexT, compressionLevel, columnMajor>::rows() { return numRows; }
+
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    uint32_t SparseMatrix<T, indexT, compressionLevel, columnMajor>::cols() { return numCols; }
+
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     uint32_t SparseMatrix<T, indexT, compressionLevel, columnMajor>::nonZeros() { return nnz; }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
@@ -406,22 +415,5 @@ namespace CSF
         return test;
     }
 
-    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    Eigen::SparseMatrix<T, columnMajor ? Eigen::ColMajor : Eigen::RowMajor> SparseMatrix<T, indexT, compressionLevel, columnMajor>::toEigen()
-    {
-        // create an eigen sparse matrix
-        Eigen::SparseMatrix<T, columnMajor ? Eigen::ColMajor : Eigen::RowMajor> mat(innerDim, outerDim);
-
-        // reserve the correct number of nonzeros
-        mat.reserve(nnz);
-
-        for (indexT i = 0; i < outerDim; ++i) {
-            for (CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator it(*this, i); it; ++it)
-                mat.insert(it.getIndex(), it.outerDim()) = it.value();
-        }
-
-        // return the eigen matrix
-        return mat;
-    }
 
 } // end namespace CSF

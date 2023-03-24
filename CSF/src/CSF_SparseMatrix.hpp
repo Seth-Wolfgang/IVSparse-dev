@@ -2,16 +2,19 @@
 
 #define DELIM 0
 
-namespace CSF {
+namespace CSF
+{
 
-    template <typename T, typename indexT=uint64_t, uint8_t compressionLevel=3, bool columnMajor=true>
-    class SparseMatrix {
-        private:
-
+    template <typename T, typename indexT = uint64_t, uint8_t compressionLevel = 3, bool columnMajor = true>
+    class SparseMatrix
+    {
+    private:
         const uint8_t delim = DELIM;
 
-        uint32_t innerDim = 0; // rows
-        uint32_t outerDim = 0; // cols
+        uint32_t innerDim = 0;
+        uint32_t outerDim = 0;
+        uint32_t numRows = 0;
+        uint32_t numCols = 0;
         uint32_t nnz = 0;
 
         uint32_t val_t;
@@ -24,7 +27,7 @@ namespace CSF {
         uint32_t *metadata;
 
         template <typename T2, typename indexT2>
-        void compress(T2 *vals, indexT2 *rowIdx, indexT2 *colPtr);
+        void compress(T2 *vals, indexT2 *innerIndices, indexT2 *outerPtr);
 
         uint8_t byteWidth(size_t size);
 
@@ -34,8 +37,7 @@ namespace CSF {
 
         void userChecks();
 
-        public:
-
+    public:
         SparseMatrix();
 
         SparseMatrix(Eigen::SparseMatrix<T> &mat);
@@ -64,6 +66,10 @@ namespace CSF {
 
         uint32_t outerSize();
 
+        uint32_t rows();
+
+        uint32_t cols();
+
         uint32_t nonZeros();
 
         size_t compressionSize();
@@ -83,11 +89,10 @@ namespace CSF {
         class InnerIterator;
     };
 
-
     template <typename T, typename indexT, bool columnMajor>
-    class SparseMatrix<T, indexT, 1, columnMajor> {
-        private:
-
+    class SparseMatrix<T, indexT, 1, columnMajor>
+    {
+    private:
         const uint8_t delim = DELIM;
 
         uint32_t innerDim = 0;
@@ -111,8 +116,7 @@ namespace CSF {
 
         void userChecks();
 
-        public:
-
+    public:
         SparseMatrix();
 
         SparseMatrix(Eigen::SparseMatrix<T> &mat);
@@ -150,14 +154,13 @@ namespace CSF {
         class InnerIterator;
     };
 
-
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    class SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator {
-        private:
-
+    class SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator
+    {
+    private:
         indexT outer;
         indexT index;
-        T* val;
+        T *val;
 
         indexT newIdx;
 
@@ -168,8 +171,7 @@ namespace CSF {
 
         void decodeIndex();
 
-        public:
-
+    public:
         InnerIterator();
 
         InnerIterator(SparseMatrix<T, indexT, compressionLevel, columnMajor> &mat, uint32_t col);
@@ -184,6 +186,10 @@ namespace CSF {
 
         indexT outerDim();
 
+        indexT row();
+
+        indexT col();
+
         T value();
 
         bool operator==(const InnerIterator &other);
@@ -194,22 +200,20 @@ namespace CSF {
 
         bool operator>(const InnerIterator &other);
 
-        T& operator*();
+        T &operator*();
 
-        operator bool() { return (char*)endPtr - indexWidth > data; };
-
+        operator bool() { return (char *)endPtr - indexWidth > data; };
     };
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    class SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector {
-        private:
-
+    class SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector
+    {
+    private:
         size_t size;
         void *data;
         void *endPtr;
 
-        public:
-
+    public:
         Vector();
 
         Vector(CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor> &mat, uint32_t vec);
@@ -221,7 +225,6 @@ namespace CSF {
         void *end();
 
         size_t byteSize();
-        
     };
 
 }

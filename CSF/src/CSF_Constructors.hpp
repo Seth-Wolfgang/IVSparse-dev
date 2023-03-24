@@ -27,6 +27,9 @@ namespace CSF
         innerDim = mat.rows();
         outerDim = mat.cols();
 
+        numRows = mat.rows();
+        numCols = mat.cols();
+
         nnz = mat.nonZeros();
         
         compress(mat.valuePtr(), mat.innerIndexPtr(), mat.outerIndexPtr());
@@ -39,8 +42,11 @@ namespace CSF
         mat.makeCompressed();
 
         // Set the number of rows, columns and non-zero elements
-        innerDim = mat.rows();
-        outerDim = mat.cols();
+        innerDim = mat.cols();
+        outerDim = mat.rows();
+
+        numRows = mat.rows();
+        numCols = mat.cols();
 
         nnz = mat.nonZeros();
 
