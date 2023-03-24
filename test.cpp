@@ -18,6 +18,9 @@ int main() {
     myMatrix_e.prune(0);
     myMatrix_e.makeCompressed();
 
+    // convert myMatrix_e to row major
+    Eigen::SparseMatrix<int, Eigen::RowMajor> myMatrix_erow = myMatrix_e.transpose();
+
     // make a row major eigen matrix
     Eigen::SparseMatrix<int, Eigen::RowMajor> myMatrix_e_row(numRows, numCols);
     myMatrix_e_row.reserve(Eigen::VectorXi::Constant(numRows, numCols));
@@ -25,31 +28,37 @@ int main() {
     myMatrix_e_row.prune(0);
     myMatrix_e_row.makeCompressed();
 
-    // std::cout << myMatrix_e << std::endl;
+    std::cout << myMatrix_e_row << std::endl;
 
     CSF::SparseMatrix<int> myMatrix_csf(myMatrix_e);
 
-    // convert the matrix back to eigen
-    //Eigen::SparseMatrix<int> myMatrix_e2 = myMatrix_csf.toEigen();
-
-    std::cout << myMatrix_e2 << std::endl;
-
     CSF::SparseMatrix<int, uint32_t, 3, false> myMatrix_csf_row(myMatrix_e_row);
 
-    // write the matrix to a file
-    myMatrix_csf_row.write("test2.csf");
+    // perform triplet batch insertion on the CSF matrix
+    std::vector<Eigen::Triplet<int>> tripletList;
+    tripletList.reserve(myMatrix_e.nonZeros());
 
-    // std::cout << myMatrix_e_row << std::endl;
+    // loop through myMatrix_csf_row
+    for (uint32_t k = 0; k < myMatrix_csf_row.outerSize(); ++k) {
+        for (CSF::SparseMatrix<int, uint32_t, 3, false>::InnerIterator it(myMatrix_csf_row, k); it; ++it) {
+            tripletList.push_back(Eigen::Triplet<int>(it.getIndex(), it.outerDim(), it.value()));
+        }
+    }
 
-    // print out the byte size of the matrix
-    std::cout << "size: " << myMatrix_csf.compressionSize() << std::endl;
+    // create a new Eigen matrix from the triplet list
+    Eigen::SparseMatrix<int, Eigen::RowMajor> myMatrix_e_row2(numRows, numCols);
+    myMatrix_e_row2.setFromTriplets(tripletList.begin(), tripletList.end());
+
+    std::cout << myMatrix_e_row2 << std::endl;
 
 
-    // writing the CSF sparse to a file
-    myMatrix_csf.write("test.csf");
+    //std::cout << myMatrix_e << std::endl;
+    //std::cout << myMatrix_erow << std::endl;
 
-    // get the column size of column 8
-    std::cout << "col size: " << myMatrix_csf.getVecSize(8) << std::endl;
+
+
+
+
 
 
     // sum all values in the eigen matrix
