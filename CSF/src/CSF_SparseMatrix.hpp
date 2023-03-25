@@ -80,7 +80,6 @@ namespace CSF
 
         void operator * (T scalar);
 
-        
 
         CSF::SparseMatrix<T, indexT, 1, columnMajor> toCSF1();
 
@@ -89,6 +88,10 @@ namespace CSF
         CSF::SparseMatrix<T, indexT, compressionLevel, !columnMajor> transpose();
 
         class Vector;
+
+        typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector operator*(SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector &vec);
+        // CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor> operator * (CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor> &other);
+
 
         class InnerIterator;
     };
@@ -222,11 +225,15 @@ namespace CSF
         size_t size;
         void *data;
         void *endPtr;
+        uint32_t innerDim;
+        
 
     public:
         Vector();
 
         Vector(CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor> &mat, uint32_t vec);
+
+        Vector(CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector &vec);
 
         T operator[](uint32_t index);
 
@@ -235,6 +242,10 @@ namespace CSF
         void *end();
 
         size_t byteSize();
+
+        uint32_t innerSize();
+
+        uint32_t outerSize();
     };
 
 }

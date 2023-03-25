@@ -417,47 +417,54 @@ namespace CSF
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     void SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator * (T scalar) {
-        T oldValue;
         T sum = 0;
         for(uint32_t i = 0; i < this->outerDim; ++i) {
             for(typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(*this, i); it; ++it) {
                 if(it.isNewRun()) {
-                    // std::cout << "Multiplying " << it.value() << " by " << scalar << " to get " << it.value() * scalar << std::endl;
                     it.coeff(it.value() * scalar);
-                    oldValue = it.value();
                 }
-                sum += it.value();
             }
         }
     }
 
-    // template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    // void SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator * (Vector<T, indexT, compressionLevel> &vec)
-    // {
-    //     // check that the vector is the correct size
-    //     if (vec.size() != innerDim)
-    //         throw std::invalid_argument("The vector must be the same size as the number of columns in the matrix");
+    /**
+     * @brief Matrix x Vector multiplication operator
+     * 
+     * @tparam T 
+     * @tparam indexT 
+     * @tparam compressionLevel 
+     * @tparam columnMajor 
+     * @param vec 
+     * @return SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector 
+     */
 
-    //     // create a new vector to store the result
-    //     Vector<T, indexT, compressionLevel> result(innerDim);
-    //     oldValue;
+template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator*(SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector &vec) {
+    // check that the vector is the correct size
+    if (vec.innerSize() != innerDim)
+        throw std::invalid_argument("The vector must be the same size as the number of columns in the matrix!");
 
-    //     // loop over the rows of the matrix
-    //     for (uint32_t i = 0; i < outerDim; i++)
-    //     {
-    //         // loop over the columns of the matrix
-    //         for (typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator it(*this, i); it; ++it)
-    //         {
-    //             if(it.coeff() != oldValue) {
-    //                 oldValue = it.coeff();
-    //                 vec.coeff() = oldValue * vec.coeff(it.index());
-    //             }
-    //         }
-    //     }
+    Eigen::SparseMatrix<T> eigenTemp(outerDim, 1);
+    eigenTemp.reserve(outerDim);
 
-    //     // copy the result vector to the input vector
-    //     return result;
+    //For each vector, we need to multiply the matrix's column by the value in the vector
+    for(typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator vecIter(vec); vecIter; ++vecIter) {
+        for(typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator matIter(*this, vecIter.row()); matIter; ++matIter) {
+            eigenTemp.coeffRef(vecIter.row(), 0) += matIter.value() * vecIter.value();
+        }
+    }
+    eigenTemp.makeCompressed();
+
+    // Getting the sum of our matrix -> works!
+    // T sum = 0;
+    // for(typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(temp, 0); it; ++it) {
+    //     sum += it.value();
     // }
+    // std::cout << "CSF Sum: " << sum << std::endl;
+
+    return SparseMatrix<T, indexT, compressionLevel, columnMajor>(eigenTemp).getVector(0);
+
+}
   
 
 } // end namespace CSF
