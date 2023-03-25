@@ -416,15 +416,20 @@ namespace CSF
     }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    void SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator * (T scalar) {
-        T sum = 0;
+    void SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator * (T scalar){
+    // SparseMatrix<T, indexT, compressionLevel, columnMajor> SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator * (T scalar) {
+
+        // SparseMatrix<T, indexT, compressionLevel, columnMajor> mat(*this);
+
         for(uint32_t i = 0; i < this->outerDim; ++i) {
+            // for(typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(mat, i); it; ++it)
             for(typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(*this, i); it; ++it) {
                 if(it.isNewRun()) {
                     it.coeff(it.value() * scalar);
                 }
             }
         }
+        // return mat;
     }
 
     /**
@@ -448,23 +453,46 @@ typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector SparseMa
     eigenTemp.reserve(outerDim);
 
     //For each vector, we need to multiply the matrix's column by the value in the vector
-    for(typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator vecIter(vec); vecIter; ++vecIter) {
-        for(typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator matIter(*this, vecIter.row()); matIter; ++matIter) {
+    for(typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator vecIter(vec); vecIter && vecIter.getIndex() < this->outerDim; ++vecIter) {
+        for(typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator matIter(*this, vecIter.getIndex()); matIter; ++matIter) {
             eigenTemp.coeffRef(vecIter.row(), 0) += matIter.value() * vecIter.value();
         }
     }
     eigenTemp.makeCompressed();
 
-    // Getting the sum of our matrix -> works!
-    // T sum = 0;
-    // for(typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(temp, 0); it; ++it) {
-    //     sum += it.value();
-    // }
-    // std::cout << "CSF Sum: " << sum << std::endl;
-
     return SparseMatrix<T, indexT, compressionLevel, columnMajor>(eigenTemp).getVector(0);
 
 }
+
+/**
+ * @brief Matrix x Matrix multiplication operator
+ * 
+ * @tparam T 
+ * @tparam indexT 
+ * @tparam compressionLevel 
+ * @tparam columnMajor 
+ * @param mat 
+ * @return SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector 
+ */
+
+// template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+// SparseMatrix<T, indexT, compressionLevel, columnMajor> SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator*(SparseMatrix<T, indexT, compressionLevel, columnMajor> &mat) {
+//     // check that the matrix is the correct size
+//     if (mat.outerSize() != innerDim)
+//         throw std::invalid_argument("The vector must be the same size as the number of columns in the matrix!");
+
+//     //Creat an array of vectors to store the results
+//     //TODO: Replace with a SparseMatrix and append to it instead of creating a vector
+//     SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector tempMat[mat.outerDim];
+
+//     //For each vector, we need to multiply the matrix's column by the value in the vector
+//     for(uint32_t i = 0; i < mat.outerDim; ++i) {
+//             tempMat[i] = *this * mat.getVector(i);
+//     }
+    
+//     return CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>(tempMat);
+
+// }
   
 
 } // end namespace CSF

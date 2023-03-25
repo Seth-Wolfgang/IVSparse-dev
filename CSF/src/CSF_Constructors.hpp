@@ -35,7 +35,35 @@ namespace CSF
         compress(mat.valuePtr(), mat.innerIndexPtr(), mat.outerIndexPtr());
     }
 
-        template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    //Untested constrctor for Sparse Matrix from an array of vectors
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector vec[])
+    {
+
+        // Set the number of rows, columns and non-zero elements
+        innerDim = vec.innerSize();
+        outerDim = sizeof(vec / sizeof(vec[0]));
+
+        numRows = innerDim;
+        numCols = outerDim;
+
+        nnz = 0;
+
+        data = malloc(outerDim * sizeof(void *));
+        for(int i = 0; i < outerDim; i++){
+            data[i] = malloc(vec[i].byteSize());
+            memcpy(data[i], vec[i].begin(), vec[i].byteSize());
+            nnz += vec[i].nonZeros();
+        }
+
+        //TODO: replace with .append() method when implemented
+        // for(auto v : vec){
+        //     *this.append(v);
+        // }
+        
+    }
+
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(Eigen::SparseMatrix<T, Eigen::RowMajor> &mat)
     {
 

@@ -10,14 +10,15 @@ namespace CSF {
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::Vector(CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor> &mat, uint32_t vec) {
-        // set data pointer
-        data = malloc(mat.getVecSize(vec));
-        memcpy(data, mat.getVecPointer(vec), mat.getVecSize(vec));
-        
-
         // get the length of the vector
         size = mat.getVecSize(vec);
+        
+        // set data pointer
+        data = malloc(size);
 
+        // copy the vector data into the vector
+        memcpy(data, mat.getVecPointer(vec), size);
+        
         // if the size is 0 then the vector is empty
         if (size == 0) {
             endPtr = nullptr;
@@ -28,6 +29,8 @@ namespace CSF {
 
         // set the end pointer
         endPtr = (uint8_t *)data + size;
+        // endPtr = (uint8_t *)data + ((char*)mat.getVecPointer(vec) -  (char*)mat.endPointers[vec]);
+        // std::cout << "endPtr: " << endPtr << std::endl;
     }
 
     // Deep copy constructor
@@ -56,6 +59,9 @@ namespace CSF {
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     uint32_t SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::outerSize() { return 1; }
+
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    uint32_t SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::nonZeros() { return nnz; }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     void *SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::begin() { return data; }

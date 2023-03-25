@@ -4,11 +4,11 @@
 #include <chrono>
 
 template <typename T, typename indexT, int compressionLevel> void iteratorTest();
-void getMat(Eigen::SparseMatrix<int> &myMatrix_e);
+void getMat(Eigen::SparseMatrix<int>& myMatrix_e);
 
 int main() {
 
-    
+
     Eigen::SparseMatrix<int> myMatrix_e(10, 10);
 
     getMat(myMatrix_e);
@@ -50,9 +50,10 @@ int main() {
 
     std::cout << "FROM CSF" << std::endl;
     std::cout << myMatrix_e2_row << std::endl;
-    
-    for(int i = 0; i < 1000000; i++) {
-        iteratorTest<int, int, 3>();
+
+    #pragma omp parallel for num_threads(15)
+    for (int i = 0; i < 1000000; i++) {
+        iteratorTest<float, uint64_t, 2>();
         std::cout << "Test " << i << " passed" << std::endl;
     }
     return 0;
@@ -61,23 +62,22 @@ int main() {
 template <typename T, typename indexT, int compressionLevel>
 void iteratorTest() {
 
-    int numRows = rand() % 1000 + 10;
-    int numCols = rand() % 1000 + 10;
+    int numRows = rand() % 100 + 10;
+    int numCols = rand() % 100 + 10;
     int sparsity = rand() % 1 + 1;
     uint64_t seed = rand();
 
-    Eigen::SparseMatrix<T> eigenVector(numRows, 1);
-    Eigen::SparseVector<T> eigenVector2(numCols);
-    eigenVector.reserve(Eigen::VectorXi::Constant(numRows, numCols));
-    eigenVector2.reserve(numCols * 10);
-    for(int i = 0; i < numRows; i++) {
-        eigenVector.insert(i, 0) = 2;
-    }
-    for(int i = 0; i < numCols; i++) {
-        eigenVector2.insert(i) = 2;
-    }
-    CSF::SparseMatrix<T, indexT, compressionLevel> tempMatrix(eigenVector);
-    typename CSF::SparseMatrix<T, indexT, compressionLevel>::Vector myVec(tempMatrix, 0);
+    // Eigen::SparseMatrix<T> eigenTemp(numRows, numCols);
+    // eigenTemp.reserve(Eigen::VectorXi::Constant(numRows, numCols));
+
+    // for (int i = 0; i < numRows; i++) {
+    //     for(int j = 0; j < numCols; j++) {
+    //         eigenTemp.insert(i, j) = 2;
+    //     }
+    // }
+
+    // CSF::SparseMatrix<T, indexT, compressionLevel> tempMatrix(eigenTemp);
+    // typename CSF::SparseMatrix<T, indexT, compressionLevel> myVec(tempMatrix, 0);
 
     Eigen::SparseMatrix<T> myMatrix_e(numRows, numCols);
     myMatrix_e.reserve(Eigen::VectorXi::Constant(numCols, numRows));
@@ -88,25 +88,32 @@ void iteratorTest() {
 
     CSF::SparseMatrix<T, indexT, compressionLevel> myMatrix_csf(myMatrix_e);
 
+
     // myMatrix_csf.write("test.csf");
-    typename CSF::SparseMatrix<T, indexT, compressionLevel>::Vector resultVector(myMatrix_csf * myVec);
+    myMatrix_csf * 2;
 
-    myMatrix_e = myMatrix_e * eigenVector2;
+    myMatrix_e = myMatrix_e * 2;
 
-    T sum_csf = 0;
-    // for (uint32_t k = 0; k < myMatrix_csf.outerSize(); ++k)
-        for (typename CSF::SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(resultVector); it; ++it)
-            sum_csf += it.value();
 
     T sum_e = 0;
     for (int k = 0; k < myMatrix_e.outerSize(); ++k)
         for (typename Eigen::SparseMatrix<T>::InnerIterator it(myMatrix_e, k); it; ++it) {
             sum_e += it.value();
         }
+
+    // std::cout << "sum_e: " << sum_e << std::endl;
+
+    T sum_csf = 0;
+    for (uint32_t k = 0; k < myMatrix_csf.outerSize(); ++k)
+        for (typename CSF::SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(myMatrix_csf, k); it; ++it)
+            sum_csf += it.value();
+
+
     // std::cout << "sum_csf: " << sum_csf << " sum_e: " << sum_e << std::endl;
 
-    if(sum_csf - sum_e > 1 || sum_csf == 0) {
-    // if (sum_csf - sum_e * 2 > 1) [[unlikely]] {
+    if (sum_csf - sum_e > 1 || sum_csf == 0) {
+        std::cout << "Rows: " << numRows << " Cols: " << numCols << " Sparsity: " << sparsity << " Seed: " << seed << std::endl;
+        // if (sum_csf - sum_e * 2 > 1) [[unlikely]] {
         std::cout << "sum_csf: " << sum_csf << " sum_e: " << sum_e << std::endl;
         // std::cout << sum_csf - sum_e * 2 << std::endl;
         assert(sum_csf == sum_e);
@@ -114,7 +121,7 @@ void iteratorTest() {
 }
 
 
-void getMat(Eigen::SparseMatrix<int> &myMatrix_e) {
+void getMat(Eigen::SparseMatrix<int>& myMatrix_e) {
     // declare an eigen sparse matrix of both types
 
     // col 0
