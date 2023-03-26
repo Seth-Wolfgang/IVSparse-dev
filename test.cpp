@@ -8,54 +8,51 @@ void getMat(Eigen::SparseMatrix<int>& myMatrix_e);
 
 int main() {
 
-
+    // * Row Major Testing * //
     Eigen::SparseMatrix<int> myMatrix_e(10, 10);
 
     getMat(myMatrix_e);
 
-    // std::cout << myMatrix_e << std::endl;
+    std::cout << myMatrix_e << std::endl;
 
     Eigen::SparseMatrix<int, Eigen::RowMajor> myMatrix_e_row(myMatrix_e);
 
-    std::cout << myMatrix_e_row << std::endl;
+    // * Vector append Testing * //
 
+    CSF::SparseMatrix<int, uint64_t, 3, false> myMatrix_csf_row(myMatrix_e_row);
 
-    CSF::SparseMatrix<int, uint32_t, 3> myMatrix_csf(myMatrix_e);
+    myMatrix_csf_row.write("test.csf");
 
-    // myMatrix_csf.write("test.csf");
+    CSF::SparseMatrix<int, uint64_t, 3, false> myMatrix_csf2_row(myMatrix_e_row);
 
-    std::cout << std::endl;
+    // get the 5th column of myMatrix_csf2
+    CSF::SparseMatrix<int, uint64_t, 3, false>::Vector myVec_row(myMatrix_csf2_row, 5);
 
-    CSF::SparseMatrix<int, uint32_t, 3, false> myMatrix_csf_row(myMatrix_e_row);
+    myMatrix_csf_row.append(myVec_row);
 
-    // myMatrix_csf_row.write("test_row.csf");
+    myMatrix_csf_row.write("test2.csf");
 
-    // create an empty sparse matrix
-    Eigen::SparseMatrix<int> myMatrix_e2(10, 10);
+    // make an empty 10x11 eigen matrix
+    Eigen::SparseMatrix<int, Eigen::RowMajor> myMatrix_e2_row(11, 10);
 
-    // loop through myMatrix_csf and add the values to myMatrix_e2
-    for (uint32_t k = 0; k < myMatrix_csf.outerSize(); ++k)
-        for (typename CSF::SparseMatrix<int, uint32_t, 3>::InnerIterator it(myMatrix_csf, k); it; ++it)
-            myMatrix_e2.coeffRef(it.row(), it.col()) += it.value();
+    // populate it with the values from myMatrix_csf
+    for (uint32_t i = 0; i < myMatrix_csf_row.outerSize(); i++) {
+        for (CSF::SparseMatrix<int, uint64_t, 3, false>::InnerIterator it(myMatrix_csf_row, i); it; ++it) {
+            myMatrix_e2_row.insert(it.row(), it.col()) = it.value();
+        }
+    }
 
+    myMatrix_e2_row.makeCompressed();
 
-    // create an empty sparse matrix
-    Eigen::SparseMatrix<int, Eigen::RowMajor> myMatrix_e2_row(10, 10);
-
-    // loop through myMatrix_csf_row and add the values to myMatrix_e2_row
-    for (uint32_t k = 0; k < myMatrix_csf_row.outerSize(); ++k)
-        for (typename CSF::SparseMatrix<int, uint32_t, 3, false>::InnerIterator it(myMatrix_csf_row, k); it; ++it)
-            myMatrix_e2_row.coeffRef(it.row(), it.col()) += it.value();
-
-
-    std::cout << "FROM CSF" << std::endl;
     std::cout << myMatrix_e2_row << std::endl;
 
-    #pragma omp parallel for num_threads(15)
-    for (int i = 0; i < 1000000; i++) {
-        iteratorTest<int, uint64_t, 3>();
-        std::cout << "Test " << i << " passed" << std::endl;
-    }
+
+    // * CSF Iterator Testing * //
+    // #pragma omp parallel for num_threads(15)
+    // for (int i = 0; i < 1000000; i++) {
+    //     iteratorTest<int, uint64_t, 3>();
+    //     std::cout << "Test " << i << " passed" << std::endl;
+    // }
     return 0;
 }
 

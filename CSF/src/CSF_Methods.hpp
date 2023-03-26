@@ -432,17 +432,6 @@ namespace CSF
         // return mat;
     }
 
-    /**
-     * @brief Matrix x Vector multiplication operator
-     * 
-     * @tparam T 
-     * @tparam indexT 
-     * @tparam compressionLevel 
-     * @tparam columnMajor 
-     * @param vec 
-     * @return SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector 
-     */
-
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     typename CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator*(SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector &vec)
     {
@@ -468,35 +457,63 @@ namespace CSF
         return SparseMatrix<T, indexT, compressionLevel, columnMajor>(eigenTemp).getVector(0);
     }
 
-/**
- * @brief Matrix x Matrix multiplication operator
- * 
- * @tparam T 
- * @tparam indexT 
- * @tparam compressionLevel 
- * @tparam columnMajor 
- * @param mat 
- * @return SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector 
- */
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    void SparseMatrix<T, indexT, compressionLevel, columnMajor>::append(typename CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector &vec)
+    {
+        // check that the vector is the correct size
+        if (vec.length() != outerDim)
+            throw std::invalid_argument("The vector must be the same size as the number of columns in the matrix!");
 
-// template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-// SparseMatrix<T, indexT, compressionLevel, columnMajor> SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator*(SparseMatrix<T, indexT, compressionLevel, columnMajor> &mat) {
-//     // check that the matrix is the correct size
-//     if (mat.outerSize() != innerDim)
-//         throw std::invalid_argument("The vector must be the same size as the number of columns in the matrix!");
+        outerDim++;
+        nnz += vec.nonZeros();
+        if (columnMajor) {
+            numCols++;
+        } else {
+            numRows++;
+        }
 
-//     //Creat an array of vectors to store the results
-//     //TODO: Replace with a SparseMatrix and append to it instead of creating a vector
-//     SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector tempMat[mat.outerDim];
+        // realloc the data to be one larger
+        try {
+            data = (void **)realloc(data, outerDim * sizeof(void *));
+            endPointers = (void **)realloc(endPointers, outerDim * sizeof(void *));
+        } catch (std::bad_alloc &e) {
+            throw std::bad_alloc();
+        }
 
-//     //For each vector, we need to multiply the matrix's column by the value in the vector
-//     for(uint32_t i = 0; i < mat.outerDim; ++i) {
-//             tempMat[i] = *this * mat.getVector(i);
-//     }
-    
-//     return CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>(tempMat);
+        // malloc the new vector
+        try {
+            data[outerDim - 1] = malloc(vec.byteSize());
+            endPointers[outerDim - 1] = (char *)data[outerDim - 1] + vec.byteSize();
+        } catch (std::bad_alloc &e) {
+            throw std::bad_alloc();
+        }
 
-// }
+        // copy the vector into the new space
+        memcpy(data[outerDim - 1], vec.begin(), vec.byteSize());
+
+        // update the compression size
+        compSize += vec.byteSize();
+        compSize += sizeof(void *) * 2;
+    }
+
+    // template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    // SparseMatrix<T, indexT, compressionLevel, columnMajor> SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator*(SparseMatrix<T, indexT, compressionLevel, columnMajor> &mat) {
+    //     // check that the matrix is the correct size
+    //     if (mat.outerSize() != innerDim)
+    //         throw std::invalid_argument("The vector must be the same size as the number of columns in the matrix!");
+
+    //     //Creat an array of vectors to store the results
+    //     //TODO: Replace with a SparseMatrix and append to it instead of creating a vector
+    //     SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector tempMat[mat.outerDim];
+
+    //     //For each vector, we need to multiply the matrix's column by the value in the vector
+    //     for(uint32_t i = 0; i < mat.outerDim; ++i) {
+    //             tempMat[i] = *this * mat.getVector(i);
+    //     }
+        
+    //     return CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>(tempMat);
+
+    // }
   
 
 } // end namespace CSF
