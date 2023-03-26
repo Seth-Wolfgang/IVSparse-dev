@@ -42,6 +42,8 @@ namespace CSF {
 
         SparseMatrix(Eigen::SparseMatrix<T, Eigen::RowMajor>& mat);
 
+        SparseMatrix(CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor> &mat);
+
         SparseMatrix(const char* filename);
 
         ~SparseMatrix();

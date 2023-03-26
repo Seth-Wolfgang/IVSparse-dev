@@ -35,7 +35,7 @@ namespace CSF
         compress(mat.valuePtr(), mat.innerIndexPtr(), mat.outerIndexPtr());
     }
 
-    //Untested constrctor for Sparse Matrix from an array of vectors
+    //Untested constrctor for Sparse Matrix from an array of vectors - WIP
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector vec[])
     {
@@ -79,6 +79,39 @@ namespace CSF
         nnz = mat.nonZeros();
 
         compress(mat.valuePtr(), mat.innerIndexPtr(), mat.outerIndexPtr());
+    }
+
+    //TODO: Deep Copy Constructor (largely untested)
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor> &mat)
+    {
+        // Set the number of rows, columns and non-zero elements
+        innerDim = mat.innerDim;
+        outerDim = mat.outerDim;
+
+        numRows = mat.numRows;
+        numCols = mat.numCols;
+
+        nnz = mat.nnz;
+
+        compSize = mat.compSize;
+
+        //allocate memory for data, I think something in here fails
+        data = (void**)malloc(outerDim * sizeof(void *));
+        endPointers = (void**)malloc(outerDim * sizeof(void *));
+        for (size_t i = 0; i < outerDim; i++)
+        {
+            data[i] = malloc(mat.getVecSize(i));
+            memcpy(data[i], mat.getVecPointer(i), mat.getVecSize(i));
+            endPointers[i] = (char*)data[i] + mat.getVecSize(i);
+        }
+
+        //allocate memory for metadata
+        metadata = new uint32_t[NUM_META_DATA];
+        for (size_t i = 0; i < NUM_META_DATA; i++)
+        {
+            metadata[i] = mat.metadata[i];
+        }
     }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
