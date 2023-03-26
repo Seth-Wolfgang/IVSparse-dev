@@ -21,7 +21,31 @@ int main() {
 
     CSF::SparseMatrix<int, uint64_t, 3, false> myMatrix_csf_row(myMatrix_e_row);
 
-    myMatrix_csf_row.write("test.csf");
+
+
+
+
+    CSF::SparseMatrix<int, uint32_t, 3> myMatrix_csf(myMatrix_e);
+
+    CSF::SparseMatrix<int, uint32_t, 3> my_test = myMatrix_csf.transpose();
+    my_test.write("test.csf");
+
+    // make an empty 10x10 eigen matrix
+    Eigen::SparseMatrix<int> eigenTesting(10, 10);
+
+    // iterate over the CSF matrix and populate the eigen matrix
+    for (uint32_t i = 0; i < my_test.outerSize(); i++) {
+        for (CSF::SparseMatrix<int, uint32_t, 3>::InnerIterator it(my_test, i); it; ++it) {
+            eigenTesting.insert(it.row(), it.col()) = it.value();
+        }
+    }
+
+    eigenTesting.makeCompressed();
+
+    std::cout << eigenTesting << std::endl;
+
+
+
 
     CSF::SparseMatrix<int, uint64_t, 3, false> myMatrix_csf2_row(myMatrix_e_row);
 
@@ -30,7 +54,7 @@ int main() {
 
     myMatrix_csf_row.append(myVec_row);
 
-    myMatrix_csf_row.write("test2.csf");
+    //myMatrix_csf_row.write("test2.csf");
 
     // make an empty 10x11 eigen matrix
     Eigen::SparseMatrix<int, Eigen::RowMajor> myMatrix_e2_row(11, 10);
@@ -44,7 +68,7 @@ int main() {
 
     myMatrix_e2_row.makeCompressed();
 
-    std::cout << myMatrix_e2_row << std::endl;
+    // std::cout << myMatrix_e2_row << std::endl;
 
 
     // * CSF Iterator Testing * //

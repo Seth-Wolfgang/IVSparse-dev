@@ -460,6 +460,7 @@ namespace CSF
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     void SparseMatrix<T, indexT, compressionLevel, columnMajor>::append(typename CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector &vec)
     {
+        //! TODO: CHECK FOR EMPTY VECTORS
         // check if the matrix is empty
         if (compSize == 0 && nnz == 0 && numCols == 0 && numRows == 0) [[unlikely]] {
             // if it is the matrix is empty and we need to construct it
@@ -519,7 +520,7 @@ namespace CSF
         } else {
 
             // check that the vector is the correct size
-            if (vec.length() != outerDim)
+            if ((vec.length() != outerDim && !columnMajor) || (vec.length() != innerDim && columnMajor))
                 throw std::invalid_argument("The vector must be the same size as the outer dimension of the matrix!");
 
             outerDim++;
@@ -557,29 +558,58 @@ namespace CSF
     }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    CSF::SparseMatrix<T, indexT, compressionLevel, !columnMajor> SparseMatrix<T, indexT, compressionLevel, columnMajor>::transpose()
+    CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor> SparseMatrix<T, indexT, compressionLevel, columnMajor>::transpose()
     {
-        
+        // create an ordered map of unordered maps to store the values
+        std::map<indexT, std::unordered_map<T, std::vector<indexT>>> transposedMap;
+
+        // iterate over the matrix
+        for (uint32_t i = 0; i < outerDim; ++i) {
+            for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(*this, i); it; ++it) {
+                // add the value to the map
+                if constexpr (columnMajor) {
+                    transposedMap[it.row()][it.value()].push_back(it.col());
+                } else {
+                    transposedMap[it.col()][it.value()].push_back(it.row());
+                }
+            }
+        }
+
+        // if compression level is 3 positive delta encode the vectors of indices
+        if (compressionLevel == 3) {
+            for (auto &row : transposedMap) {
+                for (auto &col : row.second) {
+                    // sort the vector
+                    // std::sort(col.second.begin(), col.second.end());
+                    size_t max = col.second[0];
+                    // delta encode the vector
+                    for (uint32_t i = col.second.size() - 1; i > 0; --i) {
+                        col.second[i] -= col.second[i - 1];
+                        if (col.second[i] > max)
+                            max = col.second[i];
+                    }
+
+                    max = byteWidth(max);
+                    // append max to the vector
+                    col.second.push_back(max);
+                }
+            }
+        }
+
+        // create a new matrix passing in transposedMap
+        CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor> transposedMatrix;
+
+        // iterate over the map creating and appending vectors
+        for (auto &row : transposedMap) {
+            // construct a vector from the map
+            CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector vec(row.second, outerDim);
+
+            // append the vector to the matrix
+            transposedMatrix.append(vec);
+        }
+
+        return transposedMatrix;
     }
-
-    // template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    // SparseMatrix<T, indexT, compressionLevel, columnMajor> SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator*(SparseMatrix<T, indexT, compressionLevel, columnMajor> &mat) {
-    //     // check that the matrix is the correct size
-    //     if (mat.outerSize() != innerDim)
-    //         throw std::invalid_argument("The vector must be the same size as the number of columns in the matrix!");
-
-    //     //Creat an array of vectors to store the results
-    //     //TODO: Replace with a SparseMatrix and append to it instead of creating a vector
-    //     SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector tempMat[mat.outerDim];
-
-    //     //For each vector, we need to multiply the matrix's column by the value in the vector
-    //     for(uint32_t i = 0; i < mat.outerDim; ++i) {
-    //             tempMat[i] = *this * mat.getVector(i);
-    //     }
-        
-    //     return CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>(tempMat);
-
-    // }
   
 
 } // end namespace CSF

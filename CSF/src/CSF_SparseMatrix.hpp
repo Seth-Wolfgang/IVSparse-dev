@@ -64,6 +64,8 @@ namespace CSF
 
         SparseMatrix(typename CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector vec[], size_t size);
 
+        SparseMatrix(std::map<indexT, std::unordered_map<T, std::vector<indexT>>> &map, uint32_t num_rows, uint32_t num_cols);
+
         ~SparseMatrix();
 
         // Utility Methods //
@@ -100,7 +102,7 @@ namespace CSF
 
         Eigen::SparseMatrix<T, columnMajor ? Eigen::ColMajor : Eigen::RowMajor> toEigen();
 
-        CSF::SparseMatrix<T, indexT, compressionLevel, !columnMajor> transpose();
+        CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor> transpose();
 
         void append(typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector &vec);
 
@@ -261,6 +263,8 @@ namespace CSF
         Vector(CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor> &mat, uint32_t vec);
 
         Vector(CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector &vec);
+
+        Vector(std::unordered_map<T, std::vector<indexT>> &map, uint32_t vecLength);
 
         ~Vector();
 

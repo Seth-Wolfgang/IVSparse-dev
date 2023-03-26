@@ -33,6 +33,8 @@ namespace CSF
         endPtr = (uint8_t *)data + size;
         // endPtr = (uint8_t *)data + ((char*)mat.getVecPointer(vec) -  (char*)mat.endPointers[vec]);
         // std::cout << "endPtr: " << endPtr << std::endl;
+
+        
     }
 
     // Deep copy constructor
@@ -56,6 +58,129 @@ namespace CSF
 
         // set the end pointer
         endPtr = (uint8_t *)data + size;
+    }
+
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::Vector(std::unordered_map<T, std::vector<indexT>> &map, uint32_t vecLength)
+    {
+        // loop through and get the size to store the data
+        size = 0;
+        if constexpr (compressionLevel ==3) {
+            for (auto &it : map) {
+                size += sizeof(T) + 1 + (it.second[it.second.size() - 1] * (it.second.size() - 1)) + it.second[it.second.size() - 1];
+            }
+        } else {
+            for (auto &it : map) {
+                size += sizeof(T) + 1 + (sizeof(indexT) * it.second.size()) + sizeof(indexT);
+            }
+        }
+
+        // set the vecLength
+        this->vecLength = vecLength;
+
+        // if the size is 0 then the vector is empty
+        if (size == 0)
+        {
+            data = nullptr;
+            endPtr = nullptr;
+            return;
+        }
+
+        // set data pointer
+        try {
+            data = malloc(size);
+        } catch (std::bad_alloc &e) {
+            std::cout << "Error: " << e.what() << std::endl;
+            exit(1);
+        }
+
+        // set the end pointer
+        endPtr = (uint8_t *)data + size;
+
+
+        void *helpPtr = data;
+
+        // loop through the map and copy the data into the vector
+        for (auto &it : map)
+        {
+            nnz += it.second.size();
+
+            // write the value
+            *(T *)helpPtr = it.first;
+            helpPtr = (uint8_t *)helpPtr + sizeof(T);
+
+            // write the index width
+            if constexpr (compressionLevel == 3) {
+                *(uint8_t *)helpPtr = (uint8_t)it.second[it.second.size() - 1];
+                helpPtr = (uint8_t *)helpPtr + 1;
+            } else {
+                *(uint8_t *)helpPtr = sizeof(indexT);
+                helpPtr = (uint8_t *)helpPtr + 1;
+            }
+
+            // write the indices
+            for (size_t k = 0; k < it.second.size(); k++) {
+
+                if constexpr (compressionLevel == 3) {
+                    if (k == it.second.size() - 1)
+                        break;
+
+                    switch (it.second[it.second.size() - 1])
+                    {
+                    case 1:
+                        *(uint8_t *)helpPtr = (uint8_t)it.second[k];
+                        helpPtr = (uint8_t *)helpPtr + 1;
+                        break;
+                    case 2:
+                        *(uint16_t *)helpPtr = (uint16_t)it.second[k];
+                        helpPtr = (uint16_t *)helpPtr + 1;
+                        break;
+                    case 4:
+                        *(uint32_t *)helpPtr = (uint32_t)it.second[k];
+                        helpPtr = (uint32_t *)helpPtr + 1;
+                        break;
+                    case 8:
+                        *(uint64_t *)helpPtr = (uint64_t)it.second[k];
+                        helpPtr = (uint64_t *)helpPtr + 1;
+                        break;
+                    }
+                } else {
+                    *(indexT *)helpPtr = it.second[k];
+                    helpPtr = (indexT *)helpPtr + 1;
+                }
+            }
+
+            // write the delimiter
+            if constexpr (compressionLevel == 3)
+            {
+                // write a delimiter of the correct width
+                switch (it.second[it.second.size() - 1])
+                {
+                case 1:
+                    *(uint8_t *)helpPtr = (uint8_t)DELIM;
+                    helpPtr = (uint8_t *)helpPtr + 1;
+                    break;
+                case 2:
+                    *(uint16_t *)helpPtr = (uint16_t)DELIM;
+                    helpPtr = (uint16_t *)helpPtr + 1;
+                    break;
+                case 4:
+                    *(uint32_t *)helpPtr = (uint32_t)DELIM;
+                    helpPtr = (uint32_t *)helpPtr + 1;
+                    break;
+                case 8:
+                    *(uint64_t *)helpPtr = (uint64_t)DELIM;
+                    helpPtr = (uint64_t *)helpPtr + 1;
+                    break;
+                }
+            }
+            else
+            {
+                *(indexT *)helpPtr = (indexT)DELIM;
+                helpPtr = (indexT *)helpPtr + 1;
+            }
+        }
+
     }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>

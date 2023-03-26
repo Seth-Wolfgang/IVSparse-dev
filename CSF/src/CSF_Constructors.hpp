@@ -175,22 +175,56 @@ namespace CSF
     }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(std::map<indexT, std::unordered_map<T, std::vector<indexT>>> &map, uint32_t num_rows, uint32_t num_cols)
+    {
+        // set class variables
+        if constexpr (columnMajor) {
+            innerDim = num_rows;
+            outerDim = num_cols;
+        } else {
+            innerDim = num_cols;
+            outerDim = num_rows;
+        }
+
+        numRows = num_rows;
+        numCols = num_cols;
+
+        val_t = encodeVal();
+        index_t = sizeof(indexT);
+
+        // allocate memory for the data
+        try {
+            data = (void**)malloc(outerDim * sizeof(void *));
+            endPointers = (void**)malloc(outerDim * sizeof(void *));
+        } catch (const std::exception& e) {
+            std::cerr << e.what() << '\n';
+        }
+
+        
+    }
+
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     SparseMatrix<T, indexT, compressionLevel, columnMajor>::~SparseMatrix()
     {
         // delete the meta data
-        delete[] metadata;
+        if (metadata != nullptr) {
+            delete[] metadata;
+        }
 
         // free the data
         for (size_t i = 0; i < outerDim; i++)
         {
-            free(data[i]);
+            if (data[i] != nullptr)
+                free(data[i]);
         }
 
         // free data
-        free(data);
+        if (data != nullptr)
+            free(data);
 
         // free the end pointers
-        free(endPointers);
+        if (endPointers != nullptr)
+            free(endPointers);
     }
 
 }
