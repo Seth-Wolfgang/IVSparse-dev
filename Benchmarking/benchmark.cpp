@@ -40,7 +40,7 @@ int main(int argc, char** argc) {
     CSFMatrix3<double, int, 3> csf3(eigen);
 
     // Runs each benchmark 100 times
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < NUM_OF_ITERATIONS; i++) {
         constructorBenchmark(data, inner, outer, values);
         innerIteratorBenchmark(data, eigen, csf, csf2, csf3);
         scalarMultiplicationBenchmark(data, eigen, csf, csf2, csf3);
@@ -132,13 +132,19 @@ void readFile(char** argv, Eigen::Triplet& eigenTriplet, std::vector<uint32_t>& 
     std::unordered_set<double> uniqueValues;
 
     //iterates through the values and inserts them into the hash to record unique values
+    //the length of the hash is then divided by the number of nonzeros to get the redundancy
     for (int i = 0; i < nonzeros; i++) {
         uniqueValues.insert(val[i]);
     }
     matrixData.push_back(1 - (uniqueValues.length() / nonzeros));
-    
+
     // Calculate matrix density
     matrixData.push_back(nonzeros / (rows * cols));
+
+    // Free the memory
+    free(I);
+    free(J);
+    free(val);
 }
 
 
@@ -179,7 +185,7 @@ void constructorBenchmark(std::vector<uint64_t>& data, Eigen::Triplet eigenTripl
 
 }
 
-void innerIteratorBenchmark(std::vector<uint64_t>& data, ) {
+void innerIteratorBenchmark(std::vector<uint64_t>& data, Eigen::Triplet& eigenTriplet) {
     std::chrono::time_point<std::chrono::system_clock> start, end;
 
     //Eigen
@@ -229,11 +235,7 @@ void innerIteratorBenchmark(std::vector<uint64_t>& data, ) {
 
 }
 
-void scalarMultiplicationBenchmark(std::vector<uint64_t>& data,
-                                   Eigen::SparseMatrix<T> eigen,
-                                   CSF::SparseMatrix<T, indexType, 1> csf,
-                                   CSF::SparseMatrix<T, indexType, 2> csf2,
-                                   CSF::SparseMatrix<T, indexType, 3> csf3) {
+void scalarMultiplicationBenchmark(std::vector<uint64_t>& data, Eigen::Triplet eigenTriplet) {
     std::chrono::time_point<std::chrono::system_clock> start, end;
 
     //Eigen
@@ -267,13 +269,7 @@ void scalarMultiplicationBenchmark(std::vector<uint64_t>& data,
 
 }
 
-void vectorMultiplicationBenchmark(
-    std::vector<uint64_t>& data,
-    Eigen::SparseMatrix<T> eigen,
-    CSF::SparseMatrix<T, indexType, 1> csf,
-    CSF::SparseMatrix<T, indexType, 2> csf2,
-    CSF::SparseMatrix<T, indexType, 3> csf3,
-    Eigen::Matrix<T, Eigen::Dynamic, 1> eigenVector) {
+void vectorMultiplicationBenchmark(std::vector<uint64_t>& data, Eigen::Triplet eigenTriplet) {
 
     std::chrono::time_point<std::chrono::system_clock> start, end;
 
@@ -309,12 +305,7 @@ void vectorMultiplicationBenchmark(
 }
 
 
-// void matrixMultiplicationBenchmark(std::vector<uint64_t>& data,
-//                                    Eigen::SparseMatrix<T> eigen,
-//                                    CSF::SparseMatrix<T, indexType, 1> csf,
-//                                    CSF::SparseMatrix<T, indexType, 2> csf2,
-//                                    CSF::SparseMatrix<T, indexType, 3> csf3,
-//                                    Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic> eigenMatrix) {
+// void matrixMultiplicationBenchmark(std::vector<uint64_t>& data, Eigen::Triplet eigenTriplet) {
 
 //     std::chrono::time_point<std::chrono::system_clock> start, end;
 

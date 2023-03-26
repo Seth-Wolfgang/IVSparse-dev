@@ -64,7 +64,7 @@ public:
     // Constructor
     BenchAnalysis(std::vector<uint32_t> matrixData, double matrixRedundancy, double matrixDensity) {
         myMatrix = (matrix*)malloc(sizeof(matrix));
-        
+
         // Assigning the matrix data to the struct
         myMatrix->matrixNum = matrixNum;
         myMatrix->matrixRows = matrixRows;
