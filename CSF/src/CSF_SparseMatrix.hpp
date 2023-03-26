@@ -7,6 +7,8 @@ namespace CSF {
     template <typename T, typename indexT = uint64_t, uint8_t compressionLevel = 3, bool columnMajor = true>
     class SparseMatrix {
     private:
+        // Private Class Variables //
+
         const uint8_t delim = DELIM;
 
         uint32_t innerDim = 0;
@@ -20,9 +22,13 @@ namespace CSF {
 
         size_t compSize = 0;
 
+        // Class Data //
+
         void** data;
         void** endPointers;
         uint32_t* metadata;
+
+        // Private Class Methods //
 
         template <typename T2, typename indexT2>
         void compress(T2* vals, indexT2* innerIndices, indexT2* outerPtr);
@@ -36,6 +42,8 @@ namespace CSF {
         void userChecks();
 
     public:
+        // Constructors & Destructor //
+
         SparseMatrix();
 
         SparseMatrix(Eigen::SparseMatrix<T>& mat);
@@ -46,13 +54,17 @@ namespace CSF {
 
         SparseMatrix(const char* filename);
 
+        SparseMatrix(typename CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector vec[]);
+
         ~SparseMatrix();
+
+        // Utility Methods //
 
         void write(const char* filename);
 
         void print();
 
-        T operator()(uint32_t row, uint32_t col);
+        // Getters //
 
         T coeff(uint32_t row, uint32_t col);
 
@@ -74,12 +86,7 @@ namespace CSF {
 
         size_t compressionSize();
 
-        bool operator==(const SparseMatrix<T, indexT, compressionLevel, columnMajor>& other);
-
-        bool operator!=(const SparseMatrix<T, indexT, compressionLevel, columnMajor>& other);
-
-        // CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor> operator * (T scalar);
-        void operator * (T scalar);
+        // Conversion Methods //
 
         CSF::SparseMatrix<T, indexT, 1, columnMajor> toCSF1();
 
@@ -87,13 +94,21 @@ namespace CSF {
 
         CSF::SparseMatrix<T, indexT, compressionLevel, !columnMajor> transpose();
 
+        // Operator Overloads //
+
+        bool operator==(const SparseMatrix<T, indexT, compressionLevel, columnMajor>& other);
+
+        bool operator!=(const SparseMatrix<T, indexT, compressionLevel, columnMajor>& other);
+
+        void operator * (T scalar);
+
+        typename CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector operator*(typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector &vec);
+
+        T operator()(uint32_t row, uint32_t col);
+
+        // Nested Subclasses //
+
         class Vector;
-
-        SparseMatrix(CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector vec[]);
-
-        typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector operator*(SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector& vec);
-
-        // SparseMatrix<T, indexT, compressionLevel, columnMajor> operator*(SparseMatrix<T, indexT, compressionLevel, columnMajor>& mat);
 
         class InnerIterator;
     };
