@@ -476,7 +476,7 @@ namespace CSF
             }
 
             nnz = vec.nonZeros();
-            compSize = vec.byteSize();
+            compSize = vec.byteSize() + sizeof(void *) * 2;
 
             val_t = encodeVal();
             index_t = sizeof(indexT);
@@ -509,6 +509,8 @@ namespace CSF
             metadata[3] = nnz;
             metadata[4] = val_t;
             metadata[5] = index_t;
+
+            compSize += sizeof(uint32_t) * NUM_META_DATA;
 
             // run the user checks
             if constexpr (DEBUG)

@@ -101,6 +101,8 @@ namespace CSF
         metadata[4] = val_t;
         metadata[5] = index_t;
 
+        compSize += NUM_META_DATA * sizeof(uint32_t) + (outerDim * sizeof(void *) * 2);
+
         // run the user checks
         if constexpr (DEBUG)
             userChecks();
