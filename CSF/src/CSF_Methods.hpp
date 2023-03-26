@@ -460,40 +460,104 @@ namespace CSF
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     void SparseMatrix<T, indexT, compressionLevel, columnMajor>::append(typename CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector &vec)
     {
-        // check that the vector is the correct size
-        if (vec.length() != outerDim)
-            throw std::invalid_argument("The vector must be the same size as the number of columns in the matrix!");
+        // check if the matrix is empty
+        if (compSize == 0 && nnz == 0 && numCols == 0 && numRows == 0) [[unlikely]] {
+            // if it is the matrix is empty and we need to construct it
+            if (columnMajor) {
+                numRows = vec.length();
+                numCols = 1;
+                innerDim = numRows;
+                outerDim = numCols;
+            } else {
+                numRows = 1;
+                numCols = vec.length();
+                innerDim = numCols;
+                outerDim = numRows;
+            }
 
-        outerDim++;
-        nnz += vec.nonZeros();
-        if (columnMajor) {
-            numCols++;
+            nnz = vec.nonZeros();
+            compSize = vec.byteSize();
+
+            val_t = encodeVal();
+            index_t = sizeof(indexT);
+
+            // malloc the data
+            try {
+                data = (void **)malloc(sizeof(void *));
+                endPointers = (void **)malloc(sizeof(void *));
+            } catch (std::bad_alloc &e) {
+                throw std::bad_alloc();
+            }
+
+            // malloc the vector
+            try {
+                data[0] = malloc(vec.byteSize());
+                endPointers[0] = (char *)data[0] + vec.byteSize();
+            } catch (std::bad_alloc &e) {
+                throw std::bad_alloc();
+            }
+
+            // copy the vector into the matrix
+            memcpy(data[0], vec.begin(), vec.byteSize());
+
+            metadata = new uint32_t[NUM_META_DATA];
+
+            // Set the meta data
+            metadata[0] = compressionLevel;
+            metadata[1] = innerDim;
+            metadata[2] = outerDim;
+            metadata[3] = nnz;
+            metadata[4] = val_t;
+            metadata[5] = index_t;
+
+            // run the user checks
+            if constexpr (DEBUG)
+                userChecks();
+
         } else {
-            numRows++;
+
+            // check that the vector is the correct size
+            if (vec.length() != outerDim)
+                throw std::invalid_argument("The vector must be the same size as the outer dimension of the matrix!");
+
+            outerDim++;
+            nnz += vec.nonZeros();
+            if (columnMajor) {
+                numCols++;
+            } else {
+                numRows++;
+            }
+
+            // realloc the data to be one larger
+            try {
+                data = (void **)realloc(data, outerDim * sizeof(void *));
+                endPointers = (void **)realloc(endPointers, outerDim * sizeof(void *));
+            } catch (std::bad_alloc &e) {
+                throw std::bad_alloc();
+            }
+
+            // malloc the new vector
+            try {
+                data[outerDim - 1] = malloc(vec.byteSize());
+                endPointers[outerDim - 1] = (char *)data[outerDim - 1] + vec.byteSize();
+            } catch (std::bad_alloc &e) {
+                throw std::bad_alloc();
+            }
+
+            // copy the vector into the new space
+            memcpy(data[outerDim - 1], vec.begin(), vec.byteSize());
+
+            // update the compression size
+            compSize += vec.byteSize();
+            compSize += sizeof(void *) * 2;
+
         }
+    }
 
-        // realloc the data to be one larger
-        try {
-            data = (void **)realloc(data, outerDim * sizeof(void *));
-            endPointers = (void **)realloc(endPointers, outerDim * sizeof(void *));
-        } catch (std::bad_alloc &e) {
-            throw std::bad_alloc();
-        }
-
-        // malloc the new vector
-        try {
-            data[outerDim - 1] = malloc(vec.byteSize());
-            endPointers[outerDim - 1] = (char *)data[outerDim - 1] + vec.byteSize();
-        } catch (std::bad_alloc &e) {
-            throw std::bad_alloc();
-        }
-
-        // copy the vector into the new space
-        memcpy(data[outerDim - 1], vec.begin(), vec.byteSize());
-
-        // update the compression size
-        compSize += vec.byteSize();
-        compSize += sizeof(void *) * 2;
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    CSF::SparseMatrix<T, indexT, compressionLevel, !columnMajor> SparseMatrix<T, indexT, compressionLevel, columnMajor>::transpose()
+    {
+        
     }
 
     // template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>

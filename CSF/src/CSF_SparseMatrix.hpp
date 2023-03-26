@@ -62,7 +62,7 @@ namespace CSF
 
         SparseMatrix(const char *filename);
 
-        SparseMatrix(typename CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector vec[]);
+        SparseMatrix(typename CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector vec[], size_t size);
 
         ~SparseMatrix();
 
@@ -242,7 +242,7 @@ namespace CSF
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     class SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector
     {
-    private:
+        private:
         size_t size;
 
         void *data;
@@ -255,7 +255,7 @@ namespace CSF
 
         uint32_t nnz = 0;
 
-    public:
+        public:
         Vector();
 
         Vector(CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor> &mat, uint32_t vec);
