@@ -66,6 +66,8 @@ namespace CSF
 
         SparseMatrix(std::map<indexT, std::unordered_map<T, std::vector<indexT>>> &map, uint32_t num_rows, uint32_t num_cols);
 
+        SparseMatrix(typename CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector &vec);
+
         ~SparseMatrix();
 
         // Utility Methods //
@@ -283,6 +285,8 @@ namespace CSF
         uint32_t outerSize();
 
         uint32_t nonZeros();
+
+        void write(const char *filename);
 
         operator bool() { return (char *)endPtr - indexWidth > data; };
     };

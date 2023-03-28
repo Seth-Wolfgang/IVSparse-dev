@@ -292,23 +292,23 @@ namespace CSF
         FILE *fp = fopen(filename, "wb");
 
         // write the metadata
-        fwrite(metadata, 1, sizeof(uint32_t) * NUM_META_DATA, fp);
+        // fwrite(metadata, 1, sizeof(uint32_t) * NUM_META_DATA, fp);
 
-        // write the distance between the end and start pointers
-        for (uint32_t i = 0; i < outerDim; i++)
-        {
-            size_t size = (char *)endPointers[i] - (char *)data[i];
-            fwrite(&size, 1, sizeof(size_t), fp);
-        }
+        // // write the distance between the end and start pointers
+        // for (uint32_t i = 0; i < outerDim; i++)
+        // {
+        //     size_t size = (char *)endPointers[i] - (char *)data[i];
+        //     fwrite(&size, 1, sizeof(size_t), fp);
+        // }
 
-        // int test = 1;
-        // fwrite(data[test], 1, (char *)end_pointers[test] - (char *)data[test], fp);
+        int test = 0;
+        fwrite(data[test], 1, (char *)endPointers[test] - (char *)data[test], fp);
 
         // write each column
-        for (uint32_t i = 0; i < outerDim; i++)
-        {
-            fwrite(data[i], 1, (char *)endPointers[i] - (char *)data[i], fp);
-        }
+        // for (uint32_t i = 0; i < outerDim; i++)
+        // {
+        //     fwrite(data[i], 1, (char *)endPointers[i] - (char *)data[i], fp);
+        // }
 
         // close the file
         fclose(fp);
@@ -462,19 +462,23 @@ namespace CSF
         return SparseMatrix<T, indexT, compressionLevel, columnMajor>(eigenTemp).getVector(0);
     }
 
+
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     void SparseMatrix<T, indexT, compressionLevel, columnMajor>::append(typename CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector &vec)
     {
-        //! TODO: CHECK FOR EMPTY VECTORS
         // check if the matrix is empty
         if (compSize == 0 && nnz == 0 && numCols == 0 && numRows == 0) [[unlikely]] {
+
             // if it is the matrix is empty and we need to construct it
-            if (columnMajor) {
+            if (columnMajor)
+            {
                 numRows = vec.length();
                 numCols = 1;
                 innerDim = numRows;
                 outerDim = numCols;
-            } else {
+            }
+            else
+            {
                 numRows = 1;
                 numCols = vec.length();
                 innerDim = numCols;
@@ -488,23 +492,40 @@ namespace CSF
             index_t = sizeof(indexT);
 
             // malloc the data
-            try {
+            try
+            {
                 data = (void **)malloc(sizeof(void *));
                 endPointers = (void **)malloc(sizeof(void *));
-            } catch (std::bad_alloc &e) {
+            }
+            catch (std::bad_alloc &e)
+            {
                 throw std::bad_alloc();
             }
 
             // malloc the vector
-            try {
-                data[0] = malloc(vec.byteSize());
-                endPointers[0] = (char *)data[0] + vec.byteSize();
-            } catch (std::bad_alloc &e) {
+            try
+            {
+                // if vector is empty set the data to null
+                if (vec.begin() == vec.end())
+                {
+                    data[0] = nullptr;
+                    endPointers[0] = nullptr;
+                }
+                else
+                {
+                    data[0] = malloc(vec.byteSize());
+                    endPointers[0] = (char *)data[0] + vec.byteSize();
+                }
+            }
+            catch (std::bad_alloc &e)
+            {
                 throw std::bad_alloc();
             }
 
             // copy the vector into the matrix
-            memcpy(data[0], vec.begin(), vec.byteSize());
+            // if the vector is not empty
+            if (vec.begin() != vec.end())
+                memcpy(data[0], vec.begin(), vec.byteSize());
 
             metadata = new uint32_t[NUM_META_DATA];
 
@@ -521,43 +542,71 @@ namespace CSF
             // run the user checks
             if constexpr (DEBUG)
                 userChecks();
-
         } else {
 
-            // check that the vector is the correct size
-            if ((vec.length() != outerDim && !columnMajor) || (vec.length() != innerDim && columnMajor))
-                throw std::invalid_argument("The vector must be the same size as the outer dimension of the matrix!");
+            // check if the vector is empty, if so change the implementation details
+            if (vec.begin() == vec.end()) [[unlikely]] {
 
-            outerDim++;
-            nnz += vec.nonZeros();
-            if (columnMajor) {
-                numCols++;
+                if (columnMajor) {
+                    numCols++;
+                } else {
+                    numRows++;
+                }
+                outerDim++;
+
+                // realloc the data to be one larger
+                try {
+                    data = (void **)realloc(data, outerDim * sizeof(void *));
+                    endPointers = (void **)realloc(endPointers, outerDim * sizeof(void *));
+                } catch (std::bad_alloc &e) {
+                    throw std::bad_alloc();
+                }
+
+                // set the new vector to nullptr
+                data[outerDim - 1] = nullptr;
+                endPointers[outerDim - 1] = nullptr;
+
+                compSize += sizeof(void *) * 2;
+
+                return;
+
             } else {
-                numRows++;
+
+                // check that the vector is the correct size
+                if ((vec.length() != innerDim))
+                    throw std::invalid_argument("The vector must be the same size as the outer dimension of the matrix!");
+
+                outerDim++;
+                nnz += vec.nonZeros();
+                if (columnMajor) {
+                    numCols++;
+                } else {
+                    numRows++;
+                }
+
+                // realloc the data to be one larger
+                try {
+                    data = (void **)realloc(data, outerDim * sizeof(void *));
+                    endPointers = (void **)realloc(endPointers, outerDim * sizeof(void *));
+                } catch (std::bad_alloc &e) {
+                    throw std::bad_alloc();
+                }
+
+                // malloc the new vector
+                try {
+                    data[outerDim - 1] = malloc(vec.byteSize());
+                    endPointers[outerDim - 1] = (char *)data[outerDim - 1] + vec.byteSize();
+                } catch (std::bad_alloc &e) {
+                    throw std::bad_alloc();
+                }
+
+                // copy the vector into the new space
+                memcpy(data[outerDim - 1], vec.begin(), vec.byteSize());
+
+                // update the compression size
+                compSize += vec.byteSize();
+                compSize += sizeof(void *) * 2;
             }
-
-            // realloc the data to be one larger
-            try {
-                data = (void **)realloc(data, outerDim * sizeof(void *));
-                endPointers = (void **)realloc(endPointers, outerDim * sizeof(void *));
-            } catch (std::bad_alloc &e) {
-                throw std::bad_alloc();
-            }
-
-            // malloc the new vector
-            try {
-                data[outerDim - 1] = malloc(vec.byteSize());
-                endPointers[outerDim - 1] = (char *)data[outerDim - 1] + vec.byteSize();
-            } catch (std::bad_alloc &e) {
-                throw std::bad_alloc();
-            }
-
-            // copy the vector into the new space
-            memcpy(data[outerDim - 1], vec.begin(), vec.byteSize());
-
-            // update the compression size
-            compSize += vec.byteSize();
-            compSize += sizeof(void *) * 2;
 
         }
     }

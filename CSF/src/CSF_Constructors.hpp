@@ -22,8 +22,13 @@ namespace CSF {
         mat.makeCompressed();
 
         // Set the number of rows, columns and non-zero elements
-        innerDim = mat.rows();
-        outerDim = mat.cols();
+        if (columnMajor) {
+            innerDim = mat.rows();
+            outerDim = mat.cols();
+        } else {
+            innerDim = mat.cols();
+            outerDim = mat.rows();
+        }
 
         numRows = mat.rows();
         numCols = mat.cols();
@@ -192,6 +197,83 @@ namespace CSF {
         }
 
 
+    }
+
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(typename CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector &vec) {
+        // if it is the matrix is empty and we need to construct it
+        if (columnMajor)
+        {
+            numRows = vec.length();
+            numCols = 1;
+            innerDim = numRows;
+            outerDim = numCols;
+        }
+        else
+        {
+            numRows = 1;
+            numCols = vec.length();
+            innerDim = numCols;
+            outerDim = numRows;
+        }
+
+        nnz = vec.nonZeros();
+        compSize = vec.byteSize() + sizeof(void *) * 2;
+
+        val_t = encodeVal();
+        index_t = sizeof(indexT);
+
+        // malloc the data
+        try
+        {
+            data = (void **)malloc(sizeof(void *));
+            endPointers = (void **)malloc(sizeof(void *));
+        }
+        catch (std::bad_alloc &e)
+        {
+            throw std::bad_alloc();
+        }
+
+        // malloc the vector
+        try
+        {
+            // if vector is empty set the data to null
+            if (vec.begin() == vec.end())
+            {
+                data[0] = nullptr;
+                endPointers[0] = nullptr;
+            }
+            else
+            {
+                data[0] = malloc(vec.byteSize());
+                endPointers[0] = (char *)data[0] + vec.byteSize();
+            }
+        }
+        catch (std::bad_alloc &e)
+        {
+            throw std::bad_alloc();
+        }
+
+        // copy the vector into the matrix
+        // if the vector is not empty
+        if (vec.begin() != vec.end())
+            memcpy(data[0], vec.begin(), vec.byteSize());
+
+        metadata = new uint32_t[NUM_META_DATA];
+
+        // Set the meta data
+        metadata[0] = compressionLevel;
+        metadata[1] = innerDim;
+        metadata[2] = outerDim;
+        metadata[3] = nnz;
+        metadata[4] = val_t;
+        metadata[5] = index_t;
+
+        compSize += sizeof(uint32_t) * NUM_META_DATA;
+
+        // run the user checks
+        if constexpr (DEBUG)
+            userChecks();
     }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>

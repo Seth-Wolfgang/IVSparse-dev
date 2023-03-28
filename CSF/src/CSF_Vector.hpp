@@ -13,24 +13,28 @@ namespace CSF
     {
         // get the vecLength of the vector
         size = mat.getVecSize(vec);
+        vecLength = mat.innerSize();
 
         // if the size is 0 then the vector is empty
         if (size == 0)
         {
+            data = nullptr;
             endPtr = nullptr;
             return;
         }
 
         // set data pointer
-        data = malloc(size);
+        try {
+            data = malloc(size);
+        } catch (std::bad_alloc &e) {
+            std::cerr << e.what() << '\n';
+        }
 
         // copy the vector data into the vector
         memcpy(data, mat.getVecPointer(vec), size);
 
-        vecLength = mat.innerSize();
-
         // set the end pointer
-        endPtr = (uint8_t *)data + size;
+        endPtr = (uint8_t *)data + size - 1;
         // endPtr = (uint8_t *)data + ((char*)mat.getVecPointer(vec) -  (char*)mat.endPointers[vec]);
         // std::cout << "endPtr: " << endPtr << std::endl;
 
@@ -244,6 +248,19 @@ namespace CSF
 
         // if the index is not found then return 0
         return 0;
+    }
+
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    void SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::write(const char *filename)
+    {
+        // open the file
+        FILE *fp = fopen(filename, "wb");
+
+        // write the data
+        fwrite(data, size, 1, fp);
+
+        // close the file
+        fclose(fp);
     }
 
 }
