@@ -79,7 +79,7 @@ public:
         if (access("timeData.csv", F_OK) != 0) {
             std::cout << "Creating timeData.csv" << std::endl;
             file = fopen("timeData.csv", "a");
-            fprintf(file,"%s\n", "Matrix Number, Matrix Rows, Matrix Cols, Matrix Nonzeros, Matrix Redundancy, Matrix Density, Eigen Constructor Time, CSF1 Constructor Time, CSF2 Constructor Time, CSF3 Constructor Time, Eigen Inner Iterator Time, CSF1 Inner Iterator Time, CSF2 Inner Iterator Time, CSF3 Inner Iterator Time, Eigen Scalar Multiplication Time, CSF1 Scalar Multiplication Time, CSF2 Scalar Multiplication Time, CSF3 Scalar Multiplication Time, Eigen Vector Multiplication Time, CSF1 Vector Multiplication Time, CSF2 Vector Multiplication Time, CSF3 Vector Multiplication Time, Eigen Matrix Multiplication Time, CSF1 Matrix Multiplication Time, CSF2 Matrix Multiplication Time, CSF3 Matrix Multiplication Time, Max Eigen Constructor Time, Max CSF1 Constructor Time, Max CSF2 Constructor Time, Max CSF3 Constructor Time, Max Eigen Inner Iterator Time, Max CSF1 Inner Iterator Time, Max CSF2 Inner Iterator Time, Max CSF3 Inner Iterator Time, Max Eigen Scalar Multiplication Time, Max CSF1 Scalar Multiplication Time, Max CSF2 Scalar Multiplication Time, Max CSF3 Scalar Multiplication Time, Max Eigen Vector Multiplication Time, Max CSF1 Vector Multiplication Time, Max CSF2 Vector Multiplication Time, Max CSF3 Vector Multiplication Time, Max Eigen Matrix Multiplication Time, Max CSF1 Matrix Multiplication Time, Max CSF2 Matrix Multiplication Time, Max CSF3 Matrix Multiplication Time, Eigen Memory Usage, CSF1 Memory Usage, CSF2 Memory Usage, CSF3 Memory Usage, Max Eigen Memory Usage, Max CSF1 Memory Usage, Max CSF2 Memory Usage, Max CSF3 Memory Usage");
+            fprintf(file, "%s\n", "Matrix Number, Matrix Rows, Matrix Cols, Matrix Nonzeros, Matrix Redundancy, Matrix Density, Eigen Constructor Time, CSF1 Constructor Time, CSF2 Constructor Time, CSF3 Constructor Time, Eigen Inner Iterator Time, CSF1 Inner Iterator Time, CSF2 Inner Iterator Time, CSF3 Inner Iterator Time, Eigen Scalar Multiplication Time, CSF1 Scalar Multiplication Time, CSF2 Scalar Multiplication Time, CSF3 Scalar Multiplication Time, Eigen Vector Multiplication Time, CSF1 Vector Multiplication Time, CSF2 Vector Multiplication Time, CSF3 Vector Multiplication Time, Eigen Matrix Multiplication Time, CSF1 Matrix Multiplication Time, CSF2 Matrix Multiplication Time, CSF3 Matrix Multiplication Time, Max Eigen Constructor Time, Max CSF1 Constructor Time, Max CSF2 Constructor Time, Max CSF3 Constructor Time, Max Eigen Inner Iterator Time, Max CSF1 Inner Iterator Time, Max CSF2 Inner Iterator Time, Max CSF3 Inner Iterator Time, Max Eigen Scalar Multiplication Time, Max CSF1 Scalar Multiplication Time, Max CSF2 Scalar Multiplication Time, Max CSF3 Scalar Multiplication Time, Max Eigen Vector Multiplication Time, Max CSF1 Vector Multiplication Time, Max CSF2 Vector Multiplication Time, Max CSF3 Vector Multiplication Time, Max Eigen Matrix Multiplication Time, Max CSF1 Matrix Multiplication Time, Max CSF2 Matrix Multiplication Time, Max CSF3 Matrix Multiplication Time, Eigen Memory Usage, CSF1 Memory Usage, CSF2 Memory Usage, CSF3 Memory Usag");
             fclose(file);
         }
         //check if first line of file is
@@ -164,13 +164,12 @@ public:
     }
 
     void printTimesToCSV() {
-        FILE* file = fopen("timeData.csv", "a");
         std::vector<uint64_t> data;
 
         //Average times
         //Constructors
         //print all elements of EigenConstructorTimes
-        
+
         data.push_back(average(EigenConstructorTimes));
         data.push_back(average(CSFConstructorTimes));
         data.push_back(average(CSF2ConstructorTimes));
@@ -199,6 +198,16 @@ public:
         data.push_back(average(CSFMatrixMultiplicationTimes));
         data.push_back(average(CSF2MatrixMultiplicationTimes));
         data.push_back(average(CSF3MatrixMultiplicationTimes));
+
+        // Memory usage
+        // data.push_back(average(EigenMemoryUsage));
+        // data.push_back(average(CSFMemoryUsage));
+        // data.push_back(average(CSF2MemoryUsage));
+        // data.push_back(average(CSF3MemoryUsage));
+        data.push_back(0);
+        data.push_back(0);
+        data.push_back(0);
+        data.push_back(0);
 
         // Max times
         //Constructors
@@ -231,22 +240,36 @@ public:
         data.push_back(max(CSF2MatrixMultiplicationTimes));
         data.push_back(max(CSF3MatrixMultiplicationTimes));
 
+        // Memory usage
+        // data.push_back(max(EigenMemoryUsage));
+        // data.push_back(max(CSFMemoryUsage));
+        // data.push_back(max(CSF2MemoryUsage));
+        // data.push_back(max(CSF3MemoryUsage));
+        data.push_back(0);
+        data.push_back(0);
+        data.push_back(0);
+        data.push_back(0);
+
         /*
                                                                  ORDER: CSC, CSF1, CSF2, CSF3
             ||
                               ATTRIBUTES                      ||                                          AVERAGE                                              ||                                             MAX                                                |
             ID | Rows | Cols | Nonzeros | Redundancy, Density || Constructor | Iterator | scalar multiplcation | vector multiplication | matrix multiplication ||  Constructor | Iterator | scalar multiplcation | vector multiplication | matrix multiplication |
         */
-        fprintf(file, "%f, %f, %f, %f, %f, %f", myMatrix->matrixNum,
+        
+        FILE* file = fopen("timeData.csv", "a");
+        fprintf(file, "%f, %f, %f, %f, %f, %f,", 
+                myMatrix->matrixNum,
                 myMatrix->matrixRows,
                 myMatrix->matrixCols,
                 myMatrix->matrixNonzeros,
                 myMatrix->matrixRedundancy,
                 myMatrix->matrixDensity);
         // Finally, print the data to the file
-        for (uint32_t i = 0; i < data.size(); i++) {
+        for (uint32_t i = 0; i < data.size(); ++i) {
             fprintf(file, "%" PRIu64 ",", data.at(i));
         }
+        fprintf(file, "\n");
         fclose(file);
     }
 

@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# SOURCE: https://github.com/ginkgo-project/ssget
+
 # Copyright 2017-2018
 # 
 # Karlsruhe Institute of Technology
@@ -36,7 +36,7 @@ set -e
 
 THIS_DIR=$( cd "$( dirname "${BASH_SOURCE[0]}" )" &>/dev/null && pwd )
 SS_URL="https://sparse.tamu.edu"
-ARCHIVE_LOCATION="${HOME}/.config/ssget"
+ARCHIVE_LOCATION="./matrices"
 
 mkdir -p "${ARCHIVE_LOCATION}"
 

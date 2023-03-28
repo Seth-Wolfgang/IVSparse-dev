@@ -39,5 +39,7 @@ void vectorMultiplicationBenchmark(std::vector<uint64_t>& data, Eigen::SparseMat
 
 // Function to test the speed of matrix multiplication
 // void matrixMultiplicationBenchmark(std::vector<uint64_t>& data, Eigen::Triplet eigenTriplet);
+
 // Function to the memory footprint of each compression method
-// void memoryFootprintBenchmark(std::vector<uint64_t>& data, Eigen::Triplet eigenTriplet);
+template <typename T, typename indexT>
+void memoryFootprintBenchmark(std::vector<uint64_t>& data, std::vector<Eigen::Triplet<T>>& eigenTriplet, uint32_t inner, uint32_t outer);

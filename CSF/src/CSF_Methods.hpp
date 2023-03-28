@@ -333,6 +333,11 @@ namespace CSF
         uint8_t byte2 = (val_t >> 16) & 0xFF;
         // uint8_t byte3 = (val_t >> 24) & 0xFF;
 
+        std::cout << "byte0: " << (int)byte0 << std::endl;
+        std::cout << "byte1: " << (int)byte1 << std::endl;
+        std::cout << "byte2: " << (int)byte2 << std::endl;
+
+
         if (byte0 != sizeof(T))
         {
             std::cout << "Error: Value type size does not match" << std::endl;
@@ -436,7 +441,7 @@ namespace CSF
     typename CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator*(SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector &vec)
     {
         // check that the vector is the correct size
-        if (vec.innerSize() != outerDim)
+        if (vec.length() != outerDim)
             throw std::invalid_argument("The vector must be the same size as the number of columns in the matrix!");
 
         Eigen::SparseMatrix<T> eigenTemp(outerDim, 1);

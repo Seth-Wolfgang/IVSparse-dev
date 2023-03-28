@@ -11,15 +11,13 @@
 #include <iostream>
 #include <iomanip>
 
-namespace CSF
-{
+namespace CSF {
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix() {}
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(Eigen::SparseMatrix<T> &mat)
-    {
+    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(Eigen::SparseMatrix<T>& mat) {
 
         mat.makeCompressed();
 
@@ -31,33 +29,28 @@ namespace CSF
         numCols = mat.cols();
 
         nnz = mat.nonZeros();
-        
+
         compress(mat.valuePtr(), mat.innerIndexPtr(), mat.outerIndexPtr());
     }
 
     // TODO: Test the array of vectors constructor
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector vec[], size_t size)
-    {
+    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector vec[], size_t size) {
         // ensure the vectors are all the same length
-        for (size_t i = 1; i < size; i++)
-        {
-            if (vec[i].length() != vec[0].length())
-            {
+        for (size_t i = 1; i < size; i++) {
+            if (vec[i].length() != vec[0].length()) {
                 std::cerr << "Error: Vectors are not all the same length" << std::endl;
                 exit(1);
             }
         }
 
-        if (columnMajor)
-        {
+        if (columnMajor) {
             outerDim = size;
             innerDim = vec[0].length();
             numCols = size;
             numRows = vec[0].length();
         }
-        else
-        {
+        else {
             outerDim = vec[0].length();
             innerDim = size;
             numCols = vec[0].length();
@@ -66,17 +59,18 @@ namespace CSF
 
         //allocate memory for data
         try {
-            data = (void**)malloc(outerDim * sizeof(void *));
-            endPointers = (void**)malloc(outerDim * sizeof(void *));
-        } catch (const std::exception& e) {
+            data = (void**)malloc(outerDim * sizeof(void*));
+            endPointers = (void**)malloc(outerDim * sizeof(void*));
+        }
+        catch (const std::exception& e) {
             std::cerr << e.what() << '\n';
         }
 
-        for (size_t i = 0; i < outerDim; i++)
-        {
+        for (size_t i = 0; i < outerDim; i++) {
             try {
                 data[i] = malloc(vec[i].byteSize());
-            } catch (const std::exception& e) {
+            }
+            catch (const std::exception& e) {
                 std::cerr << e.what() << '\n';
             }
             memcpy(data[i], vec[i].data(), vec[i].byteSize());
@@ -101,7 +95,7 @@ namespace CSF
         metadata[4] = val_t;
         metadata[5] = index_t;
 
-        compSize += NUM_META_DATA * sizeof(uint32_t) + (outerDim * sizeof(void *) * 2);
+        compSize += NUM_META_DATA * sizeof(uint32_t) + (outerDim * sizeof(void*) * 2);
 
         // run the user checks
         if constexpr (DEBUG)
@@ -109,8 +103,7 @@ namespace CSF
     }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(Eigen::SparseMatrix<T, Eigen::RowMajor> &mat)
-    {
+    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(Eigen::SparseMatrix<T, Eigen::RowMajor>& mat) {
 
         mat.makeCompressed();
 
@@ -126,10 +119,9 @@ namespace CSF
         compress(mat.valuePtr(), mat.innerIndexPtr(), mat.outerIndexPtr());
     }
 
-    //TODO: Deep Copy Constructor (largely untested)
+    //TODO: Deep Copy Constructor
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor> &mat)
-    {
+    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>& mat) {
         // Set the number of rows, columns and non-zero elements
         innerDim = mat.innerSize();
         outerDim = mat.outerSize();
@@ -141,19 +133,19 @@ namespace CSF
 
         compSize = mat.compressionSize();
 
-        //allocate memory for data, I think something in here fails
         try {
-            data = (void**)malloc(outerDim * sizeof(void *));
-            endPointers = (void**)malloc(outerDim * sizeof(void *));
-        } catch (const std::exception& e) {
+            data = (void**)malloc(outerDim * sizeof(void*));
+            endPointers = (void**)malloc(outerDim * sizeof(void*));
+        }
+        catch (const std::exception& e) {
             std::cerr << e.what() << '\n';
         }
 
-        for (size_t i = 0; i < outerDim; i++)
-        {
+        for (size_t i = 0; i < outerDim; i++) {
             try {
                 data[i] = malloc(mat.getVecSize(i));
-            } catch (const std::exception& e) {
+            }
+            catch (const std::exception& e) {
                 std::cerr << e.what() << '\n';
             }
             memcpy(data[i], mat.getVecPointer(i), mat.getVecSize(i));
@@ -162,26 +154,24 @@ namespace CSF
 
         //allocate memory for metadata
         metadata = new uint32_t[NUM_META_DATA];
-        for (size_t i = 0; i < NUM_META_DATA; i++)
-        {
-            metadata[i] = mat.metadata[i];
-        }
+        memcpy(metadata, mat.metadata, NUM_META_DATA * sizeof(uint32_t));
+
+        //print metadata
+
 
         index_t = mat.index_t;
 
         encodeVal();
-
-        userChecks();
     }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(std::map<indexT, std::unordered_map<T, std::vector<indexT>>> &map, uint32_t num_rows, uint32_t num_cols)
-    {
+    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(std::map<indexT, std::unordered_map<T, std::vector<indexT>>>& map, uint32_t num_rows, uint32_t num_cols) {
         // set class variables
         if constexpr (columnMajor) {
             innerDim = num_rows;
             outerDim = num_cols;
-        } else {
+        }
+        else {
             innerDim = num_cols;
             outerDim = num_rows;
         }
@@ -194,26 +184,25 @@ namespace CSF
 
         // allocate memory for the data
         try {
-            data = (void**)malloc(outerDim * sizeof(void *));
-            endPointers = (void**)malloc(outerDim * sizeof(void *));
-        } catch (const std::exception& e) {
+            data = (void**)malloc(outerDim * sizeof(void*));
+            endPointers = (void**)malloc(outerDim * sizeof(void*));
+        }
+        catch (const std::exception& e) {
             std::cerr << e.what() << '\n';
         }
 
-        
+
     }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    SparseMatrix<T, indexT, compressionLevel, columnMajor>::~SparseMatrix()
-    {
+    SparseMatrix<T, indexT, compressionLevel, columnMajor>::~SparseMatrix() {
         // delete the meta data
         if (metadata != nullptr) {
             delete[] metadata;
         }
 
         // free the data
-        for (size_t i = 0; i < outerDim; i++)
-        {
+        for (size_t i = 0; i < outerDim; i++) {
             if (data[i] != nullptr)
                 free(data[i]);
         }

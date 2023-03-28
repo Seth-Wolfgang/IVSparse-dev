@@ -18,15 +18,17 @@
 
 int main(int argc, char** argv) {
     //For debugging
-    argv[1] = (char*)malloc(100);
-    argv[2] = (char*)malloc(10);
-    strcpy(argv[1], "testMatrix.mtx");
-    strcpy(argv[2], "6");
-    argc = 2;
+    if (argc == 1) {
+        argv[1] = (char*)malloc(100);
+        argv[2] = (char*)malloc(10);
+        strcpy(argv[1], "testMatrix2.mtx");
+        strcpy(argv[2], "6");
+        argc = 3;
+    }
 
 
     // Checks to make sure the correct number of arguments are passed
-    if (argc < 2) {
+    if (argc < 3) {
         fprintf(stderr, "Usage: %s currentFile\n", argv[0]);
         exit(1);
     }
@@ -46,15 +48,14 @@ int main(int argc, char** argv) {
     // Class to calculate the maxes and averages of the benchmarking data
     // and print the data to a csv
     BenchAnalysis bench = BenchAnalysis(matrixData);
-    // Create the Eigen matrix
 
+    // Create the Eigen matrix
     eigenTriplet.reserve(matrixData[3]);
     for (uint32_t i = 0; i < matrixData[1]; i++) {
         for (uint32_t j = 0; j < matrixData[2]; j++) {
             eigenTriplet.push_back(Eigen::Triplet<VALUE_TYPE>(i, j, 1));
         }
     }
-
     Eigen::SparseMatrix<VALUE_TYPE> eigen(matrixData[1], matrixData[2]);
     eigen.reserve(matrixData[3]);
     eigen.setFromTriplets(eigenTriplet.begin(), eigenTriplet.end());
@@ -71,21 +72,18 @@ int main(int argc, char** argv) {
         innerIteratorBenchmark<VALUE_TYPE, INDEX_TYPE>(data, eigen, csf2, csf3);
         scalarMultiplicationBenchmark<VALUE_TYPE, INDEX_TYPE>(data, eigen, csf2, csf3);
         vectorMultiplicationBenchmark<VALUE_TYPE, INDEX_TYPE>(data, eigen, csf2, csf3);
+
         // matrixMultiplicationBenchmark(data, eigen, csf, csf2, csf3);
         data.push_back(0);
         data.push_back(0);
         data.push_back(0);
         data.push_back(0);
 
-        //memory bench goes here
-        data.push_back(0);
-        data.push_back(0);
-        data.push_back(0);
-        data.push_back(0);
-        
+        memoryFootprintBenchmark<VALUE_TYPE, INDEX_TYPE>(data, eigenTriplet, matrixData[1], matrixData[2]);
+
         bench.pushData(data);
         data.clear();
-        std::cout << "Iteration " << i << " complete" << std::endl;
+        // std::cout << "Iteration " << i << " complete" << std::endl;
     }
 
     // Class to calculate the maxes and averages of the benchmarking data
@@ -141,10 +139,21 @@ void readFile(std::vector<Eigen::Triplet<T>>& eigenTriplet, std::vector<double>&
     val = (double*)malloc(nonzeros * sizeof(double));
 
     // Read the matrix
-    for (i = 0; i < nonzeros; i++) {
-        fscanf(f, "%d %d %lg\n", &I[i], &J[i], &val[i]);
-        I[i]--;  /* adjust from 1-based to 0-based */
-        J[i]--;
+    if (mm_is_pattern(matcode)) {
+        for (i = 0; i < nonzeros; i++) {
+            fscanf(f, "%d %d\n", &I[i], &J[i]);
+            val[i] = 1.0;
+            I[i]--;  /* adjust from 1-based to 0-based */
+            J[i]--;
+        }
+    }
+    else {
+        for (i = 0; i < nonzeros; i++) {
+            fscanf(f, "%d %d %lg\n", &I[i], &J[i], &val[i]);
+            I[i]--;  /* adjust from 1-based to 0-based */
+            J[i]--;
+        }
+
     }
 
     // Close the file
@@ -170,7 +179,7 @@ void readFile(std::vector<Eigen::Triplet<T>>& eigenTriplet, std::vector<double>&
     matrixData.push_back(1.0 - ((double)uniqueValues.size() / nonzeros));
 
     // Calculate matrix density
-    matrixData.push_back(nonzeros / (rows * cols));
+    matrixData.push_back((double)nonzeros / (double)(rows * cols));
 
     // Free the memory
     free(I);
@@ -190,7 +199,6 @@ void constructorBenchmark(std::vector<uint64_t>& data, std::vector<Eigen::Triple
     eigen.setFromTriplets(eigenTriplet.begin(), eigenTriplet.end());
     eigen.makeCompressed();
     end = std::chrono::system_clock::now();
-
     data.push_back(std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count());
 
     // //benchmark the CSF constructor
@@ -318,15 +326,19 @@ void vectorMultiplicationBenchmark(std::vector<uint64_t>& data, Eigen::SparseMat
                                    CSF::SparseMatrix<T, indexT, 3> csf3) {
     std::chrono::time_point<std::chrono::system_clock> start, end;
 
-    //Vectors
-    Eigen::SparseMatrix<T> eigenTempVector(eigen.rows(), 1);
-    Eigen::SparseVector<T> eigenVector(eigen.rows());
+    // Eigen Vectors
+    Eigen::SparseMatrix<T> eigenTempVector(eigen.cols(), 1);
+    Eigen::SparseVector<T> eigenVector(eigen.cols());
     eigenTempVector.reserve(eigen.cols());
     eigenVector.reserve(eigen.cols());
+
+    // Filling eigen vectors
     for (int i = 0; i < eigen.cols(); ++i) {
         eigenTempVector.insert(i, 0) = 2;
         eigenVector.insert(i) = 2;
     }
+    
+    // Creating CSF Vectors 
     CSF::SparseMatrix<T, indexT, 2> csf2TempVector(eigenTempVector);
     CSF::SparseMatrix<T, indexT, 3> csf3TempVector(eigenTempVector);
     // CSF::SparseMatrix<T, indexT, 1>::Vector csfVector(csfTempVector);
@@ -335,6 +347,7 @@ void vectorMultiplicationBenchmark(std::vector<uint64_t>& data, Eigen::SparseMat
 
     //Eigen
     start = std::chrono::system_clock::now();
+    // std::cout << "Eigen: " << eigen.cols() << " " << eigenVector.rows() << std::endl;
     Eigen::SparseMatrix<T> resultEigen = eigen * eigenVector;
     end = std::chrono::system_clock::now();
 
@@ -403,7 +416,25 @@ void vectorMultiplicationBenchmark(std::vector<uint64_t>& data, Eigen::SparseMat
 
 //     data.push_back(std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count());
 // }
+template <typename T, typename indexT>
+void memoryFootprintBenchmark(std::vector<uint64_t>& data, std::vector<Eigen::Triplet<T>>& eigenTriplet, uint32_t inner, uint32_t outer) {
 
-// void memoryBenchmark () {
+    //Create Eigen Matrix
+    Eigen::SparseMatrix<VALUE_TYPE> eigenMatrix(inner, outer);
+    eigenMatrix.setFromTriplets(eigenTriplet.begin(), eigenTriplet.end());
+    eigenMatrix.makeCompressed();
 
-// }
+    //TODO Find out memory footprint of Eigen Matrix
+    data.push_back(inner * outer * sizeof(VALUE_TYPE) + eigenMatrix.nonZeros());
+    // data.push_back(0);
+
+    // CSF::SparseMatrix<VALUE_TYPE, INDEX_TYPE, 1> csfMatrix(eigenMatrix);
+    CSF::SparseMatrix<VALUE_TYPE, INDEX_TYPE, 2> csf2Matrix(eigenMatrix);
+    CSF::SparseMatrix<VALUE_TYPE, INDEX_TYPE, 3> csf3Matrix(eigenMatrix);
+
+    // data.push_back(csfMatrix.compressionSize());
+    data.push_back(0); // CSF1
+    data.push_back(csf2Matrix.compressionSize());
+    data.push_back(csf3Matrix.compressionSize());
+
+}
