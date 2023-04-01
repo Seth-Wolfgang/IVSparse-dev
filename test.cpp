@@ -17,7 +17,7 @@ int main() {
 
     std::cout << myMatrix_e << std::endl;
 
-    
+
 
     // * Transpose Testing * //
 
@@ -32,12 +32,12 @@ int main() {
     for (uint32_t k = 0; k < myMatrix_csf_t.outerSize(); ++k)
         for (typename CSF::SparseMatrix<int, uint64_t, 3>::InnerIterator it(myMatrix_csf_t, k); it; ++it)
             myMatrix_e_t.insert(it.row(), it.col()) = it.value();
-    
+
     // print the eigen matrix
     std::cout << myMatrix_e_t << std::endl;
 
 
-    
+
 
 
 
@@ -53,20 +53,10 @@ int main() {
 template <typename T, typename indexT, int compressionLevel>
 void iteratorTest() {
 
-    int numRows = rand() % 1000 + 10;
-    int numCols = rand() % 1000 + 10;
-    int sparsity = rand() % 50 + 1;
+    int numRows = 100;//rand() % 1000 + 10;
+    int numCols = 100;//rand() % 1000 + 10;
+    int sparsity = rand() % 1 + 1;
     uint64_t seed = rand();
-
-    Eigen::SparseMatrix<T> eigenTemp(numCols, 1);
-    eigenTemp.reserve(Eigen::VectorXi::Constant(numRows, numCols));
-
-    for (int i = 0; i < numCols; i++) {
-        eigenTemp.insert(i, 0) = rand() % 10;
-    }
-
-    CSF::SparseMatrix<T, indexT, compressionLevel> tempMatrix(eigenTemp);
-    typename CSF::SparseMatrix<T, indexT, compressionLevel>::Vector myVec(tempMatrix, 0);
 
     Eigen::SparseMatrix<T> myMatrix_e(numRows, numCols);
     myMatrix_e.reserve(Eigen::VectorXi::Constant(numCols, numRows));
@@ -76,26 +66,29 @@ void iteratorTest() {
     // std::cout << myMatrix_e << std::endl;
 
     CSF::SparseMatrix<T, indexT, compressionLevel> myMatrix_csf(myMatrix_e);
+    CSF::SparseMatrix<T, indexT, compressionLevel> myMatrix_csf2(myMatrix_e);
 
 
     // myMatrix_csf.write("test.csf");
-    typename CSF::SparseMatrix<T, indexT, compressionLevel>::Vector result(myMatrix_csf * myVec);
 
-    myMatrix_e = myMatrix_e * eigenTemp;
+    myMatrix_e = myMatrix_e * myMatrix_e;
+
+    myMatrix_csf = myMatrix_csf * myMatrix_csf2;
 
 
     T sum_e = 0;
-    // for (int k = 0; k < myMatrix_e.outerSize(); ++k)
-        for (typename Eigen::SparseMatrix<T>::InnerIterator it(myMatrix_e, 0); it; ++it) {
-            sum_e += it.value();
-        }
+    for (int k = 0; k < myMatrix_e.outerSize(); ++k)
+    for (typename Eigen::SparseMatrix<T>::InnerIterator it(myMatrix_e, k); it; ++it) {
+        sum_e += it.value();
+    }
 
     // std::cout << "sum_e: " << sum_e << std::endl;
 
     T sum_csf = 0;
-    // for (uint32_t k = 0; k < myMatrix_csf.outerSize(); ++k)
-        for (typename CSF::SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(result); it; ++it)
+    for (uint32_t k = 0; k < myMatrix_csf.outerSize(); ++k)
+        for (typename CSF::SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(myMatrix_csf, k); it; ++it)
             sum_csf += it.value();
+
 
 
     // std::cout << "sum_csf: " << sum_csf << " sum_e: " << sum_e << std::endl;
