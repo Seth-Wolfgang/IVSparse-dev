@@ -17,28 +17,29 @@ int main() {
 
     std::cout << myMatrix_e << std::endl;
 
-    // * Vector Append Testing * //
+    
 
-    CSF::SparseMatrix<int, uint64_t, 3, false> myMatrix_csf(myMatrix_er);
+    // * Transpose Testing * //
 
-    CSF::SparseMatrix<int, uint64_t, 3, false>::Vector myVec(myMatrix_csf, 0);
+    // create a CSF matrix from the eigen matrix
+    CSF::SparseMatrix<int, uint64_t, 3> myMatrix_csf(myMatrix_e);
 
-    CSF::SparseMatrix<int, uint64_t, 3, false>::Vector testVec(myMatrix_csf, 7);
-    testVec.write("testVec.csf");
+    // transpose the CSF matrix
+    CSF::SparseMatrix<int, uint64_t, 3> myMatrix_csf_t = myMatrix_csf.transpose();
 
-    CSF::SparseMatrix<int, uint64_t, 3, false>::Vector myVec2(myMatrix_csf, 1);
+    // loop through all values in the CSF matrix and append them to an empty eigen matrix
+    Eigen::SparseMatrix<int> myMatrix_e_t(10, 10);
+    for (uint32_t k = 0; k < myMatrix_csf_t.outerSize(); ++k)
+        for (typename CSF::SparseMatrix<int, uint64_t, 3>::InnerIterator it(myMatrix_csf_t, k); it; ++it)
+            myMatrix_e_t.insert(it.row(), it.col()) = it.value();
+    
+    // print the eigen matrix
+    std::cout << myMatrix_e_t << std::endl;
 
-    myMatrix_csf.append(myVec2);
+
+    
 
 
-    // create an empty 10x12 eigen matrix and populate it with csf values
-    Eigen::SparseMatrix<int> myMatrix_e2(11, 10);
-    for (uint32_t k = 0; k < myMatrix_csf.outerSize(); ++k)
-        for (CSF::SparseMatrix<int, uint64_t, 3, false>::InnerIterator it(myMatrix_csf, k); it; ++it)
-            myMatrix_e2.insert(it.row(), it.col()) = it.value();
-
-    myMatrix_e2.makeCompressed();
-    std::cout << myMatrix_e2 << std::endl;
 
     // * CSF Iterator Testing * //
     // #pragma omp parallel for num_threads(15)

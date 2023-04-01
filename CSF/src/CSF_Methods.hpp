@@ -651,16 +651,7 @@ namespace CSF
         }
 
         // create a new matrix passing in transposedMap
-        CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor> transposedMatrix;
-
-        // iterate over the map creating and appending vectors
-        for (auto &row : transposedMap) {
-            // construct a vector from the map
-            CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector vec(row.second, outerDim);
-
-            // append the vector to the matrix
-            transposedMatrix.append(vec);
-        }
+        CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor> transposedMatrix(transposedMap, numCols, numRows);
 
         return transposedMatrix;
     }

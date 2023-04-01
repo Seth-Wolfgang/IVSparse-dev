@@ -107,7 +107,10 @@ namespace CSF
         // loop through the map and copy the data into the vector
         for (auto &it : map)
         {
-            nnz += it.second.size();
+            if constexpr (compressionLevel == 3)
+                nnz += it.second.size() - 1;
+            else
+                nnz += it.second.size();
 
             // write the value
             *(T *)helpPtr = it.first;

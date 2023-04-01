@@ -196,7 +196,149 @@ namespace CSF {
             std::cerr << e.what() << '\n';
         }
 
+        // set all data and endpointers to the nullptr
+        for (size_t i = 0; i < outerDim; i++) {
+            data[i] = nullptr;
+            endPointers[i] = nullptr;
+        }
 
+        // loop through the map
+        for (auto &col : map) {
+
+            // loop through col and find the byte size
+            size_t byteSize = 0;
+            if constexpr (compressionLevel == 3) {
+                for (auto &val : col.second) {
+                    byteSize += sizeof(T) + 1 + (val.second[val.second.size() - 1] * (val.second.size() - 1) + val.second[val.second.size() - 1]);
+                }
+            } else {
+                for (auto &val : col.second) {
+                    byteSize += sizeof(T) + 1 + (sizeof(indexT) * val.second.size()) + sizeof(indexT);
+                }
+            }
+
+            // allocate memory for the vector
+            try {
+                data[col.first] = malloc(byteSize);
+            }
+            catch (const std::exception& e) {
+                std::cerr << e.what() << '\n';
+            }
+
+            // set the end pointer
+            endPointers[col.first] = (char*)data[col.first] + byteSize;
+
+            // compress the column
+            void *helpPtr = data[col.first];
+
+            for (auto &val : col.second) {
+                if constexpr (compressionLevel == 3)
+                    nnz += val.second.size() - 1;
+                else
+                    nnz += val.second.size();
+
+                // write the value
+                *(T*)helpPtr = val.first;
+                helpPtr = (char*)helpPtr + sizeof(T);
+
+                // write the index width
+                if constexpr (compressionLevel == 3) {
+                    *(uint8_t *)helpPtr = (uint8_t)val.second[val.second.size() - 1];
+                    helpPtr = (uint8_t *)helpPtr + 1;
+                } else {
+                    *(uint8_t *)helpPtr = (uint8_t)sizeof(indexT);
+                    helpPtr = (uint8_t *)helpPtr + 1;
+                }
+
+                // write the indices
+                for (size_t k = 0; k < val.second.size(); k++)
+                {
+
+                    if constexpr (compressionLevel == 3)
+                    {
+                        if (k == val.second.size() - 1)
+                            break;
+
+                        switch (val.second[val.second.size() - 1])
+                        {
+                        case 1:
+                            *(uint8_t *)helpPtr = (uint8_t)val.second[k];
+                            helpPtr = (uint8_t *)helpPtr + 1;
+                            break;
+                        case 2:
+                            *(uint16_t *)helpPtr = (uint16_t)val.second[k];
+                            helpPtr = (uint16_t *)helpPtr + 1;
+                            break;
+                        case 4:
+                            *(uint32_t *)helpPtr = (uint32_t)val.second[k];
+                            helpPtr = (uint32_t *)helpPtr + 1;
+                            break;
+                        case 8:
+                            *(uint64_t *)helpPtr = (uint64_t)val.second[k];
+                            helpPtr = (uint64_t *)helpPtr + 1;
+                            break;
+                        }
+                    }
+                    else
+                    {
+                        *(indexT *)helpPtr = val.second[k];
+                        helpPtr = (indexT *)helpPtr + 1;
+                    }
+                }
+
+                // write the delimiter
+                if constexpr (compressionLevel == 3)
+                {
+                    // write a delimiter of the correct width
+                    switch (val.second[val.second.size() - 1])
+                    {
+                    case 1:
+                        *(uint8_t *)helpPtr = (uint8_t)DELIM;
+                        helpPtr = (uint8_t *)helpPtr + 1;
+                        break;
+                    case 2:
+                        *(uint16_t *)helpPtr = (uint16_t)DELIM;
+                        helpPtr = (uint16_t *)helpPtr + 1;
+                        break;
+                    case 4:
+                        *(uint32_t *)helpPtr = (uint32_t)DELIM;
+                        helpPtr = (uint32_t *)helpPtr + 1;
+                        break;
+                    case 8:
+                        *(uint64_t *)helpPtr = (uint64_t)DELIM;
+                        helpPtr = (uint64_t *)helpPtr + 1;
+                        break;
+                    }
+                }
+                else
+                {
+                    *(indexT *)helpPtr = (indexT)DELIM;
+                    helpPtr = (indexT *)helpPtr + 1;
+                }
+            }
+        }
+
+        compSize += META_DATA_SIZE + (sizeof(void *) * outerDim) * 2;
+
+        // add up the size of each col and add it to compSize
+        for (size_t i = 0; i < outerDim; i++)
+        {
+            compSize += (size_t)endPointers[i] - (size_t)data[i];
+        }
+
+        metadata = new uint32_t[NUM_META_DATA];
+
+        // Set the meta data
+        metadata[0] = compressionLevel;
+        metadata[1] = innerDim;
+        metadata[2] = outerDim;
+        metadata[3] = nnz;
+        metadata[4] = val_t;
+        metadata[5] = index_t;
+
+        // run the user checks
+        if constexpr (DEBUG)
+            userChecks();
     }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
