@@ -54,7 +54,7 @@ namespace CSF
         }
 
         // loop through each column
-        // #pragma omp parallel for
+        #pragma omp parallel for
         for (size_t i = 0; i < outerDim; i++)
         {
             // construct the dictionary
@@ -292,23 +292,23 @@ namespace CSF
         FILE *fp = fopen(filename, "wb");
 
         // write the metadata
-        // fwrite(metadata, 1, sizeof(uint32_t) * NUM_META_DATA, fp);
+        fwrite(metadata, 1, sizeof(uint32_t) * NUM_META_DATA, fp);
 
-        // // write the distance between the end and start pointers
-        // for (uint32_t i = 0; i < outerDim; i++)
-        // {
-        //     size_t size = (char *)endPointers[i] - (char *)data[i];
-        //     fwrite(&size, 1, sizeof(size_t), fp);
-        // }
+        // write the distance between the end and start pointers
+        for (uint32_t i = 0; i < outerDim; i++)
+        {
+            size_t size = (char *)endPointers[i] - (char *)data[i];
+            fwrite(&size, 1, sizeof(size_t), fp);
+        }
 
-        int test = 0;
-        fwrite(data[test], 1, (char *)endPointers[test] - (char *)data[test], fp);
+        // int test = 0;
+        // fwrite(data[test], 1, (char *)endPointers[test] - (char *)data[test], fp);
 
         // write each column
-        // for (uint32_t i = 0; i < outerDim; i++)
-        // {
-        //     fwrite(data[i], 1, (char *)endPointers[i] - (char *)data[i], fp);
-        // }
+        for (uint32_t i = 0; i < outerDim; i++)
+        {
+            fwrite(data[i], 1, (char *)endPointers[i] - (char *)data[i], fp);
+        }
 
         // close the file
         fclose(fp);
@@ -332,10 +332,6 @@ namespace CSF
         uint8_t byte1 = (val_t >> 8) & 0xFF;
         uint8_t byte2 = (val_t >> 16) & 0xFF;
         // uint8_t byte3 = (val_t >> 24) & 0xFF;
-
-        std::cout << "byte0: " << (int)byte0 << std::endl;
-        std::cout << "byte1: " << (int)byte1 << std::endl;
-        std::cout << "byte2: " << (int)byte2 << std::endl;
 
 
         if (byte0 != sizeof(T))
@@ -426,6 +422,7 @@ namespace CSF
 
         // SparseMatrix<T, indexT, compressionLevel, columnMajor> mat(*this);
 
+        #pragma omp parallel for
         for(uint32_t i = 0; i < this->outerDim; ++i) {
             // for(typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(mat, i); it; ++it)
             for(typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(*this, i); it; ++it) {

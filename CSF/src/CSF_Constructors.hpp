@@ -41,6 +41,7 @@ namespace CSF {
     // TODO: Test the array of vectors constructor
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector vec[], size_t size) {
+        
         // ensure the vectors are all the same length
         for (size_t i = 1; i < size; i++) {
             if (vec[i].length() != vec[0].length()) {
@@ -146,6 +147,7 @@ namespace CSF {
             std::cerr << e.what() << '\n';
         }
 
+        #pragma omp parallel for
         for (size_t i = 0; i < outerDim; i++) {
             try {
                 data[i] = malloc(mat.getVecSize(i));
@@ -160,9 +162,6 @@ namespace CSF {
         //allocate memory for metadata
         metadata = new uint32_t[NUM_META_DATA];
         memcpy(metadata, mat.metadata, NUM_META_DATA * sizeof(uint32_t));
-
-        //print metadata
-
 
         index_t = mat.index_t;
 
