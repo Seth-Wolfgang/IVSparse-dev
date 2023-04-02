@@ -64,6 +64,10 @@ namespace CSF
         // deep copy constructor
         SparseMatrix(CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor> &mat);
 
+        // RAW CSC constructor
+        template <typename T2, typename indexT2>
+        SparseMatrix(T2 *vals, indexT2 *innerIndices, indexT2 *outerPtr, uint32_t num_rows, uint32_t num_cols, uint32_t nnz);
+
         // file constructor
         SparseMatrix(const char *filename);
 
@@ -116,6 +120,9 @@ namespace CSF
         CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor> transpose();
 
         void append(typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector &vec);
+
+        // method to slice a matrix and return an array of vectors
+        typename CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector *slice(uint32_t start, uint32_t end);
 
         //* Operator Overloads *//
 
@@ -322,6 +329,9 @@ namespace CSF
 
         //* Private Class Variables *//
 
+        T *val;
+        indexT index;
+        indexT outer;
 
         //* Private Class Methods *//
 
@@ -330,12 +340,39 @@ namespace CSF
 
         //* Constructors & Destructor *//
 
+        InnerIterator();
+
+        InnerIterator(SparseMatrix<T, indexT, 1, columnMajor> &mat, uint32_t col);
+
+        InnerIterator(SparseMatrix<T, indexT, 1, columnMajor>::Vector &vec);
 
         //* Operator Overloads *//
 
+        void operator++(int);
+
+        void operator++();
+
+        bool operator==(const InnerIterator &other);
+
+        bool operator!=(const InnerIterator &other);
+
+        bool operator<(const InnerIterator &other);
+
+        bool operator>(const InnerIterator &other);
+
+        T &operator*();
 
         //* Getters *//
 
+        indexT getIndex();
+
+        indexT outerDim();
+
+        indexT row();
+
+        indexT col();
+
+        T value();
 
         //* Utility Methods *//
     };
@@ -411,13 +448,13 @@ namespace CSF
 
         //* Private Class Variables *//
 
-        size_t size;
+        size_t size = 0;
 
-        T *vals;
-        indexT *indices;
+        T *vals = nullptr;
+        indexT *indices = nullptr;
 
         uint32_t nnz = 0;
-        uint32_t vecLength;
+        uint32_t vecLength = 0;
 
         //* Private Class Methods *//
 

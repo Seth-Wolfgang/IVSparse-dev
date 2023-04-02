@@ -125,6 +125,27 @@ namespace CSF {
         compress(mat.valuePtr(), mat.innerIndexPtr(), mat.outerIndexPtr());
     }
 
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    template <typename T2, typename indexT2>
+    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(T2 *vals, indexT2 *innerIndices, indexT2 *outerPtr, uint32_t num_rows, uint32_t num_cols, uint32_t nnz)
+    {
+        if (columnMajor) {
+            innerDim = num_rows;
+            outerDim = num_cols;
+        }
+        else {
+            innerDim = num_cols;
+            outerDim = num_rows;
+        }
+
+        numRows = num_rows;
+        numCols = num_cols;
+
+        this->nnz = nnz;
+
+        compress(vals, innerIndices, outerPtr);
+    }
+
     //TODO: Deep Copy Constructor
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>& mat) {

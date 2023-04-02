@@ -21,25 +21,36 @@ int main() {
 
     // * Transpose Testing * //
 
-    // create a CSF matrix from the eigen matrix
+    // // create a CSF matrix from the eigen matrix
+    // CSF::SparseMatrix<int, uint64_t, 3> myMatrix_csf(myMatrix_e);
+
+    // // transpose the CSF matrix
+    // CSF::SparseMatrix<int, uint64_t, 3> myMatrix_csf_t = myMatrix_csf.transpose();
+
+    // // loop through all values in the CSF matrix and append them to an empty eigen matrix
+    // Eigen::SparseMatrix<int> myMatrix_e_t(10, 10);
+    // for (uint32_t k = 0; k < myMatrix_csf_t.outerSize(); ++k)
+    //     for (typename CSF::SparseMatrix<int, uint64_t, 3>::InnerIterator it(myMatrix_csf_t, k); it; ++it)
+    //         myMatrix_e_t.insert(it.row(), it.col()) = it.value();
+
+    // // print the eigen matrix
+    // std::cout << myMatrix_e_t << std::endl;
+
+
+
+    // * Multiplication Testing * //
+
+    // create a csf matrix
     CSF::SparseMatrix<int, uint64_t, 3> myMatrix_csf(myMatrix_e);
 
-    // transpose the CSF matrix
-    CSF::SparseMatrix<int, uint64_t, 3> myMatrix_csf_t = myMatrix_csf.transpose();
+    // multiply the csf matrix by itself
+    CSF::SparseMatrix<int, uint64_t, 3> myMatrix_csf2 = myMatrix_csf * myMatrix_csf;
 
-    // loop through all values in the CSF matrix and append them to an empty eigen matrix
-    Eigen::SparseMatrix<int> myMatrix_e_t(10, 10);
-    for (uint32_t k = 0; k < myMatrix_csf_t.outerSize(); ++k)
-        for (typename CSF::SparseMatrix<int, uint64_t, 3>::InnerIterator it(myMatrix_csf_t, k); it; ++it)
-            myMatrix_e_t.insert(it.row(), it.col()) = it.value();
+    // turn the csf matrix into an eigen matrix
+    Eigen::SparseMatrix<int> myMatrix_e2(10, 10);
+    myMatrix_e2 = myMatrix_csf2.toEigen();
 
-    // print the eigen matrix
-    std::cout << myMatrix_e_t << std::endl;
-
-
-
-
-
+    std::cout << myMatrix_e2 << std::endl;
 
     // * CSF Iterator Testing * //
     // #pragma omp parallel for num_threads(15)
