@@ -8,56 +8,51 @@ void getMat(Eigen::SparseMatrix<int>& myMatrix_e);
 
 int main() {
 
-    // * Row Major Testing * //
-    Eigen::SparseMatrix<int> myMatrix_e(10, 10);
+    // * Setup * //
+    
+        Eigen::SparseMatrix<int> myMatrix_e(10, 10);
 
-    getMat(myMatrix_e);
+        getMat(myMatrix_e);
 
-    Eigen::SparseMatrix<int, Eigen::RowMajor> myMatrix_er(myMatrix_e);
+        Eigen::SparseMatrix<int, Eigen::RowMajor> myMatrix_er(myMatrix_e);
 
-    std::cout << myMatrix_e << std::endl;
+        std::cout << myMatrix_e << std::endl;
 
-
-
-    // * Transpose Testing * //
-
-    // // create a CSF matrix from the eigen matrix
-    // CSF::SparseMatrix<int, uint64_t, 3> myMatrix_csf(myMatrix_e);
-
-    // // transpose the CSF matrix
-    // CSF::SparseMatrix<int, uint64_t, 3> myMatrix_csf_t = myMatrix_csf.transpose();
-
-    // // loop through all values in the CSF matrix and append them to an empty eigen matrix
-    // Eigen::SparseMatrix<int> myMatrix_e_t(10, 10);
-    // for (uint32_t k = 0; k < myMatrix_csf_t.outerSize(); ++k)
-    //     for (typename CSF::SparseMatrix<int, uint64_t, 3>::InnerIterator it(myMatrix_csf_t, k); it; ++it)
-    //         myMatrix_e_t.insert(it.row(), it.col()) = it.value();
-
-    // // print the eigen matrix
-    // std::cout << myMatrix_e_t << std::endl;
+    // * End Setup * //
 
 
+    //? BLAS Testing ?//
 
-    // * Multiplication Testing * //
 
-    // create a csf matrix
-    CSF::SparseMatrix<int, uint64_t, 3> myMatrix_csf(myMatrix_e);
+        // Scalar Multiplication
 
-    // multiply the csf matrix by itself
-    CSF::SparseMatrix<int, uint64_t, 3> myMatrix_csf2 = myMatrix_csf * myMatrix_csf;
+            // make a csf matrix
+            CSF::SparseMatrix<int, uint64_t, 3> myMatrix_csf(myMatrix_e);
 
-    // turn the csf matrix into an eigen matrix
-    Eigen::SparseMatrix<int> myMatrix_e2(10, 10);
-    myMatrix_e2 = myMatrix_csf2.toEigen();
+            // multiply it by 3
+            myMatrix_csf = myMatrix_csf * 3;
 
-    std::cout << myMatrix_e2 << std::endl;
+            // turn it into an eigen matrix
+            Eigen::SparseMatrix<int> myMatrix_e2 = myMatrix_csf.toEigen();
+
+            std::cout << myMatrix_e2 << std::endl;
+
+
+
+
+    //? End BLAS Testing ?//
+
+
+
 
     // * CSF Iterator Testing * //
-    // #pragma omp parallel for num_threads(15)
-    // for (int i = 0; i < 1000000; i++) {
-    //     iteratorTest<int, uint64_t, 3>();
-    //     std::cout << "Test " << i << " passed" << std::endl;
-    // }
+        // #pragma omp parallel for num_threads(15)
+        // for (int i = 0; i < 1000000; i++) {
+        //     iteratorTest<int, uint64_t, 3>();
+        //     std::cout << "Test " << i << " passed" << std::endl;
+        // }
+
+
     return 0;
 }
 

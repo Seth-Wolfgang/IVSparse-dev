@@ -148,7 +148,7 @@ namespace CSF {
 
     //TODO: Deep Copy Constructor
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>& mat) {
+    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(const CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>& mat) {
         // Set the number of rows, columns and non-zero elements
         innerDim = mat.innerSize();
         outerDim = mat.outerSize();

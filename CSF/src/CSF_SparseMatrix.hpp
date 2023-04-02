@@ -62,7 +62,7 @@ namespace CSF
         SparseMatrix(Eigen::SparseMatrix<T, Eigen::RowMajor> &mat);
 
         // deep copy constructor
-        SparseMatrix(CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor> &mat);
+        SparseMatrix(const CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor> &mat);
 
         // RAW CSC constructor
         template <typename T2, typename indexT2>
@@ -91,25 +91,25 @@ namespace CSF
 
         //* Getters *//
 
-        T coeff(uint32_t row, uint32_t col);
+        T coeff(uint32_t row, uint32_t col) const;
 
-        void *getVecPointer(uint32_t vec);
+        void *getVecPointer(uint32_t vec) const;
 
         typename CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector getVector(uint32_t vec);
 
-        size_t getVecSize(uint32_t vec);
+        size_t getVecSize(uint32_t vec) const;
 
-        uint32_t innerSize();
+        uint32_t innerSize() const;
 
-        uint32_t outerSize();
+        uint32_t outerSize() const;
 
-        uint32_t rows();
+        uint32_t rows() const;
 
-        uint32_t cols();
+        uint32_t cols() const;
 
-        uint32_t nonZeros();
+        uint32_t nonZeros() const;
 
-        size_t compressionSize();
+        size_t compressionSize() const;
 
         //* Conversion Methods *//
 
@@ -130,13 +130,19 @@ namespace CSF
 
         bool operator!=(const SparseMatrix<T, indexT, compressionLevel, columnMajor> &other);
 
-        void operator*(T scalar);
+        CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor> operator*(T scalar) const;
+
+        void operator*=(T scalar);
+
+        CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>& operator=(const CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor> &other);
 
         CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor> operator*(CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor> &mat);
 
         typename CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector operator*(typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector &vec);
 
         T operator()(uint32_t row, uint32_t col);
+
+        typename CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector operator[](uint32_t vec);
     };
 
     template <typename T, typename indexT, bool columnMajor>
