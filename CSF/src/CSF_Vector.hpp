@@ -223,8 +223,8 @@ namespace CSF {
     size_t SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::byteSize() { return size; }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::operator=(typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector other) {
-        // copy the data
+    typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::operator=(typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector &other) {
+        // copy the data //! doesn't copy?
         data = other.data;
         endPtr = other.endPtr;
         size = other.size;

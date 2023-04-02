@@ -3,6 +3,7 @@
 #include <vector>
 #include <map>
 #include <iostream>
+#include <omp.h>
 
 #define META_DATA_SIZE 24
 #define NUM_META_DATA 6
@@ -421,7 +422,7 @@ namespace CSF {
      */
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    SparseMatrix<T, indexT, compressionLevel, columnMajor> SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator*(SparseMatrix<T, indexT, compressionLevel, columnMajor>& mat) {
+    SparseMatrix<T, indexT, compressionLevel, columnMajor> SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator*(SparseMatrix<T, indexT, compressionLevel, columnMajor> &mat) {
         // check that the matrix is the correct size
         if (mat.outerSize() != innerDim)
             throw std::invalid_argument("The matrix's outer dimension must be the same as the inner dimension of the matrix");

@@ -125,6 +125,8 @@ namespace CSF
 
         void operator*(T scalar);
 
+        CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor> operator*(CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor> &mat);
+
         typename CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector operator*(typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector &vec);
 
         T operator()(uint32_t row, uint32_t col);
@@ -378,6 +380,8 @@ namespace CSF
         T operator[](uint32_t index);
 
         operator bool() { return (char *)endPtr - indexWidth > data; };
+
+        typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector operator=(typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector &vec);
 
         //* Getters *//
 
