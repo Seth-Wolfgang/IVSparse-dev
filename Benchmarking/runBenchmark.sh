@@ -22,14 +22,14 @@ do
     id=$(grep -oP '(?<=id: ).*' $MATRIX_PATH)
     echo "id: $id"
 
-    echo -e "Running C++ benchmark for matrix ID: \033[0;32m$id\033[0m"
+    echo "Running C++ benchmark for matrix ID: \033[0;32m$id\033[0m"
 
     while [ ! -f $MATRIX_PATH ]; do
         sleep 0.2
     done
 
     ./benchmark $MATRIX_PATH $id
-    # rm -r $MATRIX_PATH
+    rm -r $MATRIX_PATH
 done
 
 # Clean up

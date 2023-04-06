@@ -6,6 +6,7 @@
 #include <algorithm>
 
 #include "src/CSF_SparseMatrix.hpp"
+#include "src/CSF_CSC.hpp"
 #include "src/CSF_Methods.hpp"
 #include "src/CSF_Constructors.hpp"
 #include "src/CSF_Iterators.hpp"

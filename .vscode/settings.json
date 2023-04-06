@@ -1,8 +1,8 @@
 {
     "files.associations": {
+        "*.asm": "asm",
         "*.erb": "erb",
         "*.rmd": "markdown",
-        "*.asm": "asm",
         "array": "cpp",
         "string": "cpp",
         "string_view": "cpp",
@@ -83,6 +83,8 @@
         "concepts": "cpp",
         "numbers": "cpp",
         "semaphore": "cpp",
-        "stop_token": "cpp"
+        "stop_token": "cpp",
+        "sparseqr": "cpp",
+        "iterativelinearsolvers": "cpp"
     }
 }

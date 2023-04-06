@@ -4,42 +4,62 @@
 #include <unordered_set>
 #include "../benchmarkAnalysis.cpp"
 #include "mmio.c"
+#include <Eigen/Dense>
+#include <Eigen/Sparse>
+
 
 #define VALUE_TYPE double
 #define INDEX_TYPE int
+#define NUM_OF_BENCHMARKS 15
+#define EIGEN_DONT_PARALLELIZE
 
 // Function to read Matrix Market files
 template <typename T>
 void readFile(std::vector<Eigen::Triplet<T>>& eigenTriplet, std::vector<double>& matrixData, char* filename);
 
-// Function to test the speed of each constructor
-template <typename T, typename indexT>
-void constructorBenchmark(std::vector<uint64_t>& data, std::vector<Eigen::Triplet<T>>& eigenTriplet, uint32_t inner, uint32_t outer);
+double calculateEntropy(const Eigen::SparseMatrix<double>& mat);
 
-// Function to test the speed of each iterator
-template <typename T, typename indexT>
-void innerIteratorBenchmark(std::vector<uint64_t>& data, Eigen::SparseMatrix<T> eigen,
-                            // CSF::SparseMatrix<T, indexT, 1> csf,
-                            CSF::SparseMatrix<T, indexT, 2> csf2,
-                            CSF::SparseMatrix<T, indexT, 3> csf3);
+template <typename T>
+void EigenConstructorBenchmark(std::vector<Eigen::Triplet<T>>& eigenTriplet, std::vector<uint64_t>& data, int rows, int cols);
 
-// Function to test the speed of scalar multiplication
 template <typename T, typename indexT>
-void scalarMultiplicationBenchmark(std::vector<uint64_t>& data, Eigen::SparseMatrix<T> eigen,
-                                //    CSF::SparseMatrix<T, indexT, 1> csf,
-                                   CSF::SparseMatrix<T, indexT, 2> csf2,
-                                   CSF::SparseMatrix<T, indexT, 3> csf3);
+void CSF2ConstructorBenchmark(Eigen::SparseMatrix<T>& eigen, std::vector<uint64_t>& data);
 
-// Function to test the speed of vector multiplication
 template <typename T, typename indexT>
-void vectorMultiplicationBenchmark(std::vector<uint64_t>& data, Eigen::SparseMatrix<T> eigen,
-                                //    CSF::SparseMatrix<T, indexT, 1> csf,
-                                   CSF::SparseMatrix<T, indexT, 2> csf2,
-                                   CSF::SparseMatrix<T, indexT, 3> csf3);
+void CSF3ConstructorBenchmark(Eigen::SparseMatrix<T>& eigen, std::vector<uint64_t>& data);
 
-// Function to test the speed of matrix multiplication
-// void matrixMultiplicationBenchmark(std::vector<uint64_t>& data, Eigen::Triplet eigenTriplet);
+template <typename T>
+void EigenInnerIteratorBenchmark(Eigen::SparseMatrix<T>& eigen, std::vector<uint64_t>& data);
 
-// Function to the memory footprint of each compression method
 template <typename T, typename indexT>
-void memoryFootprintBenchmark(std::vector<uint64_t>& data, std::vector<Eigen::Triplet<T>>& eigenTriplet, uint32_t inner, uint32_t outer);
+void CSF2InnerIteratorBenchmark(CSF::SparseMatrix<T, indexT, 2> csf2, std::vector<uint64_t>& data);
+
+template <typename T, typename indexT>
+void CSF3InnerIteratorBenchmark(CSF::SparseMatrix<T, indexT, 3> csf3, std::vector<uint64_t>& data);
+
+template <typename T>
+void EigenScalarMultiplicationBenchmark(Eigen::SparseMatrix<T>& eigen, std::vector<uint64_t>& data);
+
+template <typename T, typename indexT>
+void CSF2ScalarMultiplicationBenchmark(CSF::SparseMatrix<T, indexT, 2> csf2, std::vector<uint64_t>& data);
+
+template <typename T, typename indexT>
+void CSF3scalarMultiplicationBenchmark(CSF::SparseMatrix<T, indexT, 3> csf3, std::vector<uint64_t>& data);
+
+template <typename T>
+void EigenVectorMultiplicationBenchmark(Eigen::SparseMatrix<T>& eigen, std::vector<uint64_t>& data);
+
+template <typename T, typename indexT>
+void CSF2VectorMultiplicationBenchmark(Eigen::SparseMatrix<T>& eigen, CSF::SparseMatrix<T, indexT, 2> csf2, std::vector<uint64_t>& data);
+
+template <typename T, typename indexT>
+void CSF3VectorMultiplicationBenchmark(Eigen::SparseMatrix<T>& eigen, CSF::SparseMatrix<T, indexT, 3> csf3, std::vector<uint64_t>& data);
+
+template <typename T>
+void EigenMemoryFootprintBenchmark(std::vector<uint64_t>& data, std::vector<Eigen::Triplet<T>>& eigenTriplet, uint32_t inner, uint32_t outer);
+
+template <typename T, typename indexT>
+void CSF2MemoryFootprintBenchmark(std::vector<uint64_t>& data, std::vector<Eigen::Triplet<T>>& eigenTriplet, uint32_t inner, uint32_t outer);
+
+template <typename T, typename indexT>
+void CSF3MemoryFootprintBenchmark(std::vector<uint64_t>& data, std::vector<Eigen::Triplet<T>>& eigenTriplet, uint32_t inner, uint32_t outer);
