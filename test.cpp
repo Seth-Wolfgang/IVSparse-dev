@@ -37,6 +37,23 @@ int main() {
 
             std::cout << myMatrix_e2 << std::endl;
 
+            CSF::SparseMatrix<int, uint64_t, 3> myMatrix_csf2(myMatrix_e);
+
+            myMatrix_csf2 *= 3;
+
+            Eigen::SparseMatrix<int> myMatrix_e3 = myMatrix_csf2.toEigen();
+
+            std::cout << myMatrix_e3 << std::endl;
+
+        // End Scalar Multiplication
+
+
+        // Matrix * Vector Muliplication
+
+            
+
+        // End Matrix * Vector Multiplication
+
 
 
 

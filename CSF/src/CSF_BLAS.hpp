@@ -17,6 +17,7 @@
 
 namespace CSF {
 
+    //* New Return Scalar Matrix Multiplication *//
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor> SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator*(T scalar) const
     {
@@ -39,6 +40,7 @@ namespace CSF {
         
     }
 
+    //* In Place Scalar Matrix Multiplication *//
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     void SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator*=(T scalar)
     {
