@@ -231,7 +231,7 @@ namespace CSF {
 
         // add up the size of each col and add it to compSize
         for (size_t i = 0; i < outerDim; i++) {
-            compSize += (size_t)endPointers[i] - (size_t)data[i];
+            compSize += (uint8_t *)endPointers[i] - (uint8_t *)data[i];
         }
 
     } // end compress

@@ -29,6 +29,9 @@ int main() {
             // make a csf matrix
             CSF::SparseMatrix<int, uint64_t, 3> myMatrix_csf(myMatrix_e);
 
+            // print the compression size
+            std::cout << "Compression Size: " << myMatrix_csf.compressionSize() << std::endl;
+
             // multiply it by 3
             myMatrix_csf = myMatrix_csf * 3;
 
@@ -38,6 +41,8 @@ int main() {
             std::cout << myMatrix_e2 << std::endl;
 
             CSF::SparseMatrix<int, uint64_t, 3> myMatrix_csf2(myMatrix_e);
+
+            std::cout << "Compression Size: " << myMatrix_csf2.compressionSize() << std::endl;
 
             myMatrix_csf2 *= 3;
 
