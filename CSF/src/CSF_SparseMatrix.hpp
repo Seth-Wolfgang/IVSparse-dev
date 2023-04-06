@@ -138,7 +138,9 @@ namespace CSF
 
         CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor> operator*(CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor> &mat);
 
-        typename CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector operator*(typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector &vec);
+        Eigen::VectorXd operator*(typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector &vec);
+
+        Eigen::VectorXd operator*(Eigen::VectorXd& vec);
 
         T operator()(uint32_t row, uint32_t col);
 
@@ -305,7 +307,8 @@ namespace CSF
 
         bool operator>(const InnerIterator &other);
 
-        operator bool() { return (char *)endPtr - indexWidth > data; };
+        // operator bool() { return (char *)endPtr - indexWidth > data; };
+        operator bool() { return (char*)endPtr - indexWidth  > data; };
 
         T &operator*();
 

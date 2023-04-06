@@ -98,7 +98,7 @@ int main(int argc, char** argv) {
             // Runs the selected benchmark
             switch (currentlySelected) {
             case 0:
-                EigenConstructorBenchmark<VALUE_TYPE>(eigen, data);
+                EigenConstructorBenchmark<VALUE_TYPE>(eigenTriplet, data, matrixData[1], matrixData[2]);
                 continue;
             case 1:
                 CSF2ConstructorBenchmark<VALUE_TYPE, INDEX_TYPE>(eigen, data);
@@ -286,14 +286,15 @@ double calculateEntropy(const Eigen::SparseMatrix<double>& mat) {
  */
 
 template <typename T>
-void EigenConstructorBenchmark(Eigen::SparseMatrix<T>& eigen, std::vector<uint64_t>& data) {
+void EigenConstructorBenchmark(std::vector<Eigen::Triplet<T>>& eigenTriplet, std::vector<uint64_t>& data, int rows, int cols) {
 
     //Timer
     std::chrono::time_point<std::chrono::system_clock> start, end;
 
     //benchmark the Eigen constructor
     start = std::chrono::system_clock::now();
-    Eigen::SparseMatrix<T> eigenMat(eigen);
+    Eigen::SparseMatrix<T> eigenMat(rows, cols);
+    eigenMat.setFromTriplets(eigenTriplet.begin(), eigenTriplet.end());
     eigenMat.makeCompressed();
     end = std::chrono::system_clock::now();
     data.at(0) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();

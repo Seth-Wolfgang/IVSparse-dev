@@ -11,7 +11,7 @@
 #define TWO_BYTE_MAX 65535
 #define FOUR_BYTE_MAX 4294967295
 
-#define DEBUG false
+#define DEBUG true
 
 // for CSF1 details
 

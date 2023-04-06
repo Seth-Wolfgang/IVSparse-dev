@@ -71,8 +71,26 @@ public:
             fprintf(file, "%s\n", "Matrix Number,Matrix Rows,Matrix Cols,Matrix Nonzeros,Matrix Redundancy,Matrix Density,Avg Eigen Constructor Time,Avg CSF2 Constructor Time,Avg CSF3 Constructor Time,Avg Eigen InnerIterator Time,Avg CSF2 InnerIterator Time,Avg CSF3 InnerIterator Time,Avg Eigen Scalar Multiplication Time,Avg CSF2 Scalar Multiplication Time,Avg CSF3 Scalar Multiplication Time,Avg Eigen Vector Multiplication Time,Avg CSF2 Vector Multiplication Time,Avg CSF3 Vector Multiplication Time,Avg Eigen Memory Usage, Avg CSF2 Memory Usage,Avg CSF3 Memory Usage,min Eigen Constructor Time,min CSF2 Constructor Time,min CSF3 Constructor Time,min Eigen InnerIterator Time,min CSF2 InnerIterator Time,min CSF3 InnerIterator Time,min Eigen Scalar Multiplication Time,min CSF2 Scalar Multiplication Time,min CSF3 Scalar Multiplication Time,min Eigen Vector Multiplication Time,min CSF2 Vector Multiplication Time,min CSF3 Vector Multiplication Time,min Eigen Memory Usage, min CSF2 Memory Usage,min CSF3 Memory Usage,Q1 Eigen Constructor Time,Q1 CSF2 Constructor Time,Q1 CSF3 Constructor Time,Q1 Eigen InnerIterator Time,Q1 CSF2 InnerIterator Time,Q1 CSF3 InnerIterator Time,Q1 Eigen Scalar Multiplication Time,Q1 CSF2 Scalar Multiplication Time,Q1 CSF3 Scalar Multiplication Time,Q1 Eigen Vector Multiplication Time,Q1 CSF2 Vector Multiplication Time,Q1 CSF3 Vector Multiplication Time,Q1 Eigen Memory Usage, Q1 CSF2 Memory Usage,Q1 CSF3 Memory Usage,Median Eigen Constructor Time,Median CSF2 Constructor Time,Median CSF3 Constructor Time,Median Eigen InnerIterator Time,Median CSF2 InnerIterator Time,Median CSF3 InnerIterator Time,Median Eigen Scalar Multiplication Time,Median CSF2 Scalar Multiplication Time,Median CSF3 Scalar Multiplication Time,Median Eigen Vector Multiplication Time,Median CSF2 Vector Multiplication Time,Median CSF3 Vector Multiplication Time,Median Eigen Memory Usage, Median CSF2 Memory Usage,Median CSF3 Memory Usage,Q3 Eigen Constructor Time,Q3 CSF2 Constructor Time,Q3 CSF3 Constructor Time,Q3 Eigen InnerIterator Time,Q3 CSF2 InnerIterator Time,Q3 CSF3 InnerIterator Time,Q3 Eigen Scalar Multiplication,Q3 CSF2 Scalar Multiplication Time,Q3 CSF3 Scalar Multiplication Time,Q3 Eigen Vector Multiplication Time,Q3 CSF2 Vector Multiplication Time,Q3 CSF3 Vector Multiplication Time,Q3 Eigen Memory Usage, Q3 CSF2 Memory Usage,Q3 CSF3 Memory Usage,Max Eigen Constructor Time,Max CSF2 Constructor Time,Max CSF3 Constructor Time,Max Eigen InnerIterator Time,Max CSF2 InnerIterator Time,Max CSF3 InnerIterator Time,Max Eigen Scalar Multiplication Time,Max CSF2 Scalar Multiplication Time,Max CSF3 Scalar Multiplication Time,Max Eigen Vector Multiplication Time,Max CSF2 Vector Multiplication Time,Max CSF3 Vector Multiplication Time,Max Eigen Memory Usage, Max CSF2 Memory Usage,Max CSF3 Memory Usage");
             fclose(file);
         }
+
+        if (access("rawTimeData.csv", F_OK) != 0) {
+            std::cout << "Creating memoryData.csv" << std::endl;
+            file = fopen("rawTimeData.csv", "a");
+            fprintf(file, "%s\n", "Matrix Number,Matrix Rows,Matrix Cols,Matrix Nonzeros,Matrix Redundancy,Matrix Density,Eigen Constructor Time,CSF2 Constructor Time,CSF3 Constructor Time,Eigen InnerIterator Time,CSF2 InnerIterator Time,CSF3 InnerIterator Time,Eigen Scalar Multiplication Time,CSF2 Scalar Multiplication Time,CSF3 Scalar Multiplication Time,Eigen Vector Multiplication Time,CSF2 Vector Multiplication Time,CSF3 Vector Multiplication Time,Eigen Memory Usage,CSF2 Memory Usage,CSF3 Memory Usage");
+            fclose(file);
+        }
     }
-    
+
+
+
+
+
+
+
+
+
+
+
+
     // Destructor
     ~BenchAnalysis() {
         if (myMatrix != NULL)
@@ -103,8 +121,23 @@ public:
 
         // Memory usage
         EigenMemoryUsage.push_back(data.at(12));
-        CSF2MemoryUsage.push_back(data.at(13)); 
-        CSF3MemoryUsage.push_back(data.at(14)); 
+        CSF2MemoryUsage.push_back(data.at(13));
+        CSF3MemoryUsage.push_back(data.at(14));
+
+        FILE* file = fopen("rawTimeData.csv", "a");
+        for (int i = 0; i < NUM_ITERATIONS; i++) {
+            fprintf(file, "%f, %f, %f, %f, %f, %f,",
+                    myMatrix->matrixNum,
+                    myMatrix->matrixRows,
+                    myMatrix->matrixCols,
+                    myMatrix->matrixNonzeros,
+                    myMatrix->matrixRedundancy,
+                    myMatrix->matrixDensity);
+            // Finally, print the data to the file
+            for (uint32_t i = 0; i < data.size(); ++i) {
+                fprintf(file, "%" PRIu64 ",", data.at(i));
+            }
+        }
     }
 
     /**
@@ -139,7 +172,7 @@ public:
         return max;
     }
 
-    uint64_t min (std::vector<uint64_t> times) {
+    uint64_t min(std::vector<uint64_t> times) {
         uint64_t min = times.at(0);
         for (uint32_t i = 1; i < times.size(); i++) {
             if (times.at(i) < min) {
@@ -338,9 +371,9 @@ public:
                               ATTRIBUTES                      ||                                          AVERAGE                                              ||                                             MAX                                                |
             ID | Rows | Cols | Nonzeros | Redundancy, Density || Constructor | Iterator | scalar multiplcation | vector multiplication | matrix multiplication ||  Constructor | Iterator | scalar multiplcation | vector multiplication | matrix multiplication |
         */
-        
+
         FILE* file = fopen("timeData.csv", "a");
-        fprintf(file, "%f, %f, %f, %f, %f, %f,", 
+        fprintf(file, "%f, %f, %f, %f, %f, %f,",
                 myMatrix->matrixNum,
                 myMatrix->matrixRows,
                 myMatrix->matrixCols,
@@ -353,8 +386,7 @@ public:
         }
         fprintf(file, "\n");
         fclose(file);
+
+
     }
-
-
-
 };
