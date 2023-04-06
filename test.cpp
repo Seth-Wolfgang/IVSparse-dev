@@ -9,14 +9,14 @@ void getMat(Eigen::SparseMatrix<int>& myMatrix_e);
 int main() {
 
     // * Setup * //
+    
+        Eigen::SparseMatrix<int> myMatrix_e(10, 10);
 
-    Eigen::SparseMatrix<int> myMatrix_e(10, 10);
+        getMat(myMatrix_e);
 
-    getMat(myMatrix_e);
+        Eigen::SparseMatrix<int, Eigen::RowMajor> myMatrix_er(myMatrix_e);
 
-    Eigen::SparseMatrix<int, Eigen::RowMajor> myMatrix_er(myMatrix_e);
-
-    // std::cout << myMatrix_e << std::endl;
+        std::cout << myMatrix_e << std::endl;
 
     // * End Setup * //
 
@@ -27,15 +27,32 @@ int main() {
         // Scalar Multiplication
 
             // make a csf matrix
-    CSF::SparseMatrix<int, uint64_t, 3> myMatrix_csf(myMatrix_e);
+            CSF::SparseMatrix<int, uint64_t, 3> myMatrix_csf(myMatrix_e);
 
-    // multiply it by 3
-    myMatrix_csf = myMatrix_csf * 3;
+            // multiply it by 3
+            myMatrix_csf = myMatrix_csf * 3;
 
-    // turn it into an eigen matrix
-    Eigen::SparseMatrix<int> myMatrix_e2 = myMatrix_csf.toEigen();
+            // turn it into an eigen matrix
+            Eigen::SparseMatrix<int> myMatrix_e2 = myMatrix_csf.toEigen();
 
-    // std::cout << myMatrix_e2 << std::endl;
+            std::cout << myMatrix_e2 << std::endl;
+
+            CSF::SparseMatrix<int, uint64_t, 3> myMatrix_csf2(myMatrix_e);
+
+            myMatrix_csf2 *= 3;
+
+            Eigen::SparseMatrix<int> myMatrix_e3 = myMatrix_csf2.toEigen();
+
+            std::cout << myMatrix_e3 << std::endl;
+
+        // End Scalar Multiplication
+
+
+        // Matrix * Vector Muliplication
+
+            
+
+        // End Matrix * Vector Multiplication
 
 
 
@@ -46,11 +63,13 @@ int main() {
 
 
     // * CSF Iterator Testing * //
-    #pragma omp parallel for num_threads(15) 
-    for (int i = 0; i < 20000; i++) {
-        iteratorTest<double, uint32_t, 2>();
-        std::cout << "Test " << i << " passed" << std::endl;
-    }
+        // #pragma omp parallel for num_threads(15)
+        // for (int i = 0; i < 1000000; i++) {
+        //     iteratorTest<int, uint64_t, 3>();
+        //     std::cout << "Test " << i << " passed" << std::endl;
+        // }
+
+
     return 0;
 }
 
