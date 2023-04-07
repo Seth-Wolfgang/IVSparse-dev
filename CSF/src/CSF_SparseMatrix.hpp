@@ -1,9 +1,5 @@
 #pragma once
 
-#define DELIM 0
-
-
-
 namespace CSF
 {
 

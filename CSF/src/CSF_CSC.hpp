@@ -1,18 +1,5 @@
 #pragma once
 
-#include <iostream>
-
-#define DELIM 0
-
-#define META_DATA_SIZE 24
-#define NUM_META_DATA 6
-
-#define ONE_BYTE_MAX 255
-#define TWO_BYTE_MAX 65535
-#define FOUR_BYTE_MAX 4294967295
-
-#define DEBUG true
-
 // for CSF1 details
 
 namespace CSF {

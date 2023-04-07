@@ -1,16 +1,5 @@
 #pragma once
 
-// Debug flag for performance testing (set to true to be faster)
-#define DEBUG true
-
-// Number of meta data values
-#define NUM_META_DATA 6
-
-// Standard Libraries for include
-#include <type_traits>
-#include <iostream>
-#include <iomanip>
-
 namespace CSF {
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>

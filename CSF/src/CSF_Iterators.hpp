@@ -1,6 +1,4 @@
 #pragma once
-#define META_DATA_SIZE 24 // number of bytes in metadata (7 * 4)
-#define NUM_META_DATA 6   // number of metadata values
 
 namespace CSF {
     //** ------------------------------------------------------------------------------------------------------------------ **//

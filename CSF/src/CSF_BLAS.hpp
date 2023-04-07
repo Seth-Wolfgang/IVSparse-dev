@@ -1,20 +1,5 @@
 #pragma once
 
-#include <vector>
-#include <map>
-#include <iostream>
-#include <omp.h>
-
-#define META_DATA_SIZE 24
-#define NUM_META_DATA 6
-
-#define ONE_BYTE_MAX 255
-#define TWO_BYTE_MAX 65535
-#define FOUR_BYTE_MAX 4294967295
-
-// Debug flag for performance testing (set to true to be faster)
-#define DEBUG true
-
 namespace CSF {
 
     //* New Return Scalar Matrix Multiplication *//

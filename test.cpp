@@ -19,31 +19,8 @@ int main() {
     CSF::SparseMatrix<int, int, 3> skyMat_csf(skyMat);
     CSF::SparseMatrix<int, int, 2> skyMat_csf2(skyMat);
 
-    // write to file
-    skyMat_csf.write("csf3_test.txt");
-    skyMat_csf2.write("csf2_test.txt");
 
-    // print out comp sizes
-    size_t eigenSizeTest = sizeof(int) * (skyMat.nonZeros() * 2 + skyMat.cols() + 1);
-    std::cout << "Eigen: " << eigenSizeTest << std::endl;
-    std::cout << "CSF 2: " << skyMat_csf2.compressionSize() << std::endl;
-    std::cout << "CSF 3: " << skyMat_csf.compressionSize() << std::endl;
 
-    // read from file
-    CSF::SparseMatrix<int, int, 3> skyMat_csf3_read("csf3_test.txt");
-    CSF::SparseMatrix<int, int, 2> skyMat_csf2_read("csf2_test.txt");
-
-    // turn them into eigen matrices
-    Eigen::SparseMatrix<int> skyMat_eigen3 = skyMat_csf3_read.toEigen();
-    Eigen::SparseMatrix<int> skyMat_eigen2 = skyMat_csf2_read.toEigen();
-
-    // print out the matrices
-    std::cout << skyMat_eigen3 << std::endl;
-    std::cout << skyMat_eigen2 << std::endl;
-
-    // print out the compression sizes
-    std::cout << "CSF 2: " << skyMat_csf2_read.compressionSize() << std::endl;
-    std::cout << "CSF 3: " << skyMat_csf3_read.compressionSize() << std::endl;
 
     // * CSF Iterator Testing * //
     // #pragma omp parallel for num_threads(15)
