@@ -33,7 +33,7 @@ int main(int argc, char** argv) {
 
     // Data vectors
     std::vector<Eigen::Triplet<VALUE_TYPE>> eigenTriplet;
-    std::vector<uint64_t> data(15, 0);
+    std::vector<uint64_t> data(NUM_OF_BENCHMARKS, 0);
     std::vector<double> matrixData;
 
 
@@ -142,11 +142,13 @@ int main(int argc, char** argv) {
             case 14:
                 CSF3MemoryFootprintBenchmark<VALUE_TYPE, INDEX_TYPE>(data, eigenTriplet, matrixData[1], matrixData[2]);
                 continue;
+
             }
         }
 
         bench.pushData(data);
-        std::vector<uint64_t> data(NUM_OF_BENCHMARKS, 0);
+        data.clear();
+        data.resize(NUM_OF_BENCHMARKS, 0);
         std::cout << "Iteration " << i << " complete!" << std::endl;
     }
 
@@ -486,24 +488,18 @@ void CSF2VectorMultiplicationBenchmark(Eigen::SparseMatrix<T>& eigen, CSF::Spars
     std::chrono::time_point<std::chrono::system_clock> start, end;
 
     // Eigen Vectors
-    Eigen::SparseMatrix<T> eigenTempVector(eigen.cols(), 1);
-    eigenTempVector.reserve(eigen.cols());
+    Eigen::VectorXd eigenTempVector(eigen.cols());
+    Eigen::VectorXd result;
 
     // Filling eigen vectors
-    for (int i = 0; i < eigen.cols(); ++i) {
-        eigenTempVector.insert(i, 0) = 2;
-    }
-
-    CSF::SparseMatrix<T, indexT, 2> csf2TempVector(eigenTempVector);
-    typename CSF::SparseMatrix<T, indexT, 2>::Vector csf2Vector(csf2TempVector, 0);
+    eigenTempVector.fill(2);
 
     //CSF 2
     start = std::chrono::system_clock::now();
-    typename CSF::SparseMatrix<T, indexT, 2>::Vector result2(csf2 * csf2Vector);
+    result = csf2 * eigenTempVector;
     end = std::chrono::system_clock::now();
 
     data.at(10) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
-
 }
 
 /**
@@ -516,21 +512,15 @@ void CSF3VectorMultiplicationBenchmark(Eigen::SparseMatrix<T>& eigen, CSF::Spars
     std::chrono::time_point<std::chrono::system_clock> start, end;
 
     // Eigen Vectors
-    Eigen::SparseMatrix<T> eigenTempVector(eigen.cols(), 1);
-    eigenTempVector.reserve(eigen.cols());
+    Eigen::VectorXd eigenTempVector(eigen.cols());
+    Eigen::VectorXd result;
 
     // Filling eigen vectors
-    for (int i = 0; i < eigen.cols(); ++i) {
-        eigenTempVector.insert(i, 0) = 2;
-    }
+    eigenTempVector.fill(2);
 
-    // Creating CSF Vectors
-    CSF::SparseMatrix<T, indexT, 3> csf3TempVector(eigenTempVector);
-    typename CSF::SparseMatrix<T, indexT, 3>::Vector csf3Vector(csf3TempVector, 0);
-
-    //CSF 3
+    //CSF 2
     start = std::chrono::system_clock::now();
-    typename CSF::SparseMatrix<T, indexT, 3>::Vector result3(csf3 * csf3Vector);
+    result = csf3 * eigenTempVector;
     end = std::chrono::system_clock::now();
 
     data.at(11) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
@@ -548,7 +538,7 @@ void EigenMemoryFootprintBenchmark(std::vector<uint64_t>& data, std::vector<Eige
     eigenMatrix.setFromTriplets(eigenTriplet.begin(), eigenTriplet.end());
     eigenMatrix.makeCompressed();
 
-    data.at(12) = eigenMatrix.rows() * eigenMatrix.cols() * sizeof(VALUE_TYPE) + eigenMatrix.nonZeros();
+    data.at(12) = (eigenMatrix.nonZeros() + sizeof(*eigenMatrix.outerIndexPtr()) + 1) * sizeof(sizeof(*eigenMatrix.innerIndexPtr())) + (eigenTriplet.size() * sizeof(double));
 
 }
 

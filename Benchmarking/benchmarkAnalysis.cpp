@@ -80,17 +80,6 @@ public:
         }
     }
 
-
-
-
-
-
-
-
-
-
-
-
     // Destructor
     ~BenchAnalysis() {
         if (myMatrix != NULL)
@@ -125,19 +114,21 @@ public:
         CSF3MemoryUsage.push_back(data.at(14));
 
         FILE* file = fopen("rawTimeData.csv", "a");
-        for (int i = 0; i < NUM_ITERATIONS; i++) {
-            fprintf(file, "%f, %f, %f, %f, %f, %f,",
-                    myMatrix->matrixNum,
-                    myMatrix->matrixRows,
-                    myMatrix->matrixCols,
-                    myMatrix->matrixNonzeros,
-                    myMatrix->matrixRedundancy,
-                    myMatrix->matrixDensity);
-            // Finally, print the data to the file
-            for (uint32_t i = 0; i < data.size(); ++i) {
-                fprintf(file, "%" PRIu64 ",", data.at(i));
-            }
+        fprintf(file, "%f, %f, %f, %f, %f, %f,",
+                myMatrix->matrixNum,
+                myMatrix->matrixRows,
+                myMatrix->matrixCols,
+                myMatrix->matrixNonzeros,
+                myMatrix->matrixRedundancy,
+                myMatrix->matrixDensity);
+        // Finally, print the data to the file
+        for (uint32_t i = 0; i < data.size(); ++i) {
+            fprintf(file, "%" PRIu64 ",", data.at(i));
         }
+        fprintf(file, "\n");
+
+        fclose(file);
+
     }
 
     /**
