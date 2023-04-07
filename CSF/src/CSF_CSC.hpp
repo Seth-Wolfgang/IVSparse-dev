@@ -183,7 +183,7 @@ namespace CSF {
         uint8_t byte0 = sizeof(T);
         uint8_t byte1 = std::is_floating_point<T>::value ? 1 : 0;
         uint8_t byte2 = std::is_signed_v<T> ? 1 : 0;
-        uint8_t byte3 = 0;
+        uint8_t byte3 = columnMajor ? 1 : 0;
 
         return (byte3 << 24) | (byte2 << 16) | (byte1 << 8) | byte0;
     }
@@ -193,24 +193,27 @@ namespace CSF {
         uint8_t byte0 = val_t & 0xFF;
         uint8_t byte1 = (val_t >> 8) & 0xFF;
         uint8_t byte2 = (val_t >> 16) & 0xFF;
-        // uint8_t byte3 = (val_t >> 24) & 0xFF;
+        uint8_t byte3 = (val_t >> 24) & 0xFF;
 
-        if (byte0 != sizeof(T))
-        {
+
+        if (byte0 != sizeof(T)) {
             std::cout << "Error: Value type size does not match" << std::endl;
             throw std::runtime_error("Value type size does not match, correct size is " + std::to_string(sizeof(T)) + "");
         }
 
-        if (byte1 != std::is_floating_point_v<T>)
-        {
+        if (byte1 != std::is_floating_point_v<T>) {
             std::cout << "Error: Value type is not floating point" << std::endl;
             throw std::runtime_error("Value type is not floating point when it should be");
         }
 
-        if (byte2 != std::is_signed_v<T>)
-        {
+        if (byte2 != std::is_signed_v<T>) {
             std::cout << "Error: Value type is not signed" << std::endl;
             throw std::runtime_error("Value type is not signed when it should be");
+        }
+
+        if (byte3 != columnMajor) {
+            std::cout << "Error: Wrong Major Direction" << std::endl;
+            throw std::runtime_error("Wrong Major Direction");
         }
     }
 

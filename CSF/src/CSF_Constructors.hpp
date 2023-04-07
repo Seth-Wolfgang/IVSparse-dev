@@ -439,6 +439,86 @@ namespace CSF {
     }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(const char *filename)
+    {
+        FILE *fp = fopen(filename, "rb");
+
+        if (fp == nullptr)
+        {
+            throw std::runtime_error("File not found");
+        }
+
+        // read the meta data
+        metadata = new uint32_t[NUM_META_DATA];
+
+        fread(metadata, sizeof(uint32_t), NUM_META_DATA, fp);
+
+        // set the meta data
+        innerDim = metadata[1];
+        outerDim = metadata[2];
+        nnz = metadata[3];
+        val_t = metadata[4];
+        index_t = metadata[5];
+
+        if (columnMajor) {
+            numRows = innerDim;
+            numCols = outerDim;
+        } else {
+            numRows = outerDim;
+            numCols = innerDim;
+        }
+
+        if constexpr (DEBUG)
+            userChecks();
+
+        // malloc the data
+        try
+        {
+            data = (void **)malloc(sizeof(void *) * outerDim);
+            endPointers = (void **)malloc(sizeof(void *) * outerDim);
+        }
+        catch (std::bad_alloc &e)
+        {
+            throw std::bad_alloc();
+        }
+
+        // read the data
+        for (size_t i = 0; i < outerDim; i++)
+        {
+            // get the size of the column
+            uint64_t size;
+            fread(&size, sizeof(uint64_t), 1, fp);
+
+            // malloc the column
+            try
+            {
+                data[i] = malloc(size);
+                endPointers[i] = (char *)data[i] + size;
+            }
+            catch (std::bad_alloc &e)
+            {
+                throw std::bad_alloc();
+            }
+        }
+
+        // read the data
+        for (size_t i = 0; i < outerDim; i++)
+        {
+            fread(data[i], 1, (uint8_t *)endPointers[i] - (uint8_t *)data[i], fp);
+        }
+
+        fclose(fp);
+
+        // calculate comp size
+        compSize = META_DATA_SIZE + (sizeof(void *) * outerDim) * 2;
+
+        for (size_t i = 0; i < outerDim; i++)
+        {
+            compSize += (uint8_t *)endPointers[i] - (uint8_t *)data[i];
+        }
+    }
+
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     SparseMatrix<T, indexT, compressionLevel, columnMajor>::~SparseMatrix() {
         // delete the meta data
         if (metadata != nullptr) {

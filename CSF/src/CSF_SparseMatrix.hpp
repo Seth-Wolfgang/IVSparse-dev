@@ -2,6 +2,8 @@
 
 #define DELIM 0
 
+
+
 namespace CSF
 {
 
@@ -29,6 +31,10 @@ namespace CSF
         void **data;
         void **endPointers;
         uint32_t *metadata;
+
+        // Benchmarking Data //
+
+        //! j Vector HERE
 
         //* Private Class Methods *//
 

@@ -12,6 +12,8 @@
 #define TWO_BYTE_MAX 65535
 #define FOUR_BYTE_MAX 4294967295
 
+
+
 // Debug flag for performance testing (set to true to be faster)
 #define DEBUG true
 
@@ -53,7 +55,7 @@ namespace CSF {
         }
 
         // loop through each column
-#pragma omp parallel for
+        #pragma omp parallel for
         for (size_t i = 0; i < outerDim; i++) {
             // construct the dictionary
 
@@ -257,7 +259,7 @@ namespace CSF {
         uint8_t byte0 = sizeof(T);
         uint8_t byte1 = std::is_floating_point<T>::value ? 1 : 0;
         uint8_t byte2 = std::is_signed_v<T> ? 1 : 0;
-        uint8_t byte3 = 0;
+        uint8_t byte3 = columnMajor ? 1 : 0;
 
         return (byte3 << 24) | (byte2 << 16) | (byte1 << 8) | byte0;
     }
@@ -267,7 +269,7 @@ namespace CSF {
         uint8_t byte0 = val_t & 0xFF;
         uint8_t byte1 = (val_t >> 8) & 0xFF;
         uint8_t byte2 = (val_t >> 16) & 0xFF;
-        // uint8_t byte3 = (val_t >> 24) & 0xFF;
+        uint8_t byte3 = (val_t >> 24) & 0xFF;
 
 
         if (byte0 != sizeof(T)) {
@@ -283,6 +285,11 @@ namespace CSF {
         if (byte2 != std::is_signed_v<T>) {
             std::cout << "Error: Value type is not signed" << std::endl;
             throw std::runtime_error("Value type is not signed when it should be");
+        }
+
+        if (byte3 != columnMajor) {
+            std::cout << "Error: Wrong Major Direction" << std::endl;
+            throw std::runtime_error("Wrong Major Direction");
         }
     }
 
@@ -361,8 +368,8 @@ namespace CSF {
 
         // write the distance between the end and start pointers
         for (uint32_t i = 0; i < outerDim; i++) {
-            size_t size = (char*)endPointers[i] - (char*)data[i];
-            fwrite(&size, 1, sizeof(size_t), fp);
+            uint64_t size = (char*)endPointers[i] - (char*)data[i];
+            fwrite(&size, 1, sizeof(uint64_t), fp);
         }
 
         // int test = 0;

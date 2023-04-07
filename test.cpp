@@ -3,93 +3,49 @@
 #include "misc/matrix_creator.cpp"
 #include <chrono>
 
+
 template <typename T, typename indexT, int compressionLevel> void iteratorTest();
 void getMat(Eigen::SparseMatrix<int>& myMatrix_e);
 
 int main() {
 
-    // * Setup * //
+    // create an eigen sparse matrix
+    Eigen::SparseMatrix<int> skyMat(10, 10);
+    getMat(skyMat);
 
-    Eigen::SparseMatrix<double> myMatrix_e(1000, 1000);
+    std::cout << skyMat << std::endl;
 
-    // getMat(myMatrix_e);
-    myMatrix_e = generateMatrix<double>(100000, 10000, 95, 8888);
-    Eigen::SparseMatrix<double, Eigen::RowMajor> myMatrix_er(myMatrix_e);
+    // create a CSF sparse matrix
+    CSF::SparseMatrix<int, int, 3> skyMat_csf(skyMat);
+    CSF::SparseMatrix<int, int, 2> skyMat_csf2(skyMat);
 
+    // write to file
+    skyMat_csf.write("csf3_test.txt");
+    skyMat_csf2.write("csf2_test.txt");
 
+    // print out comp sizes
+    size_t eigenSizeTest = sizeof(int) * (skyMat.nonZeros() * 2 + skyMat.cols() + 1);
+    std::cout << "Eigen: " << eigenSizeTest << std::endl;
+    std::cout << "CSF 2: " << skyMat_csf2.compressionSize() << std::endl;
+    std::cout << "CSF 3: " << skyMat_csf.compressionSize() << std::endl;
 
-    // std::cout << myMatrix_e << std::endl;
+    // read from file
+    CSF::SparseMatrix<int, int, 3> skyMat_csf3_read("csf3_test.txt");
+    CSF::SparseMatrix<int, int, 2> skyMat_csf2_read("csf2_test.txt");
 
-    // * End Setup * //
+    // turn them into eigen matrices
+    Eigen::SparseMatrix<int> skyMat_eigen3 = skyMat_csf3_read.toEigen();
+    Eigen::SparseMatrix<int> skyMat_eigen2 = skyMat_csf2_read.toEigen();
 
+    // print out the matrices
+    std::cout << skyMat_eigen3 << std::endl;
+    std::cout << skyMat_eigen2 << std::endl;
 
-    //? BLAS Testing ?//
+    // print out the compression sizes
+    std::cout << "CSF 2: " << skyMat_csf2_read.compressionSize() << std::endl;
+    std::cout << "CSF 3: " << skyMat_csf3_read.compressionSize() << std::endl;
 
-
-    // Scalar Multiplication
-
-    // make a csf matrix
-    CSF::SparseMatrix<double, uint64_t, 3> myMatrix_csf(myMatrix_e);
-    CSF::SparseMatrix<double, uint32_t, 2 > myMatrix_csf2(myMatrix_e);
-
-    uint64_t eigenSize = (myMatrix_e.nonZeros() + myMatrix_e.outerSize() + 1) * sizeof(uint8_t) + (myMatrix_e.nonZeros() * sizeof(double));
-
-    // print the compression size
-    std::cout << "CSF2 Compression Size: " << myMatrix_csf2.compressionSize() << std::endl;
-    std::cout << "CSF3 Compression Size: " << myMatrix_csf.compressionSize() << std::endl;
-    std::cout << "Eigen Size: " << eigenSize << std::endl;
-    // multiply it by 3
-    myMatrix_csf = myMatrix_csf * 3;
-
-    // turn it into an eigen matrix
-    Eigen::SparseMatrix<double> myMatrix_e2 = myMatrix_csf.toEigen();
-
-    // std::cout << myMatrix_e2 << std::endl;
-    std::cout << sizeof(*myMatrix_e2.innerIndexPtr()) << std::endl;
-
-
-    myMatrix_csf2 *= 3;
-
-    Eigen::SparseMatrix<double> myMatrix_e3 = myMatrix_csf2.toEigen();
-
-    // std::cout << myMatrix_e3 << std::endl;
-
-    // End Scalar Multiplication
-
-
-
-    // Matrix * Vector Muliplication
-
-
-
-    // End Matrix * Vector Multiplication
-
-            CSF::SparseMatrix<int, uint64_t, 3> myMatrix_csf2(myMatrix_e);
-
-            myMatrix_csf2 *= 3;
-
-            Eigen::SparseMatrix<int> myMatrix_e3 = myMatrix_csf2.toEigen();
-
-            std::cout << myMatrix_e3 << std::endl;
-
-        // End Scalar Multiplication
-
-
-        // Matrix * Vector Muliplication
-
-            
-
-        // End Matrix * Vector Multiplication
-
-
-
-
-//? End BLAS Testing ?//
-
-
-
-
-// * CSF Iterator Testing * //
+    // * CSF Iterator Testing * //
     // #pragma omp parallel for num_threads(15)
     // for (int i = 0; i < 1000000; i++) {
     //     iteratorTest<int, uint64_t, 3>();
