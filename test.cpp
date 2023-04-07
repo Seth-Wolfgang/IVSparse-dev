@@ -9,14 +9,16 @@ void getMat(Eigen::SparseMatrix<int>& myMatrix_e);
 int main() {
 
     // * Setup * //
-    
-        Eigen::SparseMatrix<int> myMatrix_e(10, 10);
 
-        getMat(myMatrix_e);
+    Eigen::SparseMatrix<double> myMatrix_e(1000, 1000);
 
-        Eigen::SparseMatrix<int, Eigen::RowMajor> myMatrix_er(myMatrix_e);
+    // getMat(myMatrix_e);
+    myMatrix_e = generateMatrix<double>(100000, 10000, 95, 8888);
+    Eigen::SparseMatrix<double, Eigen::RowMajor> myMatrix_er(myMatrix_e);
 
-        std::cout << myMatrix_e << std::endl;
+
+
+    // std::cout << myMatrix_e << std::endl;
 
     // * End Setup * //
 
@@ -24,18 +26,43 @@ int main() {
     //? BLAS Testing ?//
 
 
-        // Scalar Multiplication
+    // Scalar Multiplication
 
-            // make a csf matrix
-            CSF::SparseMatrix<int, uint64_t, 3> myMatrix_csf(myMatrix_e);
+    // make a csf matrix
+    CSF::SparseMatrix<double, uint64_t, 3> myMatrix_csf(myMatrix_e);
+    CSF::SparseMatrix<double, uint32_t, 2 > myMatrix_csf2(myMatrix_e);
 
-            // multiply it by 3
-            myMatrix_csf = myMatrix_csf * 3;
+    uint64_t eigenSize = (myMatrix_e.nonZeros() + myMatrix_e.outerSize() + 1) * sizeof(uint8_t) + (myMatrix_e.nonZeros() * sizeof(double));
 
-            // turn it into an eigen matrix
-            Eigen::SparseMatrix<int> myMatrix_e2 = myMatrix_csf.toEigen();
+    // print the compression size
+    std::cout << "CSF2 Compression Size: " << myMatrix_csf2.compressionSize() << std::endl;
+    std::cout << "CSF3 Compression Size: " << myMatrix_csf.compressionSize() << std::endl;
+    std::cout << "Eigen Size: " << eigenSize << std::endl;
+    // multiply it by 3
+    myMatrix_csf = myMatrix_csf * 3;
 
-            std::cout << myMatrix_e2 << std::endl;
+    // turn it into an eigen matrix
+    Eigen::SparseMatrix<double> myMatrix_e2 = myMatrix_csf.toEigen();
+
+    // std::cout << myMatrix_e2 << std::endl;
+    std::cout << sizeof(*myMatrix_e2.innerIndexPtr()) << std::endl;
+
+
+    myMatrix_csf2 *= 3;
+
+    Eigen::SparseMatrix<double> myMatrix_e3 = myMatrix_csf2.toEigen();
+
+    // std::cout << myMatrix_e3 << std::endl;
+
+    // End Scalar Multiplication
+
+
+
+    // Matrix * Vector Muliplication
+
+
+
+    // End Matrix * Vector Multiplication
 
             CSF::SparseMatrix<int, uint64_t, 3> myMatrix_csf2(myMatrix_e);
 
@@ -57,17 +84,17 @@ int main() {
 
 
 
-    //? End BLAS Testing ?//
+//? End BLAS Testing ?//
 
 
 
 
-    // * CSF Iterator Testing * //
-        // #pragma omp parallel for num_threads(15)
-        // for (int i = 0; i < 1000000; i++) {
-        //     iteratorTest<int, uint64_t, 3>();
-        //     std::cout << "Test " << i << " passed" << std::endl;
-        // }
+// * CSF Iterator Testing * //
+    // #pragma omp parallel for num_threads(15)
+    // for (int i = 0; i < 1000000; i++) {
+    //     iteratorTest<int, uint64_t, 3>();
+    //     std::cout << "Test " << i << " passed" << std::endl;
+    // }
 
 
     return 0;
@@ -76,9 +103,9 @@ int main() {
 template <typename T, typename indexT, int compressionLevel>
 void iteratorTest() {
 
-    int numRows = 100;//rand() % 1000 + 10;
-    int numCols = 100;//rand() % 1000 + 10;
-    int sparsity = rand() % 1 + 1;
+    int numRows = rand() % 1000 + 10;
+    int numCols = rand() % 1000 + 10;
+    int sparsity = rand() % 50 + 1;
     uint64_t seed = rand();
 
     Eigen::SparseMatrix<T> myMatrix_e(numRows, numCols);
@@ -86,41 +113,61 @@ void iteratorTest() {
     myMatrix_e = generateMatrix<T>(numRows, numCols, sparsity, seed);
     myMatrix_e.makeCompressed();
 
-    // std::cout << myMatrix_e << std::endl;
-
+    //Create CSF matrix and an eigen dense matrix
     CSF::SparseMatrix<T, indexT, compressionLevel> myMatrix_csf(myMatrix_e);
-    CSF::SparseMatrix<T, indexT, compressionLevel> myMatrix_csf2(myMatrix_e);
+    Eigen::MatrixXd eigenMatrix = Eigen::MatrixXd(myMatrix_e);
 
+    //make an eigen vectorXd and fill it with twos
+    Eigen::VectorXd eigenVector2(numCols);
+    eigenVector2.setRandom();
 
-    // myMatrix_csf.write("test.csf");
+    //make an eigen::sparsematrix and fill it with twos
+    Eigen::SparseMatrix<T> eigenVector(numCols, 1);
+    eigenVector.reserve(Eigen::VectorXi::Constant(numCols, numCols));
+    eigenVector.setZero();
 
-    myMatrix_e = myMatrix_e * myMatrix_e;
-
-    myMatrix_csf = myMatrix_csf * myMatrix_csf2;
-
-
-    T sum_e = 0;
-    for (int k = 0; k < myMatrix_e.outerSize(); ++k)
-    for (typename Eigen::SparseMatrix<T>::InnerIterator it(myMatrix_e, k); it; ++it) {
-        sum_e += it.value();
+    // Fill the vector with 2
+    for (int i = 0; i < numCols; i++) {
+        eigenVector.insert(i, 0) = 2;
     }
 
-    // std::cout << "sum_e: " << sum_e << std::endl;
+    //get sum of both myMatrix_e and myMatrix_csf
+    T tempSumCSF = 0;
+    for (int k = 0; k < myMatrix_csf.outerSize(); ++k) {
+        for (typename CSF::SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(myMatrix_csf, k); it; ++it) {
+            tempSumCSF += it.value();
+        }
+    }
+    assert(myMatrix_e.sum() == tempSumCSF);
 
-    T sum_csf = 0;
-    for (uint32_t k = 0; k < myMatrix_csf.outerSize(); ++k)
-        for (typename CSF::SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(myMatrix_csf, k); it; ++it)
-            sum_csf += it.value();
+    //Compress vector
+    eigenVector.makeCompressed();
+    CSF::SparseMatrix<T, indexT, compressionLevel> myMatrix_csf2(eigenVector);
+    typename CSF::SparseMatrix<T, indexT, compressionLevel>::Vector CSFVector(myMatrix_csf2, 0);
 
+    Eigen::VectorXd myVector_e2 = myMatrix_csf * eigenVector2;
+    Eigen::VectorXd myVector_e = eigenMatrix * eigenVector2;
+    // T sum_e = myMatrix_e.sum() * 2;
 
+    // myMatrix_csf *= 2;
+    // T sum_csf = 0;
+    // for(int k = 0; k < myMatrix_csf.outerSize(); ++k){
+    //     for(typename CSF::SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(myMatrix_csf, k); it; ++it) {
+    //         sum_csf += it.value();
+    //     }
+    // }
 
-    // std::cout << "sum_csf: " << sum_csf << " sum_e: " << sum_e << std::endl;
+    // for(int i = 0; i < myVector_e2.size(); i++) {
+    //     std::cout << myVector_e2(i) << " ";
+    // }
+    // std::cout << std::endl;
 
-    if (sum_csf - sum_e > 1 || sum_csf == 0) {
+    T sum_e = myVector_e.sum();
+    T sum_csf = myVector_e2.sum();
+
+    if (sum_csf - sum_e > 10 || sum_csf == 0) {
         std::cout << "Rows: " << numRows << " Cols: " << numCols << " Sparsity: " << sparsity << " Seed: " << seed << std::endl;
-        // if (sum_csf - sum_e * 2 > 1) [[unlikely]] {
         std::cout << "sum_csf: " << sum_csf << " sum_e: " << sum_e << std::endl;
-        // std::cout << sum_csf - sum_e * 2 << std::endl;
         assert(sum_csf == sum_e);
     }
 }

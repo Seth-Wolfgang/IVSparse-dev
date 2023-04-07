@@ -11,6 +11,7 @@
 #define VALUE_TYPE double
 #define INDEX_TYPE int
 #define NUM_OF_BENCHMARKS 15
+#define EIGEN_DONT_PARALLELIZE
 
 // Function to read Matrix Market files
 template <typename T>
@@ -19,7 +20,7 @@ void readFile(std::vector<Eigen::Triplet<T>>& eigenTriplet, std::vector<double>&
 double calculateEntropy(const Eigen::SparseMatrix<double>& mat);
 
 template <typename T>
-void EigenConstructorBenchmark(Eigen::SparseMatrix<T>& eigen, std::vector<uint64_t>& data);
+void EigenConstructorBenchmark(std::vector<Eigen::Triplet<T>>& eigenTriplet, std::vector<uint64_t>& data, int rows, int cols);
 
 template <typename T, typename indexT>
 void CSF2ConstructorBenchmark(Eigen::SparseMatrix<T>& eigen, std::vector<uint64_t>& data);
@@ -53,13 +54,12 @@ void CSF2VectorMultiplicationBenchmark(Eigen::SparseMatrix<T>& eigen, CSF::Spars
 
 template <typename T, typename indexT>
 void CSF3VectorMultiplicationBenchmark(Eigen::SparseMatrix<T>& eigen, CSF::SparseMatrix<T, indexT, 3> csf3, std::vector<uint64_t>& data);
- 
- template <typename T>
+
+template <typename T>
 void EigenMemoryFootprintBenchmark(std::vector<uint64_t>& data, std::vector<Eigen::Triplet<T>>& eigenTriplet, uint32_t inner, uint32_t outer);
- 
- template <typename T, typename indexT>
+
+template <typename T, typename indexT>
 void CSF2MemoryFootprintBenchmark(std::vector<uint64_t>& data, std::vector<Eigen::Triplet<T>>& eigenTriplet, uint32_t inner, uint32_t outer);
- 
- template <typename T, typename indexT>
+
+template <typename T, typename indexT>
 void CSF3MemoryFootprintBenchmark(std::vector<uint64_t>& data, std::vector<Eigen::Triplet<T>>& eigenTriplet, uint32_t inner, uint32_t outer);
-  

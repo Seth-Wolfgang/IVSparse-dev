@@ -13,7 +13,7 @@
 #define FOUR_BYTE_MAX 4294967295
 
 // Debug flag for performance testing (set to true to be faster)
-#define DEBUG false
+#define DEBUG true
 
 namespace CSF {
 
@@ -53,9 +53,8 @@ namespace CSF {
         }
 
         // loop through each column
-        #pragma omp parallel for
-        for (size_t i = 0; i < outerDim; i++)
-        {
+#pragma omp parallel for
+        for (size_t i = 0; i < outerDim; i++) {
             // construct the dictionary
 
             // create a std::map that holds value as the key and a vector of indices as the value
@@ -232,7 +231,7 @@ namespace CSF {
 
         // add up the size of each col and add it to compSize
         for (size_t i = 0; i < outerDim; i++) {
-            compSize += (size_t)endPointers[i] - (size_t)data[i];
+            compSize += (uint8_t *)endPointers[i] - (uint8_t *)data[i];
         }
 
     } // end compress
@@ -271,8 +270,7 @@ namespace CSF {
         // uint8_t byte3 = (val_t >> 24) & 0xFF;
 
 
-        if (byte0 != sizeof(T))
-        {
+        if (byte0 != sizeof(T)) {
             std::cout << "Error: Value type size does not match" << std::endl;
             throw std::runtime_error("Value type size does not match, correct size is " + std::to_string(sizeof(T)) + "");
         }
@@ -354,18 +352,16 @@ namespace CSF {
     //* Utility Methods *//
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    void SparseMatrix<T, indexT, compressionLevel, columnMajor>::write(const char *filename)
-    {
+    void SparseMatrix<T, indexT, compressionLevel, columnMajor>::write(const char* filename) {
         // open the file
-        FILE *fp = fopen(filename, "wb");
+        FILE* fp = fopen(filename, "wb");
 
         // write the metadata
         fwrite(metadata, 1, sizeof(uint32_t) * NUM_META_DATA, fp);
 
         // write the distance between the end and start pointers
-        for (uint32_t i = 0; i < outerDim; i++)
-        {
-            size_t size = (char *)endPointers[i] - (char *)data[i];
+        for (uint32_t i = 0; i < outerDim; i++) {
+            size_t size = (char*)endPointers[i] - (char*)data[i];
             fwrite(&size, 1, sizeof(size_t), fp);
         }
 
@@ -373,9 +369,8 @@ namespace CSF {
         // fwrite(data[test], 1, (char *)endPointers[test] - (char *)data[test], fp);
 
         // write each column
-        for (uint32_t i = 0; i < outerDim; i++)
-        {
-            fwrite(data[i], 1, (char *)endPointers[i] - (char *)data[i], fp);
+        for (uint32_t i = 0; i < outerDim; i++) {
+            fwrite(data[i], 1, (char*)endPointers[i] - (char*)data[i], fp);
         }
 
         // close the file
@@ -398,11 +393,10 @@ namespace CSF {
     }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>& SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator=(const CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor> &other)
-    {
+    CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>& SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator=(const CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>& other) {
         if (this == &other)
             return *this;
-        
+
 
         // delete the old data
         for (uint32_t i = 0; i < outerDim; i++)
@@ -422,22 +416,23 @@ namespace CSF {
 
         // allocate the data
         try {
-            data = (void **)malloc(sizeof(void *) * outerDim);
-            endPointers = (void **)malloc(sizeof(void *) * outerDim);
-        } catch (std::bad_alloc& ba) {
+            data = (void**)malloc(sizeof(void*) * outerDim);
+            endPointers = (void**)malloc(sizeof(void*) * outerDim);
+        }
+        catch (std::bad_alloc& ba) {
             std::cerr << "bad_alloc caught: " << ba.what() << '\n';
         }
 
         // copy the data
-        for (uint32_t i = 0; i < outerDim; i++)
-        {
+        for (uint32_t i = 0; i < outerDim; i++) {
             try {
                 data[i] = malloc(other.getVecSize(i));
-            } catch (std::bad_alloc& ba) {
+            }
+            catch (std::bad_alloc& ba) {
                 std::cerr << "bad_alloc caught: " << ba.what() << '\n';
             }
             memcpy(data[i], other.data[i], other.getVecSize(i));
-            endPointers[i] = (char *)data[i] + other.getVecSize(i);
+            endPointers[i] = (char*)data[i] + other.getVecSize(i);
         }
 
         // copy the pointers
@@ -646,14 +641,13 @@ namespace CSF {
 
     // slice method that returns an array of vectors
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    typename CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector * SparseMatrix<T, indexT, compressionLevel, columnMajor>::slice(uint32_t start, uint32_t end)
-    {
+    typename CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector* SparseMatrix<T, indexT, compressionLevel, columnMajor>::slice(uint32_t start, uint32_t end) {
         // check that the start and end are valid
         if (start > end || start > outerDim || end > outerDim)
             throw std::invalid_argument("The start and end must be valid!");
 
         // create a new array of vectors
-        CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector *vectors = new CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector[end - start];
+        CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector* vectors = new CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector[end - start];
 
         // iterate over the matrix
         for (uint32_t i = start; i < end; ++i) {
@@ -669,8 +663,7 @@ namespace CSF {
 
     // to eigen method
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    Eigen::SparseMatrix<T, columnMajor ? Eigen::ColMajor : Eigen::RowMajor> SparseMatrix<T, indexT, compressionLevel, columnMajor>::toEigen()
-    {
+    Eigen::SparseMatrix<T, columnMajor ? Eigen::ColMajor : Eigen::RowMajor> SparseMatrix<T, indexT, compressionLevel, columnMajor>::toEigen() {
         // create a new sparse matrix
         Eigen::SparseMatrix<T, columnMajor ? Eigen::ColMajor : Eigen::RowMajor> eigenMatrix(numRows, numCols);
 
@@ -687,8 +680,7 @@ namespace CSF {
     }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    CSF::SparseMatrix<T, indexT, 1, columnMajor> SparseMatrix<T, indexT, compressionLevel, columnMajor>::toCSF1()
-    {
+    CSF::SparseMatrix<T, indexT, 1, columnMajor> SparseMatrix<T, indexT, compressionLevel, columnMajor>::toCSF1() {
         // make an eigen matrix
         Eigen::SparseMatrix<T, columnMajor ? Eigen::ColMajor : Eigen::RowMajor> eigenMatrix = *this.toEigen();
 

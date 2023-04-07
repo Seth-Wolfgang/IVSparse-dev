@@ -33,7 +33,7 @@ int main(int argc, char** argv) {
 
     // Data vectors
     std::vector<Eigen::Triplet<VALUE_TYPE>> eigenTriplet;
-    std::vector<uint64_t> data(15, 0);
+    std::vector<uint64_t> data(NUM_OF_BENCHMARKS, 0);
     std::vector<double> matrixData;
 
 
@@ -98,7 +98,7 @@ int main(int argc, char** argv) {
             // Runs the selected benchmark
             switch (currentlySelected) {
             case 0:
-                EigenConstructorBenchmark<VALUE_TYPE>(eigen, data);
+                EigenConstructorBenchmark<VALUE_TYPE>(eigenTriplet, data, matrixData[1], matrixData[2]);
                 continue;
             case 1:
                 CSF2ConstructorBenchmark<VALUE_TYPE, INDEX_TYPE>(eigen, data);
@@ -142,11 +142,13 @@ int main(int argc, char** argv) {
             case 14:
                 CSF3MemoryFootprintBenchmark<VALUE_TYPE, INDEX_TYPE>(data, eigenTriplet, matrixData[1], matrixData[2]);
                 continue;
+
             }
         }
 
         bench.pushData(data);
-        std::vector<uint64_t> data(NUM_OF_BENCHMARKS, 0);
+        data.clear();
+        data.resize(NUM_OF_BENCHMARKS, 0);
         std::cout << "Iteration " << i << " complete!" << std::endl;
     }
 
@@ -286,14 +288,15 @@ double calculateEntropy(const Eigen::SparseMatrix<double>& mat) {
  */
 
 template <typename T>
-void EigenConstructorBenchmark(Eigen::SparseMatrix<T>& eigen, std::vector<uint64_t>& data) {
+void EigenConstructorBenchmark(std::vector<Eigen::Triplet<T>>& eigenTriplet, std::vector<uint64_t>& data, int rows, int cols) {
 
     //Timer
     std::chrono::time_point<std::chrono::system_clock> start, end;
 
     //benchmark the Eigen constructor
     start = std::chrono::system_clock::now();
-    Eigen::SparseMatrix<T> eigenMat(eigen);
+    Eigen::SparseMatrix<T> eigenMat(rows, cols);
+    eigenMat.setFromTriplets(eigenTriplet.begin(), eigenTriplet.end());
     eigenMat.makeCompressed();
     end = std::chrono::system_clock::now();
     data.at(0) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
@@ -485,24 +488,18 @@ void CSF2VectorMultiplicationBenchmark(Eigen::SparseMatrix<T>& eigen, CSF::Spars
     std::chrono::time_point<std::chrono::system_clock> start, end;
 
     // Eigen Vectors
-    Eigen::SparseMatrix<T> eigenTempVector(eigen.cols(), 1);
-    eigenTempVector.reserve(eigen.cols());
+    Eigen::VectorXd eigenTempVector(eigen.cols());
+    Eigen::VectorXd result;
 
     // Filling eigen vectors
-    for (int i = 0; i < eigen.cols(); ++i) {
-        eigenTempVector.insert(i, 0) = 2;
-    }
-
-    CSF::SparseMatrix<T, indexT, 2> csf2TempVector(eigenTempVector);
-    typename CSF::SparseMatrix<T, indexT, 2>::Vector csf2Vector(csf2TempVector, 0);
+    eigenTempVector.fill(2);
 
     //CSF 2
     start = std::chrono::system_clock::now();
-    typename CSF::SparseMatrix<T, indexT, 2>::Vector result2(csf2 * csf2Vector);
+    result = csf2 * eigenTempVector;
     end = std::chrono::system_clock::now();
 
     data.at(10) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
-
 }
 
 /**
@@ -515,21 +512,15 @@ void CSF3VectorMultiplicationBenchmark(Eigen::SparseMatrix<T>& eigen, CSF::Spars
     std::chrono::time_point<std::chrono::system_clock> start, end;
 
     // Eigen Vectors
-    Eigen::SparseMatrix<T> eigenTempVector(eigen.cols(), 1);
-    eigenTempVector.reserve(eigen.cols());
+    Eigen::VectorXd eigenTempVector(eigen.cols());
+    Eigen::VectorXd result;
 
     // Filling eigen vectors
-    for (int i = 0; i < eigen.cols(); ++i) {
-        eigenTempVector.insert(i, 0) = 2;
-    }
+    eigenTempVector.fill(2);
 
-    // Creating CSF Vectors
-    CSF::SparseMatrix<T, indexT, 3> csf3TempVector(eigenTempVector);
-    typename CSF::SparseMatrix<T, indexT, 3>::Vector csf3Vector(csf3TempVector, 0);
-
-    //CSF 3
+    //CSF 2
     start = std::chrono::system_clock::now();
-    typename CSF::SparseMatrix<T, indexT, 3>::Vector result3(csf3 * csf3Vector);
+    result = csf3 * eigenTempVector;
     end = std::chrono::system_clock::now();
 
     data.at(11) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
@@ -547,7 +538,7 @@ void EigenMemoryFootprintBenchmark(std::vector<uint64_t>& data, std::vector<Eige
     eigenMatrix.setFromTriplets(eigenTriplet.begin(), eigenTriplet.end());
     eigenMatrix.makeCompressed();
 
-    data.at(12) = eigenMatrix.rows() * eigenMatrix.cols() * sizeof(VALUE_TYPE) + eigenMatrix.nonZeros();
+    data.at(12) = (eigenMatrix.nonZeros() + sizeof(*eigenMatrix.outerIndexPtr()) + 1) * sizeof(sizeof(*eigenMatrix.innerIndexPtr())) + (eigenTriplet.size() * sizeof(double));
 
 }
 

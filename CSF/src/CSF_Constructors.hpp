@@ -1,7 +1,7 @@
 #pragma once
 
 // Debug flag for performance testing (set to true to be faster)
-#define DEBUG false
+#define DEBUG true
 
 // Number of meta data values
 #define NUM_META_DATA 6
@@ -146,7 +146,7 @@ namespace CSF {
         compress(vals, innerIndices, outerPtr);
     }
 
-    //TODO: Deep Copy Constructor
+    //Deep Copy Constructor
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(const CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>& mat) {
         // Set the number of rows, columns and non-zero elements
@@ -343,7 +343,7 @@ namespace CSF {
         // add up the size of each col and add it to compSize
         for (size_t i = 0; i < outerDim; i++)
         {
-            compSize += (size_t)endPointers[i] - (size_t)data[i];
+            compSize += (uint8_t *)endPointers[i] - (uint8_t *)data[i];
         }
 
         metadata = new uint32_t[NUM_META_DATA];

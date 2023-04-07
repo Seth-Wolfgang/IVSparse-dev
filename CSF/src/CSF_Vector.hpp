@@ -32,11 +32,7 @@ namespace CSF {
         memcpy(data, mat.getVecPointer(vec), size);
 
         // set the end pointer
-        endPtr = (uint8_t*)data + size - 1;
-        // endPtr = (uint8_t *)data + ((char*)mat.getVecPointer(vec) -  (char*)mat.endPointers[vec]);
-        // std::cout << "endPtr: " << endPtr << std::endl;
-
-
+        endPtr = (uint8_t*)data + size;
     }
 
     // Deep copy constructor
