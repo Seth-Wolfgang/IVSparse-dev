@@ -48,8 +48,10 @@ namespace CSF {
         memcpy(innerIdx, mat.innerIndexPtr(), sizeof(indexT) * nnz);
         memcpy(outerPtr, mat.outerIndexPtr(), sizeof(indexT) * (outerDim + 1));
 
-        // run user checks
-        if (DEBUG) { userChecks(); }
+        // run the user checks
+        #ifdef CSF_DEBUG
+        userChecks();
+        #endif
     }
 
     // eigen sparse matrix constructor (row major)
@@ -88,8 +90,10 @@ namespace CSF {
         memcpy(innerIdx, mat.innerIndexPtr(), sizeof(indexT) * nnz);
         memcpy(outerPtr, mat.outerIndexPtr(), sizeof(indexT) * (outerDim + 1));
 
-        // run user checks
-        if (DEBUG) { userChecks(); }
+        // run the user checks
+        #ifdef CSF_DEBUG
+        userChecks();
+        #endif
     }
 
     // deep copy constructor
@@ -126,8 +130,10 @@ namespace CSF {
         memcpy(innerIdx, mat.innerIdx, sizeof(indexT) * nnz);
         memcpy(outerPtr, mat.outerPtr, sizeof(indexT) * (outerDim + 1));
 
-        // run user checks
-        if (DEBUG) { userChecks(); }
+        // run the user checks
+        #ifdef CSF_DEBUG
+        userChecks();
+        #endif
     }
 
     // file constructor

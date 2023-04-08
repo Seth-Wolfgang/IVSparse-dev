@@ -9,6 +9,7 @@ namespace CSF {
         // make a copy of the matrix
         CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor> newMatrix(*this);
 
+        //! Parallelize this
         for (uint32_t i = 0; i < this->outerDim; ++i) {
             for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(newMatrix, i); it; ++it) {
                 if (it.isNewRun()) {
@@ -31,6 +32,7 @@ namespace CSF {
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     void SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator*=(T scalar) {
+        //! Parallelize this
         for (uint32_t i = 0; i < this->outerDim; ++i) {
             for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(*this, i); it; ++it) {
                 if (it.isNewRun()) {
@@ -53,9 +55,11 @@ namespace CSF {
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     Eigen::VectorXd SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator*(Eigen::VectorXd& vec) {
-        // check that the vector is the correct size
-        if (DEBUG && vec.rows() != outerDim)
-            throw std::invalid_argument("The vector must be the same size as the number of columns in the matrix!");
+        
+        #ifdef CSF_DEBUG
+            // check that the vector is the correct size
+            assert(vec.rows() == outerDim && "The vector must be the same size as the number of columns in the matrix!");
+        #endif
 
         Eigen::VectorXd eigenTemp(innerDim, 1);
         eigenTemp.setZero();
@@ -84,9 +88,12 @@ namespace CSF {
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     Eigen::VectorXd SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator*(SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector& vec) {
-        // check that the vector is the correct size
-        if (DEBUG && vec.length() != outerDim)
-            throw std::invalid_argument("The vector must be the same size as the number of columns in the matrix!");
+        
+        #ifdef CSF_DEBUG
+            // check that the vector is the correct size
+            if (vec.length() != outerDim)
+                throw std::invalid_argument("The vector must be the same size as the number of columns in the matrix!");
+        #endif
 
         Eigen::VectorXd eigenTemp(innerDim, 1);
         eigenTemp.setZero();

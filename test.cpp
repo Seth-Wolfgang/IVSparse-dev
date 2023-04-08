@@ -19,7 +19,24 @@ int main() {
     CSF::SparseMatrix<int, int, 3> skyMat_csf(skyMat);
     CSF::SparseMatrix<int, int, 2> skyMat_csf2(skyMat);
 
+    // transpose the CSF matrix
+    CSF::SparseMatrix<int, int, 3> skyMat_csfT = skyMat_csf.transpose();
 
+    // turn the CSF matrix into an eigen matrix
+    Eigen::SparseMatrix<int> skyMat_e = skyMat_csfT.toEigen();
+
+    // print the eigen matrix
+    std::cout << skyMat_e << std::endl;
+
+    std::cout << skyMat.transpose() << std::endl;
+
+    // make a vector of the CSF matrix
+    CSF::SparseMatrix<int, int, 3>::Vector skyVec(skyMat_csf, 0);
+
+    // multiply the CSF by 3
+    skyMat_csf *= 3;
+
+    
 
 
     // * CSF Iterator Testing * //

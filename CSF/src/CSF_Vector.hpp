@@ -3,10 +3,24 @@
 namespace CSF {
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::Vector() {}
+    SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::Vector() {
+        data = nullptr;
+        endPtr = nullptr;
+        size = 0;
+        vecLength = 0;
+    }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::Vector(CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>& mat, uint32_t vec) {
+
+        #ifdef CSF_DEBUG
+            // make sure the vector is in bounds
+            assert((vec >= 0 && vec < mat.outerSize()) && "Vector index out of bounds");
+
+            // make sure the matrix is not empty
+            assert((mat.outerSize() > 0 && mat.innerSize() > 0) && "Matrix is empty");
+        #endif
+
         // get the vecLength of the vector
         size = mat.getVecSize(vec);
         vecLength = mat.innerSize();
@@ -31,27 +45,58 @@ namespace CSF {
 
         // set the end pointer
         endPtr = (uint8_t*)data + size;
+
+        // set the nnz
+        if (nnz == 0 && size > 0)
+        {
+            // make an iterator for the vector
+            CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator it(*this);
+
+            // iterate through the vector until the index is found
+            while (it)
+            {
+                nnz++;
+                ++it;
+            }
+        }
     }
 
     // Deep copy constructor
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::Vector(CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector& vec) {
-        // set data pointer //! TODO: This is a shallow copy
-        data = vec.begin();
+        // set the size
+        size = vec.size;
 
-        // get the vecLength of the vector
-        size = vec.byteSize();
+        // set the vecLength
+        vecLength = vec.vecLength;
 
         // if the size is 0 then the vector is empty
         if (size == 0) {
+            data = nullptr;
             endPtr = nullptr;
             return;
         }
 
-        vecLength = vec.length();
+        // set data pointer
+        try {
+            data = malloc(size);
+        }
+        catch (std::bad_alloc& e) {
+            std::cerr << e.what() << '\n';
+        }
+
+        // copy the vector data into the vector
+        memcpy(data, vec.data, size);
 
         // set the end pointer
         endPtr = (uint8_t*)data + size;
+
+        // set the nnz
+        nnz = vec.nonZeros();
+
+        #ifdef CSF_DEBUG
+            userChecks();
+        #endif
     }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
@@ -185,27 +230,26 @@ namespace CSF {
     }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    void SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::userChecks()
+    {
+        assert(std::is_floating_point<indexT>::value == false && "The index type must be a non-floating point type");
+
+        assert((compressionLevel == 1 || compressionLevel == 2 || compressionLevel == 3) && "The compression level must be either 1, 2, or 3");
+
+        assert((std::is_arithmetic<T>::value && std::is_arithmetic<indexT>::value) && "The value and index types must be numeric types");
+
+        assert((std::is_same<indexT, bool>::value == false) && "The index type must not be bool");
+
+    }
+
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     uint32_t SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::length() { return vecLength; }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     uint32_t SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::outerSize() { return 1; }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    uint32_t SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::nonZeros() {
-        if (nnz == 0 && size > 0) {
-            // make an iterator for the vector
-            CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator it(*this);
-
-            // iterate through the vector until the index is found
-            while (it) {
-                nnz++;
-                ++it;
-            }
-        }
-
-        return nnz;
-
-    }
+    uint32_t SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::nonZeros() { return nnz; }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     void* SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::begin() { return data; }
@@ -218,19 +262,44 @@ namespace CSF {
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::operator=(typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector &other) {
-        // copy the data //! doesn't copy?
-        data = other.data;
-        endPtr = other.endPtr;
+        // check if the vector is the same
+        if (this == &other) {
+            return *this;
+        }
+
+        // free the data if it is not null
+        if (data != nullptr) {
+            free(data);
+        }
+
+        // copy the data
+        data = (uint8_t*)malloc(other.size);
+        memcpy(data, other.data, other.size);
+
+        // set the size
         size = other.size;
+
+        // set the length
         vecLength = other.vecLength;
+
+        // set the nnz
         nnz = other.nnz;
 
-        // return the vector
-        return other;
+        // set the end pointer
+        endPtr = (uint8_t*)data + size;
+
+        // return this
+        return *this;
     }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     T SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::operator[](uint32_t index) {
+        
+        #ifdef CSF_DEBUG
+            // check if the index is out of bounds
+            assert(index < vecLength && "The index is out of bounds");
+        #endif
+
         // make an iterator for the vector
         CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator it(*this);
 

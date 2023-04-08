@@ -3,10 +3,29 @@
 namespace CSF {
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix() {}
+    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix() {
+        val_t = 0;
+        index_t = 0;
+
+        data = nullptr;
+        endPointers = nullptr;
+        metadata = nullptr;
+    }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(Eigen::SparseMatrix<T>& mat) {
+
+        // see if the matrix is empty
+        if (mat.nonZeros() == 0) [[unlikely]] {
+            val_t = 0;
+            index_t = 0;
+
+            data = nullptr;
+            endPointers = nullptr;
+            metadata = nullptr;
+
+            return;
+        }
 
         mat.makeCompressed();
 
@@ -31,13 +50,15 @@ namespace CSF {
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector vec[], size_t size) {
         
-        // ensure the vectors are all the same length
-        for (size_t i = 1; i < size; i++) {
-            if (vec[i].length() != vec[0].length()) {
-                std::cerr << "Error: Vectors are not all the same length" << std::endl;
-                exit(1);
+        #ifdef CSF_DEBUG
+            // ensure the vectors are all the same length
+            for (size_t i = 1; i < size; i++) {
+                assert(vec[i].length() == vec[i - 1].length() && "All vectors must be the same length!");
             }
-        }
+
+            // size is greater than 0
+            assert(size > 0 && "The size of the array must be greater than 0!");
+        #endif
 
         if (columnMajor) {
             outerDim = size;
@@ -61,18 +82,37 @@ namespace CSF {
             std::cerr << e.what() << '\n';
         }
 
-        for (size_t i = 0; i < outerDim; i++) {
-            try {
-                data[i] = malloc(vec[i].byteSize());
-            }
-            catch (const std::exception& e) {
-                std::cerr << e.what() << '\n';
-            }
-            memcpy(data[i], vec[i].data(), vec[i].byteSize());
-            endPointers[i] = (char*)data[i] + vec[i].byteSize();
+        bool exception_occurred = false;
+        std::string exception_msg;
 
-            nnz += vec[i].nonZeros();
-            compSize += vec[i].byteSize();
+        #pragma omp parallel for shared(exception_occurred, exception_msg)
+        for (size_t i = 0; i < outerDim; i++) {
+            if (!exception_occurred) {
+                try {
+                    data[i] = malloc(vec[i].byteSize());
+                }
+                catch (const std::exception& e) {
+                    #pragma omp critical
+                    {
+                        exception_occurred = true;
+                        exception_msg = e.what();
+                    }
+                    #pragma omp cancel for
+                }
+                if (!exception_occurred) {
+                    memcpy(data[i], vec[i].data(), vec[i].byteSize());
+                    endPointers[i] = (char*)data[i] + vec[i].byteSize();
+
+                    #pragma omp atomic
+                    nnz += vec[i].nonZeros();
+                    #pragma omp atomic
+                    compSize += vec[i].byteSize();
+                }
+            }
+        }
+
+        if (exception_occurred) {
+            std::cerr << exception_msg << '\n';
         }
 
         //  set the val_t and index_t
@@ -93,12 +133,26 @@ namespace CSF {
         compSize += NUM_META_DATA * sizeof(uint32_t) + (outerDim * sizeof(void*) * 2);
 
         // run the user checks
-        if constexpr (DEBUG)
-            userChecks();
+        #ifdef CSF_DEBUG
+        userChecks();
+        #endif
     }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(Eigen::SparseMatrix<T, Eigen::RowMajor>& mat) {
+
+        // see if the matrix is empty
+        if (mat.nonZeros() == 0) [[unlikely]]
+        {
+            val_t = 0;
+            index_t = 0;
+
+            data = nullptr;
+            endPointers = nullptr;
+            metadata = nullptr;
+
+            return;
+        }
 
         mat.makeCompressed();
 
@@ -118,6 +172,20 @@ namespace CSF {
     template <typename T2, typename indexT2>
     SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(T2 *vals, indexT2 *innerIndices, indexT2 *outerPtr, uint32_t num_rows, uint32_t num_cols, uint32_t nnz)
     {
+
+        // see if the matrix is empty
+        if (nnz == 0) [[unlikely]]
+        {
+            val_t = 0;
+            index_t = 0;
+
+            data = nullptr;
+            endPointers = nullptr;
+            metadata = nullptr;
+
+            return;
+        }
+
         if (columnMajor) {
             innerDim = num_rows;
             outerDim = num_cols;
@@ -138,6 +206,20 @@ namespace CSF {
     //Deep Copy Constructor
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(const CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>& mat) {
+
+        // see if the matrix is empty
+        if (mat.nnz == 0) [[unlikely]]
+        {
+            val_t = 0;
+            index_t = 0;
+
+            data = nullptr;
+            endPointers = nullptr;
+            metadata = nullptr;
+
+            return;
+        }
+
         // Set the number of rows, columns and non-zero elements
         innerDim = mat.innerSize();
         outerDim = mat.outerSize();
@@ -157,12 +239,15 @@ namespace CSF {
             std::cerr << e.what() << '\n';
         }
 
+        #ifdef CSF_PARALLEL
         #pragma omp parallel for
+        #endif
         for (size_t i = 0; i < outerDim; i++) {
             try {
                 data[i] = malloc(mat.getVecSize(i));
             }
             catch (const std::exception& e) {
+                //! Potential Parallelism issue here
                 std::cerr << e.what() << '\n';
             }
             memcpy(data[i], mat.getVecPointer(i), mat.getVecSize(i));
@@ -180,6 +265,20 @@ namespace CSF {
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(std::map<indexT, std::unordered_map<T, std::vector<indexT>>>& map, uint32_t num_rows, uint32_t num_cols) {
+        
+        // make sure the map is not empty
+        if (map.empty()) [[unlikely]]
+        {
+            val_t = 0;
+            index_t = 0;
+
+            data = nullptr;
+            endPointers = nullptr;
+            metadata = nullptr;
+
+            return;
+        }
+        
         // set class variables
         if constexpr (columnMajor) {
             innerDim = num_rows;
@@ -210,6 +309,8 @@ namespace CSF {
             data[i] = nullptr;
             endPointers[i] = nullptr;
         }
+
+        //TODO: make this parallel
 
         // loop through the map
         for (auto &col : map) {
@@ -346,8 +447,9 @@ namespace CSF {
         metadata[5] = index_t;
 
         // run the user checks
-        if constexpr (DEBUG)
-            userChecks();
+        #ifdef CSF_DEBUG
+        userChecks();
+        #endif
     }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
@@ -366,6 +468,16 @@ namespace CSF {
             numCols = vec.length();
             innerDim = numCols;
             outerDim = numRows;
+        }
+
+        // see if the vector is empty
+        if (vec.nonZeros() == 0) [[unlikely]] {
+            nnz = 0;
+            compSize = 0;
+            data = nullptr;
+            endPointers = nullptr;
+            metadata = nullptr;
+            return;
         }
 
         nnz = vec.nonZeros();
@@ -423,8 +535,9 @@ namespace CSF {
         compSize += sizeof(uint32_t) * NUM_META_DATA;
 
         // run the user checks
-        if constexpr (DEBUG)
-            userChecks();
+        #ifdef CSF_DEBUG
+        userChecks();
+        #endif
     }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
@@ -457,8 +570,10 @@ namespace CSF {
             numCols = innerDim;
         }
 
-        if constexpr (DEBUG)
-            userChecks();
+        // run the user checks
+        #ifdef CSF_DEBUG
+        userChecks();
+        #endif
 
         // malloc the data
         try

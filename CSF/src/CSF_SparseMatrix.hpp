@@ -286,6 +286,8 @@ namespace CSF
 
         void decodeIndex();
 
+        void userChecks();
+
     public:
         //* Constructors & Destructor *//
 
@@ -346,6 +348,8 @@ namespace CSF
 
         //* Private Class Methods *//
 
+        void userChecks();
+
 
         public:
 
@@ -404,6 +408,10 @@ namespace CSF
         uint8_t indexWidth = 1;
 
         uint32_t nnz = 0;
+
+        //* Private Class Methods *//
+
+        void userChecks();
 
     public:
         //* Constructors & Destructor *//
@@ -469,6 +477,7 @@ namespace CSF
 
         //* Private Class Methods *//
 
+        void userChecks();
 
         public:
 

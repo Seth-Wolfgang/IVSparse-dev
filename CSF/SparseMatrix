@@ -1,3 +1,5 @@
+// Library: Compressed Sparse Fiber (CSF) Matrix
+
 #pragma once
 
 // Library Constants
@@ -8,11 +10,9 @@
 #define TWO_BYTE_MAX 65535
 #define FOUR_BYTE_MAX 4294967295
 
-// Library Flags
-#define DEBUG true
-
 // Library Preprocessor Directives
 #define CSF_PARALLEL
+#define CSF_DEBUG
 
 // Library Includes
 #include <omp.h>

@@ -23,9 +23,9 @@ namespace CSF {
         metadata[4] = val_t;
         metadata[5] = index_t;
 
-        // run the user checks
-        if constexpr (DEBUG)
-            userChecks();
+        #ifdef CSF_DEBUG
+        userChecks();
+        #endif
 
         // malloc space for the data
         try {
@@ -38,7 +38,9 @@ namespace CSF {
         }
 
         // loop through each column
+        #ifdef CSF_PARALLEL
         #pragma omp parallel for
+        #endif
         for (size_t i = 0; i < outerDim; i++) {
             // construct the dictionary
 
@@ -255,52 +257,30 @@ namespace CSF {
         uint8_t byte3 = (val_t >> 24) & 0xFF;
 
 
-        if (byte0 != sizeof(T)) {
-            std::cout << "Error: Value type size does not match" << std::endl;
-            throw std::runtime_error("Value type size does not match, correct size is " + std::to_string(sizeof(T)) + "");
-        }
+        assert(byte0 == sizeof(T) && "Value type size does not match");
 
-        if (byte1 != std::is_floating_point_v<T>) {
-            std::cout << "Error: Value type is not floating point" << std::endl;
-            throw std::runtime_error("Value type is not floating point when it should be");
-        }
+        assert(byte1 == std::is_floating_point_v<T> && "Value type is not floating point");
 
-        if (byte2 != std::is_signed_v<T>) {
-            std::cout << "Error: Value type is not signed" << std::endl;
-            throw std::runtime_error("Value type is not signed when it should be");
-        }
+        assert(byte2 == std::is_signed_v<T> && "Value type is not signed");
 
-        if (byte3 != columnMajor) {
-            std::cout << "Error: Wrong Major Direction" << std::endl;
-            throw std::runtime_error("Wrong Major Direction");
-        }
+        assert(byte3 == columnMajor && "Major direction does not match");
+
     }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     void SparseMatrix<T, indexT, compressionLevel, columnMajor>::userChecks() {
-        // throw an error if the matrix has less than one rows or columns or nonzero values
-        if (innerDim < 1 || outerDim < 1 || nnz < 1)
-            throw std::invalid_argument("The matrix must have at least one row, column, and nonzero value");
+        
+        assert((innerDim > 1 || outerDim > 1 || nnz > 1) && "The matrix must have at least one row, column, and nonzero value");
 
-        // check that indexT is not floating point
-        if (std::is_floating_point<indexT>::value)
-            throw std::invalid_argument("The index type must be a non-floating point type");
+        assert(std::is_floating_point<indexT>::value == false && "The index type must be a non-floating point type");
 
-        // check the compression level is either 1, 2, or 3
-        if (compressionLevel < 1 || compressionLevel > 3)
-            throw std::invalid_argument("The compression level must be either 1, 2, or 3");
+        assert((compressionLevel == 1 || compressionLevel == 2 || compressionLevel == 3) && "The compression level must be either 1, 2, or 3");
 
-        // check that T and indexT are numeric types
-        if (!std::is_arithmetic<T>::value || !std::is_arithmetic<indexT>::value)
-            throw std::invalid_argument("The value and index types must be numeric types");
+        assert((std::is_arithmetic<T>::value && std::is_arithmetic<indexT>::value) && "The value and index types must be numeric types");
 
-        // check that the index type is not a bool
-        if (std::is_same<indexT, bool>::value)
-            throw std::invalid_argument("The value and index types must not be bool");
+        assert((std::is_same<indexT, bool>::value == false) && "The index type must not be bool");
 
-        // check that the row and col types can hold the number of rows and columns
-        if (innerDim > std::numeric_limits<indexT>::max() || outerDim > std::numeric_limits<indexT>::max())
-            throw std::invalid_argument("The number of rows and columns must be less than the maximum value of the index type");
+        assert((innerDim < std::numeric_limits<indexT>::max() && outerDim < std::numeric_limits<indexT>::max()) && "The number of rows and columns must be less than the maximum value of the index type");
 
         checkVal();
     }
@@ -333,6 +313,12 @@ namespace CSF {
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector SparseMatrix<T, indexT, compressionLevel, columnMajor>::getVector(uint32_t vec) {
+        
+        #ifdef CSF_DEBUG
+            // check if the vector is out of bounds
+            assert((vec < outerDim && vec >= 0) && "Vector index out of bounds");
+        #endif
+
         // return a CSF vector
         CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector newVector(*this, vec);
 
@@ -376,6 +362,12 @@ namespace CSF {
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator[](uint32_t vec) {
+
+        #ifdef CSF_DEBUG
+            // check if the vector is out of bounds
+            assert((vec < outerDim && vec >= 0) && "Vector index out of bounds");
+        #endif
+
         // return a CSF vector
         CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector newVector(*this, vec);
 
@@ -384,6 +376,40 @@ namespace CSF {
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>& SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator=(const CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>& other) {
+        
+        // check for an empty matrix
+        if (other.data == nullptr) {
+            // delete the old data
+            for (uint32_t i = 0; i < outerDim; i++)
+                free(data[i]);
+
+            free(data);
+
+            free(endPointers);
+
+            delete[] metadata;
+
+            // set the metadata to null
+            metadata = nullptr;
+
+            // set the data to null
+            data = nullptr;
+
+            endPointers = nullptr;
+
+            // set the dimensions to 0
+            outerDim = 0;
+            innerDim = 0;
+            numRows = 0;
+            numCols = 0;
+            nnz = 0;
+            compSize = 0;
+
+            // return the matrix
+            return *this;
+        }
+
+        // check for self assignment
         if (this == &other)
             return *this;
 
@@ -505,9 +531,9 @@ namespace CSF {
 
             compSize += sizeof(uint32_t) * NUM_META_DATA;
 
-            // run the user checks
-            if constexpr (DEBUG)
-                userChecks();
+            #ifdef CSF_DEBUG
+            userChecks();
+            #endif
         }
         else {
 
@@ -590,6 +616,7 @@ namespace CSF {
         std::map<indexT, std::unordered_map<T, std::vector<indexT>>> transposedMap;
 
         // iterate over the matrix
+
         for (uint32_t i = 0; i < outerDim; ++i) {
             for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(*this, i); it; ++it) {
                 // add the value to the map
@@ -606,13 +633,14 @@ namespace CSF {
         if (compressionLevel == 3) {
             for (auto& row : transposedMap) {
                 for (auto& col : row.second) {
-                    // sort the vector
-                    // std::sort(col.second.begin(), col.second.end());
+
+                    // find the max value in the vector
                     size_t max = col.second[0];
+
                     // delta encode the vector
                     for (uint32_t i = col.second.size() - 1; i > 0; --i) {
                         col.second[i] -= col.second[i - 1];
-                        if (col.second[i] > max)
+                        if ((size_t)col.second[i] > max)
                             max = col.second[i];
                     }
 
@@ -632,14 +660,18 @@ namespace CSF {
     // slice method that returns an array of vectors
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     typename CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector* SparseMatrix<T, indexT, compressionLevel, columnMajor>::slice(uint32_t start, uint32_t end) {
-        // check that the start and end are valid
-        if (start > end || start > outerDim || end > outerDim)
-            throw std::invalid_argument("The start and end must be valid!");
+        #ifdef CSF_DEBUG
+            // check that the start and end are valid
+            assert(start < outerDim && end <= outerDim && start < end && "Invalid start and end values!");
+        #endif
 
         // create a new array of vectors
         CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector* vectors = new CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector[end - start];
 
         // iterate over the matrix
+        #ifdef CSF_PARALLEL
+        #pragma omp parallel for
+        #endif
         for (uint32_t i = start; i < end; ++i) {
             // create a new vector
             CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector vec(*this, i);
@@ -654,6 +686,12 @@ namespace CSF {
     // to eigen method
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     Eigen::SparseMatrix<T, columnMajor ? Eigen::ColMajor : Eigen::RowMajor> SparseMatrix<T, indexT, compressionLevel, columnMajor>::toEigen() {
+
+        #ifdef CSF_DEBUG
+            // assert that the matrix is not empty
+            assert(outerDim > 0 && "Cannot convert an empty matrix to an Eigen matrix!");
+        #endif
+
         // create a new sparse matrix
         Eigen::SparseMatrix<T, columnMajor ? Eigen::ColMajor : Eigen::RowMajor> eigenMatrix(numRows, numCols);
 
@@ -664,6 +702,9 @@ namespace CSF {
                 eigenMatrix.insert(it.row(), it.col()) = it.value();
             }
         }
+
+        // finalize the matrix
+        eigenMatrix.makeCompressed();
 
         // return the matrix
         return eigenMatrix;
