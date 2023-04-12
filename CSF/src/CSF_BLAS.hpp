@@ -22,12 +22,12 @@ namespace CSF {
 
     /**
      * @brief Scalar multiplication operator
-     * 
-     * @tparam T 
-     * @tparam indexT 
-     * @tparam compressionLevel 
-     * @tparam columnMajor 
-     * @param scalar 
+     *
+     * @tparam T
+     * @tparam indexT
+     * @tparam compressionLevel
+     * @tparam columnMajor
+     * @param scalar
      */
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
@@ -44,18 +44,62 @@ namespace CSF {
 
     /**
      * @brief Matrix x Vector multiplication operator with an Eigen::VectorXd
-     * 
-     * @tparam T 
-     * @tparam indexT 
-     * @tparam compressionLevel 
-     * @tparam columnMajor 
-     * @param vec 
-     * @return Eigen::VectorXd 
+     *
+     * @tparam T
+     * @tparam indexT
+     * @tparam compressionLevel
+     * @tparam columnMajor
+     * @param vec
+     * @return Eigen::VectorXd
      */
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     Eigen::VectorXd SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator*(Eigen::VectorXd& vec) {
-        
+        return vectorMultiply(vec);
+    }
+
+
+    /**
+     * @brief Matrix x Vector multiplication operator
+     *
+     * @tparam T
+     * @tparam indexT
+     * @tparam compressionLevel
+     * @tparam columnMajor
+     * @param vec
+     * @return Eigen::VectorXd
+     */
+
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    Eigen::VectorXd SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator*(SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector& vec) {
+        return vectorMultiply(vec);
+    }
+
+    /**
+     * @brief Matrix x Matrix multiplication operator TODO: (WIP)
+     *
+     * @tparam T
+     * @tparam indexT
+     * @tparam compressionLevel
+     * @tparam columnMajor
+     * @param mat
+     * @return SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector
+     */
+
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    Eigen::MatrixXd SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator*(Eigen::MatrixXd mat) {
+        return matrixMultiply(mat);
+    }
+
+    /**
+     * @brief Matrix x Vector multiplication operator helper function using Eigen::VectorXd
+     * 
+     * @param vec 
+     * @return Eigen::MatrixXd 
+     */
+
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    inline Eigen::MatrixXd SparseMatrix<T, indexT, compressionLevel, columnMajor>::vectorMultiply(Eigen::VectorXd& vec) {        
         #ifdef CSF_DEBUG
             // check that the vector is the correct size
             assert(vec.rows() == outerDim && "The vector must be the same size as the number of columns in the matrix!");
@@ -74,9 +118,8 @@ namespace CSF {
         return eigenTemp;
     }
 
-
     /**
-     * @brief Matrix x Vector multiplication operator
+     * @brief Matrix x Matrix multiplication operator helper function using CSF::Vector
      * 
      * @tparam T 
      * @tparam indexT 
@@ -87,12 +130,11 @@ namespace CSF {
      */
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    Eigen::VectorXd SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator*(SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector& vec) {
-        
+    inline Eigen::VectorXd SparseMatrix<T, indexT, compressionLevel, columnMajor>::vectorMultiply(typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector& vec) {
+        // check that the vector is the correct size
         #ifdef CSF_DEBUG
-            // check that the vector is the correct size
-            if (vec.length() != outerDim)
-                throw std::invalid_argument("The vector must be the same size as the number of columns in the matrix!");
+        if (vec.length() != outerDim)
+            throw std::invalid_argument("The vector must be the same size as the number of columns in the matrix!");
         #endif
 
         Eigen::VectorXd eigenTemp(innerDim, 1);
@@ -106,33 +148,36 @@ namespace CSF {
         }
         return eigenTemp;
     }
-
+    
     /**
-     * @brief Matrix x Matrix multiplication operator TODO: (WIP)
-     *
-     * @tparam T
-     * @tparam indexT
-     * @tparam compressionLevel
-     * @tparam columnMajor
-     * @param mat
-     * @return SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector
+     * @brief Matrix x Matrix multiplication operator helper function
+     * 
+     * @tparam T 
+     * @tparam indexT 
+     * @tparam compressionLevel 
+     * @tparam columnMajor 
+     * @param mat 
+     * @return Eigen::MatrixXd 
      */
 
-    // template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    // SparseMatrix<T, indexT, compressionLevel, columnMajor> SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator*(SparseMatrix<T, indexT, compressionLevel, columnMajor>& mat) {
-    //     // check that the matrix is the correct size
-    //     if (mat.outerSize() != innerDim)
-    //         throw std::invalid_argument("The matrix's outer dimension must be the same as the inner dimension of the matrix");
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    inline Eigen::MatrixXd SparseMatrix<T, indexT, compressionLevel, columnMajor>::matrixMultiply(Eigen::MatrixXd& mat) {
+        // check that the matrix is the correct size
+        #ifdef CSF_DEBUG
+        if (mat.rows() != outerDim)
+            throw std::invalid_argument("The matrix must be the same size as the number of columns in the matrix!");
+        #endif
 
-    //     SparseMatrix<T, indexT, compressionLevel, columnMajor> newMatrix;
+        Eigen::MatrixXd newMatrix = Eigen::MatrixXd::Zero(innerDim, 0);
 
-    //     // iterate over the vector and multiply the corresponding vector of the parameter matrix "mat"
-    //     for (uint32_t i = 0; i < mat.outerSize(); ++i) {
-    //         SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector newVector(mat, i);
-    //         SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector tempVector(*this * newVector);
-    //         newMatrix.append(tempVector);
-    //     }
+        // iterate over the vector and multiply the corresponding vector of the parameter matrix "mat"
+        for (int i = 0; i < mat.outerSize(); i++) {
+            newMatrix.conservativeResize(innerDim, newMatrix.cols() + 1);
+            Eigen::VectorXd vec = mat.col(i);
+            newMatrix.col(i) = vectorMultiply(vec);
+        }
 
-    //     return newMatrix;
-    // }
+        return newMatrix;
+    }
+
 }
