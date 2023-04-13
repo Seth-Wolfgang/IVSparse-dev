@@ -3,7 +3,6 @@
 #include "misc/matrix_creator.cpp"
 #include <chrono>
 
-
 template <typename T, typename indexT, int compressionLevel> void iteratorTest();
 void getMat(Eigen::SparseMatrix<int>& myMatrix_e);
 
@@ -53,10 +52,10 @@ int main() {
 template <typename T, typename indexT, int compressionLevel>
 void iteratorTest() {
 
-    int numRows = rand() % 1000 + 10;
-    int numCols = rand() % 1000 + 10;
-    int sparsity = rand() % 50 + 1;
-    uint64_t seed = rand();
+    int numRows = 1000;//rand() % 1000 + 10;
+    int numCols = 1000;//rand() % 1000 + 10;
+    int sparsity = 1;//rand() % 50 + 1;
+    uint64_t seed = 1;//rand();
 
     Eigen::SparseMatrix<T> eigen(numRows, numCols);
     eigen.reserve(Eigen::VectorXi::Constant(numCols, numRows));
@@ -69,11 +68,25 @@ void iteratorTest() {
     //Create CSF matrix and an eigen dense matrix
     CSF::SparseMatrix<T, indexT, compressionLevel> csfMatrix(eigen);
 
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+
+    start = std::chrono::system_clock::now();
     Eigen::MatrixXd denseMatrix = csfMatrix * randMatrix;
-    Eigen::MatrixXd controlMatrix = eigen * randMatrix;
+    end = std::chrono::system_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>( end - start ).count();
+
+    start = std::chrono::system_clock::now();
+    Eigen::MatrixXd denseMatrix2 = csfMatrix.matrixMultiply2(randMatrix);
+    end = std::chrono::system_clock::now();   
+    auto duration2 = std::chrono::duration_cast<std::chrono::microseconds>( end - start ).count();
+
+    std::cout << "Version 1 (new): " << duration << " version 2 (old): " << duration2 << std::endl;
+
+
+    // Eigen::MatrixXd controlMatrix = eigen * randMatrix;
 
     T sum_e = denseMatrix.sum();
-    T sum_csf = controlMatrix.sum();
+    T sum_csf = denseMatrix2.sum();
 
     if (sum_csf - sum_e > 10 || sum_csf == 0) {
         std::cout << "Rows: " << numRows << " Cols: " << numCols << " Sparsity: " << sparsity << " Seed: " << seed << std::endl;

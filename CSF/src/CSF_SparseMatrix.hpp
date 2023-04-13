@@ -153,6 +153,8 @@ namespace CSF
         inline Eigen::VectorXd vectorMultiply(typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector& vec);
 
         inline Eigen::MatrixXd matrixMultiply(Eigen::MatrixXd& mat);
+
+        inline Eigen::MatrixXd matrixMultiply2(Eigen::MatrixXd& mat);
     };
 
     template <typename T, typename indexT, bool columnMajor>
