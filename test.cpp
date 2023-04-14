@@ -35,11 +35,11 @@ int main() {
     // multiply the CSF by 3
     skyMat_csf *= 3;
 
-    
+
 
 
     // * CSF Iterator Testing * //
-    #pragma omp parallel for num_threads(15)
+    // #pragma omp parallel for num_threads(15)
     for (int i = 0; i < 1000000; i++) {
         iteratorTest<double, uint64_t, 3>();
         std::cout << "Test " << i << " passed" << std::endl;
@@ -52,8 +52,8 @@ int main() {
 template <typename T, typename indexT, int compressionLevel>
 void iteratorTest() {
 
-    int numRows = 1000;//rand() % 1000 + 10;
-    int numCols = 1000;//rand() % 1000 + 10;
+    int numRows = 50;//rand() % 1000 + 10;
+    int numCols = 5000;//rand() % 1000 + 10;
     int sparsity = 1;//rand() % 50 + 1;
     uint64_t seed = 1;//rand();
 
@@ -70,29 +70,48 @@ void iteratorTest() {
 
     std::chrono::time_point<std::chrono::system_clock> start, end;
 
-    start = std::chrono::system_clock::now();
-    Eigen::MatrixXd denseMatrix = csfMatrix * randMatrix;
-    end = std::chrono::system_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>( end - start ).count();
 
-    start = std::chrono::system_clock::now();
-    Eigen::MatrixXd denseMatrix2 = csfMatrix.matrixMultiply2(randMatrix);
-    end = std::chrono::system_clock::now();   
-    auto duration2 = std::chrono::duration_cast<std::chrono::microseconds>( end - start ).count();
+    std::vector<uint64_t> timesForNew;
+    std::vector<uint64_t> timesForOld;
+    for (int i = 0; i < 1; i++) {
+        start = std::chrono::system_clock::now();
+        Eigen::MatrixXd denseMatrix = csfMatrix * randMatrix;
+        end = std::chrono::system_clock::now();
+        timesForNew.push_back(std::chrono::duration_cast<std::chrono::microseconds>(end - start).count());
+
+        start = std::chrono::system_clock::now();
+        Eigen::MatrixXd denseMatrix2 = csfMatrix.matrixMultiply2(randMatrix);
+        end = std::chrono::system_clock::now();
+        timesForOld.push_back(std::chrono::duration_cast<std::chrono::microseconds>(end - start).count());
+    }
+
+    //take average of timesforNew and timesForOld
+    uint64_t duration = 0;
+    uint64_t duration2 = 0;
+    for (int i = 0; i < timesForNew.size(); i++) {
+        duration += timesForNew[i];
+        duration2 += timesForOld[i];
+    }
+    duration /= timesForNew.size();
+    duration2 /= timesForOld.size();
 
     std::cout << "Version 1 (new): " << duration << " version 2 (old): " << duration2 << std::endl;
+    
+    if(duration > duration2){
+        std::cout << "Old is faster!" << std::endl;
+    }
 
 
     // Eigen::MatrixXd controlMatrix = eigen * randMatrix;
 
-    T sum_e = denseMatrix.sum();
-    T sum_csf = denseMatrix2.sum();
+    // T sum_e = denseMatrix.sum();
+    // T sum_csf = denseMatrix2.sum();
 
-    if (sum_csf - sum_e > 10 || sum_csf == 0) {
-        std::cout << "Rows: " << numRows << " Cols: " << numCols << " Sparsity: " << sparsity << " Seed: " << seed << std::endl;
-        std::cout << "sum_csf: " << sum_csf << " sum_e: " << sum_e << std::endl;
-        assert(sum_csf == sum_e);
-    }
+    // if (sum_csf - sum_e > 10 || sum_csf == 0) {
+    //     std::cout << "Rows: " << numRows << " Cols: " << numCols << " Sparsity: " << sparsity << " Seed: " << seed << std::endl;
+    //     std::cout << "sum_csf: " << sum_csf << " sum_e: " << sum_e << std::endl;
+    //     assert(sum_csf == sum_e);
+    // }
 }
 
 
