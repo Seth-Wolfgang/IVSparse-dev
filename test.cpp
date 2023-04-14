@@ -2,6 +2,7 @@
 #include "CSF/SparseMatrix"
 #include "misc/matrix_creator.cpp"
 #include <chrono>
+#define EIGEN_DONT_PARALLELIZE
 
 template <typename T, typename indexT, int compressionLevel> void iteratorTest();
 void getMat(Eigen::SparseMatrix<int>& myMatrix_e);
@@ -41,8 +42,8 @@ int main() {
     // * CSF Iterator Testing * //
     // #pragma omp parallel for num_threads(15)
     for (int i = 0; i < 1000000; i++) {
-        iteratorTest<double, uint64_t, 3>();
-        std::cout << "Test " << i << " passed" << std::endl;
+        iteratorTest<int, uint64_t, 3>();
+        // std::cout << "Test " << i << " passed" << std::endl;
     }
 
 
@@ -57,35 +58,42 @@ void iteratorTest() {
     int sparsity = 1;//rand() % 50 + 1;
     uint64_t seed = 1;//rand();
 
+    // Initialize the random matrix
     Eigen::SparseMatrix<T> eigen(numRows, numCols);
     eigen.reserve(Eigen::VectorXi::Constant(numCols, numRows));
     eigen = generateMatrix<T>(numRows, numCols, sparsity, seed);
     eigen.makeCompressed();
 
-    Eigen::MatrixXd randMatrix = Eigen::MatrixXd::Random(numCols, numRows);
-    Eigen::VectorXd randVector = Eigen::VectorXd::Random(numCols);
+    //Create random matrix and vector to multiply with
+    Eigen::Matrix<T, -1, -1> randMatrix = Eigen::Matrix<T, -1, -1>::Random(numCols, numRows);
+    Eigen::Matrix<T, -1, 1> randVector = Eigen::Matrix<T, -1, 1>::Random(numCols);
 
     //Create CSF matrix and an eigen dense matrix
     CSF::SparseMatrix<T, indexT, compressionLevel> csfMatrix(eigen);
 
+    //Create a dense matrix to store the result of the multiplication
     std::chrono::time_point<std::chrono::system_clock> start, end;
+    Eigen::Matrix<T, -1, -1>  csfDenseMatrix;
+    Eigen::Matrix<T, -1, -1> eigenDenseMatrix;
 
 
+    //Vectors to store times for averages
     std::vector<uint64_t> timesForNew;
     std::vector<uint64_t> timesForOld;
-    // for (int i = 0; i < 1; i++) {
+    for (int i = 0; i < 10; i++) {
+        
+        //Measure time for CSF matrix
         start = std::chrono::system_clock::now();
-        Eigen::MatrixXd denseMatrix = csfMatrix * randMatrix;
+        csfDenseMatrix = csfMatrix * randMatrix;
         end = std::chrono::system_clock::now();
         timesForNew.push_back(std::chrono::duration_cast<std::chrono::microseconds>(end - start).count());
 
+        //Measure time for Eigen matrix
         start = std::chrono::system_clock::now();
-        Eigen::MatrixXd denseMatrix2 = csfMatrix.matrixMultiply2(randMatrix);
+        eigenDenseMatrix = eigen * randMatrix;
         end = std::chrono::system_clock::now();
         timesForOld.push_back(std::chrono::duration_cast<std::chrono::microseconds>(end - start).count());
-
-        Eigen::MatrixXd denseMatrix3 = eigen * randMatrix;
-    // }
+    }
 
     //take average of timesforNew and timesForOld
     uint64_t duration = 0;
@@ -97,23 +105,21 @@ void iteratorTest() {
     duration /= timesForNew.size();
     duration2 /= timesForOld.size();
 
-    std::cout << "Version 1 (new): " << duration << " version 2 (old): " << duration2 << std::endl;
-    
-    if(duration > duration2){
-        std::cout << "Old is faster!" << std::endl;
-    }
+    std::cout << "Version 1 (CSF): " << duration << " version 2 (Eigen): " << duration2 << std::endl;
 
 
     // Eigen::MatrixXd controlMatrix = eigen * randMatrix;
 
     // T sum_e = denseMatrix.sum();
-    T sum_csf = denseMatrix.sum();
-    T sumEigen = denseMatrix3.sum();
+    T sumCSF = csfDenseMatrix.sum();
+    T sumEigen = eigenDenseMatrix.sum();
 
-    if (sum_csf == 0 || sumEigen == 0 || sumEigen - sum_csf > 10) {
+    // std::cout << "Eigen: " << sumEigen << " CSF: " << sumCSF << std::endl;
+
+    if (sumCSF == 0 || sumEigen == 0 || sumCSF != sumEigen) {
         std::cout << "Rows: " << numRows << " Cols: " << numCols << " Sparsity: " << sparsity << " Seed: " << seed << std::endl;
-        std::cout << "sum_csf: " << sum_csf << " Eigen: " << sumEigen << std::endl;
-        assert(sum_csf == sumEigen);
+        std::cout << "sum_csf: " << sumCSF << " Eigen: " << sumEigen << std::endl;
+        assert(sumCSF == sumEigen);
     }
 }
 

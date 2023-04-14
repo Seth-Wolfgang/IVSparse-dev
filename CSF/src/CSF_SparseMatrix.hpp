@@ -142,19 +142,19 @@ namespace CSF
 
         Eigen::VectorXd operator*(Eigen::VectorXd& vec);
 
-        Eigen::MatrixXd operator*(Eigen::MatrixXd mat);
+        Eigen::Matrix<T, -1,-1> operator*(Eigen::Matrix<T, -1,-1> mat);
 
         T operator()(uint32_t row, uint32_t col);
 
         typename CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector operator[](uint32_t vec);
         
-        inline Eigen::MatrixXd vectorMultiply(Eigen::VectorXd& vec);
+        inline Eigen::Matrix<T, -1,-1> vectorMultiply(Eigen::VectorXd& vec);
 
-        inline Eigen::VectorXd vectorMultiply(typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector& vec);
+        inline Eigen::Matrix<T,-1, 1> vectorMultiply(typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector& vec);
 
-        inline Eigen::MatrixXd matrixMultiply(Eigen::MatrixXd& mat);
+        inline Eigen::Matrix<T, -1,-1> matrixMultiply(Eigen::Matrix<T, -1,-1>& mat);
 
-        inline Eigen::MatrixXd matrixMultiply2(Eigen::MatrixXd& mat);
+        inline Eigen::Matrix<T, -1,-1> matrixMultiply2(Eigen::Matrix<T, -1,-1>& mat);
     };
 
     template <typename T, typename indexT, bool columnMajor>
