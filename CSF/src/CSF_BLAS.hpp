@@ -160,48 +160,22 @@ namespace CSF {
      */
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    inline Eigen::MatrixXd SparseMatrix<T, indexT, compressionLevel, columnMajor>::matrixMultiply2(Eigen::MatrixXd& mat) {
-        // check that the matrix is the correct size
-        #ifdef CSF_DEBUG
-        if (mat.rows() != outerDim)
-            throw std::invalid_argument("The matrix must be the same size as the number of columns in the matrix!");
-        #endif
-
-        Eigen::MatrixXd newMatrix = Eigen::MatrixXd::Zero(innerDim, mat.cols());
-
-        #pragma omp parallel for
-        for (int col = 0; col < mat.cols(); col++) {
-            for (int row = 0; row < mat.rows(); row++) {
-                for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator matIter(*this, row); matIter; ++matIter) {
-                    newMatrix.coeffRef(matIter.row(), col) += matIter.value() * mat(row, col);
-                }
-            }
-        }
-        return newMatrix;
-    }
-
-    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     inline Eigen::MatrixXd SparseMatrix<T, indexT, compressionLevel, columnMajor>::matrixMultiply(Eigen::MatrixXd& mat) {
         // check that the matrix is the correct size
-        #ifdef CSF_DEBUG
+#ifdef CSF_DEBUG
         if (mat.rows() != outerDim)
             throw std::invalid_argument("The matrix must be the same size as the number of columns in the matrix!");
-        #endif
+#endif
 
         Eigen::MatrixXd newMatrix = Eigen::MatrixXd::Zero(innerDim, mat.cols());
-        int num_rows = this->rows();
 
-        #pragma omp parallel for
-        for (int i = 0; i < num_rows * mat.cols(); ++i) {
-            // linear indexing considers a matrix as a vector, in this case we let it be column-major
-            int col = i / num_rows; // integer division!
-            int row = i % num_rows; // modulus of integer division!
-            for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator matIter(*this, row); matIter; ++matIter) {
-                newMatrix.coeffRef(matIter.row(), col) += matIter.value() * mat(row, col);
+#pragma omp parallel for
+        for (int col = 0; col < mat.cols(); col++) {
+            for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator matIter(*this, col); matIter; ++matIter) {
+                newMatrix.coeffRef(matIter.row(), col) += matIter.value() * mat(matIter.row(), col);
             }
         }
         return newMatrix;
-
     }
 
 //     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
@@ -212,16 +186,53 @@ namespace CSF {
 //             throw std::invalid_argument("The matrix must be the same size as the number of columns in the matrix!");
 // #endif
 
-//         Eigen::MatrixXd newMatrix = Eigen::MatrixXd::Zero(innerDim, 0);
-//         Eigen::VectorXd vec;
+//         Eigen::MatrixXd newMatrix = Eigen::MatrixXd::Zero(innerDim, mat.cols());
+//         int num_rows = this->rows();
 
-//         // iterate over the vector and multiply the corresponding vector of the parameter matrix "mat"
-//         for (int i = 0; i < mat.outerSize(); i++) {
-//             newMatrix.conservativeResize(innerDim, newMatrix.cols() + 1);
-//             vec = mat.col(i);
-//             newMatrix.col(i) = vectorMultiply(vec);
+// #pragma omp parallel for
+//         for (int i = 0; i < num_rows * mat.cols(); ++i) {
+//             // linear indexing considers a matrix as a vector, in this case we let it be column-major
+//             int col = i / num_rows; // integer division!
+//             int row = i % num_rows; // modulus of integer division!
+//             for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator matIter(*this, col); matIter; ++matIter) {
+//                 newMatrix.coeffRef(matIter.row(), col) += matIter.value() * mat(matIter.getIndex(), row, col);
+//             }
 //         }
-
 //         return newMatrix;
+
 //     }
+
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    Eigen::MatrixXd SparseMatrix<T, indexT, compressionLevel, columnMajor>::matrixMultiply2(Eigen::MatrixXd& mat) {
+        Eigen::MatrixXd result = Eigen::MatrixXd::Zero(innerDim, mat.outerSize());
+        
+        #pragma omp parallel for
+        for (uint32_t col = 0; col < mat.outerSize(); ++col) {
+            for (typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator it(*this, col); it; ++it) {
+                result.col(col) += it.value() * mat.col(it.row());
+            }
+        }
+        return result;
+    }
+
+    //     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    //     inline Eigen::MatrixXd SparseMatrix<T, indexT, compressionLevel, columnMajor>::matrixMultiply(Eigen::MatrixXd& mat) {
+    //         // check that the matrix is the correct size
+    // #ifdef CSF_DEBUG
+    //         if (mat.rows() != outerDim)
+    //             throw std::invalid_argument("The matrix must be the same size as the number of columns in the matrix!");
+    // #endif
+
+    //         Eigen::MatrixXd newMatrix = Eigen::MatrixXd::Zero(innerDim, 0);
+    //         Eigen::VectorXd vec;
+
+    //         // iterate over the vector and multiply the corresponding vector of the parameter matrix "mat"
+    //         for (int i = 0; i < mat.outerSize(); i++) {
+    //             newMatrix.conservativeResize(innerDim, newMatrix.cols() + 1);
+    //             vec = mat.col(i);
+    //             newMatrix.col(i) = vectorMultiply(vec);
+    //         }
+
+    //         return newMatrix;
+    //     }
 }

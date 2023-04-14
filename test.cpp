@@ -52,8 +52,8 @@ int main() {
 template <typename T, typename indexT, int compressionLevel>
 void iteratorTest() {
 
-    int numRows = 50;//rand() % 1000 + 10;
-    int numCols = 5000;//rand() % 1000 + 10;
+    int numRows = 100;//rand() % 1000 + 10;
+    int numCols = 100;//rand() % 1000 + 10;
     int sparsity = 1;//rand() % 50 + 1;
     uint64_t seed = 1;//rand();
 
@@ -73,7 +73,7 @@ void iteratorTest() {
 
     std::vector<uint64_t> timesForNew;
     std::vector<uint64_t> timesForOld;
-    for (int i = 0; i < 1; i++) {
+    // for (int i = 0; i < 1; i++) {
         start = std::chrono::system_clock::now();
         Eigen::MatrixXd denseMatrix = csfMatrix * randMatrix;
         end = std::chrono::system_clock::now();
@@ -83,7 +83,9 @@ void iteratorTest() {
         Eigen::MatrixXd denseMatrix2 = csfMatrix.matrixMultiply2(randMatrix);
         end = std::chrono::system_clock::now();
         timesForOld.push_back(std::chrono::duration_cast<std::chrono::microseconds>(end - start).count());
-    }
+
+        Eigen::MatrixXd denseMatrix3 = eigen * randMatrix;
+    // }
 
     //take average of timesforNew and timesForOld
     uint64_t duration = 0;
@@ -105,13 +107,14 @@ void iteratorTest() {
     // Eigen::MatrixXd controlMatrix = eigen * randMatrix;
 
     // T sum_e = denseMatrix.sum();
-    // T sum_csf = denseMatrix2.sum();
+    T sum_csf = denseMatrix.sum();
+    T sumEigen = denseMatrix3.sum();
 
-    // if (sum_csf - sum_e > 10 || sum_csf == 0) {
-    //     std::cout << "Rows: " << numRows << " Cols: " << numCols << " Sparsity: " << sparsity << " Seed: " << seed << std::endl;
-    //     std::cout << "sum_csf: " << sum_csf << " sum_e: " << sum_e << std::endl;
-    //     assert(sum_csf == sum_e);
-    // }
+    if (sum_csf == 0 || sumEigen == 0 || sumEigen - sum_csf > 10) {
+        std::cout << "Rows: " << numRows << " Cols: " << numCols << " Sparsity: " << sparsity << " Seed: " << seed << std::endl;
+        std::cout << "sum_csf: " << sum_csf << " Eigen: " << sumEigen << std::endl;
+        assert(sum_csf == sumEigen);
+    }
 }
 
 
