@@ -41,7 +41,7 @@ int main() {
 
     // * CSF Iterator Testing * //
     // #pragma omp parallel for num_threads(15)
-    for (int i = 0; i < 1000000; i++) {
+    for (int i = 0; i < 1; i++) {
         iteratorTest<int, uint64_t, 3>();
         // std::cout << "Test " << i << " passed" << std::endl;
     }
@@ -53,8 +53,8 @@ int main() {
 template <typename T, typename indexT, int compressionLevel>
 void iteratorTest() {
 
-    int numRows = 100;//rand() % 1000 + 10;
-    int numCols = 100;//rand() % 1000 + 10;
+    int numRows = 1000;//rand() % 1000 + 10;
+    int numCols = 1000;//rand() % 1000 + 10;
     int sparsity = 1;//rand() % 50 + 1;
     uint64_t seed = 1;//rand();
 
@@ -66,7 +66,9 @@ void iteratorTest() {
 
     //Create random matrix and vector to multiply with
     Eigen::Matrix<T, -1, -1> randMatrix = Eigen::Matrix<T, -1, -1>::Random(numCols, numRows);
-    Eigen::Matrix<T, -1, 1> randVector = Eigen::Matrix<T, -1, 1>::Random(numCols);
+    // Eigen::Matrix<T, -1, 1> randVector = Eigen::Matrix<T, -1, 1>::Random(numCols);
+
+    Eigen::VectorXd randVector = Eigen::VectorXd::Random(numCols);
 
     //Create CSF matrix and an eigen dense matrix
     CSF::SparseMatrix<T, indexT, compressionLevel> csfMatrix(eigen);
@@ -80,7 +82,7 @@ void iteratorTest() {
     //Vectors to store times for averages
     std::vector<uint64_t> timesForNew;
     std::vector<uint64_t> timesForOld;
-    for (int i = 0; i < 10; i++) {
+    for (int i = 0; i < 1; i++) {
         
         //Measure time for CSF matrix
         start = std::chrono::system_clock::now();
@@ -88,11 +90,15 @@ void iteratorTest() {
         end = std::chrono::system_clock::now();
         timesForNew.push_back(std::chrono::duration_cast<std::chrono::microseconds>(end - start).count());
 
+        std::cout << "CSF:\n " << csfDenseMatrix << std::endl;
+
         //Measure time for Eigen matrix
         start = std::chrono::system_clock::now();
         eigenDenseMatrix = eigen * randMatrix;
         end = std::chrono::system_clock::now();
         timesForOld.push_back(std::chrono::duration_cast<std::chrono::microseconds>(end - start).count());
+
+        std::cout << "Eigen:\n " << eigenDenseMatrix << std::endl;
     }
 
     //take average of timesforNew and timesForOld
