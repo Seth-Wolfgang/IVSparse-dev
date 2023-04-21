@@ -11,7 +11,7 @@
  * Source: https://math.nist.gov/MatrixMarket/mmio/c/example_read.c
  */
 
-#define NUM_ITERATIONS 100
+#define NUM_ITERATIONS 1
 
 
 #include "lib/benchmarkFunctions.h"
@@ -538,7 +538,7 @@ void EigenMemoryFootprintBenchmark(std::vector<uint64_t>& data, std::vector<Eige
     eigenMatrix.setFromTriplets(eigenTriplet.begin(), eigenTriplet.end());
     eigenMatrix.makeCompressed();
 
-    data.at(12) = (eigenMatrix.nonZeros() + sizeof(*eigenMatrix.outerIndexPtr()) + 1) * sizeof(sizeof(*eigenMatrix.innerIndexPtr())) + (eigenTriplet.size() * sizeof(double));
+    data.at(12) = eigenMatrix.nonZeros() * sizeof(double) + eigenMatrix.outerSize() * sizeof(uint32_t) + eigenMatrix.innerSize() * sizeof(uint32_t);
 
 }
 
