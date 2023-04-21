@@ -11,9 +11,7 @@
  * Source: https://math.nist.gov/MatrixMarket/mmio/c/example_read.c
  */
 
-#define NUM_ITERATIONS 1
-
-
+#define NUM_ITERATIONS 10
 #include "lib/benchmarkFunctions.h"
 
 int main(int argc, char** argv) {
@@ -69,7 +67,7 @@ int main(int argc, char** argv) {
     CSF::SparseMatrix<VALUE_TYPE, INDEX_TYPE, 3> csf3(eigen);
 
     // Random array to select a random benchmark
-    const int myList[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14 };
+    const int myList[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20 };
     int tempList[NUM_OF_BENCHMARKS];
 
 
@@ -96,6 +94,7 @@ int main(int argc, char** argv) {
             }
 
             // Runs the selected benchmark
+            std::cout << "Running benchmark " << currentlySelected << std::endl;
             switch (currentlySelected) {
             case 0:
                 EigenConstructorBenchmark<VALUE_TYPE>(eigenTriplet, data, matrixData[1], matrixData[2]);
@@ -142,6 +141,24 @@ int main(int argc, char** argv) {
             case 14:
                 CSF3MemoryFootprintBenchmark<VALUE_TYPE, INDEX_TYPE>(data, eigenTriplet, matrixData[1], matrixData[2]);
                 continue;
+            case 15:
+                eigenTransposeBenchmark<VALUE_TYPE>(eigen, data);
+                continue;
+            case 16:
+                CSF2TransposeBenchmark<VALUE_TYPE, INDEX_TYPE>(csf2, data);
+                continue;
+            case 17:
+                CSF3TransposeBenchmark<VALUE_TYPE, INDEX_TYPE>(csf3, data);
+                continue;
+            case 18:
+                eigenMatrixMultiplicationBenchmark<VALUE_TYPE>(eigen, data);
+                continue;
+            case 19:
+                CSF2MatrixMultiplicationBenchmark<VALUE_TYPE, INDEX_TYPE>(eigen, csf2, data);
+                continue;
+            case 20:
+                CSF3MatrixMultiplicationBenchmark<VALUE_TYPE, INDEX_TYPE>(eigen, csf3, data);
+                continue;
 
             }
         }
@@ -154,7 +171,7 @@ int main(int argc, char** argv) {
 
 
     // Class to calculate the maxes and averages of the benchmarking data
-    bench.printTimesToCSV();
+    // bench.printTimesToCSV();
     return 1;
 }
 
@@ -538,8 +555,7 @@ void EigenMemoryFootprintBenchmark(std::vector<uint64_t>& data, std::vector<Eige
     eigenMatrix.setFromTriplets(eigenTriplet.begin(), eigenTriplet.end());
     eigenMatrix.makeCompressed();
 
-    data.at(12) = eigenMatrix.nonZeros() * sizeof(double) + eigenMatrix.outerSize() * sizeof(uint32_t) + eigenMatrix.innerSize() * sizeof(uint32_t) + sizeof(eigen)
-    + sizeof(eigen.outerIndexPtr() * eigen.cols());
+    data.at(12) = eigenMatrix.nonZeros() * sizeof(double) + eigenMatrix.outerSize() * sizeof(uint32_t) + eigenMatrix.innerSize() * sizeof(uint32_t);
 
 }
 
@@ -578,3 +594,107 @@ void CSF3MemoryFootprintBenchmark(std::vector<uint64_t>& data, std::vector<Eigen
     data.at(14) = csf3Matrix.compressionSize();
 }
 
+/**
+ * @brief Benchmark for transpose method of Eigen::SparseMatrix
+ *
+ */
+
+template <typename T>
+void eigenTransposeBenchmark(Eigen::SparseMatrix<T>& eigen, std::vector<uint64_t>& data) {
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+
+    //Eigen
+    start = std::chrono::system_clock::now();
+    Eigen::SparseMatrix<T> resultEigen = eigen.transpose();
+    end = std::chrono::system_clock::now();
+    data.at(15) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+}
+
+/**
+ * @brief Benchmark for transpose method of CSF::SparseMatrix
+ *
+ */
+
+template <typename T, typename indexT>
+void CSF2TransposeBenchmark(CSF::SparseMatrix<T, indexT, 2>& csf2, std::vector<uint64_t>& data) {
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+
+    //CSF 2
+    start = std::chrono::system_clock::now();
+    CSF::SparseMatrix<T, indexT, 2> resultCSF2 = csf2.transpose();
+    end = std::chrono::system_clock::now();
+
+    data.at(16) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+}
+
+/**
+ * @brief Benchmark for transpose method of CSF::SparseMatrix
+ *
+ *
+ */
+
+template <typename T, typename indexT>
+void CSF3TransposeBenchmark(CSF::SparseMatrix<T, indexT, 3>& csf3, std::vector<uint64_t>& data) {
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+
+    //CSF 3
+    start = std::chrono::system_clock::now();
+    CSF::SparseMatrix<T, indexT, 3> resultCSF3 = csf3.transpose();
+    end = std::chrono::system_clock::now();
+
+    data.at(17) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+}
+
+/**
+ * @brief Benchmark for matrix multiplication of Eigen::SparseMatrix
+ *
+ *
+ */
+
+template <typename T>
+void eigenMatrixMultiplicationBenchmark(Eigen::SparseMatrix<T>& eigen, std::vector<uint64_t>& data) {
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+
+    //Eigen
+    start = std::chrono::system_clock::now();
+    Eigen::SparseMatrix<T> resultEigen = eigen * eigen;
+    end = std::chrono::system_clock::now();
+
+    data.at(18) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+}
+
+/**
+ * @brief Benchmark for matrix multiplication of CSF::SparseMatrix
+ *
+ *
+ */
+
+template <typename T, typename indexT>
+void CSF2MatrixMultiplicationBenchmark(Eigen::SparseMatrix<T>& eigen, CSF::SparseMatrix<T, indexT, 2>& csf2, std::vector<uint64_t>& data) {
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+
+    //CSF 2
+    start = std::chrono::system_clock::now();
+    Eigen::Matrix<T,-1,-1> result = csf2 * eigen;
+    end = std::chrono::system_clock::now();
+
+    data.at(19) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+}
+
+/**
+ * @brief Benchmark for matrix multiplication of CSF::SparseMatrix
+ *
+ *
+ */
+
+template <typename T, typename indexT>
+void CSF3MatrixMultiplicationBenchmark(Eigen::SparseMatrix<T>& eigen, CSF::SparseMatrix<T, indexT, 3>& csf3, std::vector<uint64_t>& data) {
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+
+    //CSF 3
+    start = std::chrono::system_clock::now();
+    Eigen::Matrix<T,-1,-1> result = csf3 * eigen;
+    end = std::chrono::system_clock::now();
+
+    data.at(20) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+}

@@ -3,7 +3,7 @@
 # echo "Running benchmark with $numCols columns, $numRows rows, $numNonzeros nonzeros, $numMatrices matrices, and \"$problemKind\" problem kind"
 
 # Compiling benchmark
-g++ -w benchmark.cpp -o benchmark
+g++ -w -O2 benchmark.cpp -o benchmark
 numMatrices=100
 # Downloading matrices and running benchmark at the same time
 for x in $(seq 1 $numMatrices)

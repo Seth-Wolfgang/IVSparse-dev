@@ -10,7 +10,7 @@
 
 #define VALUE_TYPE double
 #define INDEX_TYPE int
-#define NUM_OF_BENCHMARKS 15
+#define NUM_OF_BENCHMARKS 21
 #define EIGEN_DONT_PARALLELIZE
 
 // Function to read Matrix Market files
@@ -63,3 +63,21 @@ void CSF2MemoryFootprintBenchmark(std::vector<uint64_t>& data, std::vector<Eigen
 
 template <typename T, typename indexT>
 void CSF3MemoryFootprintBenchmark(std::vector<uint64_t>& data, std::vector<Eigen::Triplet<T>>& eigenTriplet, uint32_t inner, uint32_t outer);
+
+template <typename T>
+void eigenTransposeBenchmark(Eigen::SparseMatrix<T>& eigen, std::vector<uint64_t>& data);
+
+template <typename T, typename indexT>
+void CSF2TransposeBenchmark(CSF::SparseMatrix<T, indexT, 2>& csf2, std::vector<uint64_t>& data);
+
+template <typename T, typename indexT>
+void CSF3TransposeBenchmark(CSF::SparseMatrix<T, indexT, 3>& csf3, std::vector<uint64_t>& data);
+
+template <typename T>
+void eigenMatrixMultiplicationBenchmark(Eigen::SparseMatrix<T>& eigen, std::vector<uint64_t>& data);
+
+template <typename T, typename indexT>
+void CSF2MatrixMultiplicationBenchmark(Eigen::SparseMatrix<T>& eigen, CSF::SparseMatrix<T, indexT, 2>& csf2, std::vector<uint64_t>& data);
+
+template <typename T, typename indexT>
+void CSF3MatrixMultiplicationBenchmark(Eigen::SparseMatrix<T>& eigen, CSF::SparseMatrix<T, indexT, 3>& csf3, std::vector<uint64_t>& data);
