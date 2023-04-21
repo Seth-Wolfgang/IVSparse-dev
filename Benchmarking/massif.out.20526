@@ -1,0 +1,782 @@
+desc: (none)
+cmd: ./a.out
+time_unit: i
+#-----------
+snapshot=0
+#-----------
+time=0
+mem_heap_B=0
+mem_heap_extra_B=0
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=1
+#-----------
+time=2330187
+mem_heap_B=72704
+mem_heap_extra_B=8
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=2
+#-----------
+time=2455335
+mem_heap_B=87964
+mem_heap_extra_B=92
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=3
+#-----------
+time=3297454
+mem_heap_B=87964
+mem_heap_extra_B=92
+mem_stacks_B=0
+heap_tree=detailed
+n6: 87964 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 72704 0x490D979: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.30)
+  n1: 72704 0x400647D: call_init.part.0 (dl-init.c:70)
+   n1: 72704 0x4006567: call_init (dl-init.c:33)
+    n1: 72704 0x4006567: _dl_init (dl-init.c:117)
+     n0: 72704 0x40202E9: ??? (in /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2)
+ n1: 5296 0x10D0E9: void readFile<double>(std::vector<Eigen::Triplet<double, Eigen::SparseMatrix<double, 0, int>::StorageIndex>, std::allocator<Eigen::Triplet<double, Eigen::SparseMatrix<double, 0, int>::StorageIndex> > >&, std::vector<double, std::allocator<double> >&, char*) (testing.cpp:85)
+  n0: 5296 0x10BDEB: main (testing.cpp:18)
+ n1: 4096 0x4B2BC23: _IO_file_doallocate (filedoalloc.c:101)
+  n1: 4096 0x4B3AD5F: _IO_doallocbuf (genops.c:347)
+   n1: 4096 0x4B39D5B: _IO_file_underflow@@GLIBC_2.2.5 (fileops.c:485)
+    n1: 4096 0x4B3AE15: _IO_default_uflow (genops.c:362)
+     n1: 4096 0x4B2D49B: _IO_getline_info (iogetline.c:60)
+      n1: 4096 0x4B2C48F: fgets (iofgets.c:53)
+       n1: 4096 0x10AAC1: mm_read_banner(_IO_FILE*, char (*) [4]) (mmio.c:109)
+        n1: 4096 0x10CF03: void readFile<double>(std::vector<Eigen::Triplet<double, Eigen::SparseMatrix<double, 0, int>::StorageIndex>, std::allocator<Eigen::Triplet<double, Eigen::SparseMatrix<double, 0, int>::StorageIndex> > >&, std::vector<double, std::allocator<double> >&, char*) (testing.cpp:58)
+         n0: 4096 0x10BDEB: main (testing.cpp:18)
+ n1: 2648 0x10D0B9: void readFile<double>(std::vector<Eigen::Triplet<double, Eigen::SparseMatrix<double, 0, int>::StorageIndex>, std::allocator<Eigen::Triplet<double, Eigen::SparseMatrix<double, 0, int>::StorageIndex> > >&, std::vector<double, std::allocator<double> >&, char*) (testing.cpp:83)
+  n0: 2648 0x10BDEB: main (testing.cpp:18)
+ n1: 2648 0x10D0D1: void readFile<double>(std::vector<Eigen::Triplet<double, Eigen::SparseMatrix<double, 0, int>::StorageIndex>, std::allocator<Eigen::Triplet<double, Eigen::SparseMatrix<double, 0, int>::StorageIndex> > >&, std::vector<double, std::allocator<double> >&, char*) (testing.cpp:84)
+  n0: 2648 0x10BDEB: main (testing.cpp:18)
+ n0: 572 in 2 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=4
+#-----------
+time=3383457
+mem_heap_B=87492
+mem_heap_extra_B=76
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=5
+#-----------
+time=3535500
+mem_heap_B=107972
+mem_heap_extra_B=84
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=6
+#-----------
+time=3666673
+mem_heap_B=99932
+mem_heap_extra_B=108
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=7
+#-----------
+time=4052632
+mem_heap_B=99996
+mem_heap_extra_B=116
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=8
+#-----------
+time=4054194
+mem_heap_B=89672
+mem_heap_extra_B=64
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=9
+#-----------
+time=4252005
+mem_heap_B=94968
+mem_heap_extra_B=72
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=10
+#-----------
+time=4252140
+mem_heap_B=97616
+mem_heap_extra_B=88
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=11
+#-----------
+time=5910650
+mem_heap_B=97640
+mem_heap_extra_B=104
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=12
+#-----------
+time=6032323
+mem_heap_B=99737
+mem_heap_extra_B=351
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=13
+#-----------
+time=6112053
+mem_heap_B=99978
+mem_heap_extra_B=494
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=14
+#-----------
+time=6249624
+mem_heap_B=100405
+mem_heap_extra_B=611
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=15
+#-----------
+time=6339989
+mem_heap_B=100676
+mem_heap_extra_B=772
+mem_stacks_B=0
+heap_tree=detailed
+n5: 100676 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 72704 0x490D979: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.30)
+  n1: 72704 0x400647D: call_init.part.0 (dl-init.c:70)
+   n1: 72704 0x4006567: call_init (dl-init.c:33)
+    n1: 72704 0x4006567: _dl_init (dl-init.c:117)
+     n0: 72704 0x40202E9: ??? (in /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2)
+ n1: 16384 0x11826F: __gnu_cxx::new_allocator<Eigen::Triplet<double, int> >::allocate(unsigned long, void const*) (new_allocator.h:127)
+  n1: 16384 0x116E5A: std::allocator_traits<std::allocator<Eigen::Triplet<double, int> > >::allocate(std::allocator<Eigen::Triplet<double, int> >&, unsigned long) (alloc_traits.h:464)
+   n1: 16384 0x114E8F: std::_Vector_base<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > >::_M_allocate(unsigned long) (stl_vector.h:346)
+    n1: 16384 0x112C0E: void std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > >::_M_realloc_insert<Eigen::Triplet<double, int> >(__gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > >, Eigen::Triplet<double, int>&&) (vector.tcc:440)
+     n1: 16384 0x111071: Eigen::Triplet<double, int>& std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > >::emplace_back<Eigen::Triplet<double, int> >(Eigen::Triplet<double, int>&&) (vector.tcc:121)
+      n1: 16384 0x10E423: std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > >::push_back(Eigen::Triplet<double, int>&&) (stl_vector.h:1204)
+       n1: 16384 0x10D31F: void readFile<double>(std::vector<Eigen::Triplet<double, Eigen::SparseMatrix<double, 0, int>::StorageIndex>, std::allocator<Eigen::Triplet<double, Eigen::SparseMatrix<double, 0, int>::StorageIndex> > >&, std::vector<double, std::allocator<double> >&, char*) (testing.cpp:110)
+        n0: 16384 0x10BDEB: main (testing.cpp:18)
+ n1: 8364 0x10C438: Eigen::internal::aligned_malloc(unsigned long) (Memory.h:216)
+  n1: 8364 0x10C4E6: Eigen::internal::aligned_realloc(void*, unsigned long, unsigned long) (Memory.h:253)
+   n2: 8364 0x11333C: void* Eigen::internal::conditional_aligned_realloc<true>(void*, unsigned long, unsigned long) (Memory.h:315)
+    n1: 5296 0x113B40: double* Eigen::internal::conditional_aligned_realloc_new_auto<double, true>(double*, unsigned long, unsigned long) (Memory.h:525)
+     n1: 5296 0x111DE0: Eigen::internal::CompressedStorage<double, int>::reallocate(long) (CompressedStorage.h:208)
+      n1: 5296 0x10F0E7: Eigen::internal::CompressedStorage<double, int>::resize(long, double) (CompressedStorage.h:98)
+       n1: 5296 0x1117CA: Eigen::SparseMatrix<double, 0, int>::resizeNonZeros(long) (SparseMatrix.h:690)
+        n1: 5296 0x10ED03: void Eigen::internal::set_from_triplets<__gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > >, Eigen::SparseMatrix<double, 0, int>, Eigen::internal::scalar_sum_op<double, double> >(__gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > const&, __gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > const&, Eigen::SparseMatrix<double, 0, int>&, Eigen::internal::scalar_sum_op<double, double>) (SparseMatrix.h:1122)
+         n1: 5296 0x10D704: void Eigen::SparseMatrix<double, 0, int>::setFromTriplets<__gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > >(__gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > const&, __gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > const&) (SparseMatrix.h:1247)
+          n0: 5296 0x10BE80: main (testing.cpp:22)
+    n2: 3068 0x111367: int* Eigen::internal::conditional_aligned_realloc_new_auto<int, true>(int*, unsigned long, unsigned long) (Memory.h:525)
+     n1: 2648 0x111E09: Eigen::internal::CompressedStorage<double, int>::reallocate(long) (CompressedStorage.h:209)
+      n1: 2648 0x10F0E7: Eigen::internal::CompressedStorage<double, int>::resize(long, double) (CompressedStorage.h:98)
+       n1: 2648 0x1117CA: Eigen::SparseMatrix<double, 0, int>::resizeNonZeros(long) (SparseMatrix.h:690)
+        n1: 2648 0x10ED03: void Eigen::internal::set_from_triplets<__gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > >, Eigen::SparseMatrix<double, 0, int>, Eigen::internal::scalar_sum_op<double, double> >(__gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > const&, __gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > const&, Eigen::SparseMatrix<double, 0, int>&, Eigen::internal::scalar_sum_op<double, double>) (SparseMatrix.h:1122)
+         n1: 2648 0x10D704: void Eigen::SparseMatrix<double, 0, int>::setFromTriplets<__gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > >(__gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > const&, __gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > const&) (SparseMatrix.h:1247)
+          n0: 2648 0x10BE80: main (testing.cpp:22)
+     n0: 420 in 1 place, below massif's threshold (1.00%)
+ n0: 1928 in 14 places, all below massif's threshold (1.00%)
+ n1: 1296 0x10F6F2: void CSF::SparseMatrix<double, int, (unsigned char)2, true>::compress<double, int>(double*, int*, int*) (CSF_Methods.hpp:115)
+  n1: 1296 0x10DA65: CSF::SparseMatrix<double, int, (unsigned char)2, true>::SparseMatrix(Eigen::SparseMatrix<double, 0, int>&) (CSF_Constructors.hpp:46)
+   n0: 1296 0x10BEA2: main (testing.cpp:26)
+#-----------
+snapshot=16
+#-----------
+time=6487577
+mem_heap_B=101127
+mem_heap_extra_B=969
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=17
+#-----------
+time=6590073
+mem_heap_B=101443
+mem_heap_extra_B=1061
+mem_stacks_B=0
+heap_tree=detailed
+n5: 101443 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 72704 0x490D979: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.30)
+  n1: 72704 0x400647D: call_init.part.0 (dl-init.c:70)
+   n1: 72704 0x4006567: call_init (dl-init.c:33)
+    n1: 72704 0x4006567: _dl_init (dl-init.c:117)
+     n0: 72704 0x40202E9: ??? (in /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2)
+ n1: 16384 0x11826F: __gnu_cxx::new_allocator<Eigen::Triplet<double, int> >::allocate(unsigned long, void const*) (new_allocator.h:127)
+  n1: 16384 0x116E5A: std::allocator_traits<std::allocator<Eigen::Triplet<double, int> > >::allocate(std::allocator<Eigen::Triplet<double, int> >&, unsigned long) (alloc_traits.h:464)
+   n1: 16384 0x114E8F: std::_Vector_base<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > >::_M_allocate(unsigned long) (stl_vector.h:346)
+    n1: 16384 0x112C0E: void std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > >::_M_realloc_insert<Eigen::Triplet<double, int> >(__gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > >, Eigen::Triplet<double, int>&&) (vector.tcc:440)
+     n1: 16384 0x111071: Eigen::Triplet<double, int>& std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > >::emplace_back<Eigen::Triplet<double, int> >(Eigen::Triplet<double, int>&&) (vector.tcc:121)
+      n1: 16384 0x10E423: std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > >::push_back(Eigen::Triplet<double, int>&&) (stl_vector.h:1204)
+       n1: 16384 0x10D31F: void readFile<double>(std::vector<Eigen::Triplet<double, Eigen::SparseMatrix<double, 0, int>::StorageIndex>, std::allocator<Eigen::Triplet<double, Eigen::SparseMatrix<double, 0, int>::StorageIndex> > >&, std::vector<double, std::allocator<double> >&, char*) (testing.cpp:110)
+        n0: 16384 0x10BDEB: main (testing.cpp:18)
+ n1: 8364 0x10C438: Eigen::internal::aligned_malloc(unsigned long) (Memory.h:216)
+  n1: 8364 0x10C4E6: Eigen::internal::aligned_realloc(void*, unsigned long, unsigned long) (Memory.h:253)
+   n2: 8364 0x11333C: void* Eigen::internal::conditional_aligned_realloc<true>(void*, unsigned long, unsigned long) (Memory.h:315)
+    n1: 5296 0x113B40: double* Eigen::internal::conditional_aligned_realloc_new_auto<double, true>(double*, unsigned long, unsigned long) (Memory.h:525)
+     n1: 5296 0x111DE0: Eigen::internal::CompressedStorage<double, int>::reallocate(long) (CompressedStorage.h:208)
+      n1: 5296 0x10F0E7: Eigen::internal::CompressedStorage<double, int>::resize(long, double) (CompressedStorage.h:98)
+       n1: 5296 0x1117CA: Eigen::SparseMatrix<double, 0, int>::resizeNonZeros(long) (SparseMatrix.h:690)
+        n1: 5296 0x10ED03: void Eigen::internal::set_from_triplets<__gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > >, Eigen::SparseMatrix<double, 0, int>, Eigen::internal::scalar_sum_op<double, double> >(__gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > const&, __gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > const&, Eigen::SparseMatrix<double, 0, int>&, Eigen::internal::scalar_sum_op<double, double>) (SparseMatrix.h:1122)
+         n1: 5296 0x10D704: void Eigen::SparseMatrix<double, 0, int>::setFromTriplets<__gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > >(__gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > const&, __gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > const&) (SparseMatrix.h:1247)
+          n0: 5296 0x10BE80: main (testing.cpp:22)
+    n2: 3068 0x111367: int* Eigen::internal::conditional_aligned_realloc_new_auto<int, true>(int*, unsigned long, unsigned long) (Memory.h:525)
+     n1: 2648 0x111E09: Eigen::internal::CompressedStorage<double, int>::reallocate(long) (CompressedStorage.h:209)
+      n1: 2648 0x10F0E7: Eigen::internal::CompressedStorage<double, int>::resize(long, double) (CompressedStorage.h:98)
+       n1: 2648 0x1117CA: Eigen::SparseMatrix<double, 0, int>::resizeNonZeros(long) (SparseMatrix.h:690)
+        n1: 2648 0x10ED03: void Eigen::internal::set_from_triplets<__gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > >, Eigen::SparseMatrix<double, 0, int>, Eigen::internal::scalar_sum_op<double, double> >(__gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > const&, __gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > const&, Eigen::SparseMatrix<double, 0, int>&, Eigen::internal::scalar_sum_op<double, double>) (SparseMatrix.h:1122)
+         n1: 2648 0x10D704: void Eigen::SparseMatrix<double, 0, int>::setFromTriplets<__gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > >(__gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > const&, __gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > const&) (SparseMatrix.h:1247)
+          n0: 2648 0x10BE80: main (testing.cpp:22)
+     n0: 420 in 1 place, below massif's threshold (1.00%)
+ n1: 2071 0x10F6F2: void CSF::SparseMatrix<double, int, (unsigned char)2, true>::compress<double, int>(double*, int*, int*) (CSF_Methods.hpp:115)
+  n1: 2071 0x10DA65: CSF::SparseMatrix<double, int, (unsigned char)2, true>::SparseMatrix(Eigen::SparseMatrix<double, 0, int>&) (CSF_Constructors.hpp:46)
+   n0: 2071 0x10BEA2: main (testing.cpp:26)
+ n0: 1920 in 14 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=18
+#-----------
+time=6721441
+mem_heap_B=101849
+mem_heap_extra_B=1199
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=19
+#-----------
+time=6886755
+mem_heap_B=102358
+mem_heap_extra_B=1410
+mem_stacks_B=0
+heap_tree=detailed
+n5: 102358 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 72704 0x490D979: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.30)
+  n1: 72704 0x400647D: call_init.part.0 (dl-init.c:70)
+   n1: 72704 0x4006567: call_init (dl-init.c:33)
+    n1: 72704 0x4006567: _dl_init (dl-init.c:117)
+     n0: 72704 0x40202E9: ??? (in /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2)
+ n1: 16384 0x11826F: __gnu_cxx::new_allocator<Eigen::Triplet<double, int> >::allocate(unsigned long, void const*) (new_allocator.h:127)
+  n1: 16384 0x116E5A: std::allocator_traits<std::allocator<Eigen::Triplet<double, int> > >::allocate(std::allocator<Eigen::Triplet<double, int> >&, unsigned long) (alloc_traits.h:464)
+   n1: 16384 0x114E8F: std::_Vector_base<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > >::_M_allocate(unsigned long) (stl_vector.h:346)
+    n1: 16384 0x112C0E: void std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > >::_M_realloc_insert<Eigen::Triplet<double, int> >(__gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > >, Eigen::Triplet<double, int>&&) (vector.tcc:440)
+     n1: 16384 0x111071: Eigen::Triplet<double, int>& std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > >::emplace_back<Eigen::Triplet<double, int> >(Eigen::Triplet<double, int>&&) (vector.tcc:121)
+      n1: 16384 0x10E423: std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > >::push_back(Eigen::Triplet<double, int>&&) (stl_vector.h:1204)
+       n1: 16384 0x10D31F: void readFile<double>(std::vector<Eigen::Triplet<double, Eigen::SparseMatrix<double, 0, int>::StorageIndex>, std::allocator<Eigen::Triplet<double, Eigen::SparseMatrix<double, 0, int>::StorageIndex> > >&, std::vector<double, std::allocator<double> >&, char*) (testing.cpp:110)
+        n0: 16384 0x10BDEB: main (testing.cpp:18)
+ n1: 8364 0x10C438: Eigen::internal::aligned_malloc(unsigned long) (Memory.h:216)
+  n1: 8364 0x10C4E6: Eigen::internal::aligned_realloc(void*, unsigned long, unsigned long) (Memory.h:253)
+   n2: 8364 0x11333C: void* Eigen::internal::conditional_aligned_realloc<true>(void*, unsigned long, unsigned long) (Memory.h:315)
+    n1: 5296 0x113B40: double* Eigen::internal::conditional_aligned_realloc_new_auto<double, true>(double*, unsigned long, unsigned long) (Memory.h:525)
+     n1: 5296 0x111DE0: Eigen::internal::CompressedStorage<double, int>::reallocate(long) (CompressedStorage.h:208)
+      n1: 5296 0x10F0E7: Eigen::internal::CompressedStorage<double, int>::resize(long, double) (CompressedStorage.h:98)
+       n1: 5296 0x1117CA: Eigen::SparseMatrix<double, 0, int>::resizeNonZeros(long) (SparseMatrix.h:690)
+        n1: 5296 0x10ED03: void Eigen::internal::set_from_triplets<__gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > >, Eigen::SparseMatrix<double, 0, int>, Eigen::internal::scalar_sum_op<double, double> >(__gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > const&, __gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > const&, Eigen::SparseMatrix<double, 0, int>&, Eigen::internal::scalar_sum_op<double, double>) (SparseMatrix.h:1122)
+         n1: 5296 0x10D704: void Eigen::SparseMatrix<double, 0, int>::setFromTriplets<__gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > >(__gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > const&, __gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > const&) (SparseMatrix.h:1247)
+          n0: 5296 0x10BE80: main (testing.cpp:22)
+    n2: 3068 0x111367: int* Eigen::internal::conditional_aligned_realloc_new_auto<int, true>(int*, unsigned long, unsigned long) (Memory.h:525)
+     n1: 2648 0x111E09: Eigen::internal::CompressedStorage<double, int>::reallocate(long) (CompressedStorage.h:209)
+      n1: 2648 0x10F0E7: Eigen::internal::CompressedStorage<double, int>::resize(long, double) (CompressedStorage.h:98)
+       n1: 2648 0x1117CA: Eigen::SparseMatrix<double, 0, int>::resizeNonZeros(long) (SparseMatrix.h:690)
+        n1: 2648 0x10ED03: void Eigen::internal::set_from_triplets<__gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > >, Eigen::SparseMatrix<double, 0, int>, Eigen::internal::scalar_sum_op<double, double> >(__gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > const&, __gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > const&, Eigen::SparseMatrix<double, 0, int>&, Eigen::internal::scalar_sum_op<double, double>) (SparseMatrix.h:1122)
+         n1: 2648 0x10D704: void Eigen::SparseMatrix<double, 0, int>::setFromTriplets<__gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > >(__gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > const&, __gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > const&) (SparseMatrix.h:1247)
+          n0: 2648 0x10BE80: main (testing.cpp:22)
+     n0: 420 in 1 place, below massif's threshold (1.00%)
+ n1: 2966 0x10F6F2: void CSF::SparseMatrix<double, int, (unsigned char)2, true>::compress<double, int>(double*, int*, int*) (CSF_Methods.hpp:115)
+  n1: 2966 0x10DA65: CSF::SparseMatrix<double, int, (unsigned char)2, true>::SparseMatrix(Eigen::SparseMatrix<double, 0, int>&) (CSF_Constructors.hpp:46)
+   n0: 2966 0x10BEA2: main (testing.cpp:26)
+ n0: 1940 in 14 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=20
+#-----------
+time=6995008
+mem_heap_B=102684
+mem_heap_extra_B=1556
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=21
+#-----------
+time=7157103
+mem_heap_B=103193
+mem_heap_extra_B=1783
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=22
+#-----------
+time=7251198
+mem_heap_B=105078
+mem_heap_extra_B=1946
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=23
+#-----------
+time=7380236
+mem_heap_B=105170
+mem_heap_extra_B=1982
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=24
+#-----------
+time=7464581
+mem_heap_B=105255
+mem_heap_extra_B=2017
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=25
+#-----------
+time=7587406
+mem_heap_B=105279
+mem_heap_extra_B=2081
+mem_stacks_B=0
+heap_tree=detailed
+n5: 105279 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 72704 0x490D979: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.30)
+  n1: 72704 0x400647D: call_init.part.0 (dl-init.c:70)
+   n1: 72704 0x4006567: call_init (dl-init.c:33)
+    n1: 72704 0x4006567: _dl_init (dl-init.c:117)
+     n0: 72704 0x40202E9: ??? (in /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2)
+ n1: 16384 0x11826F: __gnu_cxx::new_allocator<Eigen::Triplet<double, int> >::allocate(unsigned long, void const*) (new_allocator.h:127)
+  n1: 16384 0x116E5A: std::allocator_traits<std::allocator<Eigen::Triplet<double, int> > >::allocate(std::allocator<Eigen::Triplet<double, int> >&, unsigned long) (alloc_traits.h:464)
+   n1: 16384 0x114E8F: std::_Vector_base<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > >::_M_allocate(unsigned long) (stl_vector.h:346)
+    n1: 16384 0x112C0E: void std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > >::_M_realloc_insert<Eigen::Triplet<double, int> >(__gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > >, Eigen::Triplet<double, int>&&) (vector.tcc:440)
+     n1: 16384 0x111071: Eigen::Triplet<double, int>& std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > >::emplace_back<Eigen::Triplet<double, int> >(Eigen::Triplet<double, int>&&) (vector.tcc:121)
+      n1: 16384 0x10E423: std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > >::push_back(Eigen::Triplet<double, int>&&) (stl_vector.h:1204)
+       n1: 16384 0x10D31F: void readFile<double>(std::vector<Eigen::Triplet<double, Eigen::SparseMatrix<double, 0, int>::StorageIndex>, std::allocator<Eigen::Triplet<double, Eigen::SparseMatrix<double, 0, int>::StorageIndex> > >&, std::vector<double, std::allocator<double> >&, char*) (testing.cpp:110)
+        n0: 16384 0x10BDEB: main (testing.cpp:18)
+ n1: 8364 0x10C438: Eigen::internal::aligned_malloc(unsigned long) (Memory.h:216)
+  n1: 8364 0x10C4E6: Eigen::internal::aligned_realloc(void*, unsigned long, unsigned long) (Memory.h:253)
+   n2: 8364 0x11333C: void* Eigen::internal::conditional_aligned_realloc<true>(void*, unsigned long, unsigned long) (Memory.h:315)
+    n1: 5296 0x113B40: double* Eigen::internal::conditional_aligned_realloc_new_auto<double, true>(double*, unsigned long, unsigned long) (Memory.h:525)
+     n1: 5296 0x111DE0: Eigen::internal::CompressedStorage<double, int>::reallocate(long) (CompressedStorage.h:208)
+      n1: 5296 0x10F0E7: Eigen::internal::CompressedStorage<double, int>::resize(long, double) (CompressedStorage.h:98)
+       n1: 5296 0x1117CA: Eigen::SparseMatrix<double, 0, int>::resizeNonZeros(long) (SparseMatrix.h:690)
+        n1: 5296 0x10ED03: void Eigen::internal::set_from_triplets<__gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > >, Eigen::SparseMatrix<double, 0, int>, Eigen::internal::scalar_sum_op<double, double> >(__gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > const&, __gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > const&, Eigen::SparseMatrix<double, 0, int>&, Eigen::internal::scalar_sum_op<double, double>) (SparseMatrix.h:1122)
+         n1: 5296 0x10D704: void Eigen::SparseMatrix<double, 0, int>::setFromTriplets<__gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > >(__gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > const&, __gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > const&) (SparseMatrix.h:1247)
+          n0: 5296 0x10BE80: main (testing.cpp:22)
+    n2: 3068 0x111367: int* Eigen::internal::conditional_aligned_realloc_new_auto<int, true>(int*, unsigned long, unsigned long) (Memory.h:525)
+     n1: 2648 0x111E09: Eigen::internal::CompressedStorage<double, int>::reallocate(long) (CompressedStorage.h:209)
+      n1: 2648 0x10F0E7: Eigen::internal::CompressedStorage<double, int>::resize(long, double) (CompressedStorage.h:98)
+       n1: 2648 0x1117CA: Eigen::SparseMatrix<double, 0, int>::resizeNonZeros(long) (SparseMatrix.h:690)
+        n1: 2648 0x10ED03: void Eigen::internal::set_from_triplets<__gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > >, Eigen::SparseMatrix<double, 0, int>, Eigen::internal::scalar_sum_op<double, double> >(__gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > const&, __gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > const&, Eigen::SparseMatrix<double, 0, int>&, Eigen::internal::scalar_sum_op<double, double>) (SparseMatrix.h:1122)
+         n1: 2648 0x10D704: void Eigen::SparseMatrix<double, 0, int>::setFromTriplets<__gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > >(__gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > const&, __gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > const&) (SparseMatrix.h:1247)
+          n0: 2648 0x10BE80: main (testing.cpp:22)
+     n0: 420 in 1 place, below massif's threshold (1.00%)
+ n1: 4000 0x10F6F2: void CSF::SparseMatrix<double, int, (unsigned char)2, true>::compress<double, int>(double*, int*, int*) (CSF_Methods.hpp:115)
+  n1: 4000 0x10DA65: CSF::SparseMatrix<double, int, (unsigned char)2, true>::SparseMatrix(Eigen::SparseMatrix<double, 0, int>&) (CSF_Constructors.hpp:46)
+   n0: 4000 0x10BEA2: main (testing.cpp:26)
+ n0: 3827 in 18 places, all below massif's threshold (1.00%)
+#-----------
+snapshot=26
+#-----------
+time=7770381
+mem_heap_B=105301
+mem_heap_extra_B=2187
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=27
+#-----------
+time=7896786
+mem_heap_B=105431
+mem_heap_extra_B=2265
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=28
+#-----------
+time=8012981
+mem_heap_B=105498
+mem_heap_extra_B=2342
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=29
+#-----------
+time=8125862
+mem_heap_B=105504
+mem_heap_extra_B=2416
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=30
+#-----------
+time=8291331
+mem_heap_B=105695
+mem_heap_extra_B=2505
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=31
+#-----------
+time=8397613
+mem_heap_B=105747
+mem_heap_extra_B=2557
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=32
+#-----------
+time=8484331
+mem_heap_B=105791
+mem_heap_extra_B=2625
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=33
+#-----------
+time=8608489
+mem_heap_B=105927
+mem_heap_extra_B=2665
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=34
+#-----------
+time=8721549
+mem_heap_B=105949
+mem_heap_extra_B=2755
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=35
+#-----------
+time=8839812
+mem_heap_B=105994
+mem_heap_extra_B=2854
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=36
+#-----------
+time=8953939
+mem_heap_B=106083
+mem_heap_extra_B=2909
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=37
+#-----------
+time=9062702
+mem_heap_B=106183
+mem_heap_extra_B=2977
+mem_stacks_B=0
+heap_tree=detailed
+n5: 106183 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 72704 0x490D979: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.30)
+  n1: 72704 0x400647D: call_init.part.0 (dl-init.c:70)
+   n1: 72704 0x4006567: call_init (dl-init.c:33)
+    n1: 72704 0x4006567: _dl_init (dl-init.c:117)
+     n0: 72704 0x40202E9: ??? (in /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2)
+ n1: 16384 0x11826F: __gnu_cxx::new_allocator<Eigen::Triplet<double, int> >::allocate(unsigned long, void const*) (new_allocator.h:127)
+  n1: 16384 0x116E5A: std::allocator_traits<std::allocator<Eigen::Triplet<double, int> > >::allocate(std::allocator<Eigen::Triplet<double, int> >&, unsigned long) (alloc_traits.h:464)
+   n1: 16384 0x114E8F: std::_Vector_base<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > >::_M_allocate(unsigned long) (stl_vector.h:346)
+    n1: 16384 0x112C0E: void std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > >::_M_realloc_insert<Eigen::Triplet<double, int> >(__gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > >, Eigen::Triplet<double, int>&&) (vector.tcc:440)
+     n1: 16384 0x111071: Eigen::Triplet<double, int>& std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > >::emplace_back<Eigen::Triplet<double, int> >(Eigen::Triplet<double, int>&&) (vector.tcc:121)
+      n1: 16384 0x10E423: std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > >::push_back(Eigen::Triplet<double, int>&&) (stl_vector.h:1204)
+       n1: 16384 0x10D31F: void readFile<double>(std::vector<Eigen::Triplet<double, Eigen::SparseMatrix<double, 0, int>::StorageIndex>, std::allocator<Eigen::Triplet<double, Eigen::SparseMatrix<double, 0, int>::StorageIndex> > >&, std::vector<double, std::allocator<double> >&, char*) (testing.cpp:110)
+        n0: 16384 0x10BDEB: main (testing.cpp:18)
+ n1: 8364 0x10C438: Eigen::internal::aligned_malloc(unsigned long) (Memory.h:216)
+  n1: 8364 0x10C4E6: Eigen::internal::aligned_realloc(void*, unsigned long, unsigned long) (Memory.h:253)
+   n2: 8364 0x11333C: void* Eigen::internal::conditional_aligned_realloc<true>(void*, unsigned long, unsigned long) (Memory.h:315)
+    n1: 5296 0x113B40: double* Eigen::internal::conditional_aligned_realloc_new_auto<double, true>(double*, unsigned long, unsigned long) (Memory.h:525)
+     n1: 5296 0x111DE0: Eigen::internal::CompressedStorage<double, int>::reallocate(long) (CompressedStorage.h:208)
+      n1: 5296 0x10F0E7: Eigen::internal::CompressedStorage<double, int>::resize(long, double) (CompressedStorage.h:98)
+       n1: 5296 0x1117CA: Eigen::SparseMatrix<double, 0, int>::resizeNonZeros(long) (SparseMatrix.h:690)
+        n1: 5296 0x10ED03: void Eigen::internal::set_from_triplets<__gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > >, Eigen::SparseMatrix<double, 0, int>, Eigen::internal::scalar_sum_op<double, double> >(__gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > const&, __gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > const&, Eigen::SparseMatrix<double, 0, int>&, Eigen::internal::scalar_sum_op<double, double>) (SparseMatrix.h:1122)
+         n1: 5296 0x10D704: void Eigen::SparseMatrix<double, 0, int>::setFromTriplets<__gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > >(__gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > const&, __gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > const&) (SparseMatrix.h:1247)
+          n0: 5296 0x10BE80: main (testing.cpp:22)
+    n2: 3068 0x111367: int* Eigen::internal::conditional_aligned_realloc_new_auto<int, true>(int*, unsigned long, unsigned long) (Memory.h:525)
+     n1: 2648 0x111E09: Eigen::internal::CompressedStorage<double, int>::reallocate(long) (CompressedStorage.h:209)
+      n1: 2648 0x10F0E7: Eigen::internal::CompressedStorage<double, int>::resize(long, double) (CompressedStorage.h:98)
+       n1: 2648 0x1117CA: Eigen::SparseMatrix<double, 0, int>::resizeNonZeros(long) (SparseMatrix.h:690)
+        n1: 2648 0x10ED03: void Eigen::internal::set_from_triplets<__gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > >, Eigen::SparseMatrix<double, 0, int>, Eigen::internal::scalar_sum_op<double, double> >(__gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > const&, __gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > const&, Eigen::SparseMatrix<double, 0, int>&, Eigen::internal::scalar_sum_op<double, double>) (SparseMatrix.h:1122)
+         n1: 2648 0x10D704: void Eigen::SparseMatrix<double, 0, int>::setFromTriplets<__gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > >(__gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > const&, __gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > const&) (SparseMatrix.h:1247)
+          n0: 2648 0x10BE80: main (testing.cpp:22)
+     n0: 420 in 1 place, below massif's threshold (1.00%)
+ n0: 4731 in 18 places, all below massif's threshold (1.00%)
+ n1: 4000 0x10F6F2: void CSF::SparseMatrix<double, int, (unsigned char)2, true>::compress<double, int>(double*, int*, int*) (CSF_Methods.hpp:115)
+  n1: 4000 0x10DA65: CSF::SparseMatrix<double, int, (unsigned char)2, true>::SparseMatrix(Eigen::SparseMatrix<double, 0, int>&) (CSF_Constructors.hpp:46)
+   n0: 4000 0x10BEA2: main (testing.cpp:26)
+#-----------
+snapshot=38
+#-----------
+time=9192912
+mem_heap_B=106263
+mem_heap_extra_B=3049
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=39
+#-----------
+time=9309107
+mem_heap_B=106330
+mem_heap_extra_B=3126
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=40
+#-----------
+time=9400699
+mem_heap_B=106314
+mem_heap_extra_B=3190
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=41
+#-----------
+time=9505865
+mem_heap_B=106389
+mem_heap_extra_B=3227
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=42
+#-----------
+time=9616554
+mem_heap_B=106474
+mem_heap_extra_B=3302
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=43
+#-----------
+time=9731831
+mem_heap_B=106495
+mem_heap_extra_B=3393
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=44
+#-----------
+time=9896001
+mem_heap_B=106739
+mem_heap_extra_B=3517
+mem_stacks_B=0
+heap_tree=detailed
+n6: 106739 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 72704 0x490D979: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.30)
+  n1: 72704 0x400647D: call_init.part.0 (dl-init.c:70)
+   n1: 72704 0x4006567: call_init (dl-init.c:33)
+    n1: 72704 0x4006567: _dl_init (dl-init.c:117)
+     n0: 72704 0x40202E9: ??? (in /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2)
+ n1: 16384 0x11826F: __gnu_cxx::new_allocator<Eigen::Triplet<double, int> >::allocate(unsigned long, void const*) (new_allocator.h:127)
+  n1: 16384 0x116E5A: std::allocator_traits<std::allocator<Eigen::Triplet<double, int> > >::allocate(std::allocator<Eigen::Triplet<double, int> >&, unsigned long) (alloc_traits.h:464)
+   n1: 16384 0x114E8F: std::_Vector_base<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > >::_M_allocate(unsigned long) (stl_vector.h:346)
+    n1: 16384 0x112C0E: void std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > >::_M_realloc_insert<Eigen::Triplet<double, int> >(__gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > >, Eigen::Triplet<double, int>&&) (vector.tcc:440)
+     n1: 16384 0x111071: Eigen::Triplet<double, int>& std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > >::emplace_back<Eigen::Triplet<double, int> >(Eigen::Triplet<double, int>&&) (vector.tcc:121)
+      n1: 16384 0x10E423: std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > >::push_back(Eigen::Triplet<double, int>&&) (stl_vector.h:1204)
+       n1: 16384 0x10D31F: void readFile<double>(std::vector<Eigen::Triplet<double, Eigen::SparseMatrix<double, 0, int>::StorageIndex>, std::allocator<Eigen::Triplet<double, Eigen::SparseMatrix<double, 0, int>::StorageIndex> > >&, std::vector<double, std::allocator<double> >&, char*) (testing.cpp:110)
+        n0: 16384 0x10BDEB: main (testing.cpp:18)
+ n1: 8364 0x10C438: Eigen::internal::aligned_malloc(unsigned long) (Memory.h:216)
+  n1: 8364 0x10C4E6: Eigen::internal::aligned_realloc(void*, unsigned long, unsigned long) (Memory.h:253)
+   n2: 8364 0x11333C: void* Eigen::internal::conditional_aligned_realloc<true>(void*, unsigned long, unsigned long) (Memory.h:315)
+    n1: 5296 0x113B40: double* Eigen::internal::conditional_aligned_realloc_new_auto<double, true>(double*, unsigned long, unsigned long) (Memory.h:525)
+     n1: 5296 0x111DE0: Eigen::internal::CompressedStorage<double, int>::reallocate(long) (CompressedStorage.h:208)
+      n1: 5296 0x10F0E7: Eigen::internal::CompressedStorage<double, int>::resize(long, double) (CompressedStorage.h:98)
+       n1: 5296 0x1117CA: Eigen::SparseMatrix<double, 0, int>::resizeNonZeros(long) (SparseMatrix.h:690)
+        n1: 5296 0x10ED03: void Eigen::internal::set_from_triplets<__gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > >, Eigen::SparseMatrix<double, 0, int>, Eigen::internal::scalar_sum_op<double, double> >(__gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > const&, __gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > const&, Eigen::SparseMatrix<double, 0, int>&, Eigen::internal::scalar_sum_op<double, double>) (SparseMatrix.h:1122)
+         n1: 5296 0x10D704: void Eigen::SparseMatrix<double, 0, int>::setFromTriplets<__gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > >(__gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > const&, __gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > const&) (SparseMatrix.h:1247)
+          n0: 5296 0x10BE80: main (testing.cpp:22)
+    n2: 3068 0x111367: int* Eigen::internal::conditional_aligned_realloc_new_auto<int, true>(int*, unsigned long, unsigned long) (Memory.h:525)
+     n1: 2648 0x111E09: Eigen::internal::CompressedStorage<double, int>::reallocate(long) (CompressedStorage.h:209)
+      n1: 2648 0x10F0E7: Eigen::internal::CompressedStorage<double, int>::resize(long, double) (CompressedStorage.h:98)
+       n1: 2648 0x1117CA: Eigen::SparseMatrix<double, 0, int>::resizeNonZeros(long) (SparseMatrix.h:690)
+        n1: 2648 0x10ED03: void Eigen::internal::set_from_triplets<__gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > >, Eigen::SparseMatrix<double, 0, int>, Eigen::internal::scalar_sum_op<double, double> >(__gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > const&, __gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > const&, Eigen::SparseMatrix<double, 0, int>&, Eigen::internal::scalar_sum_op<double, double>) (SparseMatrix.h:1122)
+         n1: 2648 0x10D704: void Eigen::SparseMatrix<double, 0, int>::setFromTriplets<__gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > >(__gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > const&, __gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > const&) (SparseMatrix.h:1247)
+          n0: 2648 0x10BE80: main (testing.cpp:22)
+     n0: 420 in 1 place, below massif's threshold (1.00%)
+ n1: 4000 0x10F6F2: void CSF::SparseMatrix<double, int, (unsigned char)2, true>::compress<double, int>(double*, int*, int*) (CSF_Methods.hpp:115)
+  n1: 4000 0x10DA65: CSF::SparseMatrix<double, int, (unsigned char)2, true>::SparseMatrix(Eigen::SparseMatrix<double, 0, int>&) (CSF_Constructors.hpp:46)
+   n0: 4000 0x10BEA2: main (testing.cpp:26)
+ n0: 3652 in 17 places, all below massif's threshold (1.00%)
+ n1: 1635 0x110185: void CSF::SparseMatrix<double, int, (unsigned char)3, true>::compress<double, int>(double*, int*, int*) (CSF_Methods.hpp:115)
+  n1: 1635 0x10DCA7: CSF::SparseMatrix<double, int, (unsigned char)3, true>::SparseMatrix(Eigen::SparseMatrix<double, 0, int>&) (CSF_Constructors.hpp:46)
+   n0: 1635 0x10BEB8: main (testing.cpp:27)
+#-----------
+snapshot=45
+#-----------
+time=10045052
+mem_heap_B=106846
+mem_heap_extra_B=3634
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=46
+#-----------
+time=10096891
+mem_heap_B=106831
+mem_heap_extra_B=3673
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=47
+#-----------
+time=10336939
+mem_heap_B=107855
+mem_heap_extra_B=3681
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=48
+#-----------
+time=10349237
+mem_heap_B=107855
+mem_heap_extra_B=3681
+mem_stacks_B=0
+heap_tree=peak
+n6: 107855 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 72704 0x490D979: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.30)
+  n1: 72704 0x400647D: call_init.part.0 (dl-init.c:70)
+   n1: 72704 0x4006567: call_init (dl-init.c:33)
+    n1: 72704 0x4006567: _dl_init (dl-init.c:117)
+     n0: 72704 0x40202E9: ??? (in /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2)
+ n1: 16384 0x11826F: __gnu_cxx::new_allocator<Eigen::Triplet<double, int> >::allocate(unsigned long, void const*) (new_allocator.h:127)
+  n1: 16384 0x116E5A: std::allocator_traits<std::allocator<Eigen::Triplet<double, int> > >::allocate(std::allocator<Eigen::Triplet<double, int> >&, unsigned long) (alloc_traits.h:464)
+   n1: 16384 0x114E8F: std::_Vector_base<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > >::_M_allocate(unsigned long) (stl_vector.h:346)
+    n1: 16384 0x112C0E: void std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > >::_M_realloc_insert<Eigen::Triplet<double, int> >(__gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > >, Eigen::Triplet<double, int>&&) (vector.tcc:440)
+     n1: 16384 0x111071: Eigen::Triplet<double, int>& std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > >::emplace_back<Eigen::Triplet<double, int> >(Eigen::Triplet<double, int>&&) (vector.tcc:121)
+      n1: 16384 0x10E423: std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > >::push_back(Eigen::Triplet<double, int>&&) (stl_vector.h:1204)
+       n1: 16384 0x10D31F: void readFile<double>(std::vector<Eigen::Triplet<double, Eigen::SparseMatrix<double, 0, int>::StorageIndex>, std::allocator<Eigen::Triplet<double, Eigen::SparseMatrix<double, 0, int>::StorageIndex> > >&, std::vector<double, std::allocator<double> >&, char*) (testing.cpp:110)
+        n0: 16384 0x10BDEB: main (testing.cpp:18)
+ n1: 8364 0x10C438: Eigen::internal::aligned_malloc(unsigned long) (Memory.h:216)
+  n1: 8364 0x10C4E6: Eigen::internal::aligned_realloc(void*, unsigned long, unsigned long) (Memory.h:253)
+   n2: 8364 0x11333C: void* Eigen::internal::conditional_aligned_realloc<true>(void*, unsigned long, unsigned long) (Memory.h:315)
+    n1: 5296 0x113B40: double* Eigen::internal::conditional_aligned_realloc_new_auto<double, true>(double*, unsigned long, unsigned long) (Memory.h:525)
+     n1: 5296 0x111DE0: Eigen::internal::CompressedStorage<double, int>::reallocate(long) (CompressedStorage.h:208)
+      n1: 5296 0x10F0E7: Eigen::internal::CompressedStorage<double, int>::resize(long, double) (CompressedStorage.h:98)
+       n1: 5296 0x1117CA: Eigen::SparseMatrix<double, 0, int>::resizeNonZeros(long) (SparseMatrix.h:690)
+        n1: 5296 0x10ED03: void Eigen::internal::set_from_triplets<__gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > >, Eigen::SparseMatrix<double, 0, int>, Eigen::internal::scalar_sum_op<double, double> >(__gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > const&, __gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > const&, Eigen::SparseMatrix<double, 0, int>&, Eigen::internal::scalar_sum_op<double, double>) (SparseMatrix.h:1122)
+         n1: 5296 0x10D704: void Eigen::SparseMatrix<double, 0, int>::setFromTriplets<__gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > >(__gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > const&, __gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > const&) (SparseMatrix.h:1247)
+          n0: 5296 0x10BE80: main (testing.cpp:22)
+    n2: 3068 0x111367: int* Eigen::internal::conditional_aligned_realloc_new_auto<int, true>(int*, unsigned long, unsigned long) (Memory.h:525)
+     n1: 2648 0x111E09: Eigen::internal::CompressedStorage<double, int>::reallocate(long) (CompressedStorage.h:209)
+      n1: 2648 0x10F0E7: Eigen::internal::CompressedStorage<double, int>::resize(long, double) (CompressedStorage.h:98)
+       n1: 2648 0x1117CA: Eigen::SparseMatrix<double, 0, int>::resizeNonZeros(long) (SparseMatrix.h:690)
+        n1: 2648 0x10ED03: void Eigen::internal::set_from_triplets<__gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > >, Eigen::SparseMatrix<double, 0, int>, Eigen::internal::scalar_sum_op<double, double> >(__gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > const&, __gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > const&, Eigen::SparseMatrix<double, 0, int>&, Eigen::internal::scalar_sum_op<double, double>) (SparseMatrix.h:1122)
+         n1: 2648 0x10D704: void Eigen::SparseMatrix<double, 0, int>::setFromTriplets<__gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > >(__gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > const&, __gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > const&) (SparseMatrix.h:1247)
+          n0: 2648 0x10BE80: main (testing.cpp:22)
+     n0: 420 in 1 place, below massif's threshold (1.00%)
+ n0: 4564 in 17 places, all below massif's threshold (1.00%)
+ n1: 4000 0x10F6F2: void CSF::SparseMatrix<double, int, (unsigned char)2, true>::compress<double, int>(double*, int*, int*) (CSF_Methods.hpp:115)
+  n1: 4000 0x10DA65: CSF::SparseMatrix<double, int, (unsigned char)2, true>::SparseMatrix(Eigen::SparseMatrix<double, 0, int>&) (CSF_Constructors.hpp:46)
+   n0: 4000 0x10BEA2: main (testing.cpp:26)
+ n1: 1839 0x110185: void CSF::SparseMatrix<double, int, (unsigned char)3, true>::compress<double, int>(double*, int*, int*) (CSF_Methods.hpp:115)
+  n1: 1839 0x10DCA7: CSF::SparseMatrix<double, int, (unsigned char)3, true>::SparseMatrix(Eigen::SparseMatrix<double, 0, int>&) (CSF_Constructors.hpp:46)
+   n0: 1839 0x10BEB8: main (testing.cpp:27)
+#-----------
+snapshot=49
+#-----------
+time=10359568
+mem_heap_B=100428
+mem_heap_extra_B=180
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=50
+#-----------
+time=10359718
+mem_heap_B=100333
+mem_heap_extra_B=123
+mem_stacks_B=0
+heap_tree=detailed
+n5: 100333 (heap allocation functions) malloc/new/new[], --alloc-fns, etc.
+ n1: 72704 0x490D979: ??? (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.30)
+  n1: 72704 0x400647D: call_init.part.0 (dl-init.c:70)
+   n1: 72704 0x4006567: call_init (dl-init.c:33)
+    n1: 72704 0x4006567: _dl_init (dl-init.c:117)
+     n0: 72704 0x40202E9: ??? (in /usr/lib/x86_64-linux-gnu/ld-linux-x86-64.so.2)
+ n1: 16384 0x11826F: __gnu_cxx::new_allocator<Eigen::Triplet<double, int> >::allocate(unsigned long, void const*) (new_allocator.h:127)
+  n1: 16384 0x116E5A: std::allocator_traits<std::allocator<Eigen::Triplet<double, int> > >::allocate(std::allocator<Eigen::Triplet<double, int> >&, unsigned long) (alloc_traits.h:464)
+   n1: 16384 0x114E8F: std::_Vector_base<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > >::_M_allocate(unsigned long) (stl_vector.h:346)
+    n1: 16384 0x112C0E: void std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > >::_M_realloc_insert<Eigen::Triplet<double, int> >(__gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > >, Eigen::Triplet<double, int>&&) (vector.tcc:440)
+     n1: 16384 0x111071: Eigen::Triplet<double, int>& std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > >::emplace_back<Eigen::Triplet<double, int> >(Eigen::Triplet<double, int>&&) (vector.tcc:121)
+      n1: 16384 0x10E423: std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > >::push_back(Eigen::Triplet<double, int>&&) (stl_vector.h:1204)
+       n1: 16384 0x10D31F: void readFile<double>(std::vector<Eigen::Triplet<double, Eigen::SparseMatrix<double, 0, int>::StorageIndex>, std::allocator<Eigen::Triplet<double, Eigen::SparseMatrix<double, 0, int>::StorageIndex> > >&, std::vector<double, std::allocator<double> >&, char*) (testing.cpp:110)
+        n0: 16384 0x10BDEB: main (testing.cpp:18)
+ n1: 8364 0x10C438: Eigen::internal::aligned_malloc(unsigned long) (Memory.h:216)
+  n1: 8364 0x10C4E6: Eigen::internal::aligned_realloc(void*, unsigned long, unsigned long) (Memory.h:253)
+   n2: 8364 0x11333C: void* Eigen::internal::conditional_aligned_realloc<true>(void*, unsigned long, unsigned long) (Memory.h:315)
+    n1: 5296 0x113B40: double* Eigen::internal::conditional_aligned_realloc_new_auto<double, true>(double*, unsigned long, unsigned long) (Memory.h:525)
+     n1: 5296 0x111DE0: Eigen::internal::CompressedStorage<double, int>::reallocate(long) (CompressedStorage.h:208)
+      n1: 5296 0x10F0E7: Eigen::internal::CompressedStorage<double, int>::resize(long, double) (CompressedStorage.h:98)
+       n1: 5296 0x1117CA: Eigen::SparseMatrix<double, 0, int>::resizeNonZeros(long) (SparseMatrix.h:690)
+        n1: 5296 0x10ED03: void Eigen::internal::set_from_triplets<__gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > >, Eigen::SparseMatrix<double, 0, int>, Eigen::internal::scalar_sum_op<double, double> >(__gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > const&, __gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > const&, Eigen::SparseMatrix<double, 0, int>&, Eigen::internal::scalar_sum_op<double, double>) (SparseMatrix.h:1122)
+         n1: 5296 0x10D704: void Eigen::SparseMatrix<double, 0, int>::setFromTriplets<__gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > >(__gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > const&, __gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > const&) (SparseMatrix.h:1247)
+          n0: 5296 0x10BE80: main (testing.cpp:22)
+    n2: 3068 0x111367: int* Eigen::internal::conditional_aligned_realloc_new_auto<int, true>(int*, unsigned long, unsigned long) (Memory.h:525)
+     n1: 2648 0x111E09: Eigen::internal::CompressedStorage<double, int>::reallocate(long) (CompressedStorage.h:209)
+      n1: 2648 0x10F0E7: Eigen::internal::CompressedStorage<double, int>::resize(long, double) (CompressedStorage.h:98)
+       n1: 2648 0x1117CA: Eigen::SparseMatrix<double, 0, int>::resizeNonZeros(long) (SparseMatrix.h:690)
+        n1: 2648 0x10ED03: void Eigen::internal::set_from_triplets<__gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > >, Eigen::SparseMatrix<double, 0, int>, Eigen::internal::scalar_sum_op<double, double> >(__gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > const&, __gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > const&, Eigen::SparseMatrix<double, 0, int>&, Eigen::internal::scalar_sum_op<double, double>) (SparseMatrix.h:1122)
+         n1: 2648 0x10D704: void Eigen::SparseMatrix<double, 0, int>::setFromTriplets<__gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > >(__gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > const&, __gnu_cxx::__normal_iterator<Eigen::Triplet<double, int>*, std::vector<Eigen::Triplet<double, int>, std::allocator<Eigen::Triplet<double, int> > > > const&) (SparseMatrix.h:1247)
+          n0: 2648 0x10BE80: main (testing.cpp:22)
+     n0: 420 in 1 place, below massif's threshold (1.00%)
+ n0: 1857 in 18 places, all below massif's threshold (1.00%)
+ n1: 1024 0x4B2BC23: _IO_file_doallocate (filedoalloc.c:101)
+  n2: 1024 0x4B3AD5F: _IO_doallocbuf (genops.c:347)
+   n1: 1024 0x4B39FDF: _IO_file_overflow@@GLIBC_2.2.5 (fileops.c:744)
+    n1: 1024 0x4B38754: _IO_new_file_xsputn (fileops.c:1243)
+     n1: 1024 0x4B38754: _IO_file_xsputn@@GLIBC_2.2.5 (fileops.c:1196)
+      n1: 1024 0x4B2D056: fwrite (iofwrite.c:39)
+       n1: 1024 0x499FB34: std::basic_ostream<char, std::char_traits<char> >& std::__ostream_insert<char, std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*, long) (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.30)
+        n1: 1024 0x499FE8A: std::basic_ostream<char, std::char_traits<char> >& std::operator<< <std::char_traits<char> >(std::basic_ostream<char, std::char_traits<char> >&, char const*) (in /usr/lib/x86_64-linux-gnu/libstdc++.so.6.0.30)
+         n0: 1024 0x10BF2D: main (testing.cpp:34)
+   n0: 0 in 1 place, below massif's threshold (1.00%)
+#-----------
+snapshot=51
+#-----------
+time=10359928
+mem_heap_B=98220
+mem_heap_extra_B=76
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=52
+#-----------
+time=10360076
+mem_heap_B=92924
+mem_heap_extra_B=68
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=53
+#-----------
+time=10360324
+mem_heap_B=90212
+mem_heap_extra_B=44
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=54
+#-----------
+time=10360525
+mem_heap_B=73828
+mem_heap_extra_B=36
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=55
+#-----------
+time=10371281
+mem_heap_B=1124
+mem_heap_extra_B=28
+mem_stacks_B=0
+heap_tree=empty
+#-----------
+snapshot=56
+#-----------
+time=10372385
+mem_heap_B=100
+mem_heap_extra_B=20
+mem_stacks_B=0
+heap_tree=empty

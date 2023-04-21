@@ -538,7 +538,8 @@ void EigenMemoryFootprintBenchmark(std::vector<uint64_t>& data, std::vector<Eige
     eigenMatrix.setFromTriplets(eigenTriplet.begin(), eigenTriplet.end());
     eigenMatrix.makeCompressed();
 
-    data.at(12) = eigenMatrix.nonZeros() * sizeof(double) + eigenMatrix.outerSize() * sizeof(uint32_t) + eigenMatrix.innerSize() * sizeof(uint32_t);
+    data.at(12) = eigenMatrix.nonZeros() * sizeof(double) + eigenMatrix.outerSize() * sizeof(uint32_t) + eigenMatrix.innerSize() * sizeof(uint32_t) + sizeof(eigen)
+    + sizeof(eigen.outerIndexPtr() * eigen.cols());
 
 }
 
