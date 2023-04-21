@@ -78,9 +78,13 @@ public:
         if (access("timeData.csv", F_OK) != 0) {
             std::cout << "Creating timeData.csv" << std::endl;
             file = fopen("timeData.csv", "a");
-            fprintf(file, "%s\n", "Matrix Number,Matrix Rows,Matrix Cols,Matrix Nonzeros,Matrix Redundancy,Matrix Density,Avg Eigen Constructor Time,Avg CSF2 Constructor Time,Avg CSF3 Constructor Time,Avg Eigen InnerIterator Time,Avg CSF2 InnerIterator Time,Avg CSF3 InnerIterator Time,Avg Eigen Scalar Multiplication Time,Avg CSF2 Scalar Multiplication Time,Avg CSF3 Scalar Multiplication Time,Avg Eigen Vector Multiplication Time,Avg CSF2 Vector Multiplication Time,Avg CSF3 Vector Multiplication Time,Avg Eigen Memory Usage, Avg CSF2 Memory Usage,Avg CSF3 Memory Usage,min Eigen Constructor Time,min CSF2 Constructor Time,min CSF3 Constructor Time,min Eigen InnerIterator Time,min CSF2 InnerIterator Time,min CSF3 InnerIterator Time,min Eigen Scalar Multiplication Time,min CSF2 Scalar Multiplication Time,min CSF3 Scalar Multiplication Time,min Eigen Vector Multiplication Time,min CSF2 Vector Multiplication Time,min CSF3 Vector Multiplication Time,min Eigen Memory Usage, min CSF2 Memory Usage,min CSF3 Memory Usage,Q1 Eigen Constructor Time,Q1 CSF2 Constructor Time,Q1 CSF3 Constructor Time,Q1 Eigen InnerIterator Time,Q1 CSF2 InnerIterator Time,Q1 CSF3 InnerIterator Time,Q1 Eigen Scalar Multiplication Time,Q1 CSF2 Scalar Multiplication Time,Q1 CSF3 Scalar Multiplication Time,Q1 Eigen Vector Multiplication Time,Q1 CSF2 Vector Multiplication Time,Q1 CSF3 Vector Multiplication Time,Q1 Eigen Memory Usage, Q1 CSF2 Memory Usage,Q1 CSF3 Memory Usage,Median Eigen Constructor Time,Median CSF2 Constructor Time,Median CSF3 Constructor Time,Median Eigen InnerIterator Time,Median CSF2 InnerIterator Time,Median CSF3 InnerIterator Time,Median Eigen Scalar Multiplication Time,Median CSF2 Scalar Multiplication Time,Median CSF3 Scalar Multiplication Time,Median Eigen Vector Multiplication Time,Median CSF2 Vector Multiplication Time,Median CSF3 Vector Multiplication Time,Median Eigen Memory Usage, Median CSF2 Memory Usage,Median CSF3 Memory Usage,Q3 Eigen Constructor Time,Q3 CSF2 Constructor Time,Q3 CSF3 Constructor Time,Q3 Eigen InnerIterator Time,Q3 CSF2 InnerIterator Time,Q3 CSF3 InnerIterator Time,Q3 Eigen Scalar Multiplication,Q3 CSF2 Scalar Multiplication Time,Q3 CSF3 Scalar Multiplication Time,Q3 Eigen Vector Multiplication Time,Q3 CSF2 Vector Multiplication Time,Q3 CSF3 Vector Multiplication Time,Q3 Eigen Memory Usage, Q3 CSF2 Memory Usage,Q3 CSF3 Memory Usage,Max Eigen Constructor Time,Max CSF2 Constructor Time,Max CSF3 Constructor Time,Max Eigen InnerIterator Time,Max CSF2 InnerIterator Time,Max CSF3 InnerIterator Time,Max Eigen Scalar Multiplication Time,Max CSF2 Scalar Multiplication Time,Max CSF3 Scalar Multiplication Time,Max Eigen Vector Multiplication Time,Max CSF2 Vector Multiplication Time,Max CSF3 Vector Multiplication Time,Max Eigen Memory Usage, Max CSF2 Memory Usage,Max CSF3 Memory Usage");
+            fprintf(file, "%s\n", "Matrix Number,Matrix Rows,Matrix Cols,Matrix Nonzeros,Matrix Redundancy,Matrix Density,Avg Eigen Constructor Time,Avg CSF2 Constructor Time,Avg CSF3 Constructor Time,Avg Eigen InnerIterator Time,Avg CSF2 InnerIterator Time,Avg CSF3 InnerIterator Time,Avg Eigen Scalar Multiplication Time,Avg CSF2 Scalar Multiplication Time,Avg CSF3 Scalar Multiplication Time,Avg Eigen Vector Multiplication Time,Avg CSF2 Vector Multiplication Time,Avg CSF3 Vector Multiplication Time,Avg Eigen Memory Usage,Avg CSF2 Memory Usage,Avg CSF3 Memory Usage,Avg Eigen Transpose Time,Avg CSF2 Transpose Time,Avg CSF3 Transpose Time,Avg Eigen Matrix Multiplication Time,Avg CSF2 Matrix Multiplication Time,Avg CSF3 Matrix Multiplication Time,Min Eigen Constructor Time,Min CSF2 Constructor Time,Min CSF3 Constructor Time,Min Eigen InnerIterator Time,Min CSF2 InnerIterator Time,Min CSF3 InnerIterator Time,Min Eigen Scalar Multiplication Time,Min CSF2 Scalar Multiplication Time,Min CSF3 Scalar Multiplication Time,Min Eigen Vector Multiplication Time,Min CSF2 Vector Multiplication Time,Min CSF3 Vector Multiplication Time,Min Eigen Memory Usage,Min CSF2 Memory Usage,Min CSF3 Memory Usage,Min Eigen Transpose Time,Min CSF2 Transpose Time,Min CSF3 Transpose Time,Min Eigen Matrix Multiplication Time,Min CSF2 Matrix Multiplication Time,Min CSF3 Matrix Multiplication Time,Q1 Eigen Constructor Time,Q1 CSF2 Constructor Time,Q1 CSF3 Constructor Time,Q1 Eigen InnerIterator Time,Q1 CSF2 InnerIterator Time,Q1 CSF3 InnerIterator Time,Q1 Eigen Scalar Multiplication Time,Q1 CSF2 Scalar Multiplication Time,Q1 CSF3 Scalar Multiplication Time,Q1 Eigen Vector Multiplication Time,Q1 CSF2 Vector Multiplication Time,Q1 CSF3 Vector Multiplication Time,Q1 Eigen Memory Usage,Q1 CSF2 Memory Usage,Q1 CSF3 Memory Usage,Q1 Eigen Transpose Time,Q1 CSF2 Transpose Time,Q1 CSF3 Transpose Time,Q1 Eigen Matrix Multiplication Time,Q1 CSF2 Matrix Multiplication Time,Q1 CSF3 Matrix Multiplication Time,Median Eigen Constructor Time,Median CSF2 Constructor Time,Median CSF3 Constructor Time,Median Eigen InnerIterator Time,Median CSF2 InnerIterator Time,Median CSF3 InnerIterator Time,Median Eigen Scalar Multiplication Time,Median CSF2 Scalar Multiplication Time,Median CSF3 Scalar Multiplication Time,Median Eigen Vector Multiplication Time,Median CSF2 Vector Multiplication Time,Median CSF3 Vector Multiplication Time,Median Eigen Memory Usage,Median CSF2 Memory Usage,Median CSF3 Memory Usage,Median Eigen Transpose Time,Median CSF2 Transpose Time,Median CSF3 Transpose Time,Median Eigen Matrix Multiplication Time,Median CSF2 Matrix Multiplication Time,Median CSF3 Matrix Multiplication Time,Q3 Eigen Constructor Time,Q3 CSF2 Constructor Time,Q3 CSF3 Constructor Time,Q3 Eigen InnerIterator Time,Q3 CSF2 InnerIterator Time,Q3 CSF3 InnerIterator Time,Q3 Eigen Scalar Multiplication,Q3 CSF2 Scalar Multiplication Time,Q3 CSF3 Scalar Multiplication Time,Q3 Eigen Vector Multiplication Time,Q3 CSF2 Vector Multiplication Time,Q3 CSF3 Vector Multiplication Time,Q3 Eigen Memory Usage,Q3 CSF2 Memory Usage,Q3 CSF3 Memory Usage,Q3 Eigen Transpose Time,Q3 CSF2 Transpose Time,Q3 CSF3 Transpose Time,Q3 Eigen Matrix Multiplication Time,Q3 CSF2 Matrix Multiplication Time,Q3 CSF3 Matrix Multiplication Time,Max Eigen Constructor Time,Max CSF2 Constructor Time,Max CSF3 Constructor Time,Max Eigen InnerIterator Time,Max CSF2 InnerIterator Time,Max CSF3 InnerIterator Time,Max Eigen Scalar Multiplication Time,Max CSF2 Scalar Multiplication Time,Max CSF3 Scalar Multiplication Time,Max Eigen Vector Multiplication Time,Max CSF2 Vector Multiplication Time,Max CSF3 Vector Multiplication Time,Max Eigen Memory Usage,Max CSF2 Memory Usage,Max CSF3 Memory Usage,Max Eigen Transpose Time,Max CSF2 Transpose Time,Max CSF3 Transpose Time,Max Eigen Matrix Multiplication Time,Max CSF2 Matrix Multiplication Time,Max CSF3 Matrix Multiplication Time");
             fclose(file);
         }
+
+// "Matrix Number,Matrix Rows,Matrix Cols,Matrix Nonzeros,Matrix Redundancy,Matrix Density,Avg Eigen Constructor Time,Avg CSF2 Constructor Time,Avg CSF3 Constructor Time,Avg Eigen InnerIterator Time,Avg CSF2 InnerIterator Time,Avg CSF3 InnerIterator Time,Avg Eigen Scalar Multiplication Time,Avg CSF2 Scalar Multiplication Time,Avg CSF3 Scalar Multiplication Time,Avg Eigen Vector Multiplication Time,Avg CSF2 Vector Multiplication Time,Avg CSF3 Vector Multiplication Time,Avg Eigen Memory Usage,Avg CSF2 Memory Usage,Avg CSF3 Memory Usage,Avg Eigen Transpose Time,Avg CSF2 Transpose Time,Avg CSF3 Transpose Time,Avg Eigen Matrix Multiplication Time,Avg CSF2 Matrix Multiplication Time,Avg CSF3 Matrix Multiplication Time,Min Eigen Constructor Time,Min CSF2 Constructor Time,Min CSF3 Constructor Time,Min Eigen InnerIterator Time,Min CSF2 InnerIterator Time,Min CSF3 InnerIterator Time,Min Eigen Scalar Multiplication Time,Min CSF2 Scalar Multiplication Time,Min CSF3 Scalar Multiplication Time,Min Eigen Vector Multiplication Time,Min CSF2 Vector Multiplication Time,Min CSF3 Vector Multiplication Time,Min Eigen Memory Usage,Min CSF2 Memory Usage,Min CSF3 Memory Usage,Min Eigen Transpose Time,Min CSF2 Transpose Time,Min CSF3 Transpose Time,Min Eigen Matrix Multiplication Time,Min CSF2 Matrix Multiplication Time,Min CSF3 Matrix Multiplication Time,Q1 Eigen Constructor Time,Q1 CSF2 Constructor Time,Q1 CSF3 Constructor Time,Q1 Eigen InnerIterator Time,Q1 CSF2 InnerIterator Time,Q1 CSF3 InnerIterator Time,Q1 Eigen Scalar Multiplication Time,Q1 CSF2 Scalar Multiplication Time,Q1 CSF3 Scalar Multiplication Time,Q1 Eigen Vector Multiplication Time,Q1 CSF2 Vector Multiplication Time,Q1 CSF3 Vector Multiplication Time,Q1 Eigen Memory Usage,Q1 CSF2 Memory Usage,Q1 CSF3 Memory Usage,Q1 Eigen Transpose Time,Q1 CSF2 Transpose Time,Q1 CSF3 Transpose Time,Q1 Eigen Matrix Multiplication Time,Q1 CSF2 Matrix Multiplication Time,Q1 CSF3 Matrix Multiplication Time,Median Eigen Constructor Time,Median CSF2 Constructor Time,Median CSF3 Constructor Time,Median Eigen InnerIterator Time,Median CSF2 InnerIterator Time,Median CSF3 InnerIterator Time,Median Eigen Scalar Multiplication Time,Median CSF2 Scalar Multiplication Time,Median CSF3 Scalar Multiplication Time,Median Eigen Vector Multiplication Time,Median CSF2 Vector Multiplication Time,Median CSF3 Vector Multiplication Time,Median Eigen Memory Usage,Median CSF2 Memory Usage,Median CSF3 Memory Usage,Median Eigen Transpose Time,Median CSF2 Transpose Time,Median CSF3 Transpose Time,Median Eigen Matrix Multiplication Time,Median CSF2 Matrix Multiplication Time,Median CSF3 Matrix Multiplication Time,Q3 Eigen Constructor Time,Q3 CSF2 Constructor Time,Q3 CSF3 Constructor Time,Q3 Eigen InnerIterator Time,Q3 CSF2 InnerIterator Time,Q3 CSF3 InnerIterator Time,Q3 Eigen Scalar Multiplication,Q3 CSF2 Scalar Multiplication Time,Q3 CSF3 Scalar Multiplication Time,Q3 Eigen Vector Multiplication Time,Q3 CSF2 Vector Multiplication Time,Q3 CSF3 Vector Multiplication Time,Q3 Eigen Memory Usage,Q3 CSF2 Memory Usage,Q3 CSF3 Memory Usage,Q3 Eigen Transpose Time,Q3 CSF2 Transpose Time,Q3 CSF3 Transpose Time,Q3 Eigen Matrix Multiplication Time,Q3 CSF2 Matrix Multiplication Time,Q3 CSF3 Matrix Multiplication Time,Max Eigen Constructor Time,Max CSF2 Constructor Time,Max CSF3 Constructor Time,Max Eigen InnerIterator Time,Max CSF2 InnerIterator Time,Max CSF3 InnerIterator Time,Max Eigen Scalar Multiplication Time,Max CSF2 Scalar Multiplication Time,Max CSF3 Scalar Multiplication Time,Max Eigen Vector Multiplication Time,Max CSF2 Vector Multiplication Time,Max CSF3 Vector Multiplication Time,Max Eigen Memory Usage,Max CSF2 Memory Usage,Max CSF3 Memory Usage,Max Eigen Transpose Time,Max CSF2 Transpose Time,Max CSF3 Transpose Time,Max Eigen Matrix Multiplication Time,Max CSF2 Matrix Multiplication Time,Max CSF3 Matrix Multiplication Time"
+
+
 
         if (access("rawTimeData.csv", F_OK) != 0) {
             std::cout << "Creating rawTimeData.csv" << std::endl;
@@ -220,160 +224,220 @@ public:
         //Constructors
         //print all elements of EigenConstructorTimes
 
-        // data.push_back(average(EigenConstructorTimes));
-        // data.push_back(average(CSF2ConstructorTimes));
-        // data.push_back(average(CSF3ConstructorTimes));
+        data.push_back(average(EigenConstructorTimes));
+        data.push_back(average(CSF2ConstructorTimes));
+        data.push_back(average(CSF3ConstructorTimes));
 
-        // //Inner iterators
-        // data.push_back(average(EigenInnerIteratorTimes));
-        // data.push_back(average(CSF2InnerIteratorTimes));
-        // data.push_back(average(CSF3InnerIteratorTimes));
+        //Inner iterators
+        data.push_back(average(EigenInnerIteratorTimes));
+        data.push_back(average(CSF2InnerIteratorTimes));
+        data.push_back(average(CSF3InnerIteratorTimes));
 
-        // //Scalar Multiplication
-        // data.push_back(average(EigenScalarMultiplicationTimes));
-        // data.push_back(average(CSF2ScalarMultiplicationTimes));
-        // data.push_back(average(CSF3ScalarMultiplicationTimes));
+        //Scalar Multiplication
+        data.push_back(average(EigenScalarMultiplicationTimes));
+        data.push_back(average(CSF2ScalarMultiplicationTimes));
+        data.push_back(average(CSF3ScalarMultiplicationTimes));
 
-        // //Vector Multiplication
-        // data.push_back(average(EigenVectorMultiplicationTimes));
-        // data.push_back(average(CSF2VectorMultiplicationTimes));
-        // data.push_back(average(CSF3VectorMultiplicationTimes));
+        //Vector Multiplication
+        data.push_back(average(EigenVectorMultiplicationTimes));
+        data.push_back(average(CSF2VectorMultiplicationTimes));
+        data.push_back(average(CSF3VectorMultiplicationTimes));
 
-        // // Memory usage
-        // data.push_back(average(EigenMemoryUsage));
-        // data.push_back(average(CSF2MemoryUsage));
-        // data.push_back(average(CSF3MemoryUsage));
+        // Memory usage
+        data.push_back(average(EigenMemoryUsage));
+        data.push_back(average(CSF2MemoryUsage));
+        data.push_back(average(CSF3MemoryUsage));
 
-        // //Mins
-        // //Constructors
-        // data.push_back(min(EigenConstructorTimes));
-        // data.push_back(min(CSF2ConstructorTimes));
-        // data.push_back(min(CSF3ConstructorTimes));
+        // Transpose times
+        data.push_back(average(EigenTransposeTimes));
+        data.push_back(average(CSF2TransposeTimes));
+        data.push_back(average(CSF3TransposeTimes));
 
-        // //Inner iterators
-        // data.push_back(min(EigenInnerIteratorTimes));
-        // data.push_back(min(CSF2InnerIteratorTimes));
-        // data.push_back(min(CSF3InnerIteratorTimes));
+        // Matrix multiplication times
+        data.push_back(average(EigenMatrixMultiplicationTimes));
+        data.push_back(average(CSF2MatrixMultiplicationTimes));
+        data.push_back(average(CSF3MatrixMultiplicationTimes));
 
-        // //Scalar Multiplication
-        // data.push_back(min(EigenScalarMultiplicationTimes));
-        // data.push_back(min(CSF2ScalarMultiplicationTimes));
-        // data.push_back(min(CSF3ScalarMultiplicationTimes));
+        //Mins
+        //Constructors
+        data.push_back(min(EigenConstructorTimes));
+        data.push_back(min(CSF2ConstructorTimes));
+        data.push_back(min(CSF3ConstructorTimes));
 
-        // //Vector Multiplication
-        // data.push_back(min(EigenVectorMultiplicationTimes));
-        // data.push_back(min(CSF2VectorMultiplicationTimes));
-        // data.push_back(min(CSF3VectorMultiplicationTimes));
+        //Inner iterators
+        data.push_back(min(EigenInnerIteratorTimes));
+        data.push_back(min(CSF2InnerIteratorTimes));
+        data.push_back(min(CSF3InnerIteratorTimes));
 
-        // // Memory usage
-        // data.push_back(min(EigenMemoryUsage));
-        // data.push_back(min(CSF2MemoryUsage));
-        // data.push_back(min(CSF3MemoryUsage));
+        //Scalar Multiplication
+        data.push_back(min(EigenScalarMultiplicationTimes));
+        data.push_back(min(CSF2ScalarMultiplicationTimes));
+        data.push_back(min(CSF3ScalarMultiplicationTimes));
 
-        // //Quartile 1
+        //Vector Multiplication
+        data.push_back(min(EigenVectorMultiplicationTimes));
+        data.push_back(min(CSF2VectorMultiplicationTimes));
+        data.push_back(min(CSF3VectorMultiplicationTimes));
 
-        // //Constructors
-        // data.push_back(quarter1Percentile(EigenConstructorTimes));
-        // data.push_back(quarter1Percentile(CSF2ConstructorTimes));
-        // data.push_back(quarter1Percentile(CSF3ConstructorTimes));
+        // Memory usage
+        data.push_back(min(EigenMemoryUsage));
+        data.push_back(min(CSF2MemoryUsage));
+        data.push_back(min(CSF3MemoryUsage));
 
-        // //Inner iterators
-        // data.push_back(quarter1Percentile(EigenInnerIteratorTimes));
-        // data.push_back(quarter1Percentile(CSF2InnerIteratorTimes));
-        // data.push_back(quarter1Percentile(CSF3InnerIteratorTimes));
+        // Transpose times
+        data.push_back(min(EigenTransposeTimes));
+        data.push_back(min(CSF2TransposeTimes));
+        data.push_back(min(CSF3TransposeTimes));
 
-        // //Scalar Multiplication
-        // data.push_back(quarter1Percentile(EigenScalarMultiplicationTimes));
-        // data.push_back(quarter1Percentile(CSF2ScalarMultiplicationTimes));
-        // data.push_back(quarter1Percentile(CSF3ScalarMultiplicationTimes));
+        // Matrix multiplication times
+        data.push_back(min(EigenMatrixMultiplicationTimes));
+        data.push_back(min(CSF2MatrixMultiplicationTimes));
+        data.push_back(min(CSF3MatrixMultiplicationTimes));
 
-        // //Vector Multiplication
-        // data.push_back(quarter1Percentile(EigenVectorMultiplicationTimes));
-        // data.push_back(quarter1Percentile(CSF2VectorMultiplicationTimes));
-        // data.push_back(quarter1Percentile(CSF3VectorMultiplicationTimes));
+        //Quartile 1
 
-        // // Memory usage
-        // data.push_back(quarter1Percentile(EigenMemoryUsage));
-        // data.push_back(quarter1Percentile(CSF2MemoryUsage));
-        // data.push_back(quarter1Percentile(CSF3MemoryUsage));
+        //Constructors
+        data.push_back(quarter1Percentile(EigenConstructorTimes));
+        data.push_back(quarter1Percentile(CSF2ConstructorTimes));
+        data.push_back(quarter1Percentile(CSF3ConstructorTimes));
 
-        // //Medians
-        // //Constructors
-        // data.push_back(median(EigenConstructorTimes));
-        // data.push_back(median(CSF2ConstructorTimes));
-        // data.push_back(median(CSF3ConstructorTimes));
+        //Inner iterators
+        data.push_back(quarter1Percentile(EigenInnerIteratorTimes));
+        data.push_back(quarter1Percentile(CSF2InnerIteratorTimes));
+        data.push_back(quarter1Percentile(CSF3InnerIteratorTimes));
 
-        // //Inner iterators
-        // data.push_back(median(EigenInnerIteratorTimes));
-        // data.push_back(median(CSF2InnerIteratorTimes));
-        // data.push_back(median(CSF3InnerIteratorTimes));
+        //Scalar Multiplication
+        data.push_back(quarter1Percentile(EigenScalarMultiplicationTimes));
+        data.push_back(quarter1Percentile(CSF2ScalarMultiplicationTimes));
+        data.push_back(quarter1Percentile(CSF3ScalarMultiplicationTimes));
 
-        // //Scalar Multiplication
-        // data.push_back(median(EigenScalarMultiplicationTimes));
-        // data.push_back(median(CSF2ScalarMultiplicationTimes));
-        // data.push_back(median(CSF3ScalarMultiplicationTimes));
+        //Vector Multiplication
+        data.push_back(quarter1Percentile(EigenVectorMultiplicationTimes));
+        data.push_back(quarter1Percentile(CSF2VectorMultiplicationTimes));
+        data.push_back(quarter1Percentile(CSF3VectorMultiplicationTimes));
 
-        // //Vector Multiplication
-        // data.push_back(median(EigenVectorMultiplicationTimes));
-        // data.push_back(median(CSF2VectorMultiplicationTimes));
-        // data.push_back(median(CSF3VectorMultiplicationTimes));
+        // Memory usage
+        data.push_back(quarter1Percentile(EigenMemoryUsage));
+        data.push_back(quarter1Percentile(CSF2MemoryUsage));
+        data.push_back(quarter1Percentile(CSF3MemoryUsage));
 
-        // // Memory usage
-        // data.push_back(median(EigenMemoryUsage));
-        // data.push_back(median(CSF2MemoryUsage));
-        // data.push_back(median(CSF3MemoryUsage));
+        // Transpose times
+        data.push_back(quarter1Percentile(EigenTransposeTimes));
+        data.push_back(quarter1Percentile(CSF2TransposeTimes));
+        data.push_back(quarter1Percentile(CSF3TransposeTimes));
 
-        // //Quartile 3
-        // //Constructors
-        // data.push_back(quarter3Percentile(EigenConstructorTimes));
-        // data.push_back(quarter3Percentile(CSF2ConstructorTimes));
-        // data.push_back(quarter3Percentile(CSF3ConstructorTimes));
+        // Matrix multiplication times
+        data.push_back(quarter1Percentile(EigenMatrixMultiplicationTimes));
+        data.push_back(quarter1Percentile(CSF2MatrixMultiplicationTimes));
+        data.push_back(quarter1Percentile(CSF3MatrixMultiplicationTimes));
 
-        // //Inner iterators
-        // data.push_back(quarter3Percentile(EigenInnerIteratorTimes));
-        // data.push_back(quarter3Percentile(CSF2InnerIteratorTimes));
-        // data.push_back(quarter3Percentile(CSF3InnerIteratorTimes));
+        //Medians
+        //Constructors
+        data.push_back(median(EigenConstructorTimes));
+        data.push_back(median(CSF2ConstructorTimes));
+        data.push_back(median(CSF3ConstructorTimes));
 
-        // //Scalar Multiplication
-        // data.push_back(quarter3Percentile(EigenScalarMultiplicationTimes));
-        // data.push_back(quarter3Percentile(CSF2ScalarMultiplicationTimes));
-        // data.push_back(quarter3Percentile(CSF3ScalarMultiplicationTimes));
+        //Inner iterators
+        data.push_back(median(EigenInnerIteratorTimes));
+        data.push_back(median(CSF2InnerIteratorTimes));
+        data.push_back(median(CSF3InnerIteratorTimes));
 
-        // //Vector Multiplication
-        // data.push_back(quarter3Percentile(EigenVectorMultiplicationTimes));
-        // data.push_back(quarter3Percentile(CSF2VectorMultiplicationTimes));
-        // data.push_back(quarter3Percentile(CSF3VectorMultiplicationTimes));
+        //Scalar Multiplication
+        data.push_back(median(EigenScalarMultiplicationTimes));
+        data.push_back(median(CSF2ScalarMultiplicationTimes));
+        data.push_back(median(CSF3ScalarMultiplicationTimes));
 
-        // // Memory usage
-        // data.push_back(quarter3Percentile(EigenMemoryUsage));
-        // data.push_back(quarter3Percentile(CSF2MemoryUsage));
-        // data.push_back(quarter3Percentile(CSF3MemoryUsage));
+        //Vector Multiplication
+        data.push_back(median(EigenVectorMultiplicationTimes));
+        data.push_back(median(CSF2VectorMultiplicationTimes));
+        data.push_back(median(CSF3VectorMultiplicationTimes));
 
-        // // Max times
-        // //Constructors
-        // data.push_back(max(EigenConstructorTimes));
-        // data.push_back(max(CSF2ConstructorTimes));
-        // data.push_back(max(CSF3ConstructorTimes));
+        // Memory usage
+        data.push_back(median(EigenMemoryUsage));
+        data.push_back(median(CSF2MemoryUsage));
+        data.push_back(median(CSF3MemoryUsage));
 
-        // //Inner iterators
-        // data.push_back(max(EigenInnerIteratorTimes));
-        // data.push_back(max(CSF2InnerIteratorTimes));
-        // data.push_back(max(CSF3InnerIteratorTimes));
+        // Transpose times
+        data.push_back(median(EigenTransposeTimes));
+        data.push_back(median(CSF2TransposeTimes));
+        data.push_back(median(CSF3TransposeTimes));
 
-        // //Scalar Multiplication
-        // data.push_back(max(EigenScalarMultiplicationTimes));
-        // data.push_back(max(CSF2ScalarMultiplicationTimes));
-        // data.push_back(max(CSF3ScalarMultiplicationTimes));
+        // Matrix multiplication times
+        data.push_back(median(EigenMatrixMultiplicationTimes));
+        data.push_back(median(CSF2MatrixMultiplicationTimes));
+        data.push_back(median(CSF3MatrixMultiplicationTimes));
 
-        // //Vector Multiplication
-        // data.push_back(max(EigenVectorMultiplicationTimes));
-        // data.push_back(max(CSF2VectorMultiplicationTimes));
-        // data.push_back(max(CSF3VectorMultiplicationTimes));
+        //Quartile 3
+        //Constructors
+        data.push_back(quarter3Percentile(EigenConstructorTimes));
+        data.push_back(quarter3Percentile(CSF2ConstructorTimes));
+        data.push_back(quarter3Percentile(CSF3ConstructorTimes));
 
-        // // Memory usage
-        // data.push_back(max(EigenMemoryUsage));
-        // data.push_back(max(CSF2MemoryUsage));
-        // data.push_back(max(CSF3MemoryUsage));
+        //Inner iterators
+        data.push_back(quarter3Percentile(EigenInnerIteratorTimes));
+        data.push_back(quarter3Percentile(CSF2InnerIteratorTimes));
+        data.push_back(quarter3Percentile(CSF3InnerIteratorTimes));
+
+        //Scalar Multiplication
+        data.push_back(quarter3Percentile(EigenScalarMultiplicationTimes));
+        data.push_back(quarter3Percentile(CSF2ScalarMultiplicationTimes));
+        data.push_back(quarter3Percentile(CSF3ScalarMultiplicationTimes));
+
+        //Vector Multiplication
+        data.push_back(quarter3Percentile(EigenVectorMultiplicationTimes));
+        data.push_back(quarter3Percentile(CSF2VectorMultiplicationTimes));
+        data.push_back(quarter3Percentile(CSF3VectorMultiplicationTimes));
+
+        // Memory usage
+        data.push_back(quarter3Percentile(EigenMemoryUsage));
+        data.push_back(quarter3Percentile(CSF2MemoryUsage));
+        data.push_back(quarter3Percentile(CSF3MemoryUsage));
+
+        // Transpose times
+        data.push_back(quarter3Percentile(EigenTransposeTimes));
+        data.push_back(quarter3Percentile(CSF2TransposeTimes));
+        data.push_back(quarter3Percentile(CSF3TransposeTimes));
+
+        // Matrix multiplication times
+        data.push_back(quarter3Percentile(EigenMatrixMultiplicationTimes));
+        data.push_back(quarter3Percentile(CSF2MatrixMultiplicationTimes));
+        data.push_back(quarter3Percentile(CSF3MatrixMultiplicationTimes));
+
+        // Max times
+        //Constructors
+        data.push_back(max(EigenConstructorTimes));
+        data.push_back(max(CSF2ConstructorTimes));
+        data.push_back(max(CSF3ConstructorTimes));
+
+        //Inner iterators
+        data.push_back(max(EigenInnerIteratorTimes));
+        data.push_back(max(CSF2InnerIteratorTimes));
+        data.push_back(max(CSF3InnerIteratorTimes));
+
+        //Scalar Multiplication
+        data.push_back(max(EigenScalarMultiplicationTimes));
+        data.push_back(max(CSF2ScalarMultiplicationTimes));
+        data.push_back(max(CSF3ScalarMultiplicationTimes));
+
+        //Vector Multiplication
+        data.push_back(max(EigenVectorMultiplicationTimes));
+        data.push_back(max(CSF2VectorMultiplicationTimes));
+        data.push_back(max(CSF3VectorMultiplicationTimes));
+
+        // Memory usage
+        data.push_back(max(EigenMemoryUsage));
+        data.push_back(max(CSF2MemoryUsage));
+        data.push_back(max(CSF3MemoryUsage));
+
+        // Transpose times
+        data.push_back(max(EigenTransposeTimes));
+        data.push_back(max(CSF2TransposeTimes));
+        data.push_back(max(CSF3TransposeTimes));
+
+        // Matrix multiplication times
+        data.push_back(max(EigenMatrixMultiplicationTimes));
+        data.push_back(max(CSF2MatrixMultiplicationTimes));
+        data.push_back(max(CSF3MatrixMultiplicationTimes));
 
 
         /*

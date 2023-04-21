@@ -9,7 +9,7 @@ namespace CSF {
         // make a copy of the matrix
         CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor> newMatrix(*this);
 
-        #pragma omp parallel for schedule(dynamic)
+        // #pragma omp parallel for schedule(dynamic)
         for (uint32_t i = 0; i < this->outerDim; ++i) {
             for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(newMatrix, i); it; ++it) {
                 if (it.isNewRun()) {
@@ -194,7 +194,7 @@ namespace CSF {
 
         Eigen::Matrix<T, -1, -1> newMatrix = Eigen::Matrix<T, -1, -1>::Zero(innerDim, mat.cols());
 
-        #pragma omp parallel for num_threads(8)
+        // #pragma omp parallel for num_threads(8)
         for(int col = 0; col < mat.cols(); col++) {
             for(int row = 0; row < mat.rows(); row++){
                 for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator matIter(*this, row); matIter; ++matIter) {

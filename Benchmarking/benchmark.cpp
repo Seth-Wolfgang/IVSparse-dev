@@ -171,7 +171,7 @@ int main(int argc, char** argv) {
 
 
     // Class to calculate the maxes and averages of the benchmarking data
-    // bench.printTimesToCSV();
+    bench.printTimesToCSV();
     return 1;
 }
 
