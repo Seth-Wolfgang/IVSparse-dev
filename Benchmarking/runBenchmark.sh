@@ -4,7 +4,7 @@
 
 # Compiling benchmark
 g++ -w -O2 benchmark.cpp -o benchmark
-numMatrices=100
+numMatrices=1000
 # Downloading matrices and running benchmark at the same time
 for x in $(seq 1 $numMatrices)
 do

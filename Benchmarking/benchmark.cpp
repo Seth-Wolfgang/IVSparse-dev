@@ -11,7 +11,7 @@
  * Source: https://math.nist.gov/MatrixMarket/mmio/c/example_read.c
  */
 
-#define NUM_ITERATIONS 10
+#define NUM_ITERATIONS 1
 #include "lib/benchmarkFunctions.h"
 
 int main(int argc, char** argv) {
@@ -58,13 +58,13 @@ int main(int argc, char** argv) {
     eigen.makeCompressed();
 
     // Calculate matrix entropy
-    matrixData.push_back(calculateEntropy(eigen));
+    matrixData.at(4) = averageRedundancy(eigen);
     BenchAnalysis bench = BenchAnalysis(matrixData);
 
     // Create the CSF matrices
     // CSF::SparseMatrix<VALUE_TYPE, INDEX_TYPE, 1> csf(eigen);
-    CSF::SparseMatrix<VALUE_TYPE, INDEX_TYPE, 2> csf2(eigen);
-    CSF::SparseMatrix<VALUE_TYPE, INDEX_TYPE, 3> csf3(eigen);
+    // CSF::SparseMatrix<VALUE_TYPE, INDEX_TYPE, 2> csf2(eigen);
+    // CSF::SparseMatrix<VALUE_TYPE, INDEX_TYPE, 3> csf3(eigen);
 
     // Random array to select a random benchmark
     const int myList[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20 };
@@ -97,40 +97,40 @@ int main(int argc, char** argv) {
             std::cout << "Running benchmark " << currentlySelected << std::endl;
             switch (currentlySelected) {
             case 0:
-                EigenConstructorBenchmark<VALUE_TYPE>(eigenTriplet, data, matrixData[1], matrixData[2]);
+                // EigenConstructorBenchmark<VALUE_TYPE>(eigenTriplet, data, matrixData[1], matrixData[2]);
                 continue;
             case 1:
-                CSF2ConstructorBenchmark<VALUE_TYPE, INDEX_TYPE>(eigen, data);
+                // CSF2ConstructorBenchmark<VALUE_TYPE, INDEX_TYPE>(eigen, data);
                 continue;
             case 2:
-                CSF3ConstructorBenchmark<VALUE_TYPE, INDEX_TYPE>(eigen, data);
+                // CSF3ConstructorBenchmark<VALUE_TYPE, INDEX_TYPE>(eigen, data);
                 continue;
             case 3:
-                EigenInnerIteratorBenchmark<VALUE_TYPE>(eigen, data);
+                // EigenInnerIteratorBenchmark<VALUE_TYPE>(eigen, data);
                 continue;
             case 4:
-                CSF2InnerIteratorBenchmark<VALUE_TYPE, INDEX_TYPE>(csf2, data);
+                // CSF2InnerIteratorBenchmark<VALUE_TYPE, INDEX_TYPE>(csf2, data);
                 continue;
             case 5:
-                CSF3InnerIteratorBenchmark<VALUE_TYPE, INDEX_TYPE>(csf3, data);
+                // CSF3InnerIteratorBenchmark<VALUE_TYPE, INDEX_TYPE>(csf3, data);
                 continue;
             case 6:
-                EigenScalarMultiplicationBenchmark<VALUE_TYPE>(eigen, data);
+                // EigenScalarMultiplicationBenchmark<VALUE_TYPE>(eigen, data);
                 continue;
             case 7:
-                CSF2ScalarMultiplicationBenchmark<VALUE_TYPE, INDEX_TYPE>(csf2, data);
+                // CSF2ScalarMultiplicationBenchmark<VALUE_TYPE, INDEX_TYPE>(csf2, data);
                 continue;
             case 8:
-                CSF3scalarMultiplicationBenchmark<VALUE_TYPE, INDEX_TYPE>(csf3, data);
+                // CSF3scalarMultiplicationBenchmark<VALUE_TYPE, INDEX_TYPE>(csf3, data);
                 continue;
             case 9:
-                EigenVectorMultiplicationBenchmark<VALUE_TYPE>(eigen, data);
+                // EigenVectorMultiplicationBenchmark<VALUE_TYPE>(eigen, data);
                 continue;
             case 10:
-                CSF2VectorMultiplicationBenchmark<VALUE_TYPE, INDEX_TYPE>(eigen, csf2, data);
+                // CSF2VectorMultiplicationBenchmark<VALUE_TYPE, INDEX_TYPE>(eigen, csf2, data);
                 continue;
             case 11:
-                CSF3VectorMultiplicationBenchmark<VALUE_TYPE, INDEX_TYPE>(eigen, csf3, data);
+                // CSF3VectorMultiplicationBenchmark<VALUE_TYPE, INDEX_TYPE>(eigen, csf3, data);
                 continue;
             case 12:
                 EigenMemoryFootprintBenchmark<VALUE_TYPE>(data, eigenTriplet, matrixData[1], matrixData[2]);
@@ -142,22 +142,22 @@ int main(int argc, char** argv) {
                 CSF3MemoryFootprintBenchmark<VALUE_TYPE, INDEX_TYPE>(data, eigenTriplet, matrixData[1], matrixData[2]);
                 continue;
             case 15:
-                eigenTransposeBenchmark<VALUE_TYPE>(eigen, data);
+                // eigenTransposeBenchmark<VALUE_TYPE>(eigen, data);
                 continue;
             case 16:
-                CSF2TransposeBenchmark<VALUE_TYPE, INDEX_TYPE>(csf2, data);
+                // CSF2TransposeBenchmark<VALUE_TYPE, INDEX_TYPE>(csf2, data);
                 continue;
             case 17:
-                CSF3TransposeBenchmark<VALUE_TYPE, INDEX_TYPE>(csf3, data);
+                // CSF3TransposeBenchmark<VALUE_TYPE, INDEX_TYPE>(csf3, data);
                 continue;
             case 18:
-                eigenMatrixMultiplicationBenchmark<VALUE_TYPE>(eigen, data);
+                // eigenMatrixMultiplicationBenchmark<VALUE_TYPE>(eigen, data);
                 continue;
             case 19:
-                CSF2MatrixMultiplicationBenchmark<VALUE_TYPE, INDEX_TYPE>(eigen, csf2, data);
+                // CSF2MatrixMultiplicationBenchmark<VALUE_TYPE, INDEX_TYPE>(eigen, csf2, data);
                 continue;
             case 20:
-                CSF3MatrixMultiplicationBenchmark<VALUE_TYPE, INDEX_TYPE>(eigen, csf3, data);
+                // CSF3MatrixMultiplicationBenchmark<VALUE_TYPE, INDEX_TYPE>(eigen, csf3, data);
                 continue;
 
             }
@@ -205,7 +205,7 @@ void readFile(std::vector<Eigen::Triplet<T>>& eigenTriplet, std::vector<double>&
     }
 
     // Makes sure the matrix is not complex
-    if (mm_is_complex(matcode) && !mm_is_matrix(matcode)) {
+    if (mm_is_complex(matcode) && !mm_is_matrix(matcode) || mm_is_pattern(matcode)) {
         std::cout << "\033[31;1;4mError: This application does not support \033[0m" << std::endl;
         std::cout << "\033[31;1;4mMarket Market type: \033[0m" << mm_typecode_to_str(matcode) << std::endl;
         std::cout << "Matrix might be complex or not a matrix";
@@ -260,13 +260,15 @@ void readFile(std::vector<Eigen::Triplet<T>>& eigenTriplet, std::vector<double>&
     matrixData.push_back(nonzeros);
 
     //use a hash to store unique values
-    std::unordered_set<double> uniqueValues;
 
     //iterates through the values and inserts them into the hash to record unique values
-    for (int i = 0; i < nonzeros; i++) {
-        uniqueValues.insert(val[i]);
-    }
-    matrixData.push_back(1.0 - ((double)uniqueValues.size() / nonzeros));
+    std::unordered_set<double> uniqueValues;
+    // for (int i = 0; i < nonzeros; i++) {
+    //     uniqueValues.insert(val[i]);
+    // }
+    // matrixData.push_back(1.0 - ((double)uniqueValues.size() / nonzeros));
+
+    matrixData.push_back(0);
 
     // Calculate matrix density
     matrixData.push_back((double)nonzeros / (double)(rows * cols));
@@ -280,23 +282,62 @@ void readFile(std::vector<Eigen::Triplet<T>>& eigenTriplet, std::vector<double>&
 //https://www.phind.com/search?cache=e2eb22ba-3690-4155-a8f1-18a61dad9cbe
 // "Calculate entropy of an Eigen::Sparse matrix in C++"
 // Plus some modifications
-double calculateEntropy(const Eigen::SparseMatrix<double>& mat) {
-    std::unordered_map<double, int> counts;
-    int nnz = mat.nonZeros();
-    double val;
-    for (int k = 0; k < mat.outerSize(); ++k) {
-        for (typename Eigen::SparseMatrix<double>::InnerIterator it(mat, k); it; ++it) {
-            val = it.value();
-            ++counts[val];
+double calculateEntropy(const Eigen::SparseMatrix<double>& matrix) {
+    std::vector<double> values;
+    values.reserve(matrix.nonZeros());
+
+    // Extract values from the sparse matrix
+    for (int k = 0; k < matrix.outerSize(); ++k) {
+        for (Eigen::SparseMatrix<double>::InnerIterator it(matrix, k); it; ++it) {
+            values.push_back(it.value());
         }
     }
-    double H = 1;
-    double inv_nnz = 1.0 / nnz;
-    for (const auto& [val, count] : counts) {
-        double p = count * inv_nnz;
-        H += p * std::log2(p);
+
+    // Count occurrences of each value
+    std::unordered_map<double, unsigned> counts;
+    for (double value : values) {
+        ++counts[value];
     }
-    return H;
+
+    // Calculate probabilities of each value
+    const double num_samples = static_cast<double>(values.size());
+    std::vector<double> probabilities;
+    probabilities.reserve(counts.size());
+    for (const auto& pair : counts) {
+        double probability = static_cast<double>(pair.second) / num_samples;
+        probabilities.push_back(probability);
+    }
+
+    // Calculate Shannon entropy
+    double entropy = 0.0;
+    for (double probability : probabilities) {
+        entropy -= probability * std::log2(probability);
+    }
+
+    return entropy;
+}
+
+
+// calculates the redandncy per column
+double averageRedundancy(const Eigen::SparseMatrix<double>& matrix) {
+    const int numRows = matrix.rows();
+    const int numCols = matrix.cols();
+    double totalRedundancy = 0.0;
+    std::vector<double> uniqueValues;
+
+    for (int j = 0; j < numCols; ++j) {
+        Eigen::SparseVector<double> column = matrix.col(j);
+        std::unordered_set<double> uniqueValues;
+        for (typename Eigen::SparseVector<double>::InnerIterator it(column); it; ++it) {
+            uniqueValues.insert(it.value());
+        }
+        
+        double totalValues = static_cast<double>(column.nonZeros());
+        double redundancy = 1.0 - (uniqueValues.size() / totalValues);
+        totalRedundancy += redundancy;
+    }
+
+    return totalRedundancy / static_cast<double>(numCols);
 }
 
 /**
@@ -555,7 +596,7 @@ void EigenMemoryFootprintBenchmark(std::vector<uint64_t>& data, std::vector<Eige
     eigenMatrix.setFromTriplets(eigenTriplet.begin(), eigenTriplet.end());
     eigenMatrix.makeCompressed();
 
-    data.at(12) = eigenMatrix.nonZeros() * sizeof(double) + eigenMatrix.outerSize() * sizeof(uint32_t) + eigenMatrix.innerSize() * sizeof(uint32_t);
+    data.at(12) = eigenMatrix.nonZeros() * sizeof(double) + eigenMatrix.nonZeros() * sizeof(uint32_t) + (eigenMatrix.outerSize() + 1) * sizeof(uint32_t);
 
 }
 
@@ -675,7 +716,7 @@ void CSF2MatrixMultiplicationBenchmark(Eigen::SparseMatrix<T>& eigen, CSF::Spars
 
     //CSF 2
     start = std::chrono::system_clock::now();
-    Eigen::Matrix<T,-1,-1> result = csf2 * eigen;
+    Eigen::Matrix<T, -1, -1> result = csf2 * eigen;
     end = std::chrono::system_clock::now();
 
     data.at(19) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
@@ -693,7 +734,7 @@ void CSF3MatrixMultiplicationBenchmark(Eigen::SparseMatrix<T>& eigen, CSF::Spars
 
     //CSF 3
     start = std::chrono::system_clock::now();
-    Eigen::Matrix<T,-1,-1> result = csf3 * eigen;
+    Eigen::Matrix<T, -1, -1> result = csf3 * eigen;
     end = std::chrono::system_clock::now();
 
     data.at(20) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();

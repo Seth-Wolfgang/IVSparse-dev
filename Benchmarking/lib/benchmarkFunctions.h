@@ -19,6 +19,8 @@ void readFile(std::vector<Eigen::Triplet<T>>& eigenTriplet, std::vector<double>&
 
 double calculateEntropy(const Eigen::SparseMatrix<double>& mat);
 
+double averageRedundancy(const Eigen::SparseMatrix<double>& matrix);
+
 template <typename T>
 void EigenConstructorBenchmark(std::vector<Eigen::Triplet<T>>& eigenTriplet, std::vector<uint64_t>& data, int rows, int cols);
 
