@@ -112,7 +112,7 @@ public:
 };
 
 template <typename T>
-Eigen::SparseMatrix<T> generateMatrix(int numRows, int numCols, int sparsity, uint64_t seed) {
+Eigen::SparseMatrix<T> generateMatrix(int numRows, int numCols, int sparsity, uint64_t seed, int maxValue) {
     // generate a random sparse matrix
     rng randMatrixGen = rng(seed);
 
@@ -122,7 +122,7 @@ Eigen::SparseMatrix<T> generateMatrix(int numRows, int numCols, int sparsity, ui
     for (int i = 0; i < numRows; i++) {
         for (int j = 0; j < numCols; j++) {
             if (randMatrixGen.draw<int>(i, j, sparsity)) {
-                myMatrix.insert(i, j) = rand() % 100 + 1;
+                myMatrix.insert(i, j) = rand() % maxValue + 1;
             }
         }
     }

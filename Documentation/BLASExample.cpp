@@ -46,7 +46,7 @@ int main() {
     /**
      * Matrix multiplication
      * 
-     * Matrix multiplcation for CSF is multithreaded using OpenMP and can be faster than Eigen's implemenation
+     * 
      * This algorithm is O(n^2).
      * 
      */

@@ -355,10 +355,12 @@ namespace CSF {
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     void SparseMatrix<T, indexT, compressionLevel, columnMajor>::print() {
-
+        std::cout << this << std::endl;
     }
 
     //* Operator Overloads *//
+
+
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator[](uint32_t vec) {
@@ -721,5 +723,26 @@ namespace CSF {
         // return the matrix
         return csf1Matrix;
     }
+
+    // template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    // std::ostream& operator<<(std::ostream &os, const CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor> &mat) { //not working
+    // // std::ostream& SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator<<(std::ostream &os) {
+
+    //     T matrix[mat.rows()][mat.cols()];
+
+    //     for (int i = 0; i < mat.cols(); i++){
+    //         for(typename CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator it(mat, i); it; ++it){
+    //             matrix[it.row()][it.col()] = it.value();
+    //         }
+    //     }
+
+    //     for (int i = 0; i < mat.rows(); i++){
+    //         for (int j = 0; j < mat.cols(); j++){
+    //             os << matrix[i][j] << " ";
+    //         }
+    //         os << std::endl;
+    //     }
+    //     return os;
+    // }
 
 } // end namespace CSF
