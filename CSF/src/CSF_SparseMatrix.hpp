@@ -368,6 +368,23 @@ namespace CSF {
         //* Utility Methods *//
 
         bool isNewRun();
+
+    private:
+
+        //WIP
+        uint8_t castTable[4] = { 0x01, 0x02, 0x04, 0x08 };
+
+        inline indexT cast_and_assign(uint8_t* data, std::function<indexT(uint8_t*)> func) {
+            return func(data);
+        }
+
+        std::unordered_map<int, std::function<indexT(uint8_t*)>> lookup_table = {
+        {1, [](uint8_t* data) -> indexT { return static_cast<indexT>(*reinterpret_cast<uint8_t*>(data)); }},
+        {2, [](uint8_t* data) -> indexT { return static_cast<indexT>(*reinterpret_cast<uint16_t*>(data)); }},
+        {4, [](uint8_t* data) -> indexT { return static_cast<indexT>(*reinterpret_cast<uint32_t*>(data)); }},
+        {8, [](uint8_t* data) -> indexT { return static_cast<indexT>(*reinterpret_cast<uint64_t*>(data)); }}
+        };
+
     };
 
     template <typename T, typename indexT, bool columnMajor>
