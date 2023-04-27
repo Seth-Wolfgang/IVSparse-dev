@@ -90,7 +90,7 @@ void iteratorTest() {
     std::vector<uint64_t> timesForOld;
     uint64_t ours = 0;
     uint64_t old = 0;
-    for (int i = 0; i < 1; i++) {
+    for (int i = 0; i < 10000; i++) {
         
         //Measure time for CSF matrix
         T sum = 0;
@@ -119,7 +119,7 @@ void iteratorTest() {
         timesForOld.push_back(std::chrono::duration_cast<std::chrono::microseconds>(end - start).count());
         old = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
         assert(sum2 == sum);
-        std::cout << "(CSF): " << ours << "(Eigen): " << old << std::endl;
+        // std::cout << "(CSF): " << ours << "(Eigen): " << old << std::endl;
 
         // std::cout << "Eigen:\n " << eigenDenseMatrix << std::endl;
     }

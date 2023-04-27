@@ -118,16 +118,16 @@ namespace CSF {
     }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    inline void SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator::operator++() {
+    void SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator::operator++() {
 
         data = (uint8_t*)data + indexWidth;
 
         decodeIndex();
 
         // If new_row is 0 and not the first row, then the row is a delimitor
-        if (newIndex == 0) {
+        if (newIndex == 0)  {
 
-            if (data >= (uint8_t*)endPtr - indexWidth) [[likely]] {
+            if (data >= (uint8_t*)endPtr - indexWidth) [[unlikely]] {
                 return;
             }
 
