@@ -90,7 +90,7 @@ void iteratorTest() {
     std::vector<uint64_t> timesForOld;
     uint64_t ours = 0;
     uint64_t old = 0;
-    for (int i = 0; i < 10000; i++) {
+    for (int i = 0; i < 1000; i++) {
         
         //Measure time for CSF matrix
         T sum = 0;

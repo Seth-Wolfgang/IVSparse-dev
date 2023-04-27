@@ -8,7 +8,7 @@ namespace CSF {
     // ---------------- InnerIterator Constructors ---------------- //
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator::InnerIterator(CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>& matrix, uint32_t vec) {
+    inline SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator::InnerIterator(CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>& matrix, uint32_t vec) {
 
         // Sets the column
         this->outer = vec;
@@ -24,9 +24,7 @@ namespace CSF {
         }
 
         // Sets the end pointer
-        uint32_t vecSize = matrix.getVecSize(vec);
-        endPtr = (uint8_t*)data + vecSize;
-
+        endPtr = (uint8_t*)data + matrix.getVecSize(vec);
         // Points value to the first value in the column
         val = (T*)data;
         data = (uint8_t*)data + sizeof(T);
@@ -70,7 +68,7 @@ namespace CSF {
     // ------------------------------- InnerIterator Methods ----------------------------------- //
 
     // ---------------- Public Methods ---------------- //
-    
+
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     inline bool SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator::isNewRun() { return firstIndex; }
 
@@ -125,7 +123,7 @@ namespace CSF {
         decodeIndex();
 
         // If new_row is 0 and not the first row, then the row is a delimitor
-        if (newIndex == 0)  {
+        if (newIndex == 0) {
 
             if (data >= (uint8_t*)endPtr - indexWidth) [[unlikely]] {
                 return;
