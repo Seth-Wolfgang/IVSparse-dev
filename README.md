@@ -4,6 +4,8 @@
 > **Note:** This is a work in progress. The current version is a prototype and is not ready for production use.
 
 > **Note:** Current development branch is `enlightenment` for those interested in seeing the latest changes and work. Main is updated semi-regularly with new features and the such. 
+
+> **Note:** [Current Trello Board](https://trello.com/b/d59vC6HQ/csf-features)
 ___
 
 ## Abstract
