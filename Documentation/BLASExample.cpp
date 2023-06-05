@@ -18,8 +18,10 @@ int main() {
      * Scalar multiplication
      * 
      * Scalar multiplication iterates through the whole matrix and scalese each value by the scalar.
-     * This is done in O(n^2) but future implementations will use a new data structure to store the values
+     * This is done in O(n^2) but future implementations for CSF level 2 will use a new data structure to store the values
      * So we can reduce the time complexity to O(n).
+     * 
+     * In place operations are also supported.
      * 
      */
     csfSparseMatrix *= 2;
@@ -34,7 +36,7 @@ int main() {
      * Vector multiplication iterates through the whole matrix and multiplies each value by the corresponding value in the vector.
      * This is done in O(n^2) and is slower than the Eigen::SparseMatrix implementation.
      * 
-     * As of right now, this operation is only single threaded.
+     * The product does produce an Eigen::Vector as opposed to a CSF::SparseMatrix.
      * 
      */
     Eigen::VectorXi eigenVector = Eigen::VectorXi::Random(4);
@@ -46,12 +48,25 @@ int main() {
     /**
      * Matrix multiplication
      * 
+     * Our matrix mutliplication method produces an Eigen::Matrix as the product of a CSF::SparseMatrix and an Eigen::Matrix.
+     * As of right now, this only works for Sparse * Dense operations, so it is not currently possible to multiply by an Eigen::SparseMatrix.
      * 
-     * This algorithm is O(n^2).
+     * This algorithm is O(n^3). 
      * 
      */
-    Eigen::MatrixXi eigenMatrix = Eigen::MatrixXi::Random(4, 4);
-    Eigen::MatrixXi eigenMatrixResult = csfSparseMatrix * eigenMatrix;
+    Eigen::MatrixXi eigenMatrix = Eigen::MatrixXi::Random(4, 4);        //Create a random matrix
+    Eigen::MatrixXi eigenMatrixResult = csfSparseMatrix * eigenMatrix;  //Multiply the CSF::SparseMatrix by the Eigen::Matrix
+
+    /**
+     * Matrix Transpose
+     * 
+     * The matrix transpose method produces a transposed version of the CSF::SparseMatrix. Note: This operation can be quite costly 
+     * due to how CSF::SparseMatrix is stored. 
+     * 
+     * This algorithm is in O(n^2)
+    */
+    CSF::SparseMatrix<int> csfSparseMatrixT = csfSparseMatrix.transpose(); 
+
 
     //Print the Eigen::MatrixXd
     std::cout << eigenMatrixResult << std::endl;
