@@ -11,7 +11,7 @@
  * Source: https://math.nist.gov/MatrixMarket/mmio/c/example_read.c
  */
 
-#define NUM_ITERATIONS 1
+#define NUM_ITERATIONS 10
 #include "lib/benchmarkFunctions.h"
 
 int main(int argc, char** argv) {
@@ -63,8 +63,8 @@ int main(int argc, char** argv) {
 
     // Create the CSF matrices
     // CSF::SparseMatrix<VALUE_TYPE, INDEX_TYPE, 1> csf(eigen);
-    // CSF::SparseMatrix<VALUE_TYPE, INDEX_TYPE, 2> csf2(eigen);
-    // CSF::SparseMatrix<VALUE_TYPE, INDEX_TYPE, 3> csf3(eigen);
+    CSF::SparseMatrix<VALUE_TYPE, INDEX_TYPE, 2> csf2(eigen);
+    CSF::SparseMatrix<VALUE_TYPE, INDEX_TYPE, 3> csf3(eigen);
 
     // Random array to select a random benchmark
     const int myList[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20 };
@@ -97,40 +97,40 @@ int main(int argc, char** argv) {
             std::cout << "Running benchmark " << currentlySelected << std::endl;
             switch (currentlySelected) {
             case 0:
-                // EigenConstructorBenchmark<VALUE_TYPE>(eigenTriplet, data, matrixData[1], matrixData[2]);
+                EigenConstructorBenchmark<VALUE_TYPE>(eigenTriplet, data, matrixData[1], matrixData[2]);
                 continue;
             case 1:
-                // CSF2ConstructorBenchmark<VALUE_TYPE, INDEX_TYPE>(eigen, data);
+                CSF2ConstructorBenchmark<VALUE_TYPE, INDEX_TYPE>(eigen, data);
                 continue;
             case 2:
-                // CSF3ConstructorBenchmark<VALUE_TYPE, INDEX_TYPE>(eigen, data);
+                CSF3ConstructorBenchmark<VALUE_TYPE, INDEX_TYPE>(eigen, data);
                 continue;
             case 3:
-                // EigenInnerIteratorBenchmark<VALUE_TYPE>(eigen, data);
+                EigenInnerIteratorBenchmark<VALUE_TYPE>(eigen, data);
                 continue;
             case 4:
-                // CSF2InnerIteratorBenchmark<VALUE_TYPE, INDEX_TYPE>(csf2, data);
+                CSF2InnerIteratorBenchmark<VALUE_TYPE, INDEX_TYPE>(csf2, data);
                 continue;
             case 5:
-                // CSF3InnerIteratorBenchmark<VALUE_TYPE, INDEX_TYPE>(csf3, data);
+                CSF3InnerIteratorBenchmark<VALUE_TYPE, INDEX_TYPE>(csf3, data);
                 continue;
             case 6:
-                // EigenScalarMultiplicationBenchmark<VALUE_TYPE>(eigen, data);
+                EigenScalarMultiplicationBenchmark<VALUE_TYPE>(eigen, data);
                 continue;
             case 7:
-                // CSF2ScalarMultiplicationBenchmark<VALUE_TYPE, INDEX_TYPE>(csf2, data);
+                CSF2ScalarMultiplicationBenchmark<VALUE_TYPE, INDEX_TYPE>(csf2, data);
                 continue;
             case 8:
-                // CSF3scalarMultiplicationBenchmark<VALUE_TYPE, INDEX_TYPE>(csf3, data);
+                CSF3scalarMultiplicationBenchmark<VALUE_TYPE, INDEX_TYPE>(csf3, data);
                 continue;
             case 9:
-                // EigenVectorMultiplicationBenchmark<VALUE_TYPE>(eigen, data);
+                EigenVectorMultiplicationBenchmark<VALUE_TYPE>(eigen, data);
                 continue;
             case 10:
-                // CSF2VectorMultiplicationBenchmark<VALUE_TYPE, INDEX_TYPE>(eigen, csf2, data);
+                CSF2VectorMultiplicationBenchmark<VALUE_TYPE, INDEX_TYPE>(eigen, csf2, data);
                 continue;
             case 11:
-                // CSF3VectorMultiplicationBenchmark<VALUE_TYPE, INDEX_TYPE>(eigen, csf3, data);
+                CSF3VectorMultiplicationBenchmark<VALUE_TYPE, INDEX_TYPE>(eigen, csf3, data);
                 continue;
             case 12:
                 EigenMemoryFootprintBenchmark<VALUE_TYPE>(data, eigenTriplet, matrixData[1], matrixData[2]);
@@ -142,22 +142,22 @@ int main(int argc, char** argv) {
                 CSF3MemoryFootprintBenchmark<VALUE_TYPE, INDEX_TYPE>(data, eigenTriplet, matrixData[1], matrixData[2]);
                 continue;
             case 15:
-                // eigenTransposeBenchmark<VALUE_TYPE>(eigen, data);
+                eigenTransposeBenchmark<VALUE_TYPE>(eigen, data);
                 continue;
             case 16:
-                // CSF2TransposeBenchmark<VALUE_TYPE, INDEX_TYPE>(csf2, data);
+                CSF2TransposeBenchmark<VALUE_TYPE, INDEX_TYPE>(csf2, data);
                 continue;
             case 17:
-                // CSF3TransposeBenchmark<VALUE_TYPE, INDEX_TYPE>(csf3, data);
+                CSF3TransposeBenchmark<VALUE_TYPE, INDEX_TYPE>(csf3, data);
                 continue;
             case 18:
-                // eigenMatrixMultiplicationBenchmark<VALUE_TYPE>(eigen, data);
+                eigenMatrixMultiplicationBenchmark<VALUE_TYPE>(eigen, data);
                 continue;
             case 19:
-                // CSF2MatrixMultiplicationBenchmark<VALUE_TYPE, INDEX_TYPE>(eigen, csf2, data);
+                CSF2MatrixMultiplicationBenchmark<VALUE_TYPE, INDEX_TYPE>(eigen, csf2, data);
                 continue;
             case 20:
-                // CSF3MatrixMultiplicationBenchmark<VALUE_TYPE, INDEX_TYPE>(eigen, csf3, data);
+                CSF3MatrixMultiplicationBenchmark<VALUE_TYPE, INDEX_TYPE>(eigen, csf3, data);
                 continue;
 
             }
@@ -205,7 +205,7 @@ void readFile(std::vector<Eigen::Triplet<T>>& eigenTriplet, std::vector<double>&
     }
 
     // Makes sure the matrix is not complex
-    if (mm_is_complex(matcode) && !mm_is_matrix(matcode) || mm_is_pattern(matcode)) {
+    if (mm_is_complex(matcode) && !mm_is_matrix(matcode)) {
         std::cout << "\033[31;1;4mError: This application does not support \033[0m" << std::endl;
         std::cout << "\033[31;1;4mMarket Market type: \033[0m" << mm_typecode_to_str(matcode) << std::endl;
         std::cout << "Matrix might be complex or not a matrix";
@@ -218,7 +218,7 @@ void readFile(std::vector<Eigen::Triplet<T>>& eigenTriplet, std::vector<double>&
         exit(1);
     }
 
-    if (cols > 30000 || rows > 30000) {
+    if (cols > 30000 || rows > 30000 || nonzeros > 100000) {
         std::cout << "\033[31;1;4mMatrix too large, skipping...\033[0m" << std::endl;
         exit(1);
     }
@@ -616,6 +616,7 @@ void CSF2MemoryFootprintBenchmark(std::vector<uint64_t>& data, std::vector<Eigen
     CSF::SparseMatrix<VALUE_TYPE, INDEX_TYPE, 2> csf2Matrix(eigenMatrix);
     data.at(13) = csf2Matrix.compressionSize();
 
+    //rows * columns * (end pointers + start pointers) + values * data type + metadata 
 }
 
 /**

@@ -132,15 +132,16 @@ namespace CSF {
 
         CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor> operator*(T scalar) const;
 
-        void operator*=(T scalar);
+        void operator*=(T scalar);    
 
+        //This method does not seem to work unless it is in this file
         friend std::ostream& operator<<(std::ostream& os, CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>& mat) {
-#ifndef CSF_DEBUG
+            #ifndef CSF_DEBUG
             if (mat.cols() > 110) {
                 std::cout << "CSF matrix is too large to print" << std::endl;
                 return os;
             }
-#endif
+            #endif
 
             // create a matrix to store the full matrix representation of the CSF matrix
             T matrix[mat.rows()][mat.cols()];

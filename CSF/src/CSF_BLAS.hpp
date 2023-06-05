@@ -132,10 +132,10 @@ namespace CSF {
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     inline Eigen::Matrix<T, -1, 1> SparseMatrix<T, indexT, compressionLevel, columnMajor>::vectorMultiply(typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector& vec) {
         // check that the vector is the correct size
-        #ifdef CSF_DEBUG
+#ifdef CSF_DEBUG
         if (vec.length() != outerDim)
             throw std::invalid_argument("The vector must be the same size as the number of columns in the matrix!");
-        #endif
+#endif
 
         Eigen::Matrix<T, -1, 1> newVector = Eigen::Matrix<T, -1, 1>::Zero(innerDim, 1);
 
@@ -159,44 +159,44 @@ namespace CSF {
      * @return Eigen::Matrix<T, -1,-1>
      */
 
-    /*
-        NOT WORKING
-    */
-    //  template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    //  inline Eigen::Matrix<T, -1,-1> SparseMatrix<T, indexT, compressionLevel, columnMajor>::matrixMultiply(Eigen::Matrix<T, -1,-1>& mat) {
-    //      // check that the matrix is the correct size
-    //     #ifdef CSF_DEBUG
-    //      if (mat.rows() != outerDim)
-    //          throw std::invalid_argument("The matrix must be the same size as the number of columns in the matrix!");
-    //     #endif
+     /*
+         NOT WORKING
+     */
+     //  template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+     //  inline Eigen::Matrix<T, -1,-1> SparseMatrix<T, indexT, compressionLevel, columnMajor>::matrixMultiply(Eigen::Matrix<T, -1,-1>& mat) {
+     //      // check that the matrix is the correct size
+     //     #ifdef CSF_DEBUG
+     //      if (mat.rows() != outerDim)
+     //          throw std::invalid_argument("The matrix must be the same size as the number of columns in the matrix!");
+     //     #endif
 
-    //      Eigen::Matrix<T, -1,-1> newMatrix = Eigen::Matrix<T, -1,-1>::Zero(innerDim, mat.cols());
+     //      Eigen::Matrix<T, -1,-1> newMatrix = Eigen::Matrix<T, -1,-1>::Zero(innerDim, mat.cols());
 
-    //     #pragma omp parallel for
-    //      for (int i = 0; i < this->rows() * mat.cols(); ++i) {
-    //          // linear indexing considers a matrix as a vector, in this case we let it be column-major
-    //          int col = i / this->rows(); // integer division!
-    //          int row = i % this->rows(); // modulus of integer division!
-    //          for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator matIter(*this, row); matIter; ++matIter) {
-    //              newMatrix.coeffRef(row, col) += matIter.value() * mat(row, col);
-    //          }
-    //      }
-    //      return newMatrix;
-    //  }
+     //     #pragma omp parallel for
+     //      for (int i = 0; i < this->rows() * mat.cols(); ++i) {
+     //          // linear indexing considers a matrix as a vector, in this case we let it be column-major
+     //          int col = i / this->rows(); // integer division!
+     //          int row = i % this->rows(); // modulus of integer division!
+     //          for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator matIter(*this, row); matIter; ++matIter) {
+     //              newMatrix.coeffRef(row, col) += matIter.value() * mat(row, col);
+     //          }
+     //      }
+     //      return newMatrix;
+     //  }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     inline Eigen::Matrix<T, -1, -1> SparseMatrix<T, indexT, compressionLevel, columnMajor>::matrixMultiply(Eigen::Matrix<T, -1, -1>& mat) {
         // check that the matrix is the correct size
-        #ifdef CSF_DEBUG
+#ifdef CSF_DEBUG
         if (mat.rows() != outerDim)
             throw std::invalid_argument("The matrix must be the same size as the number of columns in the matrix!");
-        #endif
+#endif
 
         Eigen::Matrix<T, -1, -1> newMatrix = Eigen::Matrix<T, -1, -1>::Zero(innerDim, mat.cols());
 
         // #pragma omp parallel for num_threads(8)
-        for(int col = 0; col < mat.cols(); col++) {
-            for(int row = 0; row < mat.rows(); row++){
+        for (int col = 0; col < mat.cols(); col++) {
+            for (int row = 0; row < mat.rows(); row++) {
                 for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator matIter(*this, row); matIter; ++matIter) {
                     newMatrix.coeffRef(matIter.row(), col) += matIter.value() * mat(row, col);
                 }

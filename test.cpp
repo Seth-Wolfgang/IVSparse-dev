@@ -12,21 +12,21 @@ void getMat(Eigen::SparseMatrix<int>& myMatrix_e);
 int main() {
 
     // create an eigen sparse matrix
-    Eigen::SparseMatrix<DATA_TYPE> eigen(10, 10);
+    Eigen::SparseMatrix<DATA_TYPE> eigen(255, 255);
     // getMat(eigen);
-    eigen = generateMatrix<DATA_TYPE>(10, 10, 1, 1, 10);
+    eigen = generateMatrix<DATA_TYPE>(255, 255, 1, 1, 1);
     // std::cout << eigen << std::endl;
 
     // create a CSF sparse matrix
     CSF::SparseMatrix<DATA_TYPE, int, 3> csf(eigen);
-    CSF::SparseMatrix<DATA_TYPE, int, 2> csf2(eigen);
+    // CSF::SparseMatrix<DATA_TYPE, int, 2> csf2(eigen);
 
     // transpose the CSF matrix
-    CSF::SparseMatrix<DATA_TYPE, int, 3> csfT = csf.transpose();
+    // CSF::SparseMatrix<DATA_TYPE, int, 3> csfT = csf.transpose();
     // std::cout << csfT << std::endl;
 
     // turn the CSF matrix into an eigen matrix
-    Eigen::SparseMatrix<DATA_TYPE> eigen_e = csfT.toEigen();
+    // Eigen::SparseMatrix<DATA_TYPE> eigen_e = csfT.toEigen();
 
     // print the eigen matrix
     // std::cout << eigen_e << std::endl;
@@ -40,17 +40,21 @@ int main() {
     // multiply the CSF by 3
     // csf *= 3;
 
+    std::cout << "CSF: " << csf.compressionSize() << std::endl;
+    uint64_t eigenSize = eigen.nonZeros() * sizeof(double) + eigen.nonZeros() * sizeof(uint32_t) + (eigen.outerSize() + 1) * sizeof(uint32_t);
+    std::cout << "eigen size: " << eigenSize << std::endl;
 
-    std::cout << csf << std::endl;
-    std::cout << eigen << std::endl;
+
+    // std::cout << csf << std::endl;
+    // std::cout << eigen << std::endl;
 
 
     // * CSF Iterator Testing * //
     // #pragma omp parallel for num_threads(15)
-    for (int i = 0; i < 1; i++) {
-        iteratorTest<int, uint64_t, 3>();
-        std::cout << "Test " << i << " passed" << std::endl;
-    }
+    // for (int i = 0; i < 1; i++) {
+    //     iteratorTest<int, uint64_t, 3>();
+    //     std::cout << "Test " << i << " passed" << std::endl;
+    // }
 
 
     return 1;
@@ -84,7 +88,6 @@ void iteratorTest() {
     Eigen::Matrix<T, -1, -1>  csfDenseMatrix;
     Eigen::Matrix<T, -1, -1> eigenDenseMatrix;
 
-
     //Vectors to store times for averages
     std::vector<uint64_t> timesForNew;
     std::vector<uint64_t> timesForOld;
@@ -95,12 +98,8 @@ void iteratorTest() {
         //Measure time for CSF matrix
         T sum = 0;
         start = std::chrono::system_clock::now();
-        // csfDenseMatrix = csfMatrix * randMatrix;
-        for(int i = 0; i < csfMatrix.cols(); i++){
-            for(typename CSF::SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(csfMatrix, i); it; ++it){
-                sum += it.value();
-            }
-        }
+        csfDenseMatrix = csfMatrix * randMatrix;
+
         end = std::chrono::system_clock::now();
         timesForNew.push_back(std::chrono::duration_cast<std::chrono::microseconds>(end - start).count());
         ours = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
