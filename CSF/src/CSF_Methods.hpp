@@ -364,7 +364,36 @@ namespace CSF {
 
     //* Operator Overloads *//
 
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    bool SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator==(const SparseMatrix<T, indexT, compressionLevel, columnMajor> &other)
+    {
+        // check if the two matrices are equal
 
+        // check if the rows, columns, and nnz are equal
+        if (innerDim != other.innerDim || outerDim != other.outerDim || nnz != other.nnz)
+            return false;
+
+        // iterate through both matrices and check if the values are equal
+        for (uint32_t i = 0; i < outerDim; i++)
+        {
+
+            // check if the column sizes are equal
+            if (getVecSize(i) != other.getVecSize(i))
+                return false;
+
+            // check if the columns are equal
+            if (memcmp(data[i], other.data[i], getVecSize(i)) != 0)
+                return false;
+        }
+
+        return true;
+    }
+
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    bool SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator!=(const SparseMatrix<T, indexT, compressionLevel, columnMajor> &other)
+    {
+        return !(*this == other);
+    }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator[](uint32_t vec) {
