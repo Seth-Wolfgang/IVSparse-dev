@@ -237,6 +237,8 @@ search_database() {
                 echo $INDEX
             fi
         fi
+
+        
     done < "${ARCHIVE_LOCATION}/ssstats.csv"
 }
 

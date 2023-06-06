@@ -1,0 +1,108 @@
+---
+title: "CSF Benchmarking"
+output: html_document
+date: "2023-04-11"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+This Rmarkdown shows how to do basic ggploting given some CSF benchmarking data in Seth and Skyler's favorite format:
+
+```{R}
+setwd("~/vscode/research/SRLE/Benchmarking")
+data <- read.csv("timeData.csv") # or whatever you saved it as
+#move annoying offset from reading in matrix number as rownames
+colnames(data) <- c(colnames(data)[-1], "")
+# delete useless column
+data <- data[,-ncol(data)]
+```
+
+## Memory usage
+
+We need to show how CSF compresses matrices as a function of redundancy compared to Eigen.
+
+```{R}
+plot_data <- data.frame("redundancy" = data$Matrix.Redundancy, "CSF2" = data$Avg.CSF2.Memory.Usage / data$Avg.Eigen.Memory.Usage, "CSF3" = data$Avg.CSF3.Memory.Usage / data$Avg.Eigen.Memory.Usage)
+
+plot_data <- reshape2::melt(plot_data, id.vars = "redundancy")
+
+colnames(plot_data) <- c("redundancy", "format", "compression_ratio")
+
+library(ggplot2)
+ggplot(plot_data, aes(redundancy, compression_ratio, color = format)) + geom_point() + theme_classic() + theme(aspect.ratio = 1) + labs(x = "Matrix redundancy", y = "Compression Ratio vs. CSC Format", color = "Matrix Format")
+```
+
+That's not as expected.
+
+So let's look at the size of a CSF2 matrix vs. the size of an Eigen matrix as a function of redundancy:
+
+```{R}
+plot_data <- data.frame("Eigen" = data$Avg.Eigen.Memory.Usage, "CSF2" = data$Avg.CSF2.Memory.Usage, "redundancy" = data$Matrix.Redundancy)
+
+ggplot(plot_data, aes(Eigen, CSF2, color = redundancy)) + geom_point() + theme_classic() + theme(aspect.ratio = 1) + labs(x = "Size of Eigen matrix", y = "Size of CSF2 matrix", color = "Matrix redundancy") + scale_color_viridis_c(option = "B", end = 0.8) + scale_y_continuous(trans = "log10") + scale_x_continuous(trans = "log10") + geom_abline(slope = 1)
+```
+
+Does the same apply for CSF3?
+
+```{R}
+plot_data <- data.frame("Eigen" = data$Avg.Eigen.Memory.Usage, "CSF3" = data$Avg.CSF3.Memory.Usage, "redundancy" = data$Matrix.Redundancy)
+
+ggplot(plot_data, aes(Eigen, CSF3, color = redundancy)) + geom_point() + theme_classic() + theme(aspect.ratio = 1) + labs(x = "Size of Eigen matrix", y = "Size of CSF3 matrix", color = "Matrix redundancy") + scale_color_viridis_c(option = "B", end = 0.8) + scale_y_continuous(trans = "log10") + scale_x_continuous(trans = "log10") + geom_abline(slope = 1)
+```
+
+Still not as expected.
+
+## Runtime of Iterator
+
+Here we want a plot of the iterator runtime of Eigen vs. CSF2 vs. CSF3 for redundant (>90% redundant) and non-redundant matrices (<90% redundant)
+
+```{R}
+df <- data.frame("csf2" = data$Avg.CSF2.InnerIterator.Time / data$Avg.Eigen.InnerIterator.Time, 
+                 "csf3" = data$Avg.CSF3.InnerIterator.Time / data$Avg.Eigen.InnerIterator.Time)
+df <- reshape2::melt(df)
+colnames(df) <- c("format", "time")
+ggplot(df, aes(format, time)) +  theme_classic() + scale_y_continuous(expand = c(0, 0), limits = c(0, 2)) + geom_jitter(width = 0.1, size = 0.5, color = "#a0a0a0") + geom_boxplot(outlier.size = 0) + geom_hline(yintercept = 1, linetype = "dashed", color = "blue") + labs(x = "format", y = "Iterator speed vs. Eigen CSC Iterator") + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+
+df <- reshape2::melt(df, id.vars = c("nnzpercol"))
+colnames(df) <- c("nnzpercol", "format", "time")
+df$time <- df$time / df$nnzpercol
+
+ggplot(df, aes(format, time, color = factor(group))) + geom_boxplot() + theme_classic() + facet_wrap(~group) + scale_y_continuous(trans = "log10")
+```
+
+## Scalar multiplication time
+
+```{R}
+df <- data.frame("csf2" = data$Avg.CSF2.Scalar.Multiplication.Time / data$Avg.Eigen.Scalar.Multiplication.Time, 
+                 "csf3" = data$Avg.CSF3.Scalar.Multiplication.Time / data$Avg.Eigen.Scalar.Multiplication.Time)
+df <- reshape2::melt(df)
+colnames(df) <- c("format", "time")
+ggplot(df, aes(format, time)) +  theme_classic() + scale_y_continuous(expand = c(0, 0), trans = "log10") + geom_jitter(width = 0.1, size = 0.5, color = "#a0a0a0") + geom_boxplot(outlier.size = 0) + geom_hline(yintercept = 1, linetype = "dashed", color = "blue") + labs(x = "format", y = "Scalar multiplication time vs. Eigen") + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+ggsave("plot.png", width = 2, height = 4, units = "in", dpi = 300)
+```
+
+```{R}
+df <- data.frame("csf2" = data$Avg.CSF2.Vector.Multiplication.Time / data$Avg.Eigen.Vector.Multiplication.Time, 
+                 "csf3" = data$Avg.CSF3.Vector.Multiplication.Time / data$Avg.Eigen.Vector.Multiplication.Time)
+df <- reshape2::melt(df)
+colnames(df) <- c("format", "time")
+ggplot(df, aes(format, time)) +  theme_classic() + scale_y_continuous(expand = c(0, 0), limits = c(0, 5)) + geom_jitter(width = 0.1, size = 0.5, color = "#a0a0a0") + geom_boxplot(outlier.size = 0) + geom_hline(yintercept = 1, linetype = "dashed", color = "blue") + labs(x = "format", y = "Vector multiplication time vs. Eigen") + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+ggsave("plot.png", width = 2, height = 4, units = "in", dpi = 300)
+```
+
+```{R}
+df <- data.frame("csf2" = data$Avg.CSF2.Constructor.Time, 
+                 "csf3" = data$Avg.CSF3.Constructor.Time,
+                  "Eigen" = data$Avg.Eigen.Constructor.Time,
+                  "nonzeros" = data$Matrix.Nonzeros)
+ggplot(df, aes(Eigen / 1e9, csf2 / 1e9, color = nonzeros)) + geom_point() + scale_y_continuous(trans = "log10") + scale_x_continuous(trans = "log10") + theme_classic() + coord_fixed() + scale_color_viridis_c(option = "B", end = 0.9, trans = "log10") + labs(x = "Eigen (sec)", y = "CSF2 (sec)", title = "Time to construct matrix") + geom_abline(slope = 1, linetype = "dashed", color = "blue") + theme(plot.title = element_text(hjust = 0.5))
+
+ggsave("plot.png", width = 4, height = 4, units = "in", dpi = 300)
+
+ggplot(df, aes(csf2 / Eigen, csf3 / Eigen, color = nonzeros)) + geom_point()  + theme_classic() + scale_color_viridis_c(option = "B", end = 0.9, trans = "log10") + labs(x = "CSF2 (sec)", y = "CSF3 (sec)", title = "Time to construct matrix") + geom_abline(slope = 1, linetype = "dashed", color = "blue") + theme(plot.title = element_text(hjust = 0.5)) + scale_x_continuous(limits = c(0, 1.2)) + scale_y_continuous(limits = c(0, 1.2))
+```

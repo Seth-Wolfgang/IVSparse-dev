@@ -23,7 +23,8 @@ double calculateEntropy(const Eigen::SparseMatrix<double>& mat);
 
 double averageRedundancy(const Eigen::SparseMatrix<double>& matrix);
 
-bool checkMatrixEquality(Eigen::SparseMatrix<double>& mat1, CSF::SparseMatrix<double, int, 2>& csf2, CSF::SparseMatrix<double, int, 3>& csf3);
+template <typename T>
+bool checkMatrixEquality(Eigen::SparseMatrix<T>& eigen, CSF::SparseMatrix<T, INDEX_TYPE, 2>& csf2, CSF::SparseMatrix<T, INDEX_TYPE, 3>& csf3);
 
 template <typename T>
 void EigenConstructorBenchmark(std::vector<Eigen::Triplet<T>>& eigenTriplet, std::vector<uint64_t>& data, int rows, int cols);

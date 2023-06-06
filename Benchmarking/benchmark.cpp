@@ -2,7 +2,7 @@
  * @file benchmark.cpp
  * @author Seth Wolfgang
  * @brief Automated benchmarking for CSF and Eigen using matrix market files
- * @version 0.1
+ * @version 1.0
  * @date 2023-03-19
  *
  * @copyright Copyright (c) 2023
@@ -15,17 +15,10 @@
 #include "lib/benchmarkFunctions.h"
 
 int main(int argc, char** argv) {
-    if (argc == 1) {
-        argv[1] = (char*)malloc(sizeof(char) * 100);
-        argv[1] = "testMatrix.mtx";
-        argv[2] = "1";
-        argc = 3;
-    }
-
 
     // Checks to make sure the correct number of arguments are passed
-    if (argc < 3) {
-        fprintf(stderr, "Usage: %s currentFile\n", argv[0]);
+    if (argc < 2) {
+        fprintf(stderr, "Usage: %s currentFile\n ID", argv[0]);
         exit(1);
     }
 
@@ -35,8 +28,15 @@ int main(int argc, char** argv) {
     std::vector<double> matrixData;
 
 
-    // Records the matrix ID
-    matrixData.push_back(std::stoi(argv[2]));
+    // Records the matrix ID or name
+
+    // if(strstr(argv[2], "mtx") != NULL) {
+        matrixData.push_back(-1);
+    // } else {
+        // matrixData.push_back(std::stoi(argv[2]));
+    // }
+
+    
 
     // Read in the matrix market file
     readFile<VALUE_TYPE>(eigenTriplet, matrixData, argv[1]);
@@ -66,7 +66,7 @@ int main(int argc, char** argv) {
     CSF::SparseMatrix<VALUE_TYPE, INDEX_TYPE, 2> csf2(eigen);
     CSF::SparseMatrix<VALUE_TYPE, INDEX_TYPE, 3> csf3(eigen);
 
-    if (!checkMatrixEquality(eigen, csf2, csf3)) {
+    if (!checkMatrixEquality<VALUE_TYPE>(eigen, csf2, csf3)) {
         std::cout << "\u001b[4m\u001b[44m Matrix equality failed!\u001b[0m" << std::endl;
         exit(1);
     }
@@ -209,12 +209,12 @@ void readFile(std::vector<Eigen::Triplet<T>>& eigenTriplet, std::vector<double>&
     }
 
     // Makes sure the matrix is not complex
-    if (mm_is_complex(matcode) && !mm_is_matrix(matcode)) {
-        std::cout << "\033[31;1;4mError: This application does not support \033[0m" << std::endl;
-        std::cout << "\033[31;1;4mMarket Market type: \033[0m" << mm_typecode_to_str(matcode) << std::endl;
-        std::cout << "Matrix might be complex or not a matrix";
-        exit(1);
-    }
+    // if (!mm_is_symmetric(matcode)) {
+    //     std::cout << "\033[31;1;4mError: This application does not support \033[0m" << std::endl;
+    //     std::cout << "\033[31;1;4mMarket Market type: \033[0m" << mm_typecode_to_str(matcode) << std::endl;
+    //     std::cout << "Matrix might be complex or not a matrix";
+    //     exit(1);
+    // }
 
     // Reads the dimensions and number of nonzeros
     if ((retCode = mm_read_mtx_crd_size(f, &rows, &cols, &nonzeros)) != 0) {
@@ -222,10 +222,10 @@ void readFile(std::vector<Eigen::Triplet<T>>& eigenTriplet, std::vector<double>&
         exit(1);
     }
 
-    if (cols > 30000 || rows > 30000 || nonzeros > 100000) {
-        std::cout << "\033[31;1;4mMatrix too large, skipping...\033[0m" << std::endl;
-        exit(1);
-    }
+    // if (nonzeros > 100000) {
+    //     std::cout << "\033[31;1;4mMatrix too large, skipping...\033[0m" << std::endl;
+    //     exit(1);
+    // }
 
     // Allocate memory for the matrix
     I = (int*)malloc(nonzeros * sizeof(int));
@@ -246,7 +246,7 @@ void readFile(std::vector<Eigen::Triplet<T>>& eigenTriplet, std::vector<double>&
             fscanf(f, "%d %d %lg\n", &I[i], &J[i], &val[i]);
             I[i]--;  /* adjust from 1-based to 0-based */
             J[i]--;
-        }
+        } 
 
     }
 
@@ -321,7 +321,6 @@ double calculateEntropy(const Eigen::SparseMatrix<double>& matrix) {
     return entropy;
 }
 
-
 // calculates the redandncy per column
 double averageRedundancy(const Eigen::SparseMatrix<double>& matrix) {
     const int numRows = matrix.rows();
@@ -344,88 +343,95 @@ double averageRedundancy(const Eigen::SparseMatrix<double>& matrix) {
     return totalRedundancy / static_cast<double>(numCols);
 }
 
-bool checkMatrixEquality(Eigen::SparseMatrix<double>& mat1, CSF::SparseMatrix<double, int, 2>& csf2, CSF::SparseMatrix<double, int, 3>& csf3) {
-    //Format for Eigen ostream
-    Eigen::IOFormat clean(Eigen::StreamPrecision, Eigen::DontAlignCols, " ", "\n", "", "", "", "");
-
-    //save the output of << mat1
-    std::stringstream mat1Stream;
-    mat1Stream << Eigen::MatrixXd(mat1).format(clean);
-    std::stringstream csf2Stream;
-    csf2Stream << csf2;
-    std::stringstream csf3Stream;
-    csf3Stream << csf3;
-
-    //Converts the streams to strings - so we can manipulate and compare them easily
-    std::string mat1String = mat1Stream.str();
-    std::string csf2String = csf2Stream.str();
-    std::string csf3String = csf3Stream.str();
-
-    //create a diff of two strings
-
-
-    // std::stringstream mat1stringstream = std::stringstream(mat1String);
-    // std::stringstream csf2stringstream = std::stringstream(csf2String);
-    // std::stringstream csf3stringstream = std::stringstream(csf3String);
-
-    while (mat1String.size() && isspace(mat1String.front())) mat1String.erase(mat1String.begin() + (76 - 0x4C));
-    while (!mat1String.empty() && isspace(mat1String[mat1String.size() - 1])) mat1String.erase(mat1String.end() - (76 - 0x4B));
-
-    while (csf2String.size() && isspace(csf2String.front())) csf2String.erase(csf2String.begin() + (76 - 0x4C));
-    while (!csf2String.empty() && isspace(csf2String[csf2String.size() - 1])) csf2String.erase(csf2String.end() - (76 - 0x4B));
-
-    while (csf3String.size() && isspace(csf3String.front())) csf3String.erase(csf3String.begin() + (76 - 0x4C));
-    while (!csf3String.empty() && isspace(csf3String[csf3String.size() - 1])) csf3String.erase(csf3String.end() - (76 - 0x4B));
-
-    std::string diff = diffStrings(mat1String, csf2String);
-    std::cout << diff << std::endl;
-
-    if (mat1String.compare(csf2String) != 0 || mat1String.compare(csf3String) != 0) {
+template <typename T>
+bool checkMatrixEquality(Eigen::SparseMatrix<T>& eigen, CSF::SparseMatrix<T, INDEX_TYPE, 2>& csf2, CSF::SparseMatrix<T, INDEX_TYPE, 3>& csf3) {
+    
+    // Checking basic attributes
+    if(eigen.outerSize() != csf2.outerSize() || eigen.outerSize() != csf3.outerSize() || csf2.outerSize() != csf3.outerSize() 
+    || eigen.innerSize() != csf2.innerSize() || eigen.innerSize() != csf3.innerSize() || csf2.innerSize() != csf3.innerSize() 
+    || eigen.nonZeros() != csf2.nonZeros() || eigen.nonZeros() != csf3.nonZeros() || csf2.nonZeros() != csf3.nonZeros()) {
+        std::cout << "\u001b[31;1;4mError: Matrix Comparison Returned False!\u001b[0m" << std::endl;
+        std::cout << "Outer size mismatch!" << std::endl;
         return false;
     }
 
-    // while (mat1stringstream.good() && csf2stringstream.good() && csf3stringstream.good()) {
-    //     std::string mat1Line;
-    //     std::string csf2Line;
-    //     std::string csf3Line;
-    //     getline(mat1stringstream, mat1Line);
-    //     getline(csf2stringstream, csf2Line);
-    //     getline(csf3stringstream, csf3Line);
+    T** eigenMatrix = new T * [eigen.rows()];
+    T** csf2Matrix = new T * [csf2.rows()];
+    T** csf3Matrix = new T * [csf3.rows()];
 
-    //     //Clears white space at the beginning and end
+    // Initialize the matrices
+    for (size_t i = 0; i < eigen.rows(); i++) {
+        eigenMatrix[i] = new T[eigen.cols()];
+        memset(eigenMatrix[i], 0, sizeof(eigenMatrix[i]) * eigen.cols());
 
+        csf2Matrix[i] = new T[csf2.cols()];
+        memset(csf2Matrix[i], 0, sizeof(csf2Matrix[i]) * csf2.cols());
 
-    //     if (mat1Line != csf2Line || mat1Line != csf3Line) {
-    //         std::cout << "Matrix equality failed" << std::endl;
-    //         std::cout << "E: " << mat1Line << std::endl;
-    //         std::cout << "2: " << csf2Line << std::endl;
-    //         std::cout << "3: " << csf3Line << std::endl;
-    //         return false;
-    //     }
-    // }
+        csf3Matrix[i] = new T[csf3.cols()];
+        memset(csf3Matrix[i], 0, sizeof(csf3Matrix[i]) * csf3.cols());
+    }
 
-    std::cout << "Passed!" << std::endl;
+    // Build the full matrix representation of each matrix
+    for (size_t i = 0; i < eigen.cols(); i++) {
+        for (typename Eigen::SparseMatrix<T>::InnerIterator it(eigen, i); it; ++it) {
+            eigenMatrix[it.row()][it.col()] = it.value();
+        }
+
+        for (typename CSF::SparseMatrix<T, INDEX_TYPE, 2>::InnerIterator it(csf2, i); it; ++it) {
+            csf2Matrix[it.row()][it.col()] = it.value();
+        }
+
+        for (typename CSF::SparseMatrix<T, INDEX_TYPE, 3>::InnerIterator it(csf3, i); it; ++it) {
+            csf3Matrix[it.row()][it.col()] = it.value();
+        }
+    }
+
+    // Finally compare the uncompressed matrices
+    for (size_t i = 0; i < eigen.rows(); i++) {
+        for (size_t j = 0; j < eigen.cols(); j++) {
+            if (eigenMatrix[i][j] != csf2Matrix[i][j] || eigenMatrix[i][j] != csf3Matrix[i][j]) {
+                std::cout << "\u001b[31;1;4mError: Matrix Comparison Returned False!\u001b[0m" << std::endl;
+                std::cout << "At: (" << i << ", " << j << ")" << std::endl;
+                std::cout << "Eigen: " << eigenMatrix[i][j] << " CSF2: " << csf2Matrix[i][j] << " CSF3: " << csf3Matrix[i][j] << std::endl;
+                return false;
+            }
+        }
+    }
+
+    // Compare the compressed matrices with the uncompressed
+    for (size_t i = 0; i < eigen.cols(); i++) {
+        for (typename Eigen::SparseMatrix<T>::InnerIterator it(eigen, i); it; ++it) {
+            if (csf2Matrix[it.row()][it.col()] != it.value() || csf3Matrix[it.row()][it.col()] != it.value() || eigenMatrix[it.row()][it.col()] != it.value()) {
+                std::cout << "\u001b[31;1;4mError: Matrix Comparison Returned False!\u001b[0m" << std::endl;
+                std::cout << "At: (" << it.row() << ", " << it.col() << ")" << std::endl;
+                std::cout << "Eigen: " << eigenMatrix[it.row()][it.col()] << " CSF2: " << it.value() << " CSF3: " << it.value() << std::endl;
+                return false;
+            }
+        }
+
+        for (typename CSF::SparseMatrix<T, INDEX_TYPE, 2>::InnerIterator it(csf2, i); it; ++it) {
+            if (csf2Matrix[it.row()][it.col()] != it.value() || csf3Matrix[it.row()][it.col()] != it.value() || eigenMatrix[it.row()][it.col()] != it.value()) {
+                std::cout << "\u001b[31;1;4mError: Matrix Comparison Returned False!\u001b[0m" << std::endl;
+                std::cout << "At: (" << it.row() << ", " << it.col() << ")" << std::endl;
+                std::cout << "Eigen: " << csf2Matrix[it.row()][it.col()] << " CSF2: " << it.value() << " CSF3: " << it.value() << std::endl;
+                return false;
+            }
+        }
+
+        for (typename CSF::SparseMatrix<T, INDEX_TYPE, 3>::InnerIterator it(csf3, i); it; ++it) {
+            if (csf2Matrix[it.row()][it.col()] != it.value() || csf3Matrix[it.row()][it.col()] != it.value() || eigenMatrix[it.row()][it.col()] != it.value()) {
+                std::cout << "\u001b[31;1;4mError: Matrix Comparison Returned False!\u001b[0m" << std::endl;
+                std::cout << "At: (" << it.row() << ", " << it.col() << ")" << std::endl;
+                std::cout << "Eigen: " << csf3Matrix[it.row()][it.col()] << " CSF2: " << it.value() << " CSF3: " << it.value() << std::endl;
+                return false;
+            }
+            csf3Matrix[it.row()][it.col()] = it.value();
+        }
+    }
+
     return true;
 }
 
-std::string diffStrings(std::string string1, std::string string2) {
-
-    //create a diff of two strings
-    std::string diff = "";
-    int i = 0;
-    while (string1[i] == string2[i] || string1[i] == '\n' || string2[i] == '\n' || string1[i] == '\r' || string2[i] == '\r' || string1[i] == ' ' || string2[i] == ' ') {
-        diff += string1[i];
-        i++;
-    }
-
-    diff += "\033[31;1;4m";
-    diff += string1[i];
-    diff += " "
-        diff += string2[i];
-    diff += "\033[0m";
-
-    return diff;
-}
 
 /**
  * @brief Benchmark for the Eigen::SparseMatrix constructor

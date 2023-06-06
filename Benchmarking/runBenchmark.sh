@@ -4,33 +4,54 @@
 
 # Compiling benchmark
 g++ -w -O2 benchmark.cpp -o benchmark
+
+# Checking if compilation was successful
+if [ ! -f "benchmark" ]; then
+    exit 1
+fi
+
+
+if [ -f "matrices.txt" ]; then
+    rm matrices.txt
+fi
+
+# This allows filtering for specific types of matrices
+# And cannot be used for attributes such as rows, columns, or nonzeros
+if [ $# -ge 1 ]; then
+    ./ssget -s '@'$1 > matrices.txt
+    echo "Downloading matrices of type $1"
+    touch matrices.txt
+fi
+
 numMatrices=1000
 # Downloading matrices and running benchmark at the same time
 for x in $(seq 1 $numMatrices)
 do
     # Download matrix
     echo "Downloading matrix $i"
-    #TODO establish ssget with proper parameters
-    #TODO ensure file downloaded is labeled as "nextFile.rb"
 
-    # ssget -c $numCols -r $numRows -v $numNonzeros -p $problemKind -i $i -f nextFile.rb & runCPPBenchmark
-    # runSSGET
-    # ./ssget -t MM -e -i '[ @rows -gt $(numRows) && @cols -gt $(numCols) && @nonzeros -gt $(numNonZeros)]' -> MATRIX_PATH
-    MATRIX_PATH=$(./ssget -t MM -e -i $x)
+    # If matrices.txt exists, get the ID from it
+    # Else we just run ssget in sequential order of IDs
+    if [ -f "matrices.txt" ]; then
+        # Get the ID of the matrix
+        ID=$(head -n 1 matrices.txt)
+        # Remove the ID from the file
+        sed -i '1d' matrices.txt
+        MATRIX_PATH=$(./ssget -t MM -e -i $ID)
+    else
+        MATRIX_PATH=$(./ssget -t MM -e -i $x)
+    fi
 
+    echo "Matrix path: $MATRIX_PATH"
     # Grabs the ID here because its easier to do in shell than C
     id=$(grep -oP '(?<=id: ).*' $MATRIX_PATH)
     echo "id: $id"
-
+    
     echo "Running C++ benchmark for matrix ID: \033[0;32m$id\033[0m"
-
-    while [ ! -f $MATRIX_PATH ]; do
-        sleep 0.2
-    done
 
     ./benchmark $MATRIX_PATH $id
     rm -r $MATRIX_PATH
 done
 
 # Clean up
-# rm -r matrices/
+rm -r matrices/
