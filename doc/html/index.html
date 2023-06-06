@@ -97,17 +97,26 @@ $(document).ready(function(){initNavTree('index.html',''); initResizable(); });
 <div class="title">Overview </div>  </div>
 </div><!--header-->
 <div class="contents">
+<div class="toc"><h3>Table of Contents</h3>
+<ul><li class="level1"><a href="#whatiscsf">What is CSF?</a></li>
+<li class="level1"><a href="#compression">Compression Techniques</a></li>
+<li class="level1"><a href="#levels">Compresion Levels</a></li>
+</ul>
+</div>
 <div class="textblock"><h2>Compressed Spares Fiber (CSF) Matrix Package</h2>
 <p><a href="https://github.com/Seth-Wolfgang/CSF-Matrix">Github Repo</a></p>
 <p>Large amounts of data take time and money to store, process, and compress. As data grows exponentially, we need better, cheaper tools to store and process it.</p>
 <p>The Compressed Sparse Fiber (CSF) format is a way to take advantage of naturally redundant data and store it in a usable way. CSF works very well with redundant data, so much so that preliminary testing shows that it can beat common alternative formats in memory footprint by as much as 50%. This implementation of CSF also has variable compression levels that give the user options to lower this footprint even further at a small performance cost.</p>
 <p>CSF offers a novel solution to storing large amounts of data at little performance cost allowing otherwise bottlenecked systems to solve problems with large amounts of data.</p>
-<h3>What is CSF?</h3>
+<h1><a class="anchor" id="whatiscsf"></a>
+What is CSF?</h1>
+<p>First lets define a Sparse Matrix. A Sparse Matrix is a matrix that has a number of zero entries such that this sparsity can be taken advantage of in some way, shape, or form. Here we focus on gaining compression from this sparsity.</p>
 <p>Compressed Sparse Fiber is another way to store sparse data much like compressed sparse column (CSC) or coordinate format (COO). The way CSF works is that a matrix is first broken down by major order, most commonly by column, and then by fiber.</p>
 <p>After getting an individual column from the original matrix we construct a number of fibers to represent the data in that column. Fibers are simply a value followed by the indices where that value occurs in the column. By doing this for each value we get a column represented by a number of these fibers and then doing this for each column we can store an entire matrix this way.</p>
-<p>[Put a picture of CSF here plz skyler]</p>
+<p><b>[Put a picture of CSF here plz skyler]</b></p>
 <hr  />
-<h3>How does CSF Compress?</h3>
+<h1><a class="anchor" id="compression"></a>
+Compression Techniques</h1>
 <p>There are a few different ways in which CSF compresses data. The first is redundancy, with fibers alone being able to compress redudnant data up to 50% compared to CSC. The second is Positive Delta Encoding, which is a process which we apply to the indices of a fiber which encodes the distance between each index. The third way is through bytepacking, which is when we cast each fibers indices to the smallest data type that doesn't lose precision.</p>
 <h4>Redundancy</h4>
 <p>It's easy to see how redundancy can be taken advantage of when looking at CSC format. In this format each value and index must be listed once no matter the data, with a set of column pointers being used to delimit columns. However in CSF if a column has only a single value, it's only stored once and then all of the indices that value is located. This means that in the simplest case of a column 50 long of all ones, CSC needs to store 100 values where as CSF needs only to store 51, the 1 and all the indices.</p>
@@ -119,7 +128,8 @@ $(document).ready(function(){initNavTree('index.html',''); initResizable(); });
 <p>This is a process that takes all of the indices of a single fiber, finds the maximum value after positive delta encoding, and casts the indices to the smallest data type that doesn't lose precision. Such as if a user has a CSF matrix with indices stored in uint64_t yet no number exceedes 255. In this situation each fiber's indices would most likely be cast to a uint8_t saving 7 bytes per index. This is great for isolating outlier data from enforcing a large data type and in combination with positive delta encoding can result in even very large matrices being heavily conmpressed with very little wasted space in the indices.</p>
 <p>As a side note, this as well makes the data somewhat more difficult to work with causing some degree of complication and slowdowns for data traversal but is often very much worth the savings.</p>
 <hr  />
-<h3>CSF Compression Levels Explained</h3>
+ <h1><a class="anchor" id="levels"></a>
+Compresion Levels</h1>
 <p>There are currently 3 compression levels to CSF.</p>
 <p><em>Compression Level 1: CSC Storage Format</em></p>
 <p>This is simply just a CSC matrix format. This is helpful for transitioning between deeper compression levels and back to a more workable format as many times CSC is far faster for certain algorithms. This also helps increase interoperability with other libraries and within CSF.</p>
@@ -133,7 +143,7 @@ $(document).ready(function(){initNavTree('index.html',''); initResizable(); });
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Tue Jun 6 2023 10:54:17 for CSF Matrix by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
+    <li class="footer">Generated on Tue Jun 6 2023 12:13:05 for CSF Matrix by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
   </ul>
 </div>
 </body>

@@ -1,4 +1,5 @@
 @mainpage Overview
+@tableofcontents
 
 ## Compressed Spares Fiber (CSF) Matrix Package
 
@@ -11,18 +12,20 @@ The Compressed Sparse Fiber (CSF) format is a way to take advantage of naturally
 CSF offers a novel solution to storing large amounts of data at little performance cost allowing otherwise bottlenecked systems to solve problems with large amounts of data.
 
 
-### What is CSF?
+
+@section whatiscsf What is CSF?
+
+First lets define a Sparse Matrix. A Sparse Matrix is a matrix that has a number of zero entries such that this sparsity can be taken advantage of in some way, shape, or form. Here we focus on gaining compression from this sparsity.
 
 Compressed Sparse Fiber is another way to store sparse data much like compressed sparse column (CSC) or coordinate format (COO). The way CSF works is that a matrix is first broken down by major order, most commonly by column, and then by fiber.
 
 After getting an individual column from the original matrix we construct a number of fibers to represent the data in that column. Fibers are simply a value followed by the indices where that value occurs in the column. By doing this for each value we get a column represented by a number of these fibers and then doing this for each column we can store an entire matrix this way.
 
-[Put a picture of CSF here plz skyler]
+**[Put a picture of CSF here plz skyler]**
 
 ___
 
-
-### How does CSF Compress?
+@section compression Compression Techniques
 
 There are a few different ways in which CSF compresses data. The first is redundancy, with fibers alone being able to compress redudnant data up to 50% compared to CSC. The second is Positive Delta Encoding, which is a process which we apply to the indices of a fiber which encodes the distance between each index. The third way is through bytepacking, which is when we cast each fibers indices to the smallest data type that doesn't lose precision.
 
@@ -45,8 +48,7 @@ This is a process that takes all of the indices of a single fiber, finds the max
 As a side note, this as well makes the data somewhat more difficult to work with causing some degree of complication and slowdowns for data traversal but is often very much worth the savings. 
 
 ___
-
-### CSF Compression Levels Explained
+@section levels Compresion Levels
 
 There are currently 3 compression levels to CSF.
 

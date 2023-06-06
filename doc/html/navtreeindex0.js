@@ -65,5 +65,8 @@ var NAVTREEINDEX0 =
 "getting_started.html":[1],
 "index.html":[],
 "index.html":[0],
+"index.html#compression":[0,1],
+"index.html#levels":[0,2],
+"index.html#whatiscsf":[0,0],
 "pages.html":[]
 };

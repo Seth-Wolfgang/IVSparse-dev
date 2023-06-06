@@ -16,8 +16,10 @@
 #define CSF_DEBUG
 
 // Library Includes
-#include <omp.h>
 #include <Eigen/Sparse>
+
+#include <omp.h>
+
 #include <iostream>
 #include <vector>
 #include <map>

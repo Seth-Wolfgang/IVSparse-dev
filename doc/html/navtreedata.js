@@ -25,7 +25,11 @@
 var NAVTREE =
 [
   [ "CSF Matrix", "index.html", [
-    [ "Overview", "index.html", null ],
+    [ "Overview", "index.html", [
+      [ "What is CSF?", "index.html#whatiscsf", null ],
+      [ "Compression Techniques", "index.html#compression", null ],
+      [ "Compresion Levels", "index.html#levels", null ]
+    ] ],
     [ "Getting Started", "getting_started.html", null ],
     [ "License", "_license.html", null ],
     [ "Classes", "annotated.html", [
