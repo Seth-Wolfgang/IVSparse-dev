@@ -132,32 +132,39 @@ namespace CSF {
 
         CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor> operator*(T scalar) const;
 
-        void operator*=(T scalar);    
+        void operator*=(T scalar);
 
         //This method does not seem to work unless it is in this file
         friend std::ostream& operator<<(std::ostream& os, CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>& mat) {
-            #ifndef CSF_DEBUG
-            if (mat.cols() > 110) {
-                std::cout << "CSF matrix is too large to print" << std::endl;
-                return os;
-            }
-            #endif
+            // #ifndef CSF_DEBUG
+            // if (mat.cols() > 110) {
+            //     std::cout << "CSF matrix is too large to print" << std::endl;
+            //     return os;
+            // }
+            // #endif
 
             // create a matrix to store the full matrix representation of the CSF matrix
-            T matrix[mat.rows()][mat.cols()];
-            memset(matrix, 0, sizeof(matrix));
-
+            T** matrix = new T * [mat.rows()];
+            for (size_t i = 0; i < mat.rows(); i++) {
+                matrix[i] = new T[mat.cols()];
+                memset(matrix[i], 0, sizeof(matrix[i]) * mat.cols());
+            }
 
             // Build the full matrix representation of the the CSF matrix
-            for (int i = 0; i < mat.cols(); i++) {
+            for (size_t i = 0; i < mat.cols(); i++) {
                 for (typename CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator it(mat, i); it; ++it) {
+                    // std::cout << "it.row(): " << it.row() << " col: " << it.col() << " value: " << it.value() << std::endl;
                     matrix[it.row()][it.col()] = it.value();
                 }
             }
 
+
+            // std::cout << "rows: " << mat.rows() << std::endl;
+            // std::cout << "cols: " << mat.cols() << std::endl;
+
             // store all of matrix into the output stream
-            for (int i = 0; i < mat.rows(); i++) {
-                for (int j = 0; j < mat.cols(); j++) {
+            for (size_t i = 0; i < mat.rows(); i++) {
+                for (size_t j = 0; j < mat.cols(); j++) {
                     os << matrix[i][j] << " ";
                 }
                 os << std::endl;
@@ -184,6 +191,7 @@ namespace CSF {
 
         inline Eigen::Matrix<T, -1, -1> matrixMultiply(Eigen::Matrix<T, -1, -1>& mat);
 
+        //WIP
         inline Eigen::Matrix<T, -1, -1> matrixMultiply2(Eigen::Matrix<T, -1, -1>& mat);
     };
 

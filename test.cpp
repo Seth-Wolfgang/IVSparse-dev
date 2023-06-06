@@ -10,16 +10,18 @@ template <typename T, typename indexT, int compressionLevel> void iteratorTest()
 void getMat(Eigen::SparseMatrix<int>& myMatrix_e);
 
 int main() {
+    int rows = 10;
+    int cols = 10;
 
     // create an eigen sparse matrix
-    Eigen::SparseMatrix<DATA_TYPE> eigen(255, 255);
+    Eigen::SparseMatrix<DATA_TYPE> eigen(rows, cols);
     // getMat(eigen);
-    eigen = generateMatrix<DATA_TYPE>(255, 255, 1, 1, 1);
+    eigen = generateMatrix<DATA_TYPE>(rows, cols, 1, 1, 10);
     // std::cout << eigen << std::endl;
 
     // create a CSF sparse matrix
     CSF::SparseMatrix<DATA_TYPE, int, 3> csf(eigen);
-    // CSF::SparseMatrix<DATA_TYPE, int, 2> csf2(eigen);
+    CSF::SparseMatrix<DATA_TYPE, int, 2> csf2(eigen);
 
     // transpose the CSF matrix
     // CSF::SparseMatrix<DATA_TYPE, int, 3> csfT = csf.transpose();
@@ -32,7 +34,14 @@ int main() {
     // std::cout << eigen_e << std::endl;
     // std::cout << eigen.transpose() << std::endl;
 
-
+    int sum = 0; 
+    for (int i = 0; i < csf.cols(); i++) {
+        for(typename CSF::SparseMatrix<DATA_TYPE, int, 3>::InnerIterator it(csf, i); it; ++it) {
+            sum += it.value();
+            std::cout << "value: " << it.value() << " row: " << it.row() << " col: " << it.col() << std::endl;
+        }
+    }
+    std::cout << "sum: " << sum << std::endl;
 
     // make a vector of the CSF matrix
     // CSF::SparseMatrix<int, int, 3>::Vector skyVec(csf, 0);
@@ -41,9 +50,22 @@ int main() {
     // csf *= 3;
 
     std::cout << "CSF: " << csf.compressionSize() << std::endl;
+    std::cout << "CSF2: " << csf2.compressionSize() << std::endl;
     uint64_t eigenSize = eigen.nonZeros() * sizeof(double) + eigen.nonZeros() * sizeof(uint32_t) + (eigen.outerSize() + 1) * sizeof(uint32_t);
     std::cout << "eigen size: " << eigenSize << std::endl;
 
+    Eigen::IOFormat clean(Eigen::StreamPrecision, Eigen::DontAlignCols, " ", "\n", "", "", "", "");
+
+    std::cout << Eigen::MatrixXd(eigen).format(clean) << std::endl << std::endl;
+
+    std::cout << csf << std::endl;
+
+
+
+    //rows * columns * (end pointers + start pointers) + values * data type + metadata 
+
+    //rows * columns (2 * pointers) * outersize + (sizeof(valueType) + sizeof(delimitor)) * outersize 
+    
 
     // std::cout << csf << std::endl;
     // std::cout << eigen << std::endl;

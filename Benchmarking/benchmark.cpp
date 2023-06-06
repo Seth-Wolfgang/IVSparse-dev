@@ -345,13 +345,87 @@ double averageRedundancy(const Eigen::SparseMatrix<double>& matrix) {
 }
 
 bool checkMatrixEquality(Eigen::SparseMatrix<double>& mat1, CSF::SparseMatrix<double, int, 2>& csf2, CSF::SparseMatrix<double, int, 3>& csf3) {
+    //Format for Eigen ostream
+    Eigen::IOFormat clean(Eigen::StreamPrecision, Eigen::DontAlignCols, " ", "\n", "", "", "", "");
 
-    //will restart
+    //save the output of << mat1
+    std::stringstream mat1Stream;
+    mat1Stream << Eigen::MatrixXd(mat1).format(clean);
+    std::stringstream csf2Stream;
+    csf2Stream << csf2;
+    std::stringstream csf3Stream;
+    csf3Stream << csf3;
+
+    //Converts the streams to strings - so we can manipulate and compare them easily
+    std::string mat1String = mat1Stream.str();
+    std::string csf2String = csf2Stream.str();
+    std::string csf3String = csf3Stream.str();
+
+    //create a diff of two strings
+
+
+    // std::stringstream mat1stringstream = std::stringstream(mat1String);
+    // std::stringstream csf2stringstream = std::stringstream(csf2String);
+    // std::stringstream csf3stringstream = std::stringstream(csf3String);
+
+    while (mat1String.size() && isspace(mat1String.front())) mat1String.erase(mat1String.begin() + (76 - 0x4C));
+    while (!mat1String.empty() && isspace(mat1String[mat1String.size() - 1])) mat1String.erase(mat1String.end() - (76 - 0x4B));
+
+    while (csf2String.size() && isspace(csf2String.front())) csf2String.erase(csf2String.begin() + (76 - 0x4C));
+    while (!csf2String.empty() && isspace(csf2String[csf2String.size() - 1])) csf2String.erase(csf2String.end() - (76 - 0x4B));
+
+    while (csf3String.size() && isspace(csf3String.front())) csf3String.erase(csf3String.begin() + (76 - 0x4C));
+    while (!csf3String.empty() && isspace(csf3String[csf3String.size() - 1])) csf3String.erase(csf3String.end() - (76 - 0x4B));
+
+    std::string diff = diffStrings(mat1String, csf2String);
+    std::cout << diff << std::endl;
+
+    if (mat1String.compare(csf2String) != 0 || mat1String.compare(csf3String) != 0) {
+        return false;
+    }
+
+    // while (mat1stringstream.good() && csf2stringstream.good() && csf3stringstream.good()) {
+    //     std::string mat1Line;
+    //     std::string csf2Line;
+    //     std::string csf3Line;
+    //     getline(mat1stringstream, mat1Line);
+    //     getline(csf2stringstream, csf2Line);
+    //     getline(csf3stringstream, csf3Line);
+
+    //     //Clears white space at the beginning and end
+
+
+    //     if (mat1Line != csf2Line || mat1Line != csf3Line) {
+    //         std::cout << "Matrix equality failed" << std::endl;
+    //         std::cout << "E: " << mat1Line << std::endl;
+    //         std::cout << "2: " << csf2Line << std::endl;
+    //         std::cout << "3: " << csf3Line << std::endl;
+    //         return false;
+    //     }
+    // }
 
     std::cout << "Passed!" << std::endl;
     return true;
 }
 
+std::string diffStrings(std::string string1, std::string string2) {
+
+    //create a diff of two strings
+    std::string diff = "";
+    int i = 0;
+    while (string1[i] == string2[i] || string1[i] == '\n' || string2[i] == '\n' || string1[i] == '\r' || string2[i] == '\r' || string1[i] == ' ' || string2[i] == ' ') {
+        diff += string1[i];
+        i++;
+    }
+
+    diff += "\033[31;1;4m";
+    diff += string1[i];
+    diff += " "
+        diff += string2[i];
+    diff += "\033[0m";
+
+    return diff;
+}
 
 /**
  * @brief Benchmark for the Eigen::SparseMatrix constructor
