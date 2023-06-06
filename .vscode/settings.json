@@ -86,5 +86,6 @@
         "stop_token": "cpp",
         "sparseqr": "cpp",
         "iterativelinearsolvers": "cpp"
-    }
+    },
+    "cmake.configureOnOpen": false
 }

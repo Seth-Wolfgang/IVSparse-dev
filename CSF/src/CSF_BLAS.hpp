@@ -20,16 +20,6 @@ namespace CSF {
         return newMatrix;
     }
 
-    /**
-     * @brief Scalar multiplication operator
-     *
-     * @tparam T
-     * @tparam indexT
-     * @tparam compressionLevel
-     * @tparam columnMajor
-     * @param scalar
-     */
-
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     void SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator*=(T scalar) {
         //! Parallelize this
@@ -42,61 +32,21 @@ namespace CSF {
         }
     }
 
-    /**
-     * @brief Matrix x Vector multiplication operator with an Eigen::VectorXd
-     *
-     * @tparam T
-     * @tparam indexT
-     * @tparam compressionLevel
-     * @tparam columnMajor
-     * @param vec
-     * @return Eigen::VectorXd
-     */
-
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     Eigen::VectorXd SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator*(Eigen::VectorXd& vec) {
         return vectorMultiply(vec);
     }
 
 
-    /**
-     * @brief Matrix x Vector multiplication operator
-     *
-     * @tparam T
-     * @tparam indexT
-     * @tparam compressionLevel
-     * @tparam columnMajor
-     * @param vec
-     * @return Eigen::VectorXd
-     */
-
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     Eigen::VectorXd SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator*(SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector& vec) {
         return vectorMultiply(vec);
     }
 
-    /**
-     * @brief Matrix x Matrix multiplication operator
-     *
-     * @tparam T
-     * @tparam indexT
-     * @tparam compressionLevel
-     * @tparam columnMajor
-     * @param mat
-     * @return SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector
-     */
-
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     Eigen::Matrix<T, -1, -1> SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator*(Eigen::Matrix<T, -1, -1> mat) {
         return matrixMultiply(mat);
     }
-
-    /**
-     * @brief Matrix x Vector multiplication operator helper function using Eigen::VectorXd
-     *
-     * @param vec
-     * @return Eigen::Matrix<T, -1,-1>
-     */
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     inline Eigen::Matrix<T, -1, -1> SparseMatrix<T, indexT, compressionLevel, columnMajor>::vectorMultiply(Eigen::VectorXd& vec) {
@@ -118,17 +68,6 @@ namespace CSF {
         return eigenTemp;
     }
 
-    /**
-     * @brief Matrix x Matrix multiplication operator helper function using CSF::Vector
-     *
-     * @tparam T
-     * @tparam indexT
-     * @tparam compressionLevel
-     * @tparam columnMajor
-     * @param vec
-     * @return Eigen::VectorXd
-     */
-
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     inline Eigen::Matrix<T, -1, 1> SparseMatrix<T, indexT, compressionLevel, columnMajor>::vectorMultiply(typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector& vec) {
         // check that the vector is the correct size
@@ -148,16 +87,6 @@ namespace CSF {
         return newVector;
     }
 
-    /**
-     * @brief Matrix x Matrix multiplication operator helper function
-     *
-     * @tparam T
-     * @tparam indexT
-     * @tparam compressionLevel
-     * @tparam columnMajor
-     * @param mat
-     * @return Eigen::Matrix<T, -1,-1>
-     */
 
      /*
          NOT WORKING
