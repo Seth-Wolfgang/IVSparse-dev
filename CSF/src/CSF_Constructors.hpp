@@ -203,66 +203,6 @@ namespace CSF {
         compress(vals, innerIndices, outerPtr);
     }
 
-    //Deep Copy Constructor
-    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(const CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>& mat) {
-
-        // see if the matrix is empty
-        if (mat.nnz == 0) [[unlikely]]
-        {
-            val_t = 0;
-            index_t = 0;
-
-            data = nullptr;
-            endPointers = nullptr;
-            metadata = nullptr;
-
-            return;
-        }
-
-        // Set the number of rows, columns and non-zero elements
-        innerDim = mat.innerSize();
-        outerDim = mat.outerSize();
-
-        numRows = mat.rows();
-        numCols = mat.cols();
-
-        nnz = mat.nonZeros();
-
-        compSize = mat.compressionSize();
-
-        try {
-            data = (void**)malloc(outerDim * sizeof(void*));
-            endPointers = (void**)malloc(outerDim * sizeof(void*));
-        }
-        catch (const std::exception& e) {
-            std::cerr << e.what() << '\n';
-        }
-
-        #ifdef CSF_PARALLEL
-        #pragma omp parallel for
-        #endif
-        for (size_t i = 0; i < outerDim; i++) {
-            try {
-                data[i] = malloc(mat.getVecSize(i));
-            }
-            catch (const std::exception& e) {
-                //! Potential Parallelism issue here
-                std::cerr << e.what() << '\n';
-            }
-            memcpy(data[i], mat.getVecPointer(i), mat.getVecSize(i));
-            endPointers[i] = (char*)data[i] + mat.getVecSize(i);
-        }
-
-        //allocate memory for metadata
-        metadata = new uint32_t[NUM_META_DATA];
-        memcpy(metadata, mat.metadata, NUM_META_DATA * sizeof(uint32_t));
-
-        index_t = mat.index_t;
-
-        encodeVal();
-    }
-
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(std::map<indexT, std::unordered_map<T, std::vector<indexT>>>& map, uint32_t num_rows, uint32_t num_cols) {
         
@@ -620,6 +560,107 @@ namespace CSF {
         {
             compSize += (uint8_t *)endPointers[i] - (uint8_t *)data[i];
         }
+    }
+
+    // generalized conversion constructor
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    template <uint8_t compressionLevel2>
+    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(CSF::SparseMatrix<T, indexT, compressionLevel2, columnMajor> &mat)
+    {
+        // takes any CSF matrix and converts it to a compressionLevel matrix (of compression level 2 or 3 due to template specialization)
+
+        // see if the matrix is empty
+        if (mat.nonZeros() == 0) [[unlikely]]
+        {
+            val_t = 0;
+            index_t = 0;
+
+            data = nullptr;
+            endPointers = nullptr;
+            metadata = nullptr;
+
+            return;
+        }
+
+        CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor> mat2;
+
+        // if the incoming matrix is CSF 1
+        if constexpr (compressionLevel2 == 1) {
+            // if the desired compression is level 2
+            if constexpr (compressionLevel == 2) {
+                // convert the incoming matrix to CSF 2
+                mat2 = mat.toCSF2();
+
+            } else if constexpr (compressionLevel == 3) {
+                // convert the incoming matrix to CSF 3
+                mat2 = mat.toCSF3();
+            }
+        } else if constexpr (compressionLevel2 == 2) {
+            if constexpr (compressionLevel == 2) {
+                // copy mat and put it in mat2
+                mat2 = mat;
+            } else if constexpr (compressionLevel == 3) {
+                // convert the incoming matrix to CSF 3 by going through eigen first
+                Eigen::SparseMatrix<T> matEigen = mat.toEigen();
+                CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor> mat3(matEigen);
+
+                mat2 = mat3;
+            }
+        } else if constexpr (compressionLevel2 == 3) {
+            if constexpr (compressionLevel == 3) {
+                // do nothing because the incoming matrix is already CSF 3
+                mat2 = mat;
+            } else if constexpr (compressionLevel == 2) {
+                // convert the incoming matrix to CSF 2 by going through eigen first
+                Eigen::SparseMatrix<T> matEigen = mat.toEigen();
+                CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor> mat3(matEigen);
+
+                mat2 = mat3;
+            }
+        }
+
+        
+        // Set the number of rows, columns and non-zero elements
+        innerDim = mat2.innerSize();
+        outerDim = mat2.outerSize();
+
+        numRows = mat2.rows();
+        numCols = mat2.cols();
+
+        nnz = mat2.nonZeros();
+
+        compSize = mat2.compressionSize();
+
+        try {
+            data = (void**)malloc(outerDim * sizeof(void*));
+            endPointers = (void**)malloc(outerDim * sizeof(void*));
+        }
+        catch (const std::exception& e) {
+            std::cerr << e.what() << '\n';
+        }
+
+        // #ifdef CSF_PARALLEL
+        // #pragma omp parallel for
+        // #endif
+        for (size_t i = 0; i < outerDim; i++) {
+            try {
+                data[i] = malloc(mat2.getVecSize(i));
+            }
+            catch (const std::exception& e) {
+                //! Potential Parallelism issue here
+                std::cerr << e.what() << '\n';
+            }
+            memcpy(data[i], mat2.getVecPointer(i), mat2.getVecSize(i));
+            endPointers[i] = (char*)data[i] + mat2.getVecSize(i);
+        }
+
+        //allocate memory for metadata
+        metadata = new uint32_t[NUM_META_DATA];
+        memcpy(metadata, mat2.metadata, NUM_META_DATA * sizeof(uint32_t));
+
+        index_t = mat2.index_t;
+
+        val_t = encodeVal();
     }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>

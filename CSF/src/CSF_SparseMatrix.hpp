@@ -89,11 +89,13 @@ namespace CSF {
         SparseMatrix(Eigen::SparseMatrix<T, Eigen::RowMajor>& mat);
 
         /**
-         * @brief Deep Copy Constructor
+         * @brief Convert a CSF matrix of a different compression level to this compression level
          * 
-         * @param mat The CSF Matrix to be copied
+         * @tparam compressionLevel2 The compression level of the CSF matrix to convert
+         * @param mat The CSF matrix to convert
          */
-        SparseMatrix(const CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>& mat);
+        template <uint8_t compressionLevel2>
+        SparseMatrix(CSF::SparseMatrix<T, indexT, compressionLevel2, columnMajor> &mat);
 
         /**
          * @brief Raw CSC Constructor
@@ -198,10 +200,10 @@ namespace CSF {
         typename CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector getVector(uint32_t vec);
 
         /**
-         * @brief Get the size of a vector in the CSF matrix in bytes
+         * @brief Get the size of a vector in the CSF matrix
          * 
          * @param vec The vector to get the size of
-         * @return size_t The size of the vector in bytes
+         * @return size_t The size of the vector
          */
         size_t getVecSize(uint32_t vec) const;
 
@@ -425,8 +427,9 @@ namespace CSF {
         // eigen sparse matrix constructor (row major)
         SparseMatrix(Eigen::SparseMatrix<T, Eigen::RowMajor>& mat);
 
-        // deep copy constructor
-        SparseMatrix(CSF::SparseMatrix<T, indexT, 1, columnMajor>& mat);
+        // generalized conversion constructor
+        template <uint8_t compressionLevel2>
+        SparseMatrix(CSF::SparseMatrix<T, indexT, compressionLevel2, columnMajor> &mat);
 
         // file constructor
         SparseMatrix(const char* filename);
@@ -484,6 +487,8 @@ namespace CSF {
         bool operator!=(const SparseMatrix<T, indexT, 1, columnMajor>& other);
 
         T operator()(uint32_t row, uint32_t col);
+
+        CSF::SparseMatrix<T, indexT, 1, columnMajor>& operator=(const CSF::SparseMatrix<T, indexT, 1, columnMajor>& other);
     };
 
     /**

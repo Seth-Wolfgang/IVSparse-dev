@@ -467,6 +467,17 @@ namespace CSF {
         // copy the metadata
         memcpy(metadata, other.metadata, sizeof(uint32_t) * NUM_META_DATA);
 
+        // copy the pointers
+        innerDim = other.innerDim;
+        outerDim = other.outerDim;
+        numRows = other.numRows;
+        numCols = other.numCols;
+        nnz = other.nnz;
+        compSize = other.compSize;
+
+        index_t = other.index_t;
+        val_t = encodeVal();
+
         // allocate the data
         try {
             data = (void**)malloc(sizeof(void*) * outerDim);
@@ -487,14 +498,6 @@ namespace CSF {
             memcpy(data[i], other.data[i], other.getVecSize(i));
             endPointers[i] = (char*)data[i] + other.getVecSize(i);
         }
-
-        // copy the pointers
-        innerDim = other.innerDim;
-        outerDim = other.outerDim;
-        numRows = other.numRows;
-        numCols = other.numCols;
-        nnz = other.nnz;
-        compSize = other.compSize;
 
         return *this;
     }
@@ -772,8 +775,21 @@ namespace CSF {
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     CSF::SparseMatrix<T, indexT, 1, columnMajor> SparseMatrix<T, indexT, compressionLevel, columnMajor>::toCSF1() {
-        // make an eigen matrix
-        Eigen::SparseMatrix<T, columnMajor ? Eigen::ColMajor : Eigen::RowMajor> eigenMatrix = *this.toEigen();
+        // create a new sparse matrix
+        Eigen::SparseMatrix<T, columnMajor ? Eigen::ColMajor : Eigen::RowMajor> eigenMatrix(numRows, numCols);
+
+        // iterate over the matrix
+        for (uint32_t i = 0; i < outerDim; ++i)
+        {
+            for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(*this, i); it; ++it)
+            {
+                // add the value to the matrix
+                eigenMatrix.insert(it.row(), it.col()) = it.value();
+            }
+        }
+
+        // finalize the matrix
+        eigenMatrix.makeCompressed();
 
         // make a csf1 matrix
         CSF::SparseMatrix<T, indexT, 1, columnMajor> csf1Matrix(eigenMatrix);

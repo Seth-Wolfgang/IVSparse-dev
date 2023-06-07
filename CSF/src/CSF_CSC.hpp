@@ -96,22 +96,36 @@ namespace CSF {
         #endif
     }
 
-    // deep copy constructor
+    // generalized constructor
     template <typename T, typename indexT, bool columnMajor>
-    SparseMatrix<T, indexT, 1, columnMajor>::SparseMatrix(CSF::SparseMatrix<T, indexT, 1, columnMajor> &mat)
-    {
-        innerDim = mat.innerDim;
-        outerDim = mat.outerDim;
+    template <uint8_t compressionLevel2>
+    SparseMatrix<T, indexT, 1, columnMajor>::SparseMatrix(CSF::SparseMatrix<T, indexT, compressionLevel2, columnMajor>& mat) {
 
-        numRows = mat.numRows;
-        numCols = mat.numCols;
+        // make a temporary CSF1 matrix
+        CSF::SparseMatrix<T, indexT, 1, columnMajor> temp;
 
-        nnz = mat.nnz;
+        // if the incoming matrix is csf 2, convert it to csf1
+        if constexpr (compressionLevel2 == 2) {
+            temp = mat.toCSF1();
+        } else if constexpr (compressionLevel2 == 3) {
+            temp = mat.toCSF1();
+        } else {
+            temp = mat;
+        }
 
-        val_t = mat.val_t;
-        index_t = mat.index_t;
 
-        compSize = mat.compSize;
+        innerDim = temp.innerDim;
+        outerDim = temp.outerDim;
+
+        numRows = temp.numRows;
+        numCols = temp.numCols;
+
+        nnz = temp.nnz;
+
+        val_t = temp.val_t;
+        index_t = temp.index_t;
+
+        compSize = temp.compSize;
 
         vals = new T[nnz];
         innerIdx = new indexT[nnz];
@@ -126,13 +140,15 @@ namespace CSF {
         metadata[4] = val_t;
         metadata[5] = index_t;
 
-        memcpy(vals, mat.vals, sizeof(T) * nnz);
-        memcpy(innerIdx, mat.innerIdx, sizeof(indexT) * nnz);
-        memcpy(outerPtr, mat.outerPtr, sizeof(indexT) * (outerDim + 1));
+        memcpy(vals, temp.vals, sizeof(T) * nnz);
+        memcpy(innerIdx, temp.innerIdx, sizeof(indexT) * nnz);
+        memcpy(outerPtr, temp.outerPtr, sizeof(indexT) * (outerDim + 1));
+
+        val_t = encodeVal();
 
         // run the user checks
         #ifdef CSF_DEBUG
-        userChecks();
+            userChecks();
         #endif
     }
 
@@ -140,7 +156,56 @@ namespace CSF {
     template <typename T, typename indexT, bool columnMajor>
     SparseMatrix<T, indexT, 1, columnMajor>::SparseMatrix(const char *filename)
     {
+        FILE *fp = fopen(filename, "rb");
+        
+        if (fp == nullptr)
+        {
+            throw std::runtime_error("File not found");
+        }
 
+        // read the meta data
+        metadata = new uint32_t[NUM_META_DATA];
+
+        fread(metadata, sizeof(uint32_t), NUM_META_DATA, fp);
+
+        // set the meta data
+        innerDim = metadata[1];
+        outerDim = metadata[2];
+        nnz = metadata[3];
+        val_t = metadata[4];
+        index_t = metadata[5];
+
+        if (columnMajor)
+        {
+            numRows = innerDim;
+            numCols = outerDim;
+        }
+        else
+        {
+            numRows = outerDim;
+            numCols = innerDim;
+        }
+
+        // allocate memory for the values, inner index, and outer pointers
+        vals = new T[nnz];
+        innerIdx = new indexT[nnz];
+        outerPtr = new indexT[outerDim + 1];
+
+        // read the values, inner index, and outer pointers
+        fread(vals, sizeof(T), nnz, fp);
+        fread(innerIdx, sizeof(indexT), nnz, fp);
+        fread(outerPtr, sizeof(indexT), outerDim + 1, fp);
+
+        // close the file
+        fclose(fp);
+
+        // update the compression size
+        compSize = nnz * sizeof(T) + nnz * sizeof(indexT) + (outerDim + 1) * sizeof(indexT);
+
+        // run the user checks
+        #ifdef CSF_DEBUG
+        userChecks();
+        #endif
     }
 
     // COO constructor
@@ -247,7 +312,18 @@ namespace CSF {
     template <typename T, typename indexT, bool columnMajor>
     void SparseMatrix<T, indexT, 1, columnMajor>::write(const char *filename)
     {
+        FILE *fp = fopen(filename, "wb");
 
+        // write the metadata
+        fwrite(metadata, sizeof(uint32_t), NUM_META_DATA, fp);
+
+        // write the values, inner index, and outer pointers
+        fwrite(vals, sizeof(T), nnz, fp);
+        fwrite(innerIdx, sizeof(indexT), nnz, fp);
+        fwrite(outerPtr, sizeof(indexT), outerDim + 1, fp);
+
+        // close the file
+        fclose(fp);
     }
 
     //* Getters & Setters *//
@@ -506,6 +582,74 @@ namespace CSF {
                 return 0;
             }
         }
+    }
+
+    template <typename T, typename indexT, bool columnMajor>
+    CSF::SparseMatrix<T, indexT, 1, columnMajor>& SparseMatrix<T, indexT, 1, columnMajor>::operator=(const CSF::SparseMatrix<T, indexT, 1, columnMajor>& other) {
+
+        // check for an empty matrix
+        if (other.nnz == 0) {
+            
+            // delete the old arrays
+            if (vals != nullptr) { delete[] vals; }
+            if (innerIdx != nullptr) { delete[] innerIdx; }
+            if (outerPtr != nullptr) { delete[] outerPtr; }
+
+            delete[] metadata;
+
+            metadata = nullptr;
+
+            outerDim = 0;
+            innerDim = 0;
+            numRows = 0;
+            numCols = 0;
+            nnz = 0;
+            compSize = 0;
+            
+            return *this;
+        }
+
+        // check for self assignment
+        if (this == &other) {
+            return *this;
+        }
+
+        // delete the old arrays
+        if (vals != nullptr) { delete[] vals; }
+        if (innerIdx != nullptr) { delete[] innerIdx; }
+        if (outerPtr != nullptr) { delete[] outerPtr; }
+
+        delete[] metadata;
+
+        // allocate metadata
+        metadata = new uint32_t[NUM_META_DATA];
+
+        // copy the metadata
+        memcpy(metadata, other.metadata, NUM_META_DATA * sizeof(uint32_t));
+
+        // copy the pointers
+        innerDim = other.innerDim;
+        outerDim = other.outerDim;
+        numRows = other.numRows;
+        numCols = other.numCols;
+        nnz = other.nnz;
+        compSize = other.compSize;
+
+        index_t = other.index_t;
+        val_t = encodeVal();
+
+        // allocate memory for the values, inner index, and outer pointers
+        vals = new T[nnz];
+        innerIdx = new indexT[nnz];
+        outerPtr = new indexT[outerDim + 1];
+
+        // copy the values, inner index, and outer pointers
+        memcpy(vals, other.vals, nnz * sizeof(T));
+        memcpy(innerIdx, other.innerIdx, nnz * sizeof(indexT));
+        memcpy(outerPtr, other.outerPtr, (outerDim + 1) * sizeof(indexT));
+
+        // return the matrix
+        return *this;
     }
 
     //* CSF1 InnerIterator Class *//
