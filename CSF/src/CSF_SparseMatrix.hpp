@@ -179,7 +179,7 @@ namespace CSF {
          * @param col The column of the value to get
          * @return T The value at the specified row and column
          */
-        T coeff(uint32_t row, uint32_t col) const;
+        T coeff(uint32_t row, uint32_t col);
 
         /**
          * @brief Get a pointer to a specific vector in the CSF matrix
@@ -198,10 +198,10 @@ namespace CSF {
         typename CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector getVector(uint32_t vec);
 
         /**
-         * @brief Get the size of a vector in the CSF matrix
+         * @brief Get the size of a vector in the CSF matrix in bytes
          * 
          * @param vec The vector to get the size of
-         * @return size_t The size of the vector
+         * @return size_t The size of the vector in bytes
          */
         size_t getVecSize(uint32_t vec) const;
 

@@ -329,6 +329,11 @@ namespace CSF {
         return newVector;
     }
 
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    T SparseMatrix<T, indexT, compressionLevel, columnMajor>::coeff(uint32_t row, uint32_t col) {
+        return (*this)(row, col);
+    }
+
     //* Utility Methods *//
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
@@ -365,8 +370,7 @@ namespace CSF {
     //* Operator Overloads *//
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    bool SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator==(const SparseMatrix<T, indexT, compressionLevel, columnMajor> &other)
-    {
+    bool SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator==(const SparseMatrix<T, indexT, compressionLevel, columnMajor>& other) {
         // check if the two matrices are equal
 
         // check if the rows, columns, and nnz are equal
@@ -374,8 +378,7 @@ namespace CSF {
             return false;
 
         // iterate through both matrices and check if the values are equal
-        for (uint32_t i = 0; i < outerDim; i++)
-        {
+        for (uint32_t i = 0; i < outerDim; i++) {
 
             // check if the column sizes are equal
             if (getVecSize(i) != other.getVecSize(i))
@@ -390,8 +393,7 @@ namespace CSF {
     }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    bool SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator!=(const SparseMatrix<T, indexT, compressionLevel, columnMajor> &other)
-    {
+    bool SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator!=(const SparseMatrix<T, indexT, compressionLevel, columnMajor>& other) {
         return !(*this == other);
     }
 
@@ -495,6 +497,29 @@ namespace CSF {
         compSize = other.compSize;
 
         return *this;
+    }
+
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    T SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator()(uint32_t row, uint32_t col) {
+        // check if the row and column are in bounds
+        if (row >= numRows || col >= numCols)
+            throw std::out_of_range("Row or column out of range");
+
+        // check if the matrix is column major
+        if (columnMajor) {
+            // get the vector
+            CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector vec = (*this)[col];
+
+            // return the value
+            return vec[row];
+        }
+        else {
+            // get the vector
+            CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector vec = (*this)[row];
+
+            // return the value
+            return vec[col];
+        }
     }
 
     //* Conversion/Transformation Methods *//

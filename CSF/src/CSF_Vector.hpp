@@ -305,7 +305,7 @@ namespace CSF {
 
         // iterate through the vector until the index is found
         while (it) {
-            if (it.index() == index) {
+            if (it.getIndex() == index) {
                 return it.value();
             }
             ++it;
