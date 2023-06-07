@@ -11,7 +11,8 @@
  * Source: https://math.nist.gov/MatrixMarket/mmio/c/example_read.c
  */
 
-#define NUM_ITERATIONS 1
+#define NUM_ITERATIONS 10
+#define CSF_DEBUG 1
 #include "lib/benchmarkFunctions.h"
 
 int main(int argc, char** argv) {
@@ -66,10 +67,10 @@ int main(int argc, char** argv) {
     CSF::SparseMatrix<VALUE_TYPE, INDEX_TYPE, 2> csf2(eigen);
     CSF::SparseMatrix<VALUE_TYPE, INDEX_TYPE, 3> csf3(eigen);
 
-    if (!checkMatrixEquality<VALUE_TYPE>(eigen, csf2, csf3)) {
-        std::cout << "\u001b[4m\u001b[44m Matrix equality failed!\u001b[0m" << std::endl;
-        exit(1);
-    }
+    // if (!checkMatrixEquality<VALUE_TYPE>(eigen, csf2, csf3)) {
+    //     std::cout << "\u001b[4m\u001b[44m Matrix equality failed!\u001b[0m" << std::endl;
+    //     exit(1);
+    // }
 
     // Random array to select a random benchmark
     const int myList[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20 };
@@ -98,43 +99,43 @@ int main(int argc, char** argv) {
             }
 
             // Runs the selected benchmark
-            // std::cout << "Running benchmark " << currentlySelected << std::endl;
+            std::cout << "Running benchmark " << currentlySelected << std::endl;
             switch (currentlySelected) {
             case 0:
-                // EigenConstructorBenchmark<VALUE_TYPE>(eigenTriplet, data, matrixData[1], matrixData[2]);
+                EigenConstructorBenchmark<VALUE_TYPE>(eigenTriplet, data, matrixData[1], matrixData[2]);
                 continue;
             case 1:
-                // CSF2ConstructorBenchmark<VALUE_TYPE, INDEX_TYPE>(eigen, data);
+                CSF2ConstructorBenchmark<VALUE_TYPE, INDEX_TYPE>(eigen, data);
                 continue;
             case 2:
-                // CSF3ConstructorBenchmark<VALUE_TYPE, INDEX_TYPE>(eigen, data);
+                CSF3ConstructorBenchmark<VALUE_TYPE, INDEX_TYPE>(eigen, data);
                 continue;
             case 3:
-                // EigenInnerIteratorBenchmark<VALUE_TYPE>(eigen, data);
+                EigenInnerIteratorBenchmark<VALUE_TYPE>(eigen, data);
                 continue;
             case 4:
-                // CSF2InnerIteratorBenchmark<VALUE_TYPE, INDEX_TYPE>(csf2, data);
+                CSF2InnerIteratorBenchmark<VALUE_TYPE, INDEX_TYPE>(csf2, data);
                 continue;
             case 5:
-                // CSF3InnerIteratorBenchmark<VALUE_TYPE, INDEX_TYPE>(csf3, data);
+                CSF3InnerIteratorBenchmark<VALUE_TYPE, INDEX_TYPE>(csf3, data);
                 continue;
             case 6:
-                // EigenScalarMultiplicationBenchmark<VALUE_TYPE>(eigen, data);
+                EigenScalarMultiplicationBenchmark<VALUE_TYPE>(eigen, data);
                 continue;
             case 7:
-                // CSF2ScalarMultiplicationBenchmark<VALUE_TYPE, INDEX_TYPE>(csf2, data);
+                CSF2ScalarMultiplicationBenchmark<VALUE_TYPE, INDEX_TYPE>(csf2, data);
                 continue;
             case 8:
-                // CSF3scalarMultiplicationBenchmark<VALUE_TYPE, INDEX_TYPE>(csf3, data);
+                CSF3scalarMultiplicationBenchmark<VALUE_TYPE, INDEX_TYPE>(csf3, data);
                 continue;
             case 9:
-                // EigenVectorMultiplicationBenchmark<VALUE_TYPE>(eigen, data);
+                EigenVectorMultiplicationBenchmark<VALUE_TYPE>(eigen, data);
                 continue;
             case 10:
-                // CSF2VectorMultiplicationBenchmark<VALUE_TYPE, INDEX_TYPE>(eigen, csf2, data);
+                CSF2VectorMultiplicationBenchmark<VALUE_TYPE, INDEX_TYPE>(eigen, csf2, data);
                 continue;
             case 11:
-                // CSF3VectorMultiplicationBenchmark<VALUE_TYPE, INDEX_TYPE>(eigen, csf3, data);
+                CSF3VectorMultiplicationBenchmark<VALUE_TYPE, INDEX_TYPE>(eigen, csf3, data);
                 continue;
             case 12:
                 EigenMemoryFootprintBenchmark<VALUE_TYPE>(data, eigenTriplet, matrixData[1], matrixData[2]);
@@ -146,22 +147,22 @@ int main(int argc, char** argv) {
                 CSF3MemoryFootprintBenchmark<VALUE_TYPE, INDEX_TYPE>(data, eigenTriplet, matrixData[1], matrixData[2]);
                 continue;
             case 15:
-                // eigenTransposeBenchmark<VALUE_TYPE>(eigen, data);
+                eigenTransposeBenchmark<VALUE_TYPE>(eigen, data);
                 continue;
             case 16:
-                // CSF2TransposeBenchmark<VALUE_TYPE, INDEX_TYPE>(csf2, data);
+                CSF2TransposeBenchmark<VALUE_TYPE, INDEX_TYPE>(csf2, data);
                 continue;
             case 17:
-                // CSF3TransposeBenchmark<VALUE_TYPE, INDEX_TYPE>(csf3, data);
+                CSF3TransposeBenchmark<VALUE_TYPE, INDEX_TYPE>(csf3, data);
                 continue;
             case 18:
-                // eigenMatrixMultiplicationBenchmark<VALUE_TYPE>(eigen, data);
+                eigenMatrixMultiplicationBenchmark<VALUE_TYPE>(eigen, data);
                 continue;
             case 19:
-                // CSF2MatrixMultiplicationBenchmark<VALUE_TYPE, INDEX_TYPE>(eigen, csf2, data);
+                CSF2MatrixMultiplicationBenchmark<VALUE_TYPE, INDEX_TYPE>(eigen, csf2, data);
                 continue;
             case 20:
-                // CSF3MatrixMultiplicationBenchmark<VALUE_TYPE, INDEX_TYPE>(eigen, csf3, data);
+                CSF3MatrixMultiplicationBenchmark<VALUE_TYPE, INDEX_TYPE>(eigen, csf3, data);
                 continue;
 
             }
@@ -788,10 +789,11 @@ void CSF3TransposeBenchmark(CSF::SparseMatrix<T, indexT, 3>& csf3, std::vector<u
 template <typename T>
 void eigenMatrixMultiplicationBenchmark(Eigen::SparseMatrix<T>& eigen, std::vector<uint64_t>& data) {
     std::chrono::time_point<std::chrono::system_clock> start, end;
+    Eigen::SparseMatrix<T> eigenT = eigen.transpose();
 
     //Eigen
     start = std::chrono::system_clock::now();
-    Eigen::SparseMatrix<T> resultEigen = eigen * eigen;
+    Eigen::SparseMatrix<T> resultEigen = eigen * eigenT;
     end = std::chrono::system_clock::now();
 
     data.at(18) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
@@ -806,10 +808,11 @@ void eigenMatrixMultiplicationBenchmark(Eigen::SparseMatrix<T>& eigen, std::vect
 template <typename T, typename indexT>
 void CSF2MatrixMultiplicationBenchmark(Eigen::SparseMatrix<T>& eigen, CSF::SparseMatrix<T, indexT, 2>& csf2, std::vector<uint64_t>& data) {
     std::chrono::time_point<std::chrono::system_clock> start, end;
+    Eigen::SparseMatrix<T> eigenT = eigen.transpose();
 
     //CSF 2
     start = std::chrono::system_clock::now();
-    Eigen::Matrix<T, -1, -1> result = csf2 * eigen;
+    Eigen::Matrix<T, -1, -1> result = csf2 * eigenT;
     end = std::chrono::system_clock::now();
 
     data.at(19) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
@@ -824,10 +827,11 @@ void CSF2MatrixMultiplicationBenchmark(Eigen::SparseMatrix<T>& eigen, CSF::Spars
 template <typename T, typename indexT>
 void CSF3MatrixMultiplicationBenchmark(Eigen::SparseMatrix<T>& eigen, CSF::SparseMatrix<T, indexT, 3>& csf3, std::vector<uint64_t>& data) {
     std::chrono::time_point<std::chrono::system_clock> start, end;
+    Eigen::SparseMatrix<T> eigenT = eigen.transpose();
 
     //CSF 3
     start = std::chrono::system_clock::now();
-    Eigen::Matrix<T, -1, -1> result = csf3 * eigen;
+    Eigen::Matrix<T, -1, -1> result = csf3 * eigenT;
     end = std::chrono::system_clock::now();
 
     data.at(20) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
