@@ -12,7 +12,6 @@
  */
 
 #define NUM_ITERATIONS 10
-#define CSF_DEBUG 1
 #include "lib/benchmarkFunctions.h"
 
 int main(int argc, char** argv) {
@@ -32,12 +31,12 @@ int main(int argc, char** argv) {
     // Records the matrix ID or name
 
     // if(strstr(argv[2], "mtx") != NULL) {
-        matrixData.push_back(-1);
+    matrixData.push_back(-1);
     // } else {
         // matrixData.push_back(std::stoi(argv[2]));
     // }
 
-    
+
 
     // Read in the matrix market file
     readFile<VALUE_TYPE>(eigenTriplet, matrixData, argv[1]);
@@ -72,8 +71,14 @@ int main(int argc, char** argv) {
     //     exit(1);
     // }
 
+    // Create the Armadillo matrix - Done here so that we don't use too much memory
+    arma::sp_mat armaMat(matrixData[1], matrixData[2]);
+    for (auto& triplet : eigenTriplet) {
+        armaMat(triplet.row(), triplet.col()) = triplet.value();
+    }
+
     // Random array to select a random benchmark
-    const int myList[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20 };
+    const int myList[] = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29 };
     int tempList[NUM_OF_BENCHMARKS];
 
     int currentlySelected = -1;
@@ -111,59 +116,81 @@ int main(int argc, char** argv) {
                 CSF3ConstructorBenchmark<VALUE_TYPE, INDEX_TYPE>(eigen, data);
                 continue;
             case 3:
-                EigenInnerIteratorBenchmark<VALUE_TYPE>(eigen, data);
+                ArmadilloConstructorBenchmark<VALUE_TYPE>(eigenTriplet, data, matrixData[1], matrixData[2]);
                 continue;
             case 4:
-                CSF2InnerIteratorBenchmark<VALUE_TYPE, INDEX_TYPE>(csf2, data);
+                EigenInnerIteratorBenchmark<VALUE_TYPE>(eigen, data);
                 continue;
             case 5:
-                CSF3InnerIteratorBenchmark<VALUE_TYPE, INDEX_TYPE>(csf3, data);
+                CSF2InnerIteratorBenchmark<VALUE_TYPE, INDEX_TYPE>(csf2, data);
                 continue;
             case 6:
-                EigenScalarMultiplicationBenchmark<VALUE_TYPE>(eigen, data);
+                CSF3InnerIteratorBenchmark<VALUE_TYPE, INDEX_TYPE>(csf3, data);
                 continue;
             case 7:
-                CSF2ScalarMultiplicationBenchmark<VALUE_TYPE, INDEX_TYPE>(csf2, data);
+                ArmadilloInnerIteratorBenchmark<VALUE_TYPE>(armaMat, data);
                 continue;
             case 8:
-                CSF3scalarMultiplicationBenchmark<VALUE_TYPE, INDEX_TYPE>(csf3, data);
+                EigenScalarMultiplicationBenchmark<VALUE_TYPE>(eigen, data);
                 continue;
             case 9:
-                EigenVectorMultiplicationBenchmark<VALUE_TYPE>(eigen, data);
+                CSF2ScalarMultiplicationBenchmark<VALUE_TYPE, INDEX_TYPE>(csf2, data);
                 continue;
             case 10:
-                CSF2VectorMultiplicationBenchmark<VALUE_TYPE, INDEX_TYPE>(eigen, csf2, data);
+                CSF3scalarMultiplicationBenchmark<VALUE_TYPE, INDEX_TYPE>(csf3, data);
                 continue;
             case 11:
-                CSF3VectorMultiplicationBenchmark<VALUE_TYPE, INDEX_TYPE>(eigen, csf3, data);
+                ArmadilloScalarMultiplicationBenchmark<VALUE_TYPE>(armaMat, data);
                 continue;
             case 12:
-                EigenMemoryFootprintBenchmark<VALUE_TYPE>(data, eigenTriplet, matrixData[1], matrixData[2]);
+                EigenVectorMultiplicationBenchmark<VALUE_TYPE>(eigen, data);
                 continue;
             case 13:
-                CSF2MemoryFootprintBenchmark<VALUE_TYPE, INDEX_TYPE>(data, eigenTriplet, matrixData[1], matrixData[2]);
+                CSF2VectorMultiplicationBenchmark<VALUE_TYPE, INDEX_TYPE>(eigen, csf2, data);
                 continue;
             case 14:
-                CSF3MemoryFootprintBenchmark<VALUE_TYPE, INDEX_TYPE>(data, eigenTriplet, matrixData[1], matrixData[2]);
+                CSF3VectorMultiplicationBenchmark<VALUE_TYPE, INDEX_TYPE>(eigen, csf3, data);
                 continue;
             case 15:
-                eigenTransposeBenchmark<VALUE_TYPE>(eigen, data);
+                ArmadilloVectorMultiplicationBenchmark<VALUE_TYPE>(armaMat, data);
                 continue;
             case 16:
-                CSF2TransposeBenchmark<VALUE_TYPE, INDEX_TYPE>(csf2, data);
+                EigenMemoryFootprintBenchmark<VALUE_TYPE>(data, eigenTriplet, matrixData[1], matrixData[2]);
                 continue;
             case 17:
-                CSF3TransposeBenchmark<VALUE_TYPE, INDEX_TYPE>(csf3, data);
+                CSF2MemoryFootprintBenchmark<VALUE_TYPE, INDEX_TYPE>(data, eigenTriplet, matrixData[1], matrixData[2]);
                 continue;
             case 18:
-                eigenMatrixMultiplicationBenchmark<VALUE_TYPE>(eigen, data);
+                CSF3MemoryFootprintBenchmark<VALUE_TYPE, INDEX_TYPE>(data, eigenTriplet, matrixData[1], matrixData[2]);
                 continue;
             case 19:
-                CSF2MatrixMultiplicationBenchmark<VALUE_TYPE, INDEX_TYPE>(eigen, csf2, data);
+                ArmadilloMemoryFootprintBenchmark<VALUE_TYPE>(data, eigenTriplet, matrixData[1], matrixData[2]);
                 continue;
             case 20:
+                eigenTransposeBenchmark<VALUE_TYPE>(eigen, data);
+                continue;
+            case 21:
+                CSF2TransposeBenchmark<VALUE_TYPE, INDEX_TYPE>(csf2, data);
+                continue;
+            case 22:
+                CSF3TransposeBenchmark<VALUE_TYPE, INDEX_TYPE>(csf3, data);
+                continue;
+            case 23:
+                ArmadilloTransposeBenchmark<VALUE_TYPE>(armaMat, data);
+                continue;
+            case 24:
+                eigenMatrixMultiplicationBenchmark<VALUE_TYPE>(eigen, data);
+                continue;
+            case 25:
+                CSF2MatrixMultiplicationBenchmark<VALUE_TYPE, INDEX_TYPE>(eigen, csf2, data);
+                continue;
+            case 26:
                 CSF3MatrixMultiplicationBenchmark<VALUE_TYPE, INDEX_TYPE>(eigen, csf3, data);
                 continue;
+            case 27:
+                ArmadilloMatrixMultiplicationBenchmark<VALUE_TYPE>(armaMat, data);
+                continue;
+
 
             }
         }
@@ -247,7 +274,7 @@ void readFile(std::vector<Eigen::Triplet<T>>& eigenTriplet, std::vector<double>&
             fscanf(f, "%d %d %lg\n", &I[i], &J[i], &val[i]);
             I[i]--;  /* adjust from 1-based to 0-based */
             J[i]--;
-        } 
+        }
 
     }
 
@@ -346,11 +373,11 @@ double averageRedundancy(const Eigen::SparseMatrix<double>& matrix) {
 
 template <typename T>
 bool checkMatrixEquality(Eigen::SparseMatrix<T>& eigen, CSF::SparseMatrix<T, INDEX_TYPE, 2>& csf2, CSF::SparseMatrix<T, INDEX_TYPE, 3>& csf3) {
-    
+
     // Checking basic attributes
-    if(eigen.outerSize() != csf2.outerSize() || eigen.outerSize() != csf3.outerSize() || csf2.outerSize() != csf3.outerSize() 
-    || eigen.innerSize() != csf2.innerSize() || eigen.innerSize() != csf3.innerSize() || csf2.innerSize() != csf3.innerSize() 
-    || eigen.nonZeros() != csf2.nonZeros() || eigen.nonZeros() != csf3.nonZeros() || csf2.nonZeros() != csf3.nonZeros()) {
+    if (eigen.outerSize() != csf2.outerSize() || eigen.outerSize() != csf3.outerSize() || csf2.outerSize() != csf3.outerSize()
+        || eigen.innerSize() != csf2.innerSize() || eigen.innerSize() != csf3.innerSize() || csf2.innerSize() != csf3.innerSize()
+        || eigen.nonZeros() != csf2.nonZeros() || eigen.nonZeros() != csf3.nonZeros() || csf2.nonZeros() != csf3.nonZeros()) {
         std::cout << "\u001b[31;1;4mError: Matrix Comparison Returned False!\u001b[0m" << std::endl;
         std::cout << "Outer size mismatch!" << std::endl;
         return false;
@@ -488,6 +515,20 @@ void CSF3ConstructorBenchmark(Eigen::SparseMatrix<T>& eigen, std::vector<uint64_
     data.at(2) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
 }
 
+template <typename T>
+void ArmadilloConstructorBenchmark(std::vector<Eigen::Triplet<T>>& eigenTriplet, std::vector<uint64_t>& data, int rows, int cols) {
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+
+    //benchmark the Eigen constructor
+    start = std::chrono::system_clock::now();
+    arma::sp_mat armaMat(rows, cols);
+    for (auto& triplet : eigenTriplet) {
+        armaMat(triplet.row(), triplet.col()) = triplet.value();
+    }
+    end = std::chrono::system_clock::now();
+    data.at(3) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+}
+
 /**
  * @brief Benchmark for the Eigen::SparseMatrix InnerIterator
  *
@@ -496,33 +537,13 @@ void CSF3ConstructorBenchmark(Eigen::SparseMatrix<T>& eigen, std::vector<uint64_
 template <typename T>
 void EigenInnerIteratorBenchmark(Eigen::SparseMatrix<T>& eigen, std::vector<uint64_t>& data) {
     std::chrono::time_point<std::chrono::system_clock> start, end;
+    volatile uint64_t total = 0;
 
     //Eigen
     start = std::chrono::system_clock::now();
     for (int i = 0; i < eigen.outerSize(); ++i) {
         for (Eigen::SparseMatrix<double>::InnerIterator it(eigen, i); it; ++it) {
-            it.value();
-        }
-    }
-    end = std::chrono::system_clock::now();
-
-    data.at(3) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
-}
-
-/**
- * @brief Benchmark for the CSF2 InnerIterator
- *
- */
-
-template <typename T, typename indexT>
-void CSF2InnerIteratorBenchmark(CSF::SparseMatrix<T, indexT, 2> csf2, std::vector<uint64_t>& data) {
-    std::chrono::time_point<std::chrono::system_clock> start, end;
-
-    //CSF 2
-    start = std::chrono::system_clock::now();
-    for (uint32_t i = 0; i < csf2.outerSize(); ++i) {
-        for (typename CSF::SparseMatrix<double, indexT, 2>::InnerIterator it(csf2, i); it; ++it) {
-            it.value();
+            total += it.value();
         }
     }
     end = std::chrono::system_clock::now();
@@ -531,19 +552,20 @@ void CSF2InnerIteratorBenchmark(CSF::SparseMatrix<T, indexT, 2> csf2, std::vecto
 }
 
 /**
- * @brief Benchmark for the CSF3 InnerIterator
+ * @brief Benchmark for the CSF2 InnerIterator
  *
  */
 
 template <typename T, typename indexT>
-void CSF3InnerIteratorBenchmark(CSF::SparseMatrix<T, indexT, 3> csf3, std::vector<uint64_t>& data) {
+void CSF2InnerIteratorBenchmark(CSF::SparseMatrix<T, indexT, 2>& csf2, std::vector<uint64_t>& data) {
     std::chrono::time_point<std::chrono::system_clock> start, end;
+    volatile uint64_t total = 0;
 
-    //CSF 3
+    //CSF 2
     start = std::chrono::system_clock::now();
-    for (uint32_t i = 0; i < csf3.outerSize(); ++i) {
-        for (typename CSF::SparseMatrix<double, indexT, 3>::InnerIterator it(csf3, i); it; ++it) {
-            it.value();
+    for (uint32_t i = 0; i < csf2.outerSize(); ++i) {
+        for (typename CSF::SparseMatrix<double, indexT, 2>::InnerIterator it(csf2, i); it; ++it) {
+            total += it.value();
         }
     }
     end = std::chrono::system_clock::now();
@@ -552,12 +574,51 @@ void CSF3InnerIteratorBenchmark(CSF::SparseMatrix<T, indexT, 3> csf3, std::vecto
 }
 
 /**
+ * @brief Benchmark for the CSF3 InnerIterator
+ *
+ */
+
+template <typename T, typename indexT>
+void CSF3InnerIteratorBenchmark(CSF::SparseMatrix<T, indexT, 3>& csf3, std::vector<uint64_t>& data) {
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+    volatile uint64_t total = 0;
+
+    //CSF 3
+    start = std::chrono::system_clock::now();
+    for (uint32_t i = 0; i < csf3.outerSize(); ++i) {
+        for (typename CSF::SparseMatrix<double, indexT, 3>::InnerIterator it(csf3, i); it; ++it) {
+            total += it.value();
+        }
+    }
+    end = std::chrono::system_clock::now();
+
+    data.at(6) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+}
+
+template <typename T>
+void ArmadilloInnerIteratorBenchmark(arma::sp_mat& armaMat, std::vector<uint64_t>& data) {
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+    volatile uint64_t total = 0;
+
+    //Eigen
+    start = std::chrono::system_clock::now();
+    for (int i = 0; i < armaMat.n_cols; ++i) {
+        for (arma::sp_mat::iterator it = armaMat.begin_col(i); it != armaMat.end_col(i); ++it) {
+            total += *it;
+        }
+    }
+    end = std::chrono::system_clock::now();
+    
+    data.at(7) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+}
+
+/**
  * @brief Benchmark for the Eigen::SparseMatrix Scalar Multiplication
  *
  */
 
 template <typename T>
-void EigenScalarMultiplicationBenchmark(Eigen::SparseMatrix<T>& eigen, std::vector<uint64_t>& data) {
+void EigenScalarMultiplicationBenchmark(Eigen::SparseMatrix<T> eigen, std::vector<uint64_t>& data) {
     std::chrono::time_point<std::chrono::system_clock> start, end;
 
     //Eigen
@@ -565,7 +626,7 @@ void EigenScalarMultiplicationBenchmark(Eigen::SparseMatrix<T>& eigen, std::vect
     eigen * 2;
     end = std::chrono::system_clock::now();
 
-    data.at(6) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+    data.at(8) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
 }
 
 /**
@@ -582,7 +643,7 @@ void CSF2ScalarMultiplicationBenchmark(CSF::SparseMatrix<T, indexT, 2> csf2, std
     csf2 * 2;
     // csf2 = csf2 * 2;
     end = std::chrono::system_clock::now();
-    data.at(7) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+    data.at(9) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
 }
 
 /**
@@ -600,7 +661,19 @@ void CSF3scalarMultiplicationBenchmark(CSF::SparseMatrix<T, indexT, 3> csf3, std
     // csf3 = csf3 * 2;
     end = std::chrono::system_clock::now();
 
-    data.at(8) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+    data.at(10) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+}
+
+template <typename T>
+void ArmadilloScalarMultiplicationBenchmark(arma::sp_mat armaMat, std::vector<uint64_t>& data) {
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+
+    //Eigen
+    start = std::chrono::system_clock::now();
+    armaMat * 2;
+    end = std::chrono::system_clock::now();
+
+    data.at(11) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
 }
 
 /**
@@ -627,7 +700,7 @@ void EigenVectorMultiplicationBenchmark(Eigen::SparseMatrix<T>& eigen, std::vect
     start = std::chrono::system_clock::now();
     Eigen::MatrixXd resultEigen = eigen * eigenVector;
     end = std::chrono::system_clock::now();
-    data.at(9) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+    data.at(12) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
 }
 
 /**
@@ -636,7 +709,7 @@ void EigenVectorMultiplicationBenchmark(Eigen::SparseMatrix<T>& eigen, std::vect
  */
 
 template <typename T, typename indexT>
-void CSF2VectorMultiplicationBenchmark(Eigen::SparseMatrix<T>& eigen, CSF::SparseMatrix<T, indexT, 2> csf2, std::vector<uint64_t>& data) {
+void CSF2VectorMultiplicationBenchmark(Eigen::SparseMatrix<T>& eigen, CSF::SparseMatrix<T, indexT, 2>& csf2, std::vector<uint64_t>& data) {
     std::chrono::time_point<std::chrono::system_clock> start, end;
 
     // Eigen Vectors
@@ -651,7 +724,7 @@ void CSF2VectorMultiplicationBenchmark(Eigen::SparseMatrix<T>& eigen, CSF::Spars
     result = csf2 * eigenTempVector;
     end = std::chrono::system_clock::now();
 
-    data.at(10) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+    data.at(13) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
 }
 
 /**
@@ -660,7 +733,7 @@ void CSF2VectorMultiplicationBenchmark(Eigen::SparseMatrix<T>& eigen, CSF::Spars
  */
 
 template <typename T, typename indexT>
-void CSF3VectorMultiplicationBenchmark(Eigen::SparseMatrix<T>& eigen, CSF::SparseMatrix<T, indexT, 3> csf3, std::vector<uint64_t>& data) {
+void CSF3VectorMultiplicationBenchmark(Eigen::SparseMatrix<T>& eigen, CSF::SparseMatrix<T, indexT, 3>& csf3, std::vector<uint64_t>& data) {
     std::chrono::time_point<std::chrono::system_clock> start, end;
 
     // Eigen Vectors
@@ -675,7 +748,26 @@ void CSF3VectorMultiplicationBenchmark(Eigen::SparseMatrix<T>& eigen, CSF::Spars
     result = csf3 * eigenTempVector;
     end = std::chrono::system_clock::now();
 
-    data.at(11) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+    data.at(14) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+}
+
+template <typename T>
+void ArmadilloVectorMultiplicationBenchmark(arma::sp_mat& armaMat, std::vector<uint64_t>& data) {
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+
+    // Eigen Vectors
+    arma::vec armaTempVector(armaMat.n_cols);
+    arma::vec result;
+
+    // Filling eigen vectors
+    armaTempVector.fill(2);
+
+    //Eigen
+    start = std::chrono::system_clock::now();
+    result = armaMat * armaTempVector;
+    end = std::chrono::system_clock::now();
+
+    data.at(15) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
 }
 
 /**
@@ -690,7 +782,7 @@ void EigenMemoryFootprintBenchmark(std::vector<uint64_t>& data, std::vector<Eige
     eigenMatrix.setFromTriplets(eigenTriplet.begin(), eigenTriplet.end());
     eigenMatrix.makeCompressed();
 
-    data.at(12) = eigenMatrix.nonZeros() * sizeof(double) + eigenMatrix.nonZeros() * sizeof(uint32_t) + (eigenMatrix.outerSize() + 1) * sizeof(uint32_t);
+    data.at(16) = eigenMatrix.nonZeros() * sizeof(double) + eigenMatrix.nonZeros() * sizeof(uint32_t) + (eigenMatrix.outerSize() + 1) * sizeof(uint32_t);
 
 }
 
@@ -708,7 +800,7 @@ void CSF2MemoryFootprintBenchmark(std::vector<uint64_t>& data, std::vector<Eigen
 
     // CSF Construction
     CSF::SparseMatrix<VALUE_TYPE, INDEX_TYPE, 2> csf2Matrix(eigenMatrix);
-    data.at(13) = csf2Matrix.compressionSize();
+    data.at(17) = csf2Matrix.compressionSize();
 
 }
 
@@ -726,7 +818,24 @@ void CSF3MemoryFootprintBenchmark(std::vector<uint64_t>& data, std::vector<Eigen
 
     // CSF Construction
     CSF::SparseMatrix<VALUE_TYPE, INDEX_TYPE, 3> csf3Matrix(eigenMatrix);
-    data.at(14) = csf3Matrix.compressionSize();
+    data.at(18) = csf3Matrix.compressionSize();
+}
+
+template <typename T>
+void ArmadilloMemoryFootprintBenchmark(std::vector<uint64_t>& data, std::vector<Eigen::Triplet<T>>& eigenTriplet, uint32_t inner, uint32_t outer) {
+    //Create Eigen Matrix
+    Eigen::SparseMatrix<VALUE_TYPE> eigenMatrix(inner, outer);
+    eigenMatrix.setFromTriplets(eigenTriplet.begin(), eigenTriplet.end());
+    eigenMatrix.makeCompressed();
+
+    // CSF Construction
+    arma::sp_mat armaMatrix(inner, outer);
+    for (auto& triplet : eigenTriplet) {
+        armaMatrix(triplet.row(), triplet.col()) = triplet.value();
+    }
+
+    //Same as Eigen, both are CSC
+    data.at(19) = armaMatrix.n_nonzero * sizeof(double) + armaMatrix.n_nonzero * sizeof(uint32_t) + (armaMatrix.n_cols + 1) * sizeof(uint32_t);
 }
 
 /**
@@ -742,7 +851,7 @@ void eigenTransposeBenchmark(Eigen::SparseMatrix<T>& eigen, std::vector<uint64_t
     start = std::chrono::system_clock::now();
     Eigen::SparseMatrix<T> resultEigen = eigen.transpose();
     end = std::chrono::system_clock::now();
-    data.at(15) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+    data.at(20) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
 }
 
 /**
@@ -759,7 +868,7 @@ void CSF2TransposeBenchmark(CSF::SparseMatrix<T, indexT, 2>& csf2, std::vector<u
     CSF::SparseMatrix<T, indexT, 2> resultCSF2 = csf2.transpose();
     end = std::chrono::system_clock::now();
 
-    data.at(16) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+    data.at(21) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
 }
 
 /**
@@ -777,7 +886,19 @@ void CSF3TransposeBenchmark(CSF::SparseMatrix<T, indexT, 3>& csf3, std::vector<u
     CSF::SparseMatrix<T, indexT, 3> resultCSF3 = csf3.transpose();
     end = std::chrono::system_clock::now();
 
-    data.at(17) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+    data.at(22) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+}
+
+template <typename T>
+void ArmadilloTransposeBenchmark(arma::sp_mat& armaMat, std::vector<uint64_t>& data) {
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+
+    //Eigen
+    start = std::chrono::system_clock::now();
+    arma::sp_mat result = armaMat.t();
+    end = std::chrono::system_clock::now();
+
+    data.at(23) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
 }
 
 /**
@@ -796,7 +917,7 @@ void eigenMatrixMultiplicationBenchmark(Eigen::SparseMatrix<T>& eigen, std::vect
     Eigen::SparseMatrix<T> resultEigen = eigen * eigenT;
     end = std::chrono::system_clock::now();
 
-    data.at(18) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+    data.at(24) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
 }
 
 /**
@@ -815,7 +936,7 @@ void CSF2MatrixMultiplicationBenchmark(Eigen::SparseMatrix<T>& eigen, CSF::Spars
     Eigen::Matrix<T, -1, -1> result = csf2 * eigenT;
     end = std::chrono::system_clock::now();
 
-    data.at(19) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+    data.at(25) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
 }
 
 /**
@@ -834,5 +955,18 @@ void CSF3MatrixMultiplicationBenchmark(Eigen::SparseMatrix<T>& eigen, CSF::Spars
     Eigen::Matrix<T, -1, -1> result = csf3 * eigenT;
     end = std::chrono::system_clock::now();
 
-    data.at(20) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+    data.at(26) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+}
+
+template <typename T>
+void ArmadilloMatrixMultiplicationBenchmark(arma::sp_mat& armaMat, std::vector<uint64_t>& data) {
+    std::chrono::time_point<std::chrono::system_clock> start, end;
+    arma::sp_mat armaT = armaMat.t();
+
+    //Eigen
+    start = std::chrono::system_clock::now();
+    arma::sp_mat result = armaMat * armaT;
+    end = std::chrono::system_clock::now();
+
+    data.at(27) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
 }
