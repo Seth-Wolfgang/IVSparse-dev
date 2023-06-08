@@ -6,7 +6,7 @@ namespace CSF {
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor> SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator*(T scalar) const {
 
-        // make a copy of the matrix
+        // make a copy of this
         CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor> newMatrix(*this);
 
         // #pragma omp parallel for schedule(dynamic)

@@ -136,9 +136,17 @@ namespace CSF {
          */
         SparseMatrix(const char *filename);
 
+        /**
+         * @brief Deep Copy Constructor
+         *
+         * @param other The CSF matrix to be copied
+         */
+        SparseMatrix(const SparseMatrix<T, indexT, compressionLevel, columnMajor> &other);
+
         ///@}
 
         SparseMatrix();
+
 
         // Map constructor for use in transposing
         SparseMatrix(std::map<indexT, std::unordered_map<T, std::vector<indexT>>> &map, uint32_t num_rows, uint32_t num_cols);

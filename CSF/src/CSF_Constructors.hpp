@@ -663,6 +663,55 @@ namespace CSF {
         val_t = encodeVal();
     }
 
+
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(const CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>& other) {
+
+        // do a deep copy of the matrix
+
+        // Set the number of rows, columns and non-zero elements
+        innerDim = other.innerSize();
+        outerDim = other.outerSize();
+
+        numRows = other.rows();
+        numCols = other.cols();
+
+        nnz = other.nonZeros();
+
+        compSize = other.compressionSize();
+
+        try {
+            data = (void**)malloc(outerDim * sizeof(void*));
+            endPointers = (void**)malloc(outerDim * sizeof(void*));
+        }
+        catch (const std::exception& e) {
+            std::cerr << e.what() << '\n';
+        }
+
+        // #ifdef CSF_PARALLEL
+        // #pragma omp parallel for
+        // #endif
+        for (size_t i = 0; i < outerDim; i++) {
+            try {
+                data[i] = malloc(other.getVecSize(i));
+            }
+            catch (const std::exception& e) {
+                //! Potential Parallelism issue here
+                std::cerr << e.what() << '\n';
+            }
+            memcpy(data[i], other.getVecPointer(i), other.getVecSize(i));
+            endPointers[i] = (char*)data[i] + other.getVecSize(i);
+        }
+
+        //allocate memory for metadata
+        metadata = new uint32_t[NUM_META_DATA];
+        memcpy(metadata, other.metadata, NUM_META_DATA * sizeof(uint32_t));
+
+        index_t = other.index_t;
+        val_t = encodeVal();
+
+    }
+
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     SparseMatrix<T, indexT, compressionLevel, columnMajor>::~SparseMatrix() {
         // delete the meta data
