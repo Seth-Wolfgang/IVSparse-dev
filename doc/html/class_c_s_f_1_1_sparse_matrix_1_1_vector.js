@@ -1,5 +1,6 @@
 var class_c_s_f_1_1_sparse_matrix_1_1_vector =
 [
+    [ "Vector", "class_c_s_f_1_1_sparse_matrix_1_1_vector.html#a4df026156780bc0ca651c342b7d6daa4", null ],
     [ "Vector", "class_c_s_f_1_1_sparse_matrix_1_1_vector.html#a0522d4dbd680f7418f99dd379aa32b14", null ],
     [ "Vector", "class_c_s_f_1_1_sparse_matrix_1_1_vector.html#ae77e51c23afaf5ac17fc37a791b42427", null ],
     [ "coeff", "class_c_s_f_1_1_sparse_matrix_1_1_vector.html#a102caae409e8c6d7a2b5d24c623ec345", null ],

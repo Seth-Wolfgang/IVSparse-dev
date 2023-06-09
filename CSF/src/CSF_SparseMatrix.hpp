@@ -430,6 +430,11 @@ namespace CSF {
         //* Constructors & Destructor *//
 
         /**
+         * @name Constructors
+        */
+        ///@{
+
+        /**
          * @brief Construct an empty CSF matrix
          * 
          */
@@ -486,6 +491,8 @@ namespace CSF {
          * @param filename The filepath of the matrix to be read in
          */
         SparseMatrix(const char* filename);
+
+        ///@}
 
         // destructor
         ~SparseMatrix();
@@ -651,10 +658,10 @@ namespace CSF {
     /**
      * @brief An iterator over the inner dimension of a CSF matrix
      * 
-     * @tparam T 
-     * @tparam indexT 
-     * @tparam compressionLevel 
-     * @tparam columnMajor 
+     * @tparam T The data type of the values
+     * @tparam indexT The data type of the indices
+     * @tparam compressionLevel The compression level used
+     * @tparam columnMajor If the matrix is in column major format
      */
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     class SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator {

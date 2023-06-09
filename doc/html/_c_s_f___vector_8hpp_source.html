@@ -102,7 +102,7 @@ $(document).ready(function(){initNavTree('_c_s_f___vector_8hpp_source.html','');
 <div class="line"><a name="l00003"></a><span class="lineno">    3</span>&#160;<span class="keyword">namespace </span>CSF {</div>
 <div class="line"><a name="l00004"></a><span class="lineno">    4</span>&#160; </div>
 <div class="line"><a name="l00005"></a><span class="lineno">    5</span>&#160;    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> T, <span class="keyword">typename</span> indexT, u<span class="keywordtype">int</span>8_t compressionLevel, <span class="keywordtype">bool</span> columnMajor&gt;</div>
-<div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;    SparseMatrix&lt;T, indexT, compressionLevel, columnMajor&gt;::Vector::Vector() {</div>
+<div class="line"><a name="l00006"></a><span class="lineno"><a class="line" href="class_c_s_f_1_1_sparse_matrix_1_1_vector.html#a4df026156780bc0ca651c342b7d6daa4">    6</a></span>&#160;    <a class="code" href="class_c_s_f_1_1_sparse_matrix_1_1_vector.html#a4df026156780bc0ca651c342b7d6daa4">SparseMatrix&lt;T, indexT, compressionLevel, columnMajor&gt;::Vector::Vector</a>() {</div>
 <div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;        data = <span class="keyword">nullptr</span>;</div>
 <div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160;        endPtr = <span class="keyword">nullptr</span>;</div>
 <div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;        size = 0;</div>
@@ -110,14 +110,14 @@ $(document).ready(function(){initNavTree('_c_s_f___vector_8hpp_source.html','');
 <div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160;    }</div>
 <div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160; </div>
 <div class="line"><a name="l00013"></a><span class="lineno">   13</span>&#160;    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> T, <span class="keyword">typename</span> indexT, u<span class="keywordtype">int</span>8_t compressionLevel, <span class="keywordtype">bool</span> columnMajor&gt;</div>
-<div class="line"><a name="l00014"></a><span class="lineno"><a class="line" href="class_c_s_f_1_1_sparse_matrix_1_1_vector.html#a0522d4dbd680f7418f99dd379aa32b14">   14</a></span>&#160;    <a class="code" href="class_c_s_f_1_1_sparse_matrix.html">SparseMatrix&lt;T, indexT, compressionLevel, columnMajor&gt;::Vector::Vector</a>(<a class="code" href="class_c_s_f_1_1_sparse_matrix.html">CSF::SparseMatrix&lt;T, indexT, compressionLevel, columnMajor&gt;</a>&amp; mat, uint32_t vec) {</div>
+<div class="line"><a name="l00014"></a><span class="lineno"><a class="line" href="class_c_s_f_1_1_sparse_matrix_1_1_vector.html#a0522d4dbd680f7418f99dd379aa32b14">   14</a></span>&#160;    <a class="code" href="class_c_s_f_1_1_sparse_matrix_1_1_vector.html#a4df026156780bc0ca651c342b7d6daa4">SparseMatrix&lt;T, indexT, compressionLevel, columnMajor&gt;::Vector::Vector</a>(<a class="code" href="class_c_s_f_1_1_sparse_matrix.html">CSF::SparseMatrix&lt;T, indexT, compressionLevel, columnMajor&gt;</a>&amp; mat, uint32_t vec) {</div>
 <div class="line"><a name="l00015"></a><span class="lineno">   15</span>&#160; </div>
 <div class="line"><a name="l00016"></a><span class="lineno">   16</span>&#160;<span class="preprocessor">        #ifdef CSF_DEBUG</span></div>
-<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;            <span class="comment">// make sure the vector is in bounds</span></div>
-<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;            assert((vec &gt;= 0 &amp;&amp; vec &lt; mat.<a class="code" href="class_c_s_f_1_1_sparse_matrix.html#ae7b7291843ceac76c91fdbc599ab962b">outerSize</a>()) &amp;&amp; <span class="stringliteral">&quot;Vector index out of bounds&quot;</span>);</div>
+<div class="line"><a name="l00017"></a><span class="lineno">   17</span>&#160;        <span class="comment">// make sure the vector is in bounds</span></div>
+<div class="line"><a name="l00018"></a><span class="lineno">   18</span>&#160;        assert((vec &gt;= 0 &amp;&amp; vec &lt; mat.<a class="code" href="class_c_s_f_1_1_sparse_matrix.html#ae7b7291843ceac76c91fdbc599ab962b">outerSize</a>()) &amp;&amp; <span class="stringliteral">&quot;Vector index out of bounds&quot;</span>);</div>
 <div class="line"><a name="l00019"></a><span class="lineno">   19</span>&#160; </div>
-<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;            <span class="comment">// make sure the matrix is not empty</span></div>
-<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;            assert((mat.<a class="code" href="class_c_s_f_1_1_sparse_matrix.html#ae7b7291843ceac76c91fdbc599ab962b">outerSize</a>() &gt; 0 &amp;&amp; mat.<a class="code" href="class_c_s_f_1_1_sparse_matrix.html#a3b2fcf14c112c345c871e5c0372db1fa">innerSize</a>() &gt; 0) &amp;&amp; <span class="stringliteral">&quot;Matrix is empty&quot;</span>);</div>
+<div class="line"><a name="l00020"></a><span class="lineno">   20</span>&#160;        <span class="comment">// make sure the matrix is not empty</span></div>
+<div class="line"><a name="l00021"></a><span class="lineno">   21</span>&#160;        assert((mat.<a class="code" href="class_c_s_f_1_1_sparse_matrix.html#ae7b7291843ceac76c91fdbc599ab962b">outerSize</a>() &gt; 0 &amp;&amp; mat.<a class="code" href="class_c_s_f_1_1_sparse_matrix.html#a3b2fcf14c112c345c871e5c0372db1fa">innerSize</a>() &gt; 0) &amp;&amp; <span class="stringliteral">&quot;Matrix is empty&quot;</span>);</div>
 <div class="line"><a name="l00022"></a><span class="lineno">   22</span>&#160;<span class="preprocessor">        #endif</span></div>
 <div class="line"><a name="l00023"></a><span class="lineno">   23</span>&#160; </div>
 <div class="line"><a name="l00024"></a><span class="lineno">   24</span>&#160;        <span class="comment">// get the vecLength of the vector</span></div>
@@ -162,7 +162,7 @@ $(document).ready(function(){initNavTree('_c_s_f___vector_8hpp_source.html','');
 <div class="line"><a name="l00063"></a><span class="lineno">   63</span>&#160; </div>
 <div class="line"><a name="l00064"></a><span class="lineno">   64</span>&#160;    <span class="comment">// Deep copy constructor</span></div>
 <div class="line"><a name="l00065"></a><span class="lineno">   65</span>&#160;    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> T, <span class="keyword">typename</span> indexT, u<span class="keywordtype">int</span>8_t compressionLevel, <span class="keywordtype">bool</span> columnMajor&gt;</div>
-<div class="line"><a name="l00066"></a><span class="lineno"><a class="line" href="class_c_s_f_1_1_sparse_matrix_1_1_vector.html#ae77e51c23afaf5ac17fc37a791b42427">   66</a></span>&#160;    <a class="code" href="class_c_s_f_1_1_sparse_matrix.html">SparseMatrix&lt;T, indexT, compressionLevel, columnMajor&gt;::Vector::Vector</a>(<a class="code" href="class_c_s_f_1_1_sparse_matrix_1_1_vector.html">CSF::SparseMatrix&lt;T, indexT, compressionLevel, columnMajor&gt;::Vector</a>&amp; vec) {</div>
+<div class="line"><a name="l00066"></a><span class="lineno"><a class="line" href="class_c_s_f_1_1_sparse_matrix_1_1_vector.html#ae77e51c23afaf5ac17fc37a791b42427">   66</a></span>&#160;    <a class="code" href="class_c_s_f_1_1_sparse_matrix_1_1_vector.html#a4df026156780bc0ca651c342b7d6daa4">SparseMatrix&lt;T, indexT, compressionLevel, columnMajor&gt;::Vector::Vector</a>(<a class="code" href="class_c_s_f_1_1_sparse_matrix_1_1_vector.html">CSF::SparseMatrix&lt;T, indexT, compressionLevel, columnMajor&gt;::Vector</a>&amp; vec) {</div>
 <div class="line"><a name="l00067"></a><span class="lineno">   67</span>&#160;        <span class="comment">// set the size</span></div>
 <div class="line"><a name="l00068"></a><span class="lineno">   68</span>&#160;        size = vec.size;</div>
 <div class="line"><a name="l00069"></a><span class="lineno">   69</span>&#160; </div>
@@ -199,7 +199,7 @@ $(document).ready(function(){initNavTree('_c_s_f___vector_8hpp_source.html','');
 <div class="line"><a name="l00100"></a><span class="lineno">  100</span>&#160;    }</div>
 <div class="line"><a name="l00101"></a><span class="lineno">  101</span>&#160; </div>
 <div class="line"><a name="l00102"></a><span class="lineno">  102</span>&#160;    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> T, <span class="keyword">typename</span> indexT, u<span class="keywordtype">int</span>8_t compressionLevel, <span class="keywordtype">bool</span> columnMajor&gt;</div>
-<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;    <a class="code" href="class_c_s_f_1_1_sparse_matrix.html">SparseMatrix&lt;T, indexT, compressionLevel, columnMajor&gt;::Vector::Vector</a>(std::unordered_map&lt;T, std::vector&lt;indexT&gt;&gt;&amp; map, uint32_t vecLength) {</div>
+<div class="line"><a name="l00103"></a><span class="lineno">  103</span>&#160;    <a class="code" href="class_c_s_f_1_1_sparse_matrix_1_1_vector.html#a4df026156780bc0ca651c342b7d6daa4">SparseMatrix&lt;T, indexT, compressionLevel, columnMajor&gt;::Vector::Vector</a>(std::unordered_map&lt;T, std::vector&lt;indexT&gt;&gt;&amp; map, uint32_t vecLength) {</div>
 <div class="line"><a name="l00104"></a><span class="lineno">  104</span>&#160;        <span class="comment">// loop through and get the size to store the data</span></div>
 <div class="line"><a name="l00105"></a><span class="lineno">  105</span>&#160;        size = 0;</div>
 <div class="line"><a name="l00106"></a><span class="lineno">  106</span>&#160;        <span class="keywordflow">if</span> constexpr (compressionLevel == 3) {</div>
@@ -360,94 +360,99 @@ $(document).ready(function(){initNavTree('_c_s_f___vector_8hpp_source.html','');
 <div class="line"><a name="l00261"></a><span class="lineno"><a class="line" href="class_c_s_f_1_1_sparse_matrix_1_1_vector.html#a4b0954a7a2219c9736abadf9e4a33fcd">  261</a></span>&#160;    <span class="keywordtype">size_t</span> <a class="code" href="class_c_s_f_1_1_sparse_matrix_1_1_vector.html#a4b0954a7a2219c9736abadf9e4a33fcd">SparseMatrix&lt;T, indexT, compressionLevel, columnMajor&gt;::Vector::byteSize</a>() { <span class="keywordflow">return</span> size; }</div>
 <div class="line"><a name="l00262"></a><span class="lineno">  262</span>&#160; </div>
 <div class="line"><a name="l00263"></a><span class="lineno">  263</span>&#160;    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> T, <span class="keyword">typename</span> indexT, u<span class="keywordtype">int</span>8_t compressionLevel, <span class="keywordtype">bool</span> columnMajor&gt;</div>
-<div class="line"><a name="l00264"></a><span class="lineno">  264</span>&#160;    <span class="keyword">typename</span> <a class="code" href="class_c_s_f_1_1_sparse_matrix_1_1_vector.html">SparseMatrix&lt;T, indexT, compressionLevel, columnMajor&gt;::Vector</a> <a class="code" href="class_c_s_f_1_1_sparse_matrix.html">SparseMatrix&lt;T, indexT, compressionLevel, columnMajor&gt;::Vector::operator=</a>(<span class="keyword">typename</span> <a class="code" href="class_c_s_f_1_1_sparse_matrix_1_1_vector.html">SparseMatrix&lt;T, indexT, compressionLevel, columnMajor&gt;::Vector</a> &amp;other) {</div>
-<div class="line"><a name="l00265"></a><span class="lineno">  265</span>&#160;        <span class="comment">// check if the vector is the same</span></div>
-<div class="line"><a name="l00266"></a><span class="lineno">  266</span>&#160;        <span class="keywordflow">if</span> (<span class="keyword">this</span> == &amp;other) {</div>
-<div class="line"><a name="l00267"></a><span class="lineno">  267</span>&#160;            <span class="keywordflow">return</span> *<span class="keyword">this</span>;</div>
-<div class="line"><a name="l00268"></a><span class="lineno">  268</span>&#160;        }</div>
-<div class="line"><a name="l00269"></a><span class="lineno">  269</span>&#160; </div>
-<div class="line"><a name="l00270"></a><span class="lineno">  270</span>&#160;        <span class="comment">// free the data if it is not null</span></div>
-<div class="line"><a name="l00271"></a><span class="lineno">  271</span>&#160;        <span class="keywordflow">if</span> (data != <span class="keyword">nullptr</span>) {</div>
-<div class="line"><a name="l00272"></a><span class="lineno">  272</span>&#160;            free(data);</div>
-<div class="line"><a name="l00273"></a><span class="lineno">  273</span>&#160;        }</div>
-<div class="line"><a name="l00274"></a><span class="lineno">  274</span>&#160; </div>
-<div class="line"><a name="l00275"></a><span class="lineno">  275</span>&#160;        <span class="comment">// copy the data</span></div>
-<div class="line"><a name="l00276"></a><span class="lineno">  276</span>&#160;        data = (uint8_t*)malloc(other.size);</div>
-<div class="line"><a name="l00277"></a><span class="lineno">  277</span>&#160;        memcpy(data, other.data, other.size);</div>
-<div class="line"><a name="l00278"></a><span class="lineno">  278</span>&#160; </div>
-<div class="line"><a name="l00279"></a><span class="lineno">  279</span>&#160;        <span class="comment">// set the size</span></div>
-<div class="line"><a name="l00280"></a><span class="lineno">  280</span>&#160;        size = other.size;</div>
+<div class="line"><a name="l00264"></a><span class="lineno"><a class="line" href="class_c_s_f_1_1_sparse_matrix_1_1_vector.html#a102caae409e8c6d7a2b5d24c623ec345">  264</a></span>&#160;    T <a class="code" href="class_c_s_f_1_1_sparse_matrix_1_1_vector.html#a102caae409e8c6d7a2b5d24c623ec345">SparseMatrix&lt;T, indexT, compressionLevel, columnMajor&gt;::Vector::coeff</a>(uint32_t index) { <span class="keywordflow">return</span> (*<span class="keyword">this</span>)[index]; }</div>
+<div class="line"><a name="l00265"></a><span class="lineno">  265</span>&#160; </div>
+<div class="line"><a name="l00266"></a><span class="lineno">  266</span>&#160;    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> T, <span class="keyword">typename</span> indexT, u<span class="keywordtype">int</span>8_t compressionLevel, <span class="keywordtype">bool</span> columnMajor&gt;</div>
+<div class="line"><a name="l00267"></a><span class="lineno">  267</span>&#160;    <span class="keyword">typename</span> <a class="code" href="class_c_s_f_1_1_sparse_matrix_1_1_vector.html">SparseMatrix&lt;T, indexT, compressionLevel, columnMajor&gt;::Vector</a> <a class="code" href="class_c_s_f_1_1_sparse_matrix.html">SparseMatrix&lt;T, indexT, compressionLevel, columnMajor&gt;::Vector::operator=</a>(<span class="keyword">typename</span> <a class="code" href="class_c_s_f_1_1_sparse_matrix_1_1_vector.html">SparseMatrix&lt;T, indexT, compressionLevel, columnMajor&gt;::Vector</a> &amp;other) {</div>
+<div class="line"><a name="l00268"></a><span class="lineno">  268</span>&#160;        <span class="comment">// check if the vector is the same</span></div>
+<div class="line"><a name="l00269"></a><span class="lineno">  269</span>&#160;        <span class="keywordflow">if</span> (<span class="keyword">this</span> == &amp;other) {</div>
+<div class="line"><a name="l00270"></a><span class="lineno">  270</span>&#160;            <span class="keywordflow">return</span> *<span class="keyword">this</span>;</div>
+<div class="line"><a name="l00271"></a><span class="lineno">  271</span>&#160;        }</div>
+<div class="line"><a name="l00272"></a><span class="lineno">  272</span>&#160; </div>
+<div class="line"><a name="l00273"></a><span class="lineno">  273</span>&#160;        <span class="comment">// free the data if it is not null</span></div>
+<div class="line"><a name="l00274"></a><span class="lineno">  274</span>&#160;        <span class="keywordflow">if</span> (data != <span class="keyword">nullptr</span>) {</div>
+<div class="line"><a name="l00275"></a><span class="lineno">  275</span>&#160;            free(data);</div>
+<div class="line"><a name="l00276"></a><span class="lineno">  276</span>&#160;        }</div>
+<div class="line"><a name="l00277"></a><span class="lineno">  277</span>&#160; </div>
+<div class="line"><a name="l00278"></a><span class="lineno">  278</span>&#160;        <span class="comment">// copy the data</span></div>
+<div class="line"><a name="l00279"></a><span class="lineno">  279</span>&#160;        data = (uint8_t*)malloc(other.size);</div>
+<div class="line"><a name="l00280"></a><span class="lineno">  280</span>&#160;        memcpy(data, other.data, other.size);</div>
 <div class="line"><a name="l00281"></a><span class="lineno">  281</span>&#160; </div>
-<div class="line"><a name="l00282"></a><span class="lineno">  282</span>&#160;        <span class="comment">// set the length</span></div>
-<div class="line"><a name="l00283"></a><span class="lineno">  283</span>&#160;        vecLength = other.vecLength;</div>
+<div class="line"><a name="l00282"></a><span class="lineno">  282</span>&#160;        <span class="comment">// set the size</span></div>
+<div class="line"><a name="l00283"></a><span class="lineno">  283</span>&#160;        size = other.size;</div>
 <div class="line"><a name="l00284"></a><span class="lineno">  284</span>&#160; </div>
-<div class="line"><a name="l00285"></a><span class="lineno">  285</span>&#160;        <span class="comment">// set the nnz</span></div>
-<div class="line"><a name="l00286"></a><span class="lineno">  286</span>&#160;        nnz = other.nnz;</div>
+<div class="line"><a name="l00285"></a><span class="lineno">  285</span>&#160;        <span class="comment">// set the length</span></div>
+<div class="line"><a name="l00286"></a><span class="lineno">  286</span>&#160;        vecLength = other.vecLength;</div>
 <div class="line"><a name="l00287"></a><span class="lineno">  287</span>&#160; </div>
-<div class="line"><a name="l00288"></a><span class="lineno">  288</span>&#160;        <span class="comment">// set the end pointer</span></div>
-<div class="line"><a name="l00289"></a><span class="lineno">  289</span>&#160;        endPtr = (uint8_t*)data + size;</div>
+<div class="line"><a name="l00288"></a><span class="lineno">  288</span>&#160;        <span class="comment">// set the nnz</span></div>
+<div class="line"><a name="l00289"></a><span class="lineno">  289</span>&#160;        nnz = other.nnz;</div>
 <div class="line"><a name="l00290"></a><span class="lineno">  290</span>&#160; </div>
-<div class="line"><a name="l00291"></a><span class="lineno">  291</span>&#160;        <span class="comment">// return this</span></div>
-<div class="line"><a name="l00292"></a><span class="lineno">  292</span>&#160;        <span class="keywordflow">return</span> *<span class="keyword">this</span>;</div>
-<div class="line"><a name="l00293"></a><span class="lineno">  293</span>&#160;    }</div>
-<div class="line"><a name="l00294"></a><span class="lineno">  294</span>&#160; </div>
-<div class="line"><a name="l00295"></a><span class="lineno">  295</span>&#160;    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> T, <span class="keyword">typename</span> indexT, u<span class="keywordtype">int</span>8_t compressionLevel, <span class="keywordtype">bool</span> columnMajor&gt;</div>
-<div class="line"><a name="l00296"></a><span class="lineno">  296</span>&#160;    T SparseMatrix&lt;T, indexT, compressionLevel, columnMajor&gt;::Vector::operator[](uint32_t index) {</div>
-<div class="line"><a name="l00297"></a><span class="lineno">  297</span>&#160;        </div>
-<div class="line"><a name="l00298"></a><span class="lineno">  298</span>&#160;<span class="preprocessor">        #ifdef CSF_DEBUG</span></div>
-<div class="line"><a name="l00299"></a><span class="lineno">  299</span>&#160;            <span class="comment">// check if the index is out of bounds</span></div>
-<div class="line"><a name="l00300"></a><span class="lineno">  300</span>&#160;            assert(index &lt; vecLength &amp;&amp; <span class="stringliteral">&quot;The index is out of bounds&quot;</span>);</div>
-<div class="line"><a name="l00301"></a><span class="lineno">  301</span>&#160;<span class="preprocessor">        #endif</span></div>
-<div class="line"><a name="l00302"></a><span class="lineno">  302</span>&#160; </div>
-<div class="line"><a name="l00303"></a><span class="lineno">  303</span>&#160;        <span class="comment">// make an iterator for the vector</span></div>
-<div class="line"><a name="l00304"></a><span class="lineno">  304</span>&#160;        <a class="code" href="class_c_s_f_1_1_sparse_matrix_1_1_inner_iterator.html">CSF::SparseMatrix&lt;T, indexT, compressionLevel, columnMajor&gt;::InnerIterator</a> it(*<span class="keyword">this</span>);</div>
+<div class="line"><a name="l00291"></a><span class="lineno">  291</span>&#160;        <span class="comment">// set the end pointer</span></div>
+<div class="line"><a name="l00292"></a><span class="lineno">  292</span>&#160;        endPtr = (uint8_t*)data + size;</div>
+<div class="line"><a name="l00293"></a><span class="lineno">  293</span>&#160; </div>
+<div class="line"><a name="l00294"></a><span class="lineno">  294</span>&#160;        <span class="comment">// return this</span></div>
+<div class="line"><a name="l00295"></a><span class="lineno">  295</span>&#160;        <span class="keywordflow">return</span> *<span class="keyword">this</span>;</div>
+<div class="line"><a name="l00296"></a><span class="lineno">  296</span>&#160;    }</div>
+<div class="line"><a name="l00297"></a><span class="lineno">  297</span>&#160; </div>
+<div class="line"><a name="l00298"></a><span class="lineno">  298</span>&#160;    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> T, <span class="keyword">typename</span> indexT, u<span class="keywordtype">int</span>8_t compressionLevel, <span class="keywordtype">bool</span> columnMajor&gt;</div>
+<div class="line"><a name="l00299"></a><span class="lineno">  299</span>&#160;    T SparseMatrix&lt;T, indexT, compressionLevel, columnMajor&gt;::Vector::operator[](uint32_t index) {</div>
+<div class="line"><a name="l00300"></a><span class="lineno">  300</span>&#160;        </div>
+<div class="line"><a name="l00301"></a><span class="lineno">  301</span>&#160;<span class="preprocessor">        #ifdef CSF_DEBUG</span></div>
+<div class="line"><a name="l00302"></a><span class="lineno">  302</span>&#160;            <span class="comment">// check if the index is out of bounds</span></div>
+<div class="line"><a name="l00303"></a><span class="lineno">  303</span>&#160;            assert(index &lt; vecLength &amp;&amp; <span class="stringliteral">&quot;The index is out of bounds&quot;</span>);</div>
+<div class="line"><a name="l00304"></a><span class="lineno">  304</span>&#160;<span class="preprocessor">        #endif</span></div>
 <div class="line"><a name="l00305"></a><span class="lineno">  305</span>&#160; </div>
-<div class="line"><a name="l00306"></a><span class="lineno">  306</span>&#160;        <span class="comment">// iterate through the vector until the index is found</span></div>
-<div class="line"><a name="l00307"></a><span class="lineno">  307</span>&#160;        <span class="keywordflow">while</span> (it) {</div>
-<div class="line"><a name="l00308"></a><span class="lineno">  308</span>&#160;            <span class="keywordflow">if</span> (it.index() == index) {</div>
-<div class="line"><a name="l00309"></a><span class="lineno">  309</span>&#160;                <span class="keywordflow">return</span> it.value();</div>
-<div class="line"><a name="l00310"></a><span class="lineno">  310</span>&#160;            }</div>
-<div class="line"><a name="l00311"></a><span class="lineno">  311</span>&#160;            ++it;</div>
-<div class="line"><a name="l00312"></a><span class="lineno">  312</span>&#160;        }</div>
-<div class="line"><a name="l00313"></a><span class="lineno">  313</span>&#160; </div>
-<div class="line"><a name="l00314"></a><span class="lineno">  314</span>&#160;        <span class="comment">// if the index is not found then return 0</span></div>
-<div class="line"><a name="l00315"></a><span class="lineno">  315</span>&#160;        <span class="keywordflow">return</span> 0;</div>
-<div class="line"><a name="l00316"></a><span class="lineno">  316</span>&#160;    }</div>
-<div class="line"><a name="l00317"></a><span class="lineno">  317</span>&#160; </div>
-<div class="line"><a name="l00318"></a><span class="lineno">  318</span>&#160;    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> T, <span class="keyword">typename</span> indexT, u<span class="keywordtype">int</span>8_t compressionLevel, <span class="keywordtype">bool</span> columnMajor&gt;</div>
-<div class="line"><a name="l00319"></a><span class="lineno"><a class="line" href="class_c_s_f_1_1_sparse_matrix_1_1_vector.html#a321f3f9887e0158c367d366f6d6f6052">  319</a></span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_c_s_f_1_1_sparse_matrix_1_1_vector.html#a321f3f9887e0158c367d366f6d6f6052">SparseMatrix&lt;T, indexT, compressionLevel, columnMajor&gt;::Vector::write</a>(<span class="keyword">const</span> <span class="keywordtype">char</span>* filename) {</div>
-<div class="line"><a name="l00320"></a><span class="lineno">  320</span>&#160;        <span class="comment">// open the file</span></div>
-<div class="line"><a name="l00321"></a><span class="lineno">  321</span>&#160;        FILE* fp = fopen(filename, <span class="stringliteral">&quot;wb&quot;</span>);</div>
-<div class="line"><a name="l00322"></a><span class="lineno">  322</span>&#160; </div>
-<div class="line"><a name="l00323"></a><span class="lineno">  323</span>&#160;        <span class="comment">// write the data</span></div>
-<div class="line"><a name="l00324"></a><span class="lineno">  324</span>&#160;        fwrite(data, size, 1, fp);</div>
+<div class="line"><a name="l00306"></a><span class="lineno">  306</span>&#160;        <span class="comment">// make an iterator for the vector</span></div>
+<div class="line"><a name="l00307"></a><span class="lineno">  307</span>&#160;        <a class="code" href="class_c_s_f_1_1_sparse_matrix_1_1_inner_iterator.html">CSF::SparseMatrix&lt;T, indexT, compressionLevel, columnMajor&gt;::InnerIterator</a> it(*<span class="keyword">this</span>);</div>
+<div class="line"><a name="l00308"></a><span class="lineno">  308</span>&#160; </div>
+<div class="line"><a name="l00309"></a><span class="lineno">  309</span>&#160;        <span class="comment">// iterate through the vector until the index is found</span></div>
+<div class="line"><a name="l00310"></a><span class="lineno">  310</span>&#160;        <span class="keywordflow">while</span> (it) {</div>
+<div class="line"><a name="l00311"></a><span class="lineno">  311</span>&#160;            <span class="keywordflow">if</span> (it.getIndex() == index) {</div>
+<div class="line"><a name="l00312"></a><span class="lineno">  312</span>&#160;                <span class="keywordflow">return</span> it.value();</div>
+<div class="line"><a name="l00313"></a><span class="lineno">  313</span>&#160;            }</div>
+<div class="line"><a name="l00314"></a><span class="lineno">  314</span>&#160;            ++it;</div>
+<div class="line"><a name="l00315"></a><span class="lineno">  315</span>&#160;        }</div>
+<div class="line"><a name="l00316"></a><span class="lineno">  316</span>&#160; </div>
+<div class="line"><a name="l00317"></a><span class="lineno">  317</span>&#160;        <span class="comment">// if the index is not found then return 0</span></div>
+<div class="line"><a name="l00318"></a><span class="lineno">  318</span>&#160;        <span class="keywordflow">return</span> 0;</div>
+<div class="line"><a name="l00319"></a><span class="lineno">  319</span>&#160;    }</div>
+<div class="line"><a name="l00320"></a><span class="lineno">  320</span>&#160; </div>
+<div class="line"><a name="l00321"></a><span class="lineno">  321</span>&#160;    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> T, <span class="keyword">typename</span> indexT, u<span class="keywordtype">int</span>8_t compressionLevel, <span class="keywordtype">bool</span> columnMajor&gt;</div>
+<div class="line"><a name="l00322"></a><span class="lineno"><a class="line" href="class_c_s_f_1_1_sparse_matrix_1_1_vector.html#a321f3f9887e0158c367d366f6d6f6052">  322</a></span>&#160;    <span class="keywordtype">void</span> <a class="code" href="class_c_s_f_1_1_sparse_matrix_1_1_vector.html#a321f3f9887e0158c367d366f6d6f6052">SparseMatrix&lt;T, indexT, compressionLevel, columnMajor&gt;::Vector::write</a>(<span class="keyword">const</span> <span class="keywordtype">char</span>* filename) {</div>
+<div class="line"><a name="l00323"></a><span class="lineno">  323</span>&#160;        <span class="comment">// open the file</span></div>
+<div class="line"><a name="l00324"></a><span class="lineno">  324</span>&#160;        FILE* fp = fopen(filename, <span class="stringliteral">&quot;wb&quot;</span>);</div>
 <div class="line"><a name="l00325"></a><span class="lineno">  325</span>&#160; </div>
-<div class="line"><a name="l00326"></a><span class="lineno">  326</span>&#160;        <span class="comment">// close the file</span></div>
-<div class="line"><a name="l00327"></a><span class="lineno">  327</span>&#160;        fclose(fp);</div>
-<div class="line"><a name="l00328"></a><span class="lineno">  328</span>&#160;    }</div>
-<div class="line"><a name="l00329"></a><span class="lineno">  329</span>&#160; </div>
-<div class="line"><a name="l00330"></a><span class="lineno">  330</span>&#160;}</div>
-<div class="ttc" id="aclass_c_s_f_1_1_sparse_matrix_1_1_inner_iterator_html"><div class="ttname"><a href="class_c_s_f_1_1_sparse_matrix_1_1_inner_iterator.html">CSF::SparseMatrix::InnerIterator</a></div><div class="ttdoc">An iterator over the inner dimension of a CSF matrix.</div><div class="ttdef"><b>Definition:</b> CSF_SparseMatrix.hpp:498</div></div>
-<div class="ttc" id="aclass_c_s_f_1_1_sparse_matrix_1_1_vector_html"><div class="ttname"><a href="class_c_s_f_1_1_sparse_matrix_1_1_vector.html">CSF::SparseMatrix::Vector</a></div><div class="ttdoc">A class to represent a vector in a CSF matrix.</div><div class="ttdef"><b>Definition:</b> CSF_SparseMatrix.hpp:693</div></div>
-<div class="ttc" id="aclass_c_s_f_1_1_sparse_matrix_1_1_vector_html_a321f3f9887e0158c367d366f6d6f6052"><div class="ttname"><a href="class_c_s_f_1_1_sparse_matrix_1_1_vector.html#a321f3f9887e0158c367d366f6d6f6052">CSF::SparseMatrix::Vector::write</a></div><div class="ttdeci">void write(const char *filename)</div><div class="ttdoc">Write the vector to a file.</div><div class="ttdef"><b>Definition:</b> CSF_Vector.hpp:319</div></div>
+<div class="line"><a name="l00326"></a><span class="lineno">  326</span>&#160;        <span class="comment">// write the data</span></div>
+<div class="line"><a name="l00327"></a><span class="lineno">  327</span>&#160;        fwrite(data, size, 1, fp);</div>
+<div class="line"><a name="l00328"></a><span class="lineno">  328</span>&#160; </div>
+<div class="line"><a name="l00329"></a><span class="lineno">  329</span>&#160;        <span class="comment">// close the file</span></div>
+<div class="line"><a name="l00330"></a><span class="lineno">  330</span>&#160;        fclose(fp);</div>
+<div class="line"><a name="l00331"></a><span class="lineno">  331</span>&#160;    }</div>
+<div class="line"><a name="l00332"></a><span class="lineno">  332</span>&#160; </div>
+<div class="line"><a name="l00333"></a><span class="lineno">  333</span>&#160;}</div>
+<div class="ttc" id="aclass_c_s_f_1_1_sparse_matrix_1_1_inner_iterator_html"><div class="ttname"><a href="class_c_s_f_1_1_sparse_matrix_1_1_inner_iterator.html">CSF::SparseMatrix::InnerIterator</a></div><div class="ttdoc">An iterator over the inner dimension of a CSF matrix.</div><div class="ttdef"><b>Definition:</b> CSF_SparseMatrix.hpp:667</div></div>
+<div class="ttc" id="aclass_c_s_f_1_1_sparse_matrix_1_1_vector_html"><div class="ttname"><a href="class_c_s_f_1_1_sparse_matrix_1_1_vector.html">CSF::SparseMatrix::Vector</a></div><div class="ttdoc">A class to represent a vector in a CSF matrix.</div><div class="ttdef"><b>Definition:</b> CSF_SparseMatrix.hpp:907</div></div>
+<div class="ttc" id="aclass_c_s_f_1_1_sparse_matrix_1_1_vector_html_a102caae409e8c6d7a2b5d24c623ec345"><div class="ttname"><a href="class_c_s_f_1_1_sparse_matrix_1_1_vector.html#a102caae409e8c6d7a2b5d24c623ec345">CSF::SparseMatrix::Vector::coeff</a></div><div class="ttdeci">T coeff(uint32_t index)</div><div class="ttdoc">Get the value at index.</div><div class="ttdef"><b>Definition:</b> CSF_Vector.hpp:264</div></div>
+<div class="ttc" id="aclass_c_s_f_1_1_sparse_matrix_1_1_vector_html_a321f3f9887e0158c367d366f6d6f6052"><div class="ttname"><a href="class_c_s_f_1_1_sparse_matrix_1_1_vector.html#a321f3f9887e0158c367d366f6d6f6052">CSF::SparseMatrix::Vector::write</a></div><div class="ttdeci">void write(const char *filename)</div><div class="ttdoc">Write the vector to a file.</div><div class="ttdef"><b>Definition:</b> CSF_Vector.hpp:322</div></div>
 <div class="ttc" id="aclass_c_s_f_1_1_sparse_matrix_1_1_vector_html_a434e2c5b551989943b9587bd769a8915"><div class="ttname"><a href="class_c_s_f_1_1_sparse_matrix_1_1_vector.html#a434e2c5b551989943b9587bd769a8915">CSF::SparseMatrix::Vector::end</a></div><div class="ttdeci">void * end()</div><div class="ttdoc">Get a pointer to the end of the vector.</div><div class="ttdef"><b>Definition:</b> CSF_Vector.hpp:258</div></div>
 <div class="ttc" id="aclass_c_s_f_1_1_sparse_matrix_1_1_vector_html_a4b0954a7a2219c9736abadf9e4a33fcd"><div class="ttname"><a href="class_c_s_f_1_1_sparse_matrix_1_1_vector.html#a4b0954a7a2219c9736abadf9e4a33fcd">CSF::SparseMatrix::Vector::byteSize</a></div><div class="ttdeci">size_t byteSize()</div><div class="ttdoc">Get the size of the vector in bytes.</div><div class="ttdef"><b>Definition:</b> CSF_Vector.hpp:261</div></div>
+<div class="ttc" id="aclass_c_s_f_1_1_sparse_matrix_1_1_vector_html_a4df026156780bc0ca651c342b7d6daa4"><div class="ttname"><a href="class_c_s_f_1_1_sparse_matrix_1_1_vector.html#a4df026156780bc0ca651c342b7d6daa4">CSF::SparseMatrix::Vector::Vector</a></div><div class="ttdeci">Vector()</div><div class="ttdoc">Construct a new empty Vector object.</div><div class="ttdef"><b>Definition:</b> CSF_Vector.hpp:6</div></div>
 <div class="ttc" id="aclass_c_s_f_1_1_sparse_matrix_1_1_vector_html_a5e68ebf6592e961db82968f867e6396b"><div class="ttname"><a href="class_c_s_f_1_1_sparse_matrix_1_1_vector.html#a5e68ebf6592e961db82968f867e6396b">CSF::SparseMatrix::Vector::nonZeros</a></div><div class="ttdeci">uint32_t nonZeros()</div><div class="ttdoc">Get the number of non-zero values in the vector.</div><div class="ttdef"><b>Definition:</b> CSF_Vector.hpp:252</div></div>
 <div class="ttc" id="aclass_c_s_f_1_1_sparse_matrix_1_1_vector_html_a7526930119694d168f40105024cfe8ae"><div class="ttname"><a href="class_c_s_f_1_1_sparse_matrix_1_1_vector.html#a7526930119694d168f40105024cfe8ae">CSF::SparseMatrix::Vector::begin</a></div><div class="ttdeci">void * begin()</div><div class="ttdoc">Get a pointer to the beginning of the vector.</div><div class="ttdef"><b>Definition:</b> CSF_Vector.hpp:255</div></div>
 <div class="ttc" id="aclass_c_s_f_1_1_sparse_matrix_1_1_vector_html_a806aeceaf455d617d967eb81216e0475"><div class="ttname"><a href="class_c_s_f_1_1_sparse_matrix_1_1_vector.html#a806aeceaf455d617d967eb81216e0475">CSF::SparseMatrix::Vector::outerSize</a></div><div class="ttdeci">uint32_t outerSize()</div><div class="ttdoc">Get the outer dimension of the CSF matrix.</div><div class="ttdef"><b>Definition:</b> CSF_Vector.hpp:249</div></div>
 <div class="ttc" id="aclass_c_s_f_1_1_sparse_matrix_1_1_vector_html_a9163b80abb5197aaefb9ea6d321dea07"><div class="ttname"><a href="class_c_s_f_1_1_sparse_matrix_1_1_vector.html#a9163b80abb5197aaefb9ea6d321dea07">CSF::SparseMatrix::Vector::length</a></div><div class="ttdeci">uint32_t length()</div><div class="ttdoc">Get the length of the vector.</div><div class="ttdef"><b>Definition:</b> CSF_Vector.hpp:246</div></div>
 <div class="ttc" id="aclass_c_s_f_1_1_sparse_matrix_html"><div class="ttname"><a href="class_c_s_f_1_1_sparse_matrix.html">CSF::SparseMatrix</a></div><div class="ttdoc">A class to represent a sparse matrix compressed in the CSF format.</div><div class="ttdef"><b>Definition:</b> CSF_SparseMatrix.hpp:24</div></div>
-<div class="ttc" id="aclass_c_s_f_1_1_sparse_matrix_html_a3b2fcf14c112c345c871e5c0372db1fa"><div class="ttname"><a href="class_c_s_f_1_1_sparse_matrix.html#a3b2fcf14c112c345c871e5c0372db1fa">CSF::SparseMatrix::innerSize</a></div><div class="ttdeci">uint32_t innerSize() const</div><div class="ttdoc">Get the size of the inner dimension of the CSF matrix.</div><div class="ttdef"><b>Definition:</b> CSF_Methods.hpp:301</div></div>
-<div class="ttc" id="aclass_c_s_f_1_1_sparse_matrix_html_a5260d5302f25d2cb5a0806841464e58a"><div class="ttname"><a href="class_c_s_f_1_1_sparse_matrix.html#a5260d5302f25d2cb5a0806841464e58a">CSF::SparseMatrix::getVecSize</a></div><div class="ttdeci">size_t getVecSize(uint32_t vec) const</div><div class="ttdoc">Get the size of a vector in the CSF matrix.</div><div class="ttdef"><b>Definition:</b> CSF_Methods.hpp:298</div></div>
-<div class="ttc" id="aclass_c_s_f_1_1_sparse_matrix_html_a9f892f9ffa23a41fce45c2a7cef88947"><div class="ttname"><a href="class_c_s_f_1_1_sparse_matrix.html#a9f892f9ffa23a41fce45c2a7cef88947">CSF::SparseMatrix::getVecPointer</a></div><div class="ttdeci">void * getVecPointer(uint32_t vec) const</div><div class="ttdoc">Get a pointer to a specific vector in the CSF matrix.</div><div class="ttdef"><b>Definition:</b> CSF_Methods.hpp:295</div></div>
-<div class="ttc" id="aclass_c_s_f_1_1_sparse_matrix_html_ae7b7291843ceac76c91fdbc599ab962b"><div class="ttname"><a href="class_c_s_f_1_1_sparse_matrix.html#ae7b7291843ceac76c91fdbc599ab962b">CSF::SparseMatrix::outerSize</a></div><div class="ttdeci">uint32_t outerSize() const</div><div class="ttdoc">Get the size of the outer dimension of the CSF matrix.</div><div class="ttdef"><b>Definition:</b> CSF_Methods.hpp:304</div></div>
+<div class="ttc" id="aclass_c_s_f_1_1_sparse_matrix_html_a3b2fcf14c112c345c871e5c0372db1fa"><div class="ttname"><a href="class_c_s_f_1_1_sparse_matrix.html#a3b2fcf14c112c345c871e5c0372db1fa">CSF::SparseMatrix::innerSize</a></div><div class="ttdeci">uint32_t innerSize() const</div><div class="ttdoc">Get the size of the inner dimension of the CSF matrix.</div><div class="ttdef"><b>Definition:</b> CSF_Methods.hpp:304</div></div>
+<div class="ttc" id="aclass_c_s_f_1_1_sparse_matrix_html_a5260d5302f25d2cb5a0806841464e58a"><div class="ttname"><a href="class_c_s_f_1_1_sparse_matrix.html#a5260d5302f25d2cb5a0806841464e58a">CSF::SparseMatrix::getVecSize</a></div><div class="ttdeci">size_t getVecSize(uint32_t vec) const</div><div class="ttdoc">Get the size of a vector in the CSF matrix.</div><div class="ttdef"><b>Definition:</b> CSF_Methods.hpp:301</div></div>
+<div class="ttc" id="aclass_c_s_f_1_1_sparse_matrix_html_a9f892f9ffa23a41fce45c2a7cef88947"><div class="ttname"><a href="class_c_s_f_1_1_sparse_matrix.html#a9f892f9ffa23a41fce45c2a7cef88947">CSF::SparseMatrix::getVecPointer</a></div><div class="ttdeci">void * getVecPointer(uint32_t vec) const</div><div class="ttdoc">Get a pointer to a specific vector in the CSF matrix.</div><div class="ttdef"><b>Definition:</b> CSF_Methods.hpp:298</div></div>
+<div class="ttc" id="aclass_c_s_f_1_1_sparse_matrix_html_ae7b7291843ceac76c91fdbc599ab962b"><div class="ttname"><a href="class_c_s_f_1_1_sparse_matrix.html#ae7b7291843ceac76c91fdbc599ab962b">CSF::SparseMatrix::outerSize</a></div><div class="ttdeci">uint32_t outerSize() const</div><div class="ttdoc">Get the size of the outer dimension of the CSF matrix.</div><div class="ttdef"><b>Definition:</b> CSF_Methods.hpp:307</div></div>
 </div><!-- fragment --></div><!-- contents -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_3c671e51c8fe89719da214d61af0c6d0.html">CSF</a></li><li class="navelem"><a class="el" href="dir_9fab0f9dccaa0425b309ca2b4a67f494.html">src</a></li><li class="navelem"><b>CSF_Vector.hpp</b></li>
-    <li class="footer">Generated on Tue Jun 6 2023 12:13:05 for CSF Matrix by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
+    <li class="footer">Generated on Fri Jun 9 2023 10:25:50 for CSF Matrix by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
   </ul>
 </div>
 </body>

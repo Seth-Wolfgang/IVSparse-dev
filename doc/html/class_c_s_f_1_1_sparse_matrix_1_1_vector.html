@@ -103,8 +103,7 @@ $(document).ready(function(){initNavTree('class_c_s_f_1_1_sparse_matrix_1_1_vect
 <table class="memberdecls">
 <tr class="heading"><td colspan="2"><h2 class="groupheader"><a name="pub-methods"></a>
 Public Member Functions</h2></td></tr>
-<tr class="memitem:a102caae409e8c6d7a2b5d24c623ec345"><td class="memItemLeft" align="right" valign="top"><a id="a102caae409e8c6d7a2b5d24c623ec345"></a>
-T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_c_s_f_1_1_sparse_matrix_1_1_vector.html#a102caae409e8c6d7a2b5d24c623ec345">coeff</a> (uint32_t index)</td></tr>
+<tr class="memitem:a102caae409e8c6d7a2b5d24c623ec345"><td class="memItemLeft" align="right" valign="top">T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_c_s_f_1_1_sparse_matrix_1_1_vector.html#a102caae409e8c6d7a2b5d24c623ec345">coeff</a> (uint32_t index)</td></tr>
 <tr class="separator:a102caae409e8c6d7a2b5d24c623ec345"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a7526930119694d168f40105024cfe8ae"><td class="memItemLeft" align="right" valign="top">void *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_c_s_f_1_1_sparse_matrix_1_1_vector.html#a7526930119694d168f40105024cfe8ae">begin</a> ()</td></tr>
 <tr class="separator:a7526930119694d168f40105024cfe8ae"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -121,6 +120,9 @@ T&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_c
 <tr class="memitem:a321f3f9887e0158c367d366f6d6f6052"><td class="memItemLeft" align="right" valign="top">void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_c_s_f_1_1_sparse_matrix_1_1_vector.html#a321f3f9887e0158c367d366f6d6f6052">write</a> (const char *filename)</td></tr>
 <tr class="separator:a321f3f9887e0158c367d366f6d6f6052"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr><td colspan="2"><div class="groupHeader">Constructors</div></td></tr>
+<tr class="memitem:a4df026156780bc0ca651c342b7d6daa4"><td class="memItemLeft" align="right" valign="top"><a id="a4df026156780bc0ca651c342b7d6daa4"></a>
+&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_c_s_f_1_1_sparse_matrix_1_1_vector.html#a4df026156780bc0ca651c342b7d6daa4">Vector</a> ()</td></tr>
+<tr class="separator:a4df026156780bc0ca651c342b7d6daa4"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a0522d4dbd680f7418f99dd379aa32b14"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_c_s_f_1_1_sparse_matrix_1_1_vector.html#a0522d4dbd680f7418f99dd379aa32b14">Vector</a> (<a class="el" href="class_c_s_f_1_1_sparse_matrix.html">CSF::SparseMatrix</a>&lt; T, indexT, compressionLevel, columnMajor &gt; &amp;mat, uint32_t vec)</td></tr>
 <tr class="separator:a0522d4dbd680f7418f99dd379aa32b14"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:ae77e51c23afaf5ac17fc37a791b42427"><td class="memItemLeft" align="right" valign="top">&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_c_s_f_1_1_sparse_matrix_1_1_vector.html#ae77e51c23afaf5ac17fc37a791b42427">Vector</a> (<a class="el" href="class_c_s_f_1_1_sparse_matrix.html">CSF::SparseMatrix</a>&lt; T, indexT, compressionLevel, columnMajor &gt;::<a class="el" href="class_c_s_f_1_1_sparse_matrix_1_1_vector.html">Vector</a> &amp;vec)</td></tr>
@@ -205,6 +207,33 @@ class CSF::SparseMatrix&lt; T, indexT, compressionLevel, columnMajor &gt;::Vecto
 </div>
 </div>
 <h2 class="groupheader">Member Function Documentation</h2>
+<a id="a102caae409e8c6d7a2b5d24c623ec345"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a102caae409e8c6d7a2b5d24c623ec345">&#9670;&nbsp;</a></span>coeff()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">T coeff </td>
+          <td>(</td>
+          <td class="paramtype">uint32_t&#160;</td>
+          <td class="paramname"><em>index</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get the value at index. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">index</td><td>The index of the value to get </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>T The value at index </dd></dl>
+
+</div>
+</div>
 <a id="a7526930119694d168f40105024cfe8ae"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a7526930119694d168f40105024cfe8ae">&#9670;&nbsp;</a></span>begin()</h2>
 
@@ -339,7 +368,7 @@ class CSF::SparseMatrix&lt; T, indexT, compressionLevel, columnMajor &gt;::Vecto
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><b>CSF</b></li><li class="navelem"><a class="el" href="class_c_s_f_1_1_sparse_matrix.html">SparseMatrix</a></li><li class="navelem"><a class="el" href="class_c_s_f_1_1_sparse_matrix_1_1_vector.html">Vector</a></li>
-    <li class="footer">Generated on Tue Jun 6 2023 12:13:05 for CSF Matrix by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
+    <li class="footer">Generated on Fri Jun 9 2023 10:25:50 for CSF Matrix by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
   </ul>
 </div>
 </body>

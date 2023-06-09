@@ -105,7 +105,7 @@ $(document).ready(function(){initNavTree('_c_s_f___b_l_a_s_8hpp_source.html','')
 <div class="line"><a name="l00006"></a><span class="lineno">    6</span>&#160;    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> T, <span class="keyword">typename</span> indexT, u<span class="keywordtype">int</span>8_t compressionLevel, <span class="keywordtype">bool</span> columnMajor&gt;</div>
 <div class="line"><a name="l00007"></a><span class="lineno">    7</span>&#160;    <a class="code" href="class_c_s_f_1_1_sparse_matrix.html">CSF::SparseMatrix&lt;T, indexT, compressionLevel, columnMajor&gt;</a> SparseMatrix&lt;T, indexT, compressionLevel, columnMajor&gt;::operator*(T scalar)<span class="keyword"> const </span>{</div>
 <div class="line"><a name="l00008"></a><span class="lineno">    8</span>&#160; </div>
-<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;        <span class="comment">// make a copy of the matrix</span></div>
+<div class="line"><a name="l00009"></a><span class="lineno">    9</span>&#160;        <span class="comment">// make a copy of this</span></div>
 <div class="line"><a name="l00010"></a><span class="lineno">   10</span>&#160;        <a class="code" href="class_c_s_f_1_1_sparse_matrix.html">CSF::SparseMatrix&lt;T, indexT, compressionLevel, columnMajor&gt;</a> newMatrix(*<span class="keyword">this</span>);</div>
 <div class="line"><a name="l00011"></a><span class="lineno">   11</span>&#160; </div>
 <div class="line"><a name="l00012"></a><span class="lineno">   12</span>&#160;        <span class="comment">// #pragma omp parallel for schedule(dynamic)</span></div>
@@ -169,10 +169,10 @@ $(document).ready(function(){initNavTree('_c_s_f___b_l_a_s_8hpp_source.html','')
 <div class="line"><a name="l00071"></a><span class="lineno">   71</span>&#160;    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> T, <span class="keyword">typename</span> indexT, u<span class="keywordtype">int</span>8_t compressionLevel, <span class="keywordtype">bool</span> columnMajor&gt;</div>
 <div class="line"><a name="l00072"></a><span class="lineno">   72</span>&#160;    <span class="keyword">inline</span> Eigen::Matrix&lt;T, -1, 1&gt; SparseMatrix&lt;T, indexT, compressionLevel, columnMajor&gt;::vectorMultiply(<span class="keyword">typename</span> SparseMatrix&lt;T, indexT, compressionLevel, columnMajor&gt;::Vector&amp; vec) {</div>
 <div class="line"><a name="l00073"></a><span class="lineno">   73</span>&#160;        <span class="comment">// check that the vector is the correct size</span></div>
-<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;<span class="preprocessor">#ifdef CSF_DEBUG</span></div>
+<div class="line"><a name="l00074"></a><span class="lineno">   74</span>&#160;<span class="preprocessor">        #ifdef CSF_DEBUG</span></div>
 <div class="line"><a name="l00075"></a><span class="lineno">   75</span>&#160;        <span class="keywordflow">if</span> (vec.length() != outerDim)</div>
 <div class="line"><a name="l00076"></a><span class="lineno">   76</span>&#160;            <span class="keywordflow">throw</span> std::invalid_argument(<span class="stringliteral">&quot;The vector must be the same size as the number of columns in the matrix!&quot;</span>);</div>
-<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00077"></a><span class="lineno">   77</span>&#160;<span class="preprocessor">        #endif</span></div>
 <div class="line"><a name="l00078"></a><span class="lineno">   78</span>&#160; </div>
 <div class="line"><a name="l00079"></a><span class="lineno">   79</span>&#160;        Eigen::Matrix&lt;T, -1, 1&gt; newVector = Eigen::Matrix&lt;T, -1, 1&gt;::Zero(innerDim, 1);</div>
 <div class="line"><a name="l00080"></a><span class="lineno">   80</span>&#160; </div>
@@ -214,10 +214,10 @@ $(document).ready(function(){initNavTree('_c_s_f___b_l_a_s_8hpp_source.html','')
 <div class="line"><a name="l00116"></a><span class="lineno">  116</span>&#160;    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> T, <span class="keyword">typename</span> indexT, u<span class="keywordtype">int</span>8_t compressionLevel, <span class="keywordtype">bool</span> columnMajor&gt;</div>
 <div class="line"><a name="l00117"></a><span class="lineno">  117</span>&#160;    <span class="keyword">inline</span> Eigen::Matrix&lt;T, -1, -1&gt; SparseMatrix&lt;T, indexT, compressionLevel, columnMajor&gt;::matrixMultiply(Eigen::Matrix&lt;T, -1, -1&gt;&amp; mat) {</div>
 <div class="line"><a name="l00118"></a><span class="lineno">  118</span>&#160;        <span class="comment">// check that the matrix is the correct size</span></div>
-<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;<span class="preprocessor">#ifdef CSF_DEBUG</span></div>
+<div class="line"><a name="l00119"></a><span class="lineno">  119</span>&#160;<span class="preprocessor">        #ifdef CSF_DEBUG</span></div>
 <div class="line"><a name="l00120"></a><span class="lineno">  120</span>&#160;        <span class="keywordflow">if</span> (mat.rows() != outerDim)</div>
 <div class="line"><a name="l00121"></a><span class="lineno">  121</span>&#160;            <span class="keywordflow">throw</span> std::invalid_argument(<span class="stringliteral">&quot;The matrix must be the same size as the number of columns in the matrix!&quot;</span>);</div>
-<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;<span class="preprocessor">#endif</span></div>
+<div class="line"><a name="l00122"></a><span class="lineno">  122</span>&#160;<span class="preprocessor">        #endif</span></div>
 <div class="line"><a name="l00123"></a><span class="lineno">  123</span>&#160; </div>
 <div class="line"><a name="l00124"></a><span class="lineno">  124</span>&#160;        Eigen::Matrix&lt;T, -1, -1&gt; newMatrix = Eigen::Matrix&lt;T, -1, -1&gt;::Zero(innerDim, mat.cols());</div>
 <div class="line"><a name="l00125"></a><span class="lineno">  125</span>&#160; </div>
@@ -239,7 +239,7 @@ $(document).ready(function(){initNavTree('_c_s_f___b_l_a_s_8hpp_source.html','')
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_3c671e51c8fe89719da214d61af0c6d0.html">CSF</a></li><li class="navelem"><a class="el" href="dir_9fab0f9dccaa0425b309ca2b4a67f494.html">src</a></li><li class="navelem"><b>CSF_BLAS.hpp</b></li>
-    <li class="footer">Generated on Tue Jun 6 2023 12:13:05 for CSF Matrix by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
+    <li class="footer">Generated on Fri Jun 9 2023 10:25:50 for CSF Matrix by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
   </ul>
 </div>
 </body>
