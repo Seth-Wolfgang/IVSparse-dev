@@ -456,7 +456,27 @@ namespace CSF {
     template <typename T, typename indexT, bool columnMajor>
     void SparseMatrix<T, indexT, 1, columnMajor>::print()
     {
+        // if larger than 100 rows or cols don't print
+        if (numRows > 100 || numCols > 100)
+        {
+            std::cout << "Matrix is too large to print" << std::endl;
+            return;
+        }
 
+        std::cout << std::endl;
+        std::cout << "Matrix: " << numRows << "x" << numCols << std::endl;
+
+        // print the matrix
+        for (indexT i = 0; i < numRows; i++)
+        {
+            for (indexT j = 0; j < numCols; j++)
+            {
+                std::cout << (*this)(i, j) << " ";
+            }
+            std::cout << std::endl;
+        }
+
+        std::cout << std::endl;
     }
 
     template <typename T, typename indexT, bool columnMajor>
@@ -508,6 +528,16 @@ namespace CSF {
     template <typename T, typename indexT, bool columnMajor>
     T SparseMatrix<T, indexT, 1, columnMajor>::coeff(uint32_t row, uint32_t col) {
         return (*this)(row, col);
+    }
+
+    template <typename T, typename indexT, bool columnMajor>
+    typename CSF::SparseMatrix<T, indexT, 1, columnMajor>::Vector SparseMatrix<T, indexT, 1, columnMajor>::getVector(uint32_t vec) {
+        return Vector(*this, vec);
+    }
+
+    template <typename T, typename indexT, bool columnMajor>
+    size_t SparseMatrix<T, indexT, 1, columnMajor>::getVecSize(uint32_t vec) const {
+        return outerPtr[vec + 1] - outerPtr[vec];
     }
 
     //* Conversion Methods *//
@@ -1038,6 +1068,29 @@ namespace CSF {
 
             // write the matrix
             csfMat.write(filename);
+        }
+
+        template <typename T, typename indexT, bool columnMajor>
+        void SparseMatrix<T, indexT, 1, columnMajor>::Vector::print() {
+
+            // if vecLength larger than 100 dont print
+            if (vecLength > 100)
+            {
+                std::cout << "Vector is too large to print" << std::endl;
+                return;
+            }
+
+            std::cout << std::endl;
+            std::cout << "Vector: " << std::endl;
+
+            // print the vector
+            for (indexT i = 0; i < vecLength; i++)
+            {
+                std::cout << (*this)[i] << " ";
+            }
+
+            std::cout << std::endl;
+
         }
 
     //* End CSF1 Vector Class *//

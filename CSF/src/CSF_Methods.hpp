@@ -356,7 +356,27 @@ namespace CSF {
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     void SparseMatrix<T, indexT, compressionLevel, columnMajor>::print() {
-        std::cout << this << std::endl;
+        // if the matrix is larger than 100x100 don't print it
+        if (numRows > 100 || numCols > 100) {
+            std::cout << "Matrix is too large to print" << std::endl;
+            return;
+        }
+
+        std::cout << std::endl;
+        std::cout << "CSF Matrix" << std::endl;
+        
+
+        // loop through each row
+        for (uint32_t i = 0; i < numRows; i++) {
+            // loop through each column
+            for (uint32_t j = 0; j < numCols; j++) {
+                // print the value
+                std::cout << (*this)(i, j) << " ";
+            }
+            std::cout << std::endl;
+        }
+
+        std::cout << std::endl;
     }
 
     //* Operator Overloads *//

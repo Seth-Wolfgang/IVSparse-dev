@@ -598,6 +598,22 @@ namespace CSF {
          */
         indexT* outerPtrs();
 
+        /**
+         * @brief Get a vector copy from the CSF matrix
+         * 
+         * @param vec The vector to get a copy of
+         * @return CSF::SparseMatrix<T, indexT, 1, columnMajor>::Vector The vector copy returned
+         */
+        typename CSF::SparseMatrix<T, indexT, 1, columnMajor>::Vector getVector(uint32_t vec);
+
+        /**
+         * @brief Get the size of a vector in the CSF matrix
+         *
+         * @param vec The vector to get the size of
+         * @return size_t The size of the vector
+         */
+        size_t getVecSize(uint32_t vec) const;
+
         ///@}
 
         //* Conversion Methods *//
@@ -1028,6 +1044,12 @@ namespace CSF {
          * @param filename The filename of the file to write to
          */
         void write(const char* filename);
+
+        /**
+         * @brief Print the vector to the console
+         * 
+         */
+        void print();
     };
 
     /**
@@ -1138,6 +1160,12 @@ namespace CSF {
          * @param filename The filename of the file to write to
          */
         void write(const char* filename);
+
+        /**
+         * @brief Print the vector to the console
+         *
+         */
+        void print();
     };
 
 }

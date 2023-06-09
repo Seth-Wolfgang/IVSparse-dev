@@ -330,4 +330,24 @@ namespace CSF {
         fclose(fp);
     }
 
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    void SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::print() {
+
+        // if vecLength is larger than 100 then print then don't print
+        if (vecLength > 100) {
+            std::cout << "Vector is too large to print" << std::endl;
+            return;
+        }
+
+        std::cout << "Vector: ";
+        std::cout << std::endl;
+
+        // print a dense vector
+        for (uint32_t i = 0; i < vecLength; i++) {
+            std::cout << (*this)[i] << " ";
+        }
+
+        std::cout << std::endl;
+    }
+
 }
