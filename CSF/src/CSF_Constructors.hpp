@@ -241,6 +241,9 @@ namespace CSF {
         //* logic here
 
         // loop through the array
+        #ifdef CSF_PARALLEL
+        #pragma omp parallel for
+        #endif
         for (size_t i = 0; i < innerDim; i++) {
 
             // check if the column is empty

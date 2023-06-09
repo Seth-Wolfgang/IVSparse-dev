@@ -692,6 +692,7 @@ namespace CSF {
         // make an array of unordered maps of length numRows
         std::unordered_map<T, std::vector<indexT>> mapsT[innerDim];
 
+        //! Might be able to parallelize this loop
         // iterate over the matrix and populate mapsT
         for (uint32_t i = 0; i < outerDim; ++i) {
             for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(*this, i); it; ++it) {
