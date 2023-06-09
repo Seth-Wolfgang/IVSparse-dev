@@ -14,11 +14,11 @@ namespace CSF {
     SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::Vector(CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>& mat, uint32_t vec) {
 
         #ifdef CSF_DEBUG
-            // make sure the vector is in bounds
-            assert((vec >= 0 && vec < mat.outerSize()) && "Vector index out of bounds");
+        // make sure the vector is in bounds
+        assert((vec >= 0 && vec < mat.outerSize()) && "Vector index out of bounds");
 
-            // make sure the matrix is not empty
-            assert((mat.outerSize() > 0 && mat.innerSize() > 0) && "Matrix is empty");
+        // make sure the matrix is not empty
+        assert((mat.outerSize() > 0 && mat.innerSize() > 0) && "Matrix is empty");
         #endif
 
         // get the vecLength of the vector
@@ -259,6 +259,9 @@ namespace CSF {
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     size_t SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::byteSize() { return size; }
+
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    T SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::coeff(uint32_t index) { return (*this)[index]; }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::operator=(typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector &other) {

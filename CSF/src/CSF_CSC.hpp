@@ -9,7 +9,22 @@ namespace CSF {
     // default empty constructor
     template <typename T, typename indexT, bool columnMajor>
     SparseMatrix<T, indexT, 1, columnMajor>::SparseMatrix() {
-        
+        // set everything to zero or the nullptr
+
+        metadata = nullptr;
+        vals = nullptr;
+        innerIdx = nullptr;
+        outerPtr = nullptr;
+
+        outerDim = 0;
+        innerDim = 0;
+        numRows = 0;
+        numCols = 0;
+        nnz = 0;
+        compSize = 0;
+
+        val_t = 0;
+        index_t = 0;
     }
 
     // eigen sparse matrix constructor
@@ -101,6 +116,28 @@ namespace CSF {
     template <uint8_t compressionLevel2>
     SparseMatrix<T, indexT, 1, columnMajor>::SparseMatrix(CSF::SparseMatrix<T, indexT, compressionLevel2, columnMajor>& mat) {
 
+        // check if the matrix is empty
+        if (mat.nnz == 0) {
+            // set everything to zero or the nullptr
+
+            metadata = nullptr;
+            vals = nullptr;
+            innerIdx = nullptr;
+            outerPtr = nullptr;
+
+            outerDim = 0;
+            innerDim = 0;
+            numRows = 0;
+            numCols = 0;
+            nnz = 0;
+            compSize = 0;
+
+            val_t = 0;
+            index_t = 0;
+
+            return;
+        }
+
         // make a temporary CSF1 matrix
         CSF::SparseMatrix<T, indexT, 1, columnMajor> temp;
 
@@ -150,6 +187,76 @@ namespace CSF {
         #ifdef CSF_DEBUG
             userChecks();
         #endif
+    }
+
+    // vector constructor
+    template <typename T, typename indexT, bool columnMajor>
+    SparseMatrix<T, indexT, 1, columnMajor>::SparseMatrix(typename CSF::SparseMatrix<T, indexT, 1, columnMajor>::Vector& vec) {
+
+        if (columnMajor) {
+            innerDim = vec.length();
+            outerDim = 1;
+            numRows = vec.length();
+            numCols = 1;
+        } else {
+            innerDim = 1;
+            outerDim = vec.length();
+            numRows = 1;
+            numCols = vec.length();
+        }
+
+        // see if the vector is empty
+        if (vec.nonZeros() == 0) {
+            // set everything to zero or the nullptr
+            vals = nullptr;
+            innerIdx = nullptr;
+            outerPtr = nullptr;
+
+            nnz = 0;
+            compSize = META_DATA_SIZE;
+
+            val_t = encodeVal();
+            index_t = sizeof(indexT);
+
+            metadata = new uint32_t[NUM_META_DATA];
+
+            metadata[0] = 1;
+            metadata[1] = innerDim;
+            metadata[2] = outerDim;
+            metadata[3] = nnz;
+            metadata[4] = val_t;
+            metadata[5] = index_t;
+
+            return;
+        }
+
+        nnz = vec.nonZeros();
+        compSize = vec.byteSize() + META_DATA_SIZE;
+
+        val_t = encodeVal();
+        index_t = sizeof(indexT);
+
+        metadata = new uint32_t[NUM_META_DATA];
+
+        metadata[0] = 1;
+        metadata[1] = innerDim;
+        metadata[2] = outerDim;
+        metadata[3] = nnz;
+        metadata[4] = val_t;
+        metadata[5] = index_t;
+
+        vals = new T[nnz];
+        innerIdx = new indexT[nnz];
+        outerPtr = new indexT[outerDim + 1];
+
+        memcpy(vals, vec.values(), sizeof(T) * nnz);
+        memcpy(innerIdx, vec.indexPtr(), sizeof(indexT) * nnz);
+
+        // run the user checks
+        #ifdef CSF_DEBUG
+        userChecks();
+        #endif
+
     }
 
     // file constructor
@@ -208,8 +315,51 @@ namespace CSF {
         #endif
     }
 
-    // COO constructor
-    // TODO: add support for this constructor
+    template <typename T, typename indexT, bool columnMajor>
+    template <typename T2, typename indexT2>
+    SparseMatrix<T, indexT, 1, columnMajor>::SparseMatrix(T2* vals, indexT2* innerIndices, indexT2* outerPtr, uint32_t num_rows, uint32_t num_cols, uint32_t nnz) {
+
+        // set the meta data
+        if constexpr (columnMajor) {
+            innerDim = num_rows;
+            outerDim = num_cols;
+        } else {
+            innerDim = num_cols;
+            outerDim = num_rows;
+        }
+
+        numRows = num_rows;
+        numCols = num_cols;
+        nnz = nnz;
+
+        val_t = encodeVal();
+        index_t = sizeof(indexT);
+
+        compSize = sizeof(T) * nnz + sizeof(indexT) * nnz + sizeof(indexT) * (outerDim + 1) + META_DATA_SIZE;
+
+        // allocate memory for the values, inner index, and outer pointers
+        vals = new T[nnz];
+        innerIdx = new indexT[nnz];
+        outerPtr = new indexT[outerDim + 1];
+
+        metadata = new uint32_t[NUM_META_DATA];
+
+        metadata[0] = 1;
+        metadata[1] = innerDim;
+        metadata[2] = outerDim;
+        metadata[3] = nnz;
+        metadata[4] = val_t;
+        metadata[5] = index_t;
+
+        memcpy(vals, vals, sizeof(T) * nnz);
+        memcpy(innerIdx, innerIndices, sizeof(indexT) * nnz);
+        memcpy(outerPtr, outerPtr, sizeof(indexT) * (outerDim + 1));
+
+        // run the user checks
+        #ifdef CSF_DEBUG
+        userChecks();
+        #endif
+    }
 
     // destructor
     template <typename T, typename indexT, bool columnMajor>
@@ -354,6 +504,11 @@ namespace CSF {
 
     template <typename T, typename indexT, bool columnMajor>
     indexT *SparseMatrix<T, indexT, 1, columnMajor>::outerPtrs() { return outerPtr; }
+
+    template <typename T, typename indexT, bool columnMajor>
+    T SparseMatrix<T, indexT, 1, columnMajor>::coeff(uint32_t row, uint32_t col) {
+        return (*this)(row, col);
+    }
 
     //* Conversion Methods *//
 
@@ -654,21 +809,91 @@ namespace CSF {
 
     //* CSF1 InnerIterator Class *//
 
-
-        //* Private Methods *//
-
-
         //* Constructors & Destructor *//
 
+        template <typename T, typename indexT, bool columnMajor>
+        SparseMatrix<T, indexT, 1, columnMajor>::InnerIterator::InnerIterator(SparseMatrix<T, indexT, 1, columnMajor> &mat, uint32_t vec)
+        {
+            this->outer = vec;
 
-        //* Overloaded Operators *//
+            vals = &mat.vals[mat.outerPtr[vec]];
+            indices = &mat.innerIdx[mat.outerPtr[vec]];
+            endPtr = &mat.innerIdx[mat.outerPtr[vec + 1]];
 
+            val = vals;
+            index = indices[0];
 
-        //* Getters & Setters *//
+        }
 
+        template <typename T, typename indexT, bool columnMajor>
+        SparseMatrix<T, indexT, 1, columnMajor>::InnerIterator::InnerIterator(SparseMatrix<T, indexT, 1, columnMajor>::Vector &vec)
+        {
+            this->outer = 0;
 
-        //* Utility Methods *//
+            vals = vec.values();
+            indices = vec.indexPtr();
+            endPtr = vec.indexPtr() + vec.nonZeros();
 
+            val = vals;
+            index = indices[0];
+        }
+
+        // //* Overloaded Operators *//
+
+        template <typename T, typename indexT, bool columnMajor>
+        void SparseMatrix<T, indexT, 1, columnMajor>::InnerIterator::operator++()
+        {
+            vals++;
+            indices++;
+
+            val = vals;
+            index = *indices;
+        }
+
+        template <typename T, typename indexT, bool columnMajor>
+        bool SparseMatrix<T, indexT, 1, columnMajor>::InnerIterator::operator==(const InnerIterator &other) { return (vals == other.vals && indices == other.index); }
+
+        template <typename T, typename indexT, bool columnMajor>
+        bool SparseMatrix<T, indexT, 1, columnMajor>::InnerIterator::operator!=(const InnerIterator &other) { return (vals != other.vals || indices != other.index); }
+
+        template <typename T, typename indexT, bool columnMajor>
+        bool SparseMatrix<T, indexT, 1, columnMajor>::InnerIterator::operator<(const InnerIterator &other) { return (vals < other.vals && indices < other.index); }
+
+        template <typename T, typename indexT, bool columnMajor>
+        bool SparseMatrix<T, indexT, 1, columnMajor>::InnerIterator::operator>(const InnerIterator &other) { return (vals > other.vals && indices > other.index); }
+
+        template <typename T, typename indexT, bool columnMajor>
+        T& SparseMatrix<T, indexT, 1, columnMajor>::InnerIterator::operator*() { return val; }
+
+        // //* Getters & Setters *//
+
+        template <typename T, typename indexT, bool columnMajor>
+        indexT SparseMatrix<T, indexT, 1, columnMajor>::InnerIterator::getIndex() { return index; }
+
+        template <typename T, typename indexT, bool columnMajor>
+        indexT SparseMatrix<T, indexT, 1, columnMajor>::InnerIterator::outerDim() { return outer; }
+
+        template <typename T, typename indexT, bool columnMajor>
+        indexT SparseMatrix<T, indexT, 1, columnMajor>::InnerIterator::row()
+        {
+            if (columnMajor) {
+                return index;
+            } else {
+                return outer;
+            }
+        }
+
+        template <typename T, typename indexT, bool columnMajor>
+        indexT SparseMatrix<T, indexT, 1, columnMajor>::InnerIterator::col() {
+            if (columnMajor) {
+                return outer;
+            } else {
+                return index;
+            }
+        }
+
+        template <typename T, typename indexT, bool columnMajor>
+        T SparseMatrix<T, indexT, 1, columnMajor>::InnerIterator::value() { return *val; }
 
 
     //* End of CSF1 InnerIterator Class *//
@@ -680,7 +905,11 @@ namespace CSF {
         template <typename T, typename indexT, bool columnMajor>
         SparseMatrix<T, indexT, 1, columnMajor>::Vector::Vector() 
         {
-
+            vecLength = 0;
+            nnz = 0;
+            vals = nullptr;
+            indices = nullptr;
+            size = 0;
         }
 
         template <typename T, typename indexT, bool columnMajor>
@@ -693,19 +922,26 @@ namespace CSF {
                 vecLength = mat.cols();
             }
 
+            // check for an empty vector
+            if (mat.outerPtr[vec] == mat.outerPtr[vec + 1])
+            {
+                nnz = 0;
+                vals = nullptr;
+                indices = nullptr;
+                size = 0;
+                return;
+            }
+
             // get the number of non-zeros in the vector
-            for (indexT i = mat.outerPtr[vec]; i < mat.outerPtr[vec + 1]; i++) { nnz++; }
+            nnz = mat.outerPtr[vec + 1] - mat.outerPtr[vec];
 
             // allocate memory for the values and inner index
             vals = new T[nnz];
             indices = new indexT[nnz];
 
-            // update the values and inner index
-            for (indexT i = 0; i < nnz; i++)
-            {
-                vals[i] = mat.vals[mat.outerPtr[vec] + i];
-                indices[i] = mat.innerIdx[mat.outerPtr[vec] + i];
-            }
+            // update the values and inner index using memcpy
+            memcpy(vals, &mat.vals[mat.outerPtr[vec]], nnz * sizeof(T));
+            memcpy(indices, &mat.innerIdx[mat.outerPtr[vec]], nnz * sizeof(indexT));
 
             size = nnz * sizeof(T) + nnz * sizeof(indexT);
         }
@@ -797,7 +1033,11 @@ namespace CSF {
         template <typename T, typename indexT, bool columnMajor>
         void SparseMatrix<T, indexT, 1, columnMajor>::Vector::write(const char *filename)
         {
+            // turn into a CSF matrix
+            CSF::SparseMatrix<T, indexT, 1, columnMajor> csfMat(*this);
 
+            // write the matrix
+            csfMat.write(filename);
         }
 
     //* End CSF1 Vector Class *//

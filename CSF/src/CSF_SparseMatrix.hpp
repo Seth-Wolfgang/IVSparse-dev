@@ -75,6 +75,12 @@ namespace CSF {
         ///@{
 
         /**
+         * @brief Construct an empty CSF matrix
+         * 
+         */
+        SparseMatrix();
+
+        /**
          * @brief Eigen Sparse Matrix Constructor
          * 
          * @param mat The Eigen Sparse Matrix to be compressed
@@ -144,9 +150,6 @@ namespace CSF {
         SparseMatrix(const SparseMatrix<T, indexT, compressionLevel, columnMajor> &other);
 
         ///@}
-
-        SparseMatrix();
-
 
         // Map constructor for use in transposing
         SparseMatrix(std::map<indexT, std::unordered_map<T, std::vector<indexT>>> &map, uint32_t num_rows, uint32_t num_cols);
@@ -426,67 +429,213 @@ namespace CSF {
 
         //* Constructors & Destructor *//
 
-        // default empty constructor
+        /**
+         * @brief Construct an empty CSF matrix
+         * 
+         */
         SparseMatrix();
 
-        // eigen sparse matrix constructor
+        /**
+         * @brief Construct a new Sparse Matrix object from an Eigen Sparse Matrix
+         * 
+         * @param mat The Eigen Sparse Matrix to be compressed
+         */
         SparseMatrix(Eigen::SparseMatrix<T>& mat);
 
-        // eigen sparse matrix constructor (row major)
+        /**
+         * @brief Construct a new Sparse Matrix object from an Eigen Row Major Sparse Matrix
+         *
+         * @param mat The Eigen Sparse Matrix to be compressed
+         */
         SparseMatrix(Eigen::SparseMatrix<T, Eigen::RowMajor>& mat);
 
-        // generalized conversion constructor
+        /**
+         * @brief Construct a new Sparse Matrix object from a CSF Vector
+         * 
+         * @param vec The CSF Vector to be copied from
+         */
+        SparseMatrix(typename CSF::SparseMatrix<T, indexT, 1, columnMajor>::Vector& vec);
+
+        /**
+         * @brief Construct a new Sparse Matrix object from CSC arrays
+         * 
+         * @tparam T2 The data type of the values in the CSC matrix
+         * @tparam indexT2 The data type of the indices in the CSC matrix
+         * @param vals The values of the CSC matrix
+         * @param innerIndices The inner indices of the CSC matrix
+         * @param outerPtr The outer pointers of the CSC matrix
+         * @param num_rows The number of rows
+         * @param num_cols The number of columns
+         * @param nnz The number of non-zero values
+         */
+        template <typename T2, typename indexT2>
+        SparseMatrix(T2* vals, indexT2* innerIndices, indexT2* outerPtr, uint32_t num_rows, uint32_t num_cols, uint32_t nnz);
+
+        /**
+         * @brief Construct a new Sparse Matrix object from a CSF matrix of a different compression level
+         * 
+         * @tparam compressionLevel2 The compression level of the CSF matrix to convert
+         * @param mat The CSF matrix to convert
+         */
         template <uint8_t compressionLevel2>
         SparseMatrix(CSF::SparseMatrix<T, indexT, compressionLevel2, columnMajor> &mat);
 
-        // file constructor
+        /**
+         * @brief Construct a new Sparse Matrix object from a file
+         * 
+         * @param filename The filepath of the matrix to be read in
+         */
         SparseMatrix(const char* filename);
-
-        // COO constructor
-        //! Decleration Here
 
         // destructor
         ~SparseMatrix();
 
         //* Utility Methods *//
 
+        /**
+         * @name Utility Methods
+        */
+        ///@{
+
+        /**
+         * @brief Write the CSF matrix to a file
+         * 
+         * @param filename The filename of the matrix to write to
+         */
         void write(const char* filename);
 
+        /**
+         * @brief Print the CSF matrix to the console
+         * 
+         */
         void print();
+
+        ///@}
 
         //* Getters *//
 
+        /**
+         * @name Getters
+        */
+        ///@{
+
+        /**
+         * @brief Get the value at the specified row and column
+         * 
+         * @param row The row of the value to get
+         * @param col The column of the value to get
+         * @return T The value at the specified row and column
+         */
         T coeff(uint32_t row, uint32_t col);
 
+        /**
+         * @brief Get the inner dimension of the CSF matrix
+         * 
+         * @return uint32_t The inner dimension of the CSF matrix
+         */
         uint32_t innerSize();
 
+        /**
+         * @brief Get the outer dimension of the CSF matrix
+         * 
+         * @return uint32_t The outer dimension of the CSF matrix
+         */
         uint32_t outerSize();
 
+        /**
+         * @brief Get the number of rows in the CSF matrix
+         * 
+         * @return uint32_t The number of rows
+         */
         uint32_t rows();
 
+        /**
+         * @brief Get the number of columns in the CSF matrix
+         * 
+         * @return uint32_t The number of columns
+         */
         uint32_t cols();
 
+        /**
+         * @brief Get the number of non-zero values in the CSF matrix
+         * 
+         * @return uint32_t The number of non-zero values
+         */
         uint32_t nonZeros();
 
+        /**
+         * @brief Get the size of the CSF matrix in bytes
+         * 
+         * @return size_t The size of the CSF matrix in bytes
+         */
         size_t compressionSize();
 
+        /**
+         * @brief Get a pointer to the values of the CSF matrix
+         * 
+         * @return T* The pointer to the values of the CSF matrix
+         */
         T* values();
 
+        /**
+         * @brief Get a pointer to the inner indices of the CSF matrix
+         * 
+         * @return indexT* The pointer to the inner indices of the CSF matrix
+         */
         indexT* innerIdxPtr();
 
+        /**
+         * @brief Get a pointer to the outer pointers of the CSF matrix
+         * 
+         * @return indexT* The pointer to the outer pointers of the CSF matrix
+         */
         indexT* outerPtrs();
+
+        ///@}
 
         //* Conversion Methods *//
 
+        /**
+         * @name Conversion Methods
+        */
+        ///@{
+
+        /**
+         * @brief Convert the CSF matrix to an Eigen Sparse Matrix
+         * 
+         * @return CSF::SparseMatrix<T, indexT, 1, columnMajor> The Eigen Sparse Matrix returned
+         */
         Eigen::SparseMatrix<T> toEigen();
 
+        /**
+         * @brief Convert the CSF1 matrix to a CSF2 matrix
+         * 
+         * @return CSF::SparseMatrix<T, indexT, 2, columnMajor> The CSF2 matrix returned
+         */ 
         CSF::SparseMatrix<T, indexT, 2, columnMajor> toCSF2();
 
+        /**
+         * @brief Convert the CSF1 matrix to a CSF3 matrix
+         * 
+         * @return CSF::SparseMatrix<T, indexT, 3, columnMajor> The CSF3 matrix returned
+         */
         CSF::SparseMatrix<T, indexT, 3, columnMajor> toCSF3();
 
+        /**
+         * @brief Transposes the CSF matrix
+         * 
+         * @return CSF::SparseMatrix<T, indexT, 1, columnMajor> The transposed CSF matrix
+         */
         CSF::SparseMatrix<T, indexT, 1, columnMajor> transpose();
 
+        /**
+         * @brief Append a CSF vector to the outer dimension of the CSF matrix
+         * 
+         * @param vec The vector to be appended
+         */
         void append(typename SparseMatrix<T, indexT, 1, columnMajor>::Vector& vec);
+
+        ///@}
 
         //* Operator Overloads *//
 
@@ -529,9 +678,6 @@ namespace CSF {
 
         void __attribute__((hot)) decodeIndex();
 
-        void userChecks();
-
-
     public:
         //* Constructors & Destructor *//
 
@@ -561,7 +707,7 @@ namespace CSF {
 
         //* Operator Overloads *//
 
-        void __attribute__((hot))  operator++();
+        void __attribute__((hot)) operator++();
 
         bool operator==(const InnerIterator& other);
 
@@ -648,10 +794,9 @@ namespace CSF {
         indexT index;
         indexT outer;
 
-        //* Private Class Methods *//
-
-        void userChecks();
-
+        T* vals;
+        indexT* indices;
+        T* endPtr;
 
         public:
 
@@ -659,15 +804,31 @@ namespace CSF {
 
         InnerIterator();
 
-        InnerIterator(SparseMatrix<T, indexT, 1, columnMajor>& mat, uint32_t col);
+        /**
+         * @name Constructors
+        */
+        ///@{
 
+        /**
+         * @brief Construct a new Inner Iterator object for a CSF matrix column
+         * 
+         * @param mat The CSF matrix to iterate over
+         * @param vec The column to iterate over
+         */
+        InnerIterator(SparseMatrix<T, indexT, 1, columnMajor>& mat, uint32_t vec);
+
+        /**
+         * @brief Construct a new Inner Iterator object for a CSF matrix vector
+         * 
+         * @param vec The CSF vector to iterate over
+         */
         InnerIterator(SparseMatrix<T, indexT, 1, columnMajor>::Vector& vec);
+
+        ///@}
 
         //* Operator Overloads *//
 
-        void operator++(int);
-
-        void operator++();
+        void __attribute__((hot)) operator++();
 
         bool operator==(const InnerIterator& other);
 
@@ -679,19 +840,52 @@ namespace CSF {
 
         T& operator*();
 
+        inline __attribute__((hot)) operator bool() { return indices < endPtr; };
+
         //* Getters *//
 
+        /**
+         * @name Getters
+        */
+        ///@{
+
+        /**
+         * @brief Get the current index of the iterator
+         * 
+         * @return indexT The current index of the iterator
+         */
         indexT getIndex();
 
+        /**
+         * @brief Get the outer location of the iterator in the matrix
+         * 
+         * @return indexT The outer location of the iterator in the matrix
+         */
         indexT outerDim();
 
+        /**
+         * @brief Get the row of the current value
+         * 
+         * @return indexT The row of the current value
+         */
         indexT row();
 
+        /**
+         * @brief Get the column of the current value
+         * 
+         * @return indexT The column of the current value
+         */
         indexT col();
 
+        /**
+         * @brief Get the current value
+         * 
+         * @return T The current value
+         */
         T value();
 
-        //* Utility Methods *//
+        ///@}
+
     };
 
     /**
@@ -725,13 +919,16 @@ namespace CSF {
     public:
         //* Constructors & Destructor *//
 
-        // empty constructor
-        Vector();
-
         /**
          * @name Constructors
         */
         ///@{
+
+        /**
+         * @brief Construct a new empty Vector object
+         * 
+         */
+        Vector();
 
         /**
          * @brief Construct a new Vector object from a slice of a CSF matrix
@@ -765,7 +962,13 @@ namespace CSF {
         typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector operator=(typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector& vec);
 
         //* Getters *//
-        //! not written yet
+
+        /**
+         * @brief Get the value at index
+         * 
+         * @param index The index of the value to get
+         * @return T The value at index
+         */
         T coeff(uint32_t index);
 
         /**
@@ -849,11 +1052,33 @@ namespace CSF {
 
         //* Constructors & Destructor *//
 
+        /**
+         * @name Constructors
+        */
+        ///@{
+
+        /**
+         * @brief Construct a new empty Vector object
+         * 
+         */
         Vector();
 
+        /**
+         * @brief Construct a new Vector object from a vector in a CSF matrix
+         * 
+         * @param mat The CSF matrix to construct the vector from
+         * @param vec The vector to construct the vector from
+         */
         Vector(CSF::SparseMatrix<T, indexT, 1, columnMajor>& mat, uint32_t vec);
 
+        /**
+         * @brief Construct a new Vector object from a CSF vector
+         * 
+         * @param vec The CSF vector to be copied from
+         */
         Vector(CSF::SparseMatrix<T, indexT, 1, columnMajor>::Vector& vec);
+
+        ///@}
 
         ~Vector();
 
@@ -863,18 +1088,48 @@ namespace CSF {
 
         //* Getters *//
 
+        /**
+         * @brief Get the length of the vector
+         * 
+         * @return uint32_t The length of the vector
+         */
         uint32_t length();
 
+        /**
+         * @brief Get the number of non-zero values in the vector
+         * 
+         * @return uint32_t The number of non-zero values in the vector
+         */
         uint32_t nonZeros();
 
+        /**
+         * @brief Get a pointer to the values of the vector
+         * 
+         * @return T* The pointer to the values of the vector
+         */
         T* values();
 
+        /**
+         * @brief Get a pointer to the indices of the vector
+         * 
+         * @return indexT* The pointer to the indices of the vector
+         */
         indexT* indexPtr();
 
+        /**
+         * @brief Get the size of the vector in bytes
+         * 
+         * @return size_t The size of the vector in bytes
+         */
         size_t byteSize();
 
         //* Utility Methods *//
 
+        /**
+         * @brief Write the vector to a file
+         * 
+         * @param filename The filename of the file to write to
+         */
         void write(const char* filename);
     };
 

@@ -51,13 +51,13 @@ namespace CSF {
     SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector vec[], size_t size) {
         
         #ifdef CSF_DEBUG
-            // ensure the vectors are all the same length
-            for (size_t i = 1; i < size; i++) {
-                assert(vec[i].length() == vec[i - 1].length() && "All vectors must be the same length!");
-            }
+        // ensure the vectors are all the same length
+        for (size_t i = 1; i < size; i++) {
+            assert(vec[i].length() == vec[i - 1].length() && "All vectors must be the same length!");
+        }
 
-            // size is greater than 0
-            assert(size > 0 && "The size of the array must be greater than 0!");
+        // size is greater than 0
+        assert(size > 0 && "The size of the array must be greater than 0!");
         #endif
 
         if (columnMajor) {

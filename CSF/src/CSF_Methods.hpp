@@ -219,10 +219,13 @@ namespace CSF {
         // add up the size of each col and add it to compSize
         for (size_t i = 0; i < outerDim; i++) {
             // compSize += ((uint8_t *)endPointers)[i] - ((uint8_t *)data)[i];
+            //compSize += (uint8_t *)endPointers[i] - (uint8_t *)data[i];
+
             compSize += *((uint8_t**)endPointers + i) - *((uint8_t**)data + i);
-            // compSize += (uint8_t *)endPointers[i] - (uint8_t *)data[i];
 
             // printf("Start: %p  End: %p  Difference: %d\n", *((uint8_t**)data + i), *((uint8_t**)endPointers + i), *((uint8_t**)endPointers + i) - *((uint8_t**)data + i));
+
+
         }
 
     } // end compress
@@ -278,7 +281,7 @@ namespace CSF {
 
         assert(std::is_floating_point<indexT>::value == false && "The index type must be a non-floating point type");
 
-        assert((compressionLevel == 1 || compressionLevel == 2 || compressionLevel == 3) && "The compression level must be either 1, 2, or 3");
+        assert((compressionLevel == 2 || compressionLevel == 3) && "The compression level must be either 2, or 3");
 
         assert((std::is_arithmetic<T>::value && std::is_arithmetic<indexT>::value) && "The value and index types must be numeric types");
 
@@ -316,18 +319,7 @@ namespace CSF {
     size_t SparseMatrix<T, indexT, compressionLevel, columnMajor>::compressionSize() const { return compSize; }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector SparseMatrix<T, indexT, compressionLevel, columnMajor>::getVector(uint32_t vec) {
-        
-        #ifdef CSF_DEBUG
-            // check if the vector is out of bounds
-            assert((vec < outerDim && vec >= 0) && "Vector index out of bounds");
-        #endif
-
-        // return a CSF vector
-        CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector newVector(*this, vec);
-
-        return newVector;
-    }
+    typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector SparseMatrix<T, indexT, compressionLevel, columnMajor>::getVector(uint32_t vec) { return (*this)[vec]; }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     T SparseMatrix<T, indexT, compressionLevel, columnMajor>::coeff(uint32_t row, uint32_t col) {
@@ -401,8 +393,8 @@ namespace CSF {
     typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator[](uint32_t vec) {
 
         #ifdef CSF_DEBUG
-            // check if the vector is out of bounds
-            assert((vec < outerDim && vec >= 0) && "Vector index out of bounds");
+        // check if the vector is out of bounds
+        assert((vec < outerDim && vec >= 0) && "Vector index out of bounds");
         #endif
 
         // return a CSF vector
@@ -724,8 +716,8 @@ namespace CSF {
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     typename CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector* SparseMatrix<T, indexT, compressionLevel, columnMajor>::slice(uint32_t start, uint32_t end) {
         #ifdef CSF_DEBUG
-            // check that the start and end are valid
-            assert(start < outerDim && end <= outerDim && start < end && "Invalid start and end values!");
+        // check that the start and end are valid
+        assert(start < outerDim && end <= outerDim && start < end && "Invalid start and end values!");
         #endif
 
         // create a new array of vectors
@@ -751,8 +743,8 @@ namespace CSF {
     Eigen::SparseMatrix<T, columnMajor ? Eigen::ColMajor : Eigen::RowMajor> SparseMatrix<T, indexT, compressionLevel, columnMajor>::toEigen() {
 
         #ifdef CSF_DEBUG
-            // assert that the matrix is not empty
-            assert(outerDim > 0 && "Cannot convert an empty matrix to an Eigen matrix!");
+        // assert that the matrix is not empty
+        assert(outerDim > 0 && "Cannot convert an empty matrix to an Eigen matrix!");
         #endif
 
         // create a new sparse matrix
