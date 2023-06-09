@@ -151,8 +151,8 @@ namespace CSF {
 
         ///@}
 
-        // Map constructor for use in transposing
-        SparseMatrix(std::map<indexT, std::unordered_map<T, std::vector<indexT>>> &map, uint32_t num_rows, uint32_t num_cols);
+        // array of unordered maps constructor
+        SparseMatrix(std::unordered_map<T, std::vector<indexT>> maps[], uint32_t num_rows, uint32_t num_cols);
 
         // destructor
         ~SparseMatrix();

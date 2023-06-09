@@ -21,6 +21,8 @@ var class_c_s_f_1_1_sparse_matrix_3_01_t_00_01index_t_00_011_00_01column_major_0
     [ "values", "class_c_s_f_1_1_sparse_matrix_3_01_t_00_01index_t_00_011_00_01column_major_01_4.html#a8ed5a12ab8f90200ea7624f3f3f21af9", null ],
     [ "innerIdxPtr", "class_c_s_f_1_1_sparse_matrix_3_01_t_00_01index_t_00_011_00_01column_major_01_4.html#abc09cb2853eb100cba08f660421f1a7f", null ],
     [ "outerPtrs", "class_c_s_f_1_1_sparse_matrix_3_01_t_00_01index_t_00_011_00_01column_major_01_4.html#a2da21faf576d9549e6cbb326f78ed3bb", null ],
+    [ "getVector", "class_c_s_f_1_1_sparse_matrix_3_01_t_00_01index_t_00_011_00_01column_major_01_4.html#a42dbf9f1fc5e184edd62484250ef686c", null ],
+    [ "getVecSize", "class_c_s_f_1_1_sparse_matrix_3_01_t_00_01index_t_00_011_00_01column_major_01_4.html#a5260d5302f25d2cb5a0806841464e58a", null ],
     [ "toEigen", "class_c_s_f_1_1_sparse_matrix_3_01_t_00_01index_t_00_011_00_01column_major_01_4.html#a280fa8e7793d743f08744473e357033b", null ],
     [ "toCSF2", "class_c_s_f_1_1_sparse_matrix_3_01_t_00_01index_t_00_011_00_01column_major_01_4.html#ad03c8b052b591294b27660c826564d45", null ],
     [ "toCSF3", "class_c_s_f_1_1_sparse_matrix_3_01_t_00_01index_t_00_011_00_01column_major_01_4.html#a02528a9748353f1b8e3df2f260a30485", null ],

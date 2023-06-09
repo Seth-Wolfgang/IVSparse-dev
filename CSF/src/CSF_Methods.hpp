@@ -687,27 +687,28 @@ namespace CSF {
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor> SparseMatrix<T, indexT, compressionLevel, columnMajor>::transpose() {
-        // create an ordered map of unordered maps to store the values
-        std::map<indexT, std::unordered_map<T, std::vector<indexT>>> transposedMap;
 
-        // iterate over the matrix
 
+        // make an array of unordered maps of length numRows
+        std::unordered_map<T, std::vector<indexT>> mapsT[innerDim];
+
+        // iterate over the matrix and populate mapsT
         for (uint32_t i = 0; i < outerDim; ++i) {
             for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(*this, i); it; ++it) {
                 // add the value to the map
                 if constexpr (columnMajor) {
-                    transposedMap[it.row()][it.value()].push_back(it.col());
+                    mapsT[it.row()][it.value()].push_back(it.col());
                 }
                 else {
-                    transposedMap[it.col()][it.value()].push_back(it.row());
+                    mapsT[it.col()][it.value()].push_back(it.row());
                 }
             }
         }
 
-        // if compression level is 3 positive delta encode the vectors of indices
-        if (compressionLevel == 3) {
-            for (auto& row : transposedMap) {
-                for (auto& col : row.second) {
+        // if compressoin level 3 positive delta encode the vectors of indices
+        if constexpr (compressionLevel == 3) {
+            for (auto& row : mapsT) {
+                for (auto& col : row) {
 
                     // find the max value in the vector
                     size_t max = col.second[0];
@@ -727,7 +728,7 @@ namespace CSF {
         }
 
         // create a new matrix passing in transposedMap
-        CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor> transposedMatrix(transposedMap, numCols, numRows);
+        CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor> transposedMatrix(mapsT, numRows, numCols);
 
         return transposedMatrix;
     }

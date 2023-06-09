@@ -10,5 +10,6 @@ var class_c_s_f_1_1_sparse_matrix_1_1_vector =
     [ "length", "class_c_s_f_1_1_sparse_matrix_1_1_vector.html#a9163b80abb5197aaefb9ea6d321dea07", null ],
     [ "outerSize", "class_c_s_f_1_1_sparse_matrix_1_1_vector.html#a806aeceaf455d617d967eb81216e0475", null ],
     [ "nonZeros", "class_c_s_f_1_1_sparse_matrix_1_1_vector.html#a5e68ebf6592e961db82968f867e6396b", null ],
-    [ "write", "class_c_s_f_1_1_sparse_matrix_1_1_vector.html#a321f3f9887e0158c367d366f6d6f6052", null ]
+    [ "write", "class_c_s_f_1_1_sparse_matrix_1_1_vector.html#a321f3f9887e0158c367d366f6d6f6052", null ],
+    [ "print", "class_c_s_f_1_1_sparse_matrix_1_1_vector.html#a388f572c62279f839ee138a9afbdeeb5", null ]
 ];

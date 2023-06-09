@@ -155,6 +155,10 @@ void&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="clas
 <tr class="separator:abc09cb2853eb100cba08f660421f1a7f"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr class="memitem:a2da21faf576d9549e6cbb326f78ed3bb"><td class="memItemLeft" align="right" valign="top">indexT *&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_c_s_f_1_1_sparse_matrix_3_01_t_00_01index_t_00_011_00_01column_major_01_4.html#a2da21faf576d9549e6cbb326f78ed3bb">outerPtrs</a> ()</td></tr>
 <tr class="separator:a2da21faf576d9549e6cbb326f78ed3bb"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a42dbf9f1fc5e184edd62484250ef686c"><td class="memItemLeft" align="right" valign="top"><a class="el" href="class_c_s_f_1_1_sparse_matrix.html">CSF::SparseMatrix</a>&lt; T, indexT, 1, columnMajor &gt;::Vector&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_c_s_f_1_1_sparse_matrix_3_01_t_00_01index_t_00_011_00_01column_major_01_4.html#a42dbf9f1fc5e184edd62484250ef686c">getVector</a> (uint32_t vec)</td></tr>
+<tr class="separator:a42dbf9f1fc5e184edd62484250ef686c"><td class="memSeparator" colspan="2">&#160;</td></tr>
+<tr class="memitem:a5260d5302f25d2cb5a0806841464e58a"><td class="memItemLeft" align="right" valign="top">size_t&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_c_s_f_1_1_sparse_matrix_3_01_t_00_01index_t_00_011_00_01column_major_01_4.html#a5260d5302f25d2cb5a0806841464e58a">getVecSize</a> (uint32_t vec) const</td></tr>
+<tr class="separator:a5260d5302f25d2cb5a0806841464e58a"><td class="memSeparator" colspan="2">&#160;</td></tr>
 <tr><td colspan="2"><div class="groupHeader">Conversion Methods</div></td></tr>
 <tr class="memitem:a280fa8e7793d743f08744473e357033b"><td class="memItemLeft" align="right" valign="top">Eigen::SparseMatrix&lt; T &gt;&#160;</td><td class="memItemRight" valign="bottom"><a class="el" href="class_c_s_f_1_1_sparse_matrix_3_01_t_00_01index_t_00_011_00_01column_major_01_4.html#a280fa8e7793d743f08744473e357033b">toEigen</a> ()</td></tr>
 <tr class="separator:a280fa8e7793d743f08744473e357033b"><td class="memSeparator" colspan="2">&#160;</td></tr>
@@ -607,6 +611,60 @@ class CSF::SparseMatrix&lt; T, indexT, 1, columnMajor &gt;</h3>
 
 </div>
 </div>
+<a id="a42dbf9f1fc5e184edd62484250ef686c"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a42dbf9f1fc5e184edd62484250ef686c">&#9670;&nbsp;</a></span>getVector()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname"><a class="el" href="class_c_s_f_1_1_sparse_matrix.html">CSF::SparseMatrix</a>&lt; T, indexT, 1, columnMajor &gt;::Vector getVector </td>
+          <td>(</td>
+          <td class="paramtype">uint32_t&#160;</td>
+          <td class="paramname"><em>vec</em></td><td>)</td>
+          <td></td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get a vector copy from the CSF matrix. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">vec</td><td>The vector to get a copy of </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd><a class="el" href="class_c_s_f_1_1_sparse_matrix_3_01_t_00_01index_t_00_011_00_01column_major_01_4_1_1_vector.html" title="A class to represent a vector in a CSF matrix (Compression Level 1)">CSF::SparseMatrix&lt;T, indexT, 1, columnMajor&gt;::Vector</a> The vector copy returned </dd></dl>
+
+</div>
+</div>
+<a id="a5260d5302f25d2cb5a0806841464e58a"></a>
+<h2 class="memtitle"><span class="permalink"><a href="#a5260d5302f25d2cb5a0806841464e58a">&#9670;&nbsp;</a></span>getVecSize()</h2>
+
+<div class="memitem">
+<div class="memproto">
+      <table class="memname">
+        <tr>
+          <td class="memname">size_t getVecSize </td>
+          <td>(</td>
+          <td class="paramtype">uint32_t&#160;</td>
+          <td class="paramname"><em>vec</em></td><td>)</td>
+          <td> const</td>
+        </tr>
+      </table>
+</div><div class="memdoc">
+
+<p>Get the size of a vector in the CSF matrix. </p>
+<dl class="params"><dt>Parameters</dt><dd>
+  <table class="params">
+    <tr><td class="paramname">vec</td><td>The vector to get the size of </td></tr>
+  </table>
+  </dd>
+</dl>
+<dl class="section return"><dt>Returns</dt><dd>size_t The size of the vector </dd></dl>
+
+</div>
+</div>
 <a id="a280fa8e7793d743f08744473e357033b"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a280fa8e7793d743f08744473e357033b">&#9670;&nbsp;</a></span>toEigen()</h2>
 
@@ -707,7 +765,7 @@ class CSF::SparseMatrix&lt; T, indexT, 1, columnMajor &gt;</h3>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><b>CSF</b></li><li class="navelem"><a class="el" href="class_c_s_f_1_1_sparse_matrix_3_01_t_00_01index_t_00_011_00_01column_major_01_4.html">SparseMatrix&lt; T, indexT, 1, columnMajor &gt;</a></li>
-    <li class="footer">Generated on Fri Jun 9 2023 10:25:50 for CSF Matrix by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
+    <li class="footer">Generated on Fri Jun 9 2023 10:53:34 for CSF Matrix by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
   </ul>
 </div>
 </body>

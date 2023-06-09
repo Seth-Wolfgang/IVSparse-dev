@@ -204,21 +204,9 @@ namespace CSF {
     }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(std::map<indexT, std::unordered_map<T, std::vector<indexT>>>& map, uint32_t num_rows, uint32_t num_cols) {
-        
-        // make sure the map is not empty
-        if (map.empty()) [[unlikely]]
-        {
-            val_t = 0;
-            index_t = 0;
+    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(std::unordered_map<T, std::vector<indexT>> maps[], uint32_t num_rows, uint32_t num_cols)
+    {
 
-            data = nullptr;
-            endPointers = nullptr;
-            metadata = nullptr;
-
-            return;
-        }
-        
         // set class variables
         if constexpr (columnMajor) {
             innerDim = num_rows;
@@ -250,44 +238,53 @@ namespace CSF {
             endPointers[i] = nullptr;
         }
 
-        //TODO: make this parallel
+        //* logic here
 
-        // loop through the map
-        for (auto &col : map) {
+        // loop through the array
+        for (size_t i = 0; i < innerDim; i++) {
 
-            // loop through col and find the byte size
+            // check if the column is empty
+            if (maps[i].empty()) [[unlikely]] {
+                continue;
+            }
+            
             size_t byteSize = 0;
             if constexpr (compressionLevel == 3) {
-                for (auto &val : col.second) {
+                // loop through the vectors of the map
+                for (auto& val : maps[i]) {
+                    // add the size of the vector to the byteSize
                     byteSize += sizeof(T) + 1 + (val.second[val.second.size() - 1] * (val.second.size() - 1) + val.second[val.second.size() - 1]);
                 }
             } else {
-                for (auto &val : col.second) {
+                // loop through the vectors of the map
+                for (auto& val : maps[i]) {
+                    // add the size of the vector to the byteSize
                     byteSize += sizeof(T) + 1 + (sizeof(indexT) * val.second.size()) + sizeof(indexT);
                 }
             }
 
             // allocate memory for the vector
             try {
-                data[col.first] = malloc(byteSize);
-            }
-            catch (const std::exception& e) {
+                data[i] = malloc(byteSize);
+            } catch (const std::exception& e) {
                 std::cerr << e.what() << '\n';
             }
 
             // set the end pointer
-            endPointers[col.first] = (char*)data[col.first] + byteSize;
+            endPointers[i] = (char*)data[i] + byteSize;
 
             // compress the column
-            void *helpPtr = data[col.first];
+            void *helpPtr = data[i];
 
-            for (auto &val : col.second) {
-                if constexpr (compressionLevel == 3)
+            for (auto &val : maps[i]) {
+                
+                if constexpr (compressionLevel == 3) {
                     nnz += val.second.size() - 1;
-                else
+                } else {
                     nnz += val.second.size();
+                }
 
-                // write the value
+                // set the value
                 *(T*)helpPtr = val.first;
                 helpPtr = (char*)helpPtr + sizeof(T);
 
@@ -365,8 +362,12 @@ namespace CSF {
                     *(indexT *)helpPtr = (indexT)DELIM;
                     helpPtr = (indexT *)helpPtr + 1;
                 }
+
             }
+
         }
+
+        //* end logic
 
         compSize += META_DATA_SIZE + (sizeof(void *) * outerDim) * 2;
 
