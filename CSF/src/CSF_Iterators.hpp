@@ -23,7 +23,7 @@ namespace CSF {
 
         // Sets the end pointer
         endPtr = (uint8_t*)data + matrix.getVecSize(vec);
-        
+
         // Points value to the first value in the column
         val = (T*)data;
         data = (uint8_t*)data + sizeof(T);
@@ -51,11 +51,15 @@ namespace CSF {
             return;
         }
 
-        // set the end pointer
-        endPtr = vector.end();
+        // if constexpr (compressionLevel = 2) {
+        //     valueArray = vector.getValues();
+        // }
 
         val = (T*)data;
         data = (uint8_t*)data + sizeof(T);
+
+        // set the end pointer
+        endPtr = vector.end();
 
         indexWidth = *(uint8_t*)data;
         data = (uint8_t*)data + sizeof(uint8_t);
@@ -77,8 +81,14 @@ namespace CSF {
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     T SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator::value() { return *val; }
 
+    // template <typename T, typename indexT, uint8_t compressionLevel = 2, bool columnMajor>
+    // T SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::value() { return valueArray[*val]; }
+    
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     T& SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator::operator*() { return *val; }
+
+    // template <typename T, typename indexT, uint8_t compressionLevel = 2, bool columnMajor>
+    // T SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::operator*() { return valueArray[*val]; }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     bool SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator::operator==(const InnerIterator& other) { return data == other.getIndex(); }
@@ -97,6 +107,9 @@ namespace CSF {
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     inline void SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator::coeff(T newValue) { *val = newValue; }
+
+    // template <typename T, typename indexT, uint8_t compressionLevel = 2, bool columnMajor>
+    // inline void SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::coeffRef(T newValue) { *valueArray[*val] = newValue; }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     indexT SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator::row() {

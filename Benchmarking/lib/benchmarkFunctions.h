@@ -14,7 +14,6 @@
 #define VALUE_TYPE double
 #define INDEX_TYPE int
 #define NUM_OF_BENCHMARKS 28
-#define EIGEN_DONT_PARALLELIZE
 
 // Function to read Matrix Market files
 template <typename T>
@@ -24,8 +23,8 @@ double calculateEntropy(const Eigen::SparseMatrix<double>& mat);
 
 double averageRedundancy(const Eigen::SparseMatrix<double>& matrix);
 
-template <typename T>
-bool checkMatrixEquality(Eigen::SparseMatrix<T>& eigen, CSF::SparseMatrix<T, INDEX_TYPE, 2>& csf2, CSF::SparseMatrix<T, INDEX_TYPE, 3>& csf3);
+template <typename T, uint8_t compressionLevel>
+bool checkMatrixEquality(Eigen::SparseMatrix<T>& eigen, CSF::SparseMatrix<T, INDEX_TYPE, compressionLevel>& csf);
 
 template <typename T>
 void EigenConstructorBenchmark(std::vector<Eigen::Triplet<T>>& eigenTriplet, std::vector<uint64_t>& data, int rows, int cols);
