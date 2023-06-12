@@ -13,7 +13,11 @@ namespace CSF {
     /**
      * @brief A class to represent a sparse matrix compressed in the CSF format
      *
-     * @details CSF Matrix is a read-only sparse matrix class optimized for sparse-dense computation in cases where non-zero values are highly redundant. For such cases, sparse fiber storage can reduce memory footprint by up to 50% compared to standard sparse compression. CSF also increases the ability to further compress index arrays within each fiber. This default templated version is for compression levels 2 and 3 specifically. For compression level 1 there is a template specialization.
+     * CSF Matrix is a read-only sparse matrix class optimized for sparse-dense computation in cases where non-zero values 
+     * are highly redundant. For such cases, sparse fiber storage can reduce memory footprint by up to 50% compared to 
+     * standard sparse compression. CSF also increases the ability to further compress index arrays within each fiber. 
+     * This default templated version is for compression levels 2 and 3 specifically. For compression level 1 there 
+     * is a template specialization.
      *
      * @tparam T The data type of the values in the matrix
      * @tparam indexT The data type of the indices in the matrix

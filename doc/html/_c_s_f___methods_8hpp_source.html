@@ -22,6 +22,7 @@
 /* @license-end */
 </script>
 <link href="doxygen.css" rel="stylesheet" type="text/css" />
+<link href="custom.css" rel="stylesheet" type="text/css"/>
 </head>
 <body>
 <div id="top"><!-- do not remove this div, it is closed by doxygen! -->
@@ -785,160 +786,161 @@ $(document).ready(function(){initNavTree('_c_s_f___methods_8hpp_source.html','')
 <div class="line"><a name="l00687"></a><span class="lineno">  687</span>&#160; </div>
 <div class="line"><a name="l00688"></a><span class="lineno">  688</span>&#160;    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> T, <span class="keyword">typename</span> indexT, u<span class="keywordtype">int</span>8_t compressionLevel, <span class="keywordtype">bool</span> columnMajor&gt;</div>
 <div class="line"><a name="l00689"></a><span class="lineno"><a class="line" href="class_c_s_f_1_1_sparse_matrix.html#a895975bf10335cceed65e4b9a441827f">  689</a></span>&#160;    <a class="code" href="class_c_s_f_1_1_sparse_matrix.html">CSF::SparseMatrix&lt;T, indexT, compressionLevel, columnMajor&gt;</a> <a class="code" href="class_c_s_f_1_1_sparse_matrix.html#a895975bf10335cceed65e4b9a441827f">SparseMatrix&lt;T, indexT, compressionLevel, columnMajor&gt;::transpose</a>() {</div>
-<div class="line"><a name="l00690"></a><span class="lineno">  690</span>&#160;        <span class="comment">// create an ordered map of unordered maps to store the values</span></div>
-<div class="line"><a name="l00691"></a><span class="lineno">  691</span>&#160;        std::map&lt;indexT, std::unordered_map&lt;T, std::vector&lt;indexT&gt;&gt;&gt; transposedMap;</div>
-<div class="line"><a name="l00692"></a><span class="lineno">  692</span>&#160; </div>
-<div class="line"><a name="l00693"></a><span class="lineno">  693</span>&#160;        <span class="comment">// iterate over the matrix</span></div>
+<div class="line"><a name="l00690"></a><span class="lineno">  690</span>&#160; </div>
+<div class="line"><a name="l00691"></a><span class="lineno">  691</span>&#160; </div>
+<div class="line"><a name="l00692"></a><span class="lineno">  692</span>&#160;        <span class="comment">// make an array of unordered maps of length numRows</span></div>
+<div class="line"><a name="l00693"></a><span class="lineno">  693</span>&#160;        std::unordered_map&lt;T, std::vector&lt;indexT&gt;&gt; mapsT[innerDim];</div>
 <div class="line"><a name="l00694"></a><span class="lineno">  694</span>&#160; </div>
-<div class="line"><a name="l00695"></a><span class="lineno">  695</span>&#160;        <span class="keywordflow">for</span> (uint32_t i = 0; i &lt; outerDim; ++i) {</div>
-<div class="line"><a name="l00696"></a><span class="lineno">  696</span>&#160;            <span class="keywordflow">for</span> (<span class="keyword">typename</span> <a class="code" href="class_c_s_f_1_1_sparse_matrix_1_1_inner_iterator.html">SparseMatrix&lt;T, indexT, compressionLevel&gt;::InnerIterator</a> it(*<span class="keyword">this</span>, i); it; ++it) {</div>
-<div class="line"><a name="l00697"></a><span class="lineno">  697</span>&#160;                <span class="comment">// add the value to the map</span></div>
-<div class="line"><a name="l00698"></a><span class="lineno">  698</span>&#160;                <span class="keywordflow">if</span> constexpr (columnMajor) {</div>
-<div class="line"><a name="l00699"></a><span class="lineno">  699</span>&#160;                    transposedMap[it.row()][it.value()].push_back(it.col());</div>
-<div class="line"><a name="l00700"></a><span class="lineno">  700</span>&#160;                }</div>
-<div class="line"><a name="l00701"></a><span class="lineno">  701</span>&#160;                <span class="keywordflow">else</span> {</div>
-<div class="line"><a name="l00702"></a><span class="lineno">  702</span>&#160;                    transposedMap[it.col()][it.value()].push_back(it.row());</div>
-<div class="line"><a name="l00703"></a><span class="lineno">  703</span>&#160;                }</div>
-<div class="line"><a name="l00704"></a><span class="lineno">  704</span>&#160;            }</div>
-<div class="line"><a name="l00705"></a><span class="lineno">  705</span>&#160;        }</div>
-<div class="line"><a name="l00706"></a><span class="lineno">  706</span>&#160; </div>
-<div class="line"><a name="l00707"></a><span class="lineno">  707</span>&#160;        <span class="comment">// if compression level is 3 positive delta encode the vectors of indices</span></div>
-<div class="line"><a name="l00708"></a><span class="lineno">  708</span>&#160;        <span class="keywordflow">if</span> (compressionLevel == 3) {</div>
-<div class="line"><a name="l00709"></a><span class="lineno">  709</span>&#160;            <span class="keywordflow">for</span> (<span class="keyword">auto</span>&amp; row : transposedMap) {</div>
-<div class="line"><a name="l00710"></a><span class="lineno">  710</span>&#160;                <span class="keywordflow">for</span> (<span class="keyword">auto</span>&amp; col : row.second) {</div>
-<div class="line"><a name="l00711"></a><span class="lineno">  711</span>&#160; </div>
-<div class="line"><a name="l00712"></a><span class="lineno">  712</span>&#160;                    <span class="comment">// find the max value in the vector</span></div>
-<div class="line"><a name="l00713"></a><span class="lineno">  713</span>&#160;                    <span class="keywordtype">size_t</span> max = col.second[0];</div>
-<div class="line"><a name="l00714"></a><span class="lineno">  714</span>&#160; </div>
-<div class="line"><a name="l00715"></a><span class="lineno">  715</span>&#160;                    <span class="comment">// delta encode the vector</span></div>
-<div class="line"><a name="l00716"></a><span class="lineno">  716</span>&#160;                    <span class="keywordflow">for</span> (uint32_t i = col.second.size() - 1; i &gt; 0; --i) {</div>
-<div class="line"><a name="l00717"></a><span class="lineno">  717</span>&#160;                        col.second[i] -= col.second[i - 1];</div>
-<div class="line"><a name="l00718"></a><span class="lineno">  718</span>&#160;                        <span class="keywordflow">if</span> ((<span class="keywordtype">size_t</span>)col.second[i] &gt; max)</div>
-<div class="line"><a name="l00719"></a><span class="lineno">  719</span>&#160;                            max = col.second[i];</div>
-<div class="line"><a name="l00720"></a><span class="lineno">  720</span>&#160;                    }</div>
-<div class="line"><a name="l00721"></a><span class="lineno">  721</span>&#160; </div>
-<div class="line"><a name="l00722"></a><span class="lineno">  722</span>&#160;                    max = byteWidth(max);</div>
-<div class="line"><a name="l00723"></a><span class="lineno">  723</span>&#160;                    <span class="comment">// append max to the vector</span></div>
-<div class="line"><a name="l00724"></a><span class="lineno">  724</span>&#160;                    col.second.push_back(max);</div>
-<div class="line"><a name="l00725"></a><span class="lineno">  725</span>&#160;                }</div>
-<div class="line"><a name="l00726"></a><span class="lineno">  726</span>&#160;            }</div>
-<div class="line"><a name="l00727"></a><span class="lineno">  727</span>&#160;        }</div>
-<div class="line"><a name="l00728"></a><span class="lineno">  728</span>&#160; </div>
-<div class="line"><a name="l00729"></a><span class="lineno">  729</span>&#160;        <span class="comment">// create a new matrix passing in transposedMap</span></div>
-<div class="line"><a name="l00730"></a><span class="lineno">  730</span>&#160;        <a class="code" href="class_c_s_f_1_1_sparse_matrix.html">CSF::SparseMatrix&lt;T, indexT, compressionLevel, columnMajor&gt;</a> transposedMatrix(transposedMap, numCols, numRows);</div>
-<div class="line"><a name="l00731"></a><span class="lineno">  731</span>&#160; </div>
-<div class="line"><a name="l00732"></a><span class="lineno">  732</span>&#160;        <span class="keywordflow">return</span> transposedMatrix;</div>
-<div class="line"><a name="l00733"></a><span class="lineno">  733</span>&#160;    }</div>
-<div class="line"><a name="l00734"></a><span class="lineno">  734</span>&#160; </div>
-<div class="line"><a name="l00735"></a><span class="lineno">  735</span>&#160;    <span class="comment">// slice method that returns an array of vectors</span></div>
-<div class="line"><a name="l00736"></a><span class="lineno">  736</span>&#160;    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> T, <span class="keyword">typename</span> indexT, u<span class="keywordtype">int</span>8_t compressionLevel, <span class="keywordtype">bool</span> columnMajor&gt;</div>
-<div class="line"><a name="l00737"></a><span class="lineno"><a class="line" href="class_c_s_f_1_1_sparse_matrix.html#ae7113844af078bbe78826e26550021ad">  737</a></span>&#160;    <span class="keyword">typename</span> <a class="code" href="class_c_s_f_1_1_sparse_matrix_1_1_vector.html">CSF::SparseMatrix&lt;T, indexT, compressionLevel, columnMajor&gt;::Vector</a>* <a class="code" href="class_c_s_f_1_1_sparse_matrix.html#ae7113844af078bbe78826e26550021ad">SparseMatrix&lt;T, indexT, compressionLevel, columnMajor&gt;::slice</a>(uint32_t start, uint32_t end) {</div>
-<div class="line"><a name="l00738"></a><span class="lineno">  738</span>&#160;<span class="preprocessor">        #ifdef CSF_DEBUG</span></div>
-<div class="line"><a name="l00739"></a><span class="lineno">  739</span>&#160;        <span class="comment">// check that the start and end are valid</span></div>
-<div class="line"><a name="l00740"></a><span class="lineno">  740</span>&#160;        assert(start &lt; outerDim &amp;&amp; end &lt;= outerDim &amp;&amp; start &lt; end &amp;&amp; <span class="stringliteral">&quot;Invalid start and end values!&quot;</span>);</div>
-<div class="line"><a name="l00741"></a><span class="lineno">  741</span>&#160;<span class="preprocessor">        #endif</span></div>
-<div class="line"><a name="l00742"></a><span class="lineno">  742</span>&#160; </div>
-<div class="line"><a name="l00743"></a><span class="lineno">  743</span>&#160;        <span class="comment">// create a new array of vectors</span></div>
-<div class="line"><a name="l00744"></a><span class="lineno">  744</span>&#160;        <a class="code" href="class_c_s_f_1_1_sparse_matrix_1_1_vector.html">CSF::SparseMatrix&lt;T, indexT, compressionLevel, columnMajor&gt;::Vector</a>* vectors = <span class="keyword">new</span> <a class="code" href="class_c_s_f_1_1_sparse_matrix_1_1_vector.html">CSF::SparseMatrix&lt;T, indexT, compressionLevel, columnMajor&gt;::Vector</a>[end - start];</div>
-<div class="line"><a name="l00745"></a><span class="lineno">  745</span>&#160; </div>
-<div class="line"><a name="l00746"></a><span class="lineno">  746</span>&#160;        <span class="comment">// iterate over the matrix</span></div>
-<div class="line"><a name="l00747"></a><span class="lineno">  747</span>&#160;<span class="preprocessor">        #ifdef CSF_PARALLEL</span></div>
-<div class="line"><a name="l00748"></a><span class="lineno">  748</span>&#160;<span class="preprocessor">        #pragma omp parallel for</span></div>
-<div class="line"><a name="l00749"></a><span class="lineno">  749</span>&#160;<span class="preprocessor">        #endif</span></div>
-<div class="line"><a name="l00750"></a><span class="lineno">  750</span>&#160;        <span class="keywordflow">for</span> (uint32_t i = start; i &lt; end; ++i) {</div>
-<div class="line"><a name="l00751"></a><span class="lineno">  751</span>&#160;            <span class="comment">// create a new vector</span></div>
-<div class="line"><a name="l00752"></a><span class="lineno">  752</span>&#160;            <a class="code" href="class_c_s_f_1_1_sparse_matrix_1_1_vector.html">CSF::SparseMatrix&lt;T, indexT, compressionLevel, columnMajor&gt;::Vector</a> vec(*<span class="keyword">this</span>, i);</div>
-<div class="line"><a name="l00753"></a><span class="lineno">  753</span>&#160; </div>
-<div class="line"><a name="l00754"></a><span class="lineno">  754</span>&#160;            <span class="comment">// add the vector to the array</span></div>
-<div class="line"><a name="l00755"></a><span class="lineno">  755</span>&#160;            vectors[i - start] = vec;</div>
-<div class="line"><a name="l00756"></a><span class="lineno">  756</span>&#160;        }</div>
-<div class="line"><a name="l00757"></a><span class="lineno">  757</span>&#160; </div>
-<div class="line"><a name="l00758"></a><span class="lineno">  758</span>&#160;        <span class="keywordflow">return</span> vectors;</div>
-<div class="line"><a name="l00759"></a><span class="lineno">  759</span>&#160;    }</div>
-<div class="line"><a name="l00760"></a><span class="lineno">  760</span>&#160; </div>
-<div class="line"><a name="l00761"></a><span class="lineno">  761</span>&#160;    <span class="comment">// to eigen method</span></div>
-<div class="line"><a name="l00762"></a><span class="lineno">  762</span>&#160;    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> T, <span class="keyword">typename</span> indexT, u<span class="keywordtype">int</span>8_t compressionLevel, <span class="keywordtype">bool</span> columnMajor&gt;</div>
-<div class="line"><a name="l00763"></a><span class="lineno"><a class="line" href="class_c_s_f_1_1_sparse_matrix.html#a5a57392e2567e2d75193ae2b9de64bd4">  763</a></span>&#160;    Eigen::SparseMatrix&lt;T, columnMajor ? Eigen::ColMajor : Eigen::RowMajor&gt; <a class="code" href="class_c_s_f_1_1_sparse_matrix.html#a5a57392e2567e2d75193ae2b9de64bd4">SparseMatrix&lt;T, indexT, compressionLevel, columnMajor&gt;::toEigen</a>() {</div>
-<div class="line"><a name="l00764"></a><span class="lineno">  764</span>&#160; </div>
-<div class="line"><a name="l00765"></a><span class="lineno">  765</span>&#160;<span class="preprocessor">        #ifdef CSF_DEBUG</span></div>
-<div class="line"><a name="l00766"></a><span class="lineno">  766</span>&#160;        <span class="comment">// assert that the matrix is not empty</span></div>
-<div class="line"><a name="l00767"></a><span class="lineno">  767</span>&#160;        assert(outerDim &gt; 0 &amp;&amp; <span class="stringliteral">&quot;Cannot convert an empty matrix to an Eigen matrix!&quot;</span>);</div>
-<div class="line"><a name="l00768"></a><span class="lineno">  768</span>&#160;<span class="preprocessor">        #endif</span></div>
-<div class="line"><a name="l00769"></a><span class="lineno">  769</span>&#160; </div>
-<div class="line"><a name="l00770"></a><span class="lineno">  770</span>&#160;        <span class="comment">// create a new sparse matrix</span></div>
-<div class="line"><a name="l00771"></a><span class="lineno">  771</span>&#160;        Eigen::SparseMatrix&lt;T, columnMajor ? Eigen::ColMajor : Eigen::RowMajor&gt; eigenMatrix(numRows, numCols);</div>
-<div class="line"><a name="l00772"></a><span class="lineno">  772</span>&#160; </div>
-<div class="line"><a name="l00773"></a><span class="lineno">  773</span>&#160;        <span class="comment">// iterate over the matrix</span></div>
-<div class="line"><a name="l00774"></a><span class="lineno">  774</span>&#160;        <span class="keywordflow">for</span> (uint32_t i = 0; i &lt; outerDim; ++i) {</div>
-<div class="line"><a name="l00775"></a><span class="lineno">  775</span>&#160;            <span class="keywordflow">for</span> (<span class="keyword">typename</span> <a class="code" href="class_c_s_f_1_1_sparse_matrix_1_1_inner_iterator.html">SparseMatrix&lt;T, indexT, compressionLevel&gt;::InnerIterator</a> it(*<span class="keyword">this</span>, i); it; ++it) {</div>
-<div class="line"><a name="l00776"></a><span class="lineno">  776</span>&#160;                <span class="comment">// add the value to the matrix</span></div>
-<div class="line"><a name="l00777"></a><span class="lineno">  777</span>&#160;                eigenMatrix.insert(it.row(), it.col()) = it.value();</div>
-<div class="line"><a name="l00778"></a><span class="lineno">  778</span>&#160;            }</div>
-<div class="line"><a name="l00779"></a><span class="lineno">  779</span>&#160;        }</div>
-<div class="line"><a name="l00780"></a><span class="lineno">  780</span>&#160; </div>
-<div class="line"><a name="l00781"></a><span class="lineno">  781</span>&#160;        <span class="comment">// finalize the matrix</span></div>
-<div class="line"><a name="l00782"></a><span class="lineno">  782</span>&#160;        eigenMatrix.makeCompressed();</div>
-<div class="line"><a name="l00783"></a><span class="lineno">  783</span>&#160; </div>
-<div class="line"><a name="l00784"></a><span class="lineno">  784</span>&#160;        <span class="comment">// return the matrix</span></div>
-<div class="line"><a name="l00785"></a><span class="lineno">  785</span>&#160;        <span class="keywordflow">return</span> eigenMatrix;</div>
-<div class="line"><a name="l00786"></a><span class="lineno">  786</span>&#160;    }</div>
-<div class="line"><a name="l00787"></a><span class="lineno">  787</span>&#160; </div>
-<div class="line"><a name="l00788"></a><span class="lineno">  788</span>&#160;    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> T, <span class="keyword">typename</span> indexT, u<span class="keywordtype">int</span>8_t compressionLevel, <span class="keywordtype">bool</span> columnMajor&gt;</div>
-<div class="line"><a name="l00789"></a><span class="lineno"><a class="line" href="class_c_s_f_1_1_sparse_matrix.html#a9b045b5f8db83ccbf269acb92f6b8a88">  789</a></span>&#160;    <a class="code" href="class_c_s_f_1_1_sparse_matrix_3_01_t_00_01index_t_00_011_00_01column_major_01_4.html">CSF::SparseMatrix&lt;T, indexT, 1, columnMajor&gt;</a> <a class="code" href="class_c_s_f_1_1_sparse_matrix.html#a9b045b5f8db83ccbf269acb92f6b8a88">SparseMatrix&lt;T, indexT, compressionLevel, columnMajor&gt;::toCSF1</a>() {</div>
-<div class="line"><a name="l00790"></a><span class="lineno">  790</span>&#160;        <span class="comment">// create a new sparse matrix</span></div>
-<div class="line"><a name="l00791"></a><span class="lineno">  791</span>&#160;        Eigen::SparseMatrix&lt;T, columnMajor ? Eigen::ColMajor : Eigen::RowMajor&gt; eigenMatrix(numRows, numCols);</div>
-<div class="line"><a name="l00792"></a><span class="lineno">  792</span>&#160; </div>
-<div class="line"><a name="l00793"></a><span class="lineno">  793</span>&#160;        <span class="comment">// iterate over the matrix</span></div>
-<div class="line"><a name="l00794"></a><span class="lineno">  794</span>&#160;        <span class="keywordflow">for</span> (uint32_t i = 0; i &lt; outerDim; ++i)</div>
-<div class="line"><a name="l00795"></a><span class="lineno">  795</span>&#160;        {</div>
-<div class="line"><a name="l00796"></a><span class="lineno">  796</span>&#160;            <span class="keywordflow">for</span> (<span class="keyword">typename</span> <a class="code" href="class_c_s_f_1_1_sparse_matrix_1_1_inner_iterator.html">SparseMatrix&lt;T, indexT, compressionLevel&gt;::InnerIterator</a> it(*<span class="keyword">this</span>, i); it; ++it)</div>
-<div class="line"><a name="l00797"></a><span class="lineno">  797</span>&#160;            {</div>
-<div class="line"><a name="l00798"></a><span class="lineno">  798</span>&#160;                <span class="comment">// add the value to the matrix</span></div>
-<div class="line"><a name="l00799"></a><span class="lineno">  799</span>&#160;                eigenMatrix.insert(it.row(), it.col()) = it.value();</div>
-<div class="line"><a name="l00800"></a><span class="lineno">  800</span>&#160;            }</div>
-<div class="line"><a name="l00801"></a><span class="lineno">  801</span>&#160;        }</div>
-<div class="line"><a name="l00802"></a><span class="lineno">  802</span>&#160; </div>
-<div class="line"><a name="l00803"></a><span class="lineno">  803</span>&#160;        <span class="comment">// finalize the matrix</span></div>
-<div class="line"><a name="l00804"></a><span class="lineno">  804</span>&#160;        eigenMatrix.makeCompressed();</div>
-<div class="line"><a name="l00805"></a><span class="lineno">  805</span>&#160; </div>
-<div class="line"><a name="l00806"></a><span class="lineno">  806</span>&#160;        <span class="comment">// make a csf1 matrix</span></div>
-<div class="line"><a name="l00807"></a><span class="lineno">  807</span>&#160;        <a class="code" href="class_c_s_f_1_1_sparse_matrix_3_01_t_00_01index_t_00_011_00_01column_major_01_4.html">CSF::SparseMatrix&lt;T, indexT, 1, columnMajor&gt;</a> csf1Matrix(eigenMatrix);</div>
-<div class="line"><a name="l00808"></a><span class="lineno">  808</span>&#160; </div>
-<div class="line"><a name="l00809"></a><span class="lineno">  809</span>&#160;        <span class="comment">// return the matrix</span></div>
-<div class="line"><a name="l00810"></a><span class="lineno">  810</span>&#160;        <span class="keywordflow">return</span> csf1Matrix;</div>
-<div class="line"><a name="l00811"></a><span class="lineno">  811</span>&#160;    }</div>
-<div class="line"><a name="l00812"></a><span class="lineno">  812</span>&#160; </div>
-<div class="line"><a name="l00813"></a><span class="lineno">  813</span>&#160;    <span class="comment">// template &lt;typename T, typename indexT, uint8_t compressionLevel, bool columnMajor&gt;</span></div>
-<div class="line"><a name="l00814"></a><span class="lineno">  814</span>&#160;    <span class="comment">// std::ostream&amp; operator&lt;&lt;(std::ostream &amp;os, const CSF::SparseMatrix&lt;T, indexT, compressionLevel, columnMajor&gt; &amp;mat) { //not working</span></div>
-<div class="line"><a name="l00815"></a><span class="lineno">  815</span>&#160;    <span class="comment">// // std::ostream&amp; SparseMatrix&lt;T, indexT, compressionLevel, columnMajor&gt;::operator&lt;&lt;(std::ostream &amp;os) {</span></div>
-<div class="line"><a name="l00816"></a><span class="lineno">  816</span>&#160; </div>
-<div class="line"><a name="l00817"></a><span class="lineno">  817</span>&#160;    <span class="comment">//     T matrix[mat.rows()][mat.cols()];</span></div>
+<div class="line"><a name="l00696"></a><span class="lineno">  696</span>&#160;        <span class="comment">// iterate over the matrix and populate mapsT</span></div>
+<div class="line"><a name="l00697"></a><span class="lineno">  697</span>&#160;        <span class="keywordflow">for</span> (uint32_t i = 0; i &lt; outerDim; ++i) {</div>
+<div class="line"><a name="l00698"></a><span class="lineno">  698</span>&#160;            <span class="keywordflow">for</span> (<span class="keyword">typename</span> <a class="code" href="class_c_s_f_1_1_sparse_matrix_1_1_inner_iterator.html">SparseMatrix&lt;T, indexT, compressionLevel&gt;::InnerIterator</a> it(*<span class="keyword">this</span>, i); it; ++it) {</div>
+<div class="line"><a name="l00699"></a><span class="lineno">  699</span>&#160;                <span class="comment">// add the value to the map</span></div>
+<div class="line"><a name="l00700"></a><span class="lineno">  700</span>&#160;                <span class="keywordflow">if</span> constexpr (columnMajor) {</div>
+<div class="line"><a name="l00701"></a><span class="lineno">  701</span>&#160;                    mapsT[it.row()][it.value()].push_back(it.col());</div>
+<div class="line"><a name="l00702"></a><span class="lineno">  702</span>&#160;                }</div>
+<div class="line"><a name="l00703"></a><span class="lineno">  703</span>&#160;                <span class="keywordflow">else</span> {</div>
+<div class="line"><a name="l00704"></a><span class="lineno">  704</span>&#160;                    mapsT[it.col()][it.value()].push_back(it.row());</div>
+<div class="line"><a name="l00705"></a><span class="lineno">  705</span>&#160;                }</div>
+<div class="line"><a name="l00706"></a><span class="lineno">  706</span>&#160;            }</div>
+<div class="line"><a name="l00707"></a><span class="lineno">  707</span>&#160;        }</div>
+<div class="line"><a name="l00708"></a><span class="lineno">  708</span>&#160; </div>
+<div class="line"><a name="l00709"></a><span class="lineno">  709</span>&#160;        <span class="comment">// if compressoin level 3 positive delta encode the vectors of indices</span></div>
+<div class="line"><a name="l00710"></a><span class="lineno">  710</span>&#160;        <span class="keywordflow">if</span> constexpr (compressionLevel == 3) {</div>
+<div class="line"><a name="l00711"></a><span class="lineno">  711</span>&#160;            <span class="keywordflow">for</span> (<span class="keyword">auto</span>&amp; row : mapsT) {</div>
+<div class="line"><a name="l00712"></a><span class="lineno">  712</span>&#160;                <span class="keywordflow">for</span> (<span class="keyword">auto</span>&amp; col : row) {</div>
+<div class="line"><a name="l00713"></a><span class="lineno">  713</span>&#160; </div>
+<div class="line"><a name="l00714"></a><span class="lineno">  714</span>&#160;                    <span class="comment">// find the max value in the vector</span></div>
+<div class="line"><a name="l00715"></a><span class="lineno">  715</span>&#160;                    <span class="keywordtype">size_t</span> max = col.second[0];</div>
+<div class="line"><a name="l00716"></a><span class="lineno">  716</span>&#160; </div>
+<div class="line"><a name="l00717"></a><span class="lineno">  717</span>&#160;                    <span class="comment">// delta encode the vector</span></div>
+<div class="line"><a name="l00718"></a><span class="lineno">  718</span>&#160;                    <span class="keywordflow">for</span> (uint32_t i = col.second.size() - 1; i &gt; 0; --i) {</div>
+<div class="line"><a name="l00719"></a><span class="lineno">  719</span>&#160;                        col.second[i] -= col.second[i - 1];</div>
+<div class="line"><a name="l00720"></a><span class="lineno">  720</span>&#160;                        <span class="keywordflow">if</span> ((<span class="keywordtype">size_t</span>)col.second[i] &gt; max)</div>
+<div class="line"><a name="l00721"></a><span class="lineno">  721</span>&#160;                            max = col.second[i];</div>
+<div class="line"><a name="l00722"></a><span class="lineno">  722</span>&#160;                    }</div>
+<div class="line"><a name="l00723"></a><span class="lineno">  723</span>&#160; </div>
+<div class="line"><a name="l00724"></a><span class="lineno">  724</span>&#160;                    max = byteWidth(max);</div>
+<div class="line"><a name="l00725"></a><span class="lineno">  725</span>&#160;                    <span class="comment">// append max to the vector</span></div>
+<div class="line"><a name="l00726"></a><span class="lineno">  726</span>&#160;                    col.second.push_back(max);</div>
+<div class="line"><a name="l00727"></a><span class="lineno">  727</span>&#160;                }</div>
+<div class="line"><a name="l00728"></a><span class="lineno">  728</span>&#160;            }</div>
+<div class="line"><a name="l00729"></a><span class="lineno">  729</span>&#160;        }</div>
+<div class="line"><a name="l00730"></a><span class="lineno">  730</span>&#160; </div>
+<div class="line"><a name="l00731"></a><span class="lineno">  731</span>&#160;        <span class="comment">// create a new matrix passing in transposedMap</span></div>
+<div class="line"><a name="l00732"></a><span class="lineno">  732</span>&#160;        <a class="code" href="class_c_s_f_1_1_sparse_matrix.html">CSF::SparseMatrix&lt;T, indexT, compressionLevel, columnMajor&gt;</a> transposedMatrix(mapsT, numRows, numCols);</div>
+<div class="line"><a name="l00733"></a><span class="lineno">  733</span>&#160; </div>
+<div class="line"><a name="l00734"></a><span class="lineno">  734</span>&#160;        <span class="keywordflow">return</span> transposedMatrix;</div>
+<div class="line"><a name="l00735"></a><span class="lineno">  735</span>&#160;    }</div>
+<div class="line"><a name="l00736"></a><span class="lineno">  736</span>&#160; </div>
+<div class="line"><a name="l00737"></a><span class="lineno">  737</span>&#160;    <span class="comment">// slice method that returns an array of vectors</span></div>
+<div class="line"><a name="l00738"></a><span class="lineno">  738</span>&#160;    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> T, <span class="keyword">typename</span> indexT, u<span class="keywordtype">int</span>8_t compressionLevel, <span class="keywordtype">bool</span> columnMajor&gt;</div>
+<div class="line"><a name="l00739"></a><span class="lineno"><a class="line" href="class_c_s_f_1_1_sparse_matrix.html#ae7113844af078bbe78826e26550021ad">  739</a></span>&#160;    <span class="keyword">typename</span> <a class="code" href="class_c_s_f_1_1_sparse_matrix_1_1_vector.html">CSF::SparseMatrix&lt;T, indexT, compressionLevel, columnMajor&gt;::Vector</a>* <a class="code" href="class_c_s_f_1_1_sparse_matrix.html#ae7113844af078bbe78826e26550021ad">SparseMatrix&lt;T, indexT, compressionLevel, columnMajor&gt;::slice</a>(uint32_t start, uint32_t end) {</div>
+<div class="line"><a name="l00740"></a><span class="lineno">  740</span>&#160;<span class="preprocessor">        #ifdef CSF_DEBUG</span></div>
+<div class="line"><a name="l00741"></a><span class="lineno">  741</span>&#160;        <span class="comment">// check that the start and end are valid</span></div>
+<div class="line"><a name="l00742"></a><span class="lineno">  742</span>&#160;        assert(start &lt; outerDim &amp;&amp; end &lt;= outerDim &amp;&amp; start &lt; end &amp;&amp; <span class="stringliteral">&quot;Invalid start and end values!&quot;</span>);</div>
+<div class="line"><a name="l00743"></a><span class="lineno">  743</span>&#160;<span class="preprocessor">        #endif</span></div>
+<div class="line"><a name="l00744"></a><span class="lineno">  744</span>&#160; </div>
+<div class="line"><a name="l00745"></a><span class="lineno">  745</span>&#160;        <span class="comment">// create a new array of vectors</span></div>
+<div class="line"><a name="l00746"></a><span class="lineno">  746</span>&#160;        <a class="code" href="class_c_s_f_1_1_sparse_matrix_1_1_vector.html">CSF::SparseMatrix&lt;T, indexT, compressionLevel, columnMajor&gt;::Vector</a>* vectors = <span class="keyword">new</span> <a class="code" href="class_c_s_f_1_1_sparse_matrix_1_1_vector.html">CSF::SparseMatrix&lt;T, indexT, compressionLevel, columnMajor&gt;::Vector</a>[end - start];</div>
+<div class="line"><a name="l00747"></a><span class="lineno">  747</span>&#160; </div>
+<div class="line"><a name="l00748"></a><span class="lineno">  748</span>&#160;        <span class="comment">// iterate over the matrix</span></div>
+<div class="line"><a name="l00749"></a><span class="lineno">  749</span>&#160;<span class="preprocessor">        #ifdef CSF_PARALLEL</span></div>
+<div class="line"><a name="l00750"></a><span class="lineno">  750</span>&#160;<span class="preprocessor">        #pragma omp parallel for</span></div>
+<div class="line"><a name="l00751"></a><span class="lineno">  751</span>&#160;<span class="preprocessor">        #endif</span></div>
+<div class="line"><a name="l00752"></a><span class="lineno">  752</span>&#160;        <span class="keywordflow">for</span> (uint32_t i = start; i &lt; end; ++i) {</div>
+<div class="line"><a name="l00753"></a><span class="lineno">  753</span>&#160;            <span class="comment">// create a new vector</span></div>
+<div class="line"><a name="l00754"></a><span class="lineno">  754</span>&#160;            <a class="code" href="class_c_s_f_1_1_sparse_matrix_1_1_vector.html">CSF::SparseMatrix&lt;T, indexT, compressionLevel, columnMajor&gt;::Vector</a> vec(*<span class="keyword">this</span>, i);</div>
+<div class="line"><a name="l00755"></a><span class="lineno">  755</span>&#160; </div>
+<div class="line"><a name="l00756"></a><span class="lineno">  756</span>&#160;            <span class="comment">// add the vector to the array</span></div>
+<div class="line"><a name="l00757"></a><span class="lineno">  757</span>&#160;            vectors[i - start] = vec;</div>
+<div class="line"><a name="l00758"></a><span class="lineno">  758</span>&#160;        }</div>
+<div class="line"><a name="l00759"></a><span class="lineno">  759</span>&#160; </div>
+<div class="line"><a name="l00760"></a><span class="lineno">  760</span>&#160;        <span class="keywordflow">return</span> vectors;</div>
+<div class="line"><a name="l00761"></a><span class="lineno">  761</span>&#160;    }</div>
+<div class="line"><a name="l00762"></a><span class="lineno">  762</span>&#160; </div>
+<div class="line"><a name="l00763"></a><span class="lineno">  763</span>&#160;    <span class="comment">// to eigen method</span></div>
+<div class="line"><a name="l00764"></a><span class="lineno">  764</span>&#160;    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> T, <span class="keyword">typename</span> indexT, u<span class="keywordtype">int</span>8_t compressionLevel, <span class="keywordtype">bool</span> columnMajor&gt;</div>
+<div class="line"><a name="l00765"></a><span class="lineno"><a class="line" href="class_c_s_f_1_1_sparse_matrix.html#a5a57392e2567e2d75193ae2b9de64bd4">  765</a></span>&#160;    Eigen::SparseMatrix&lt;T, columnMajor ? Eigen::ColMajor : Eigen::RowMajor&gt; <a class="code" href="class_c_s_f_1_1_sparse_matrix.html#a5a57392e2567e2d75193ae2b9de64bd4">SparseMatrix&lt;T, indexT, compressionLevel, columnMajor&gt;::toEigen</a>() {</div>
+<div class="line"><a name="l00766"></a><span class="lineno">  766</span>&#160; </div>
+<div class="line"><a name="l00767"></a><span class="lineno">  767</span>&#160;<span class="preprocessor">        #ifdef CSF_DEBUG</span></div>
+<div class="line"><a name="l00768"></a><span class="lineno">  768</span>&#160;        <span class="comment">// assert that the matrix is not empty</span></div>
+<div class="line"><a name="l00769"></a><span class="lineno">  769</span>&#160;        assert(outerDim &gt; 0 &amp;&amp; <span class="stringliteral">&quot;Cannot convert an empty matrix to an Eigen matrix!&quot;</span>);</div>
+<div class="line"><a name="l00770"></a><span class="lineno">  770</span>&#160;<span class="preprocessor">        #endif</span></div>
+<div class="line"><a name="l00771"></a><span class="lineno">  771</span>&#160; </div>
+<div class="line"><a name="l00772"></a><span class="lineno">  772</span>&#160;        <span class="comment">// create a new sparse matrix</span></div>
+<div class="line"><a name="l00773"></a><span class="lineno">  773</span>&#160;        Eigen::SparseMatrix&lt;T, columnMajor ? Eigen::ColMajor : Eigen::RowMajor&gt; eigenMatrix(numRows, numCols);</div>
+<div class="line"><a name="l00774"></a><span class="lineno">  774</span>&#160; </div>
+<div class="line"><a name="l00775"></a><span class="lineno">  775</span>&#160;        <span class="comment">// iterate over the matrix</span></div>
+<div class="line"><a name="l00776"></a><span class="lineno">  776</span>&#160;        <span class="keywordflow">for</span> (uint32_t i = 0; i &lt; outerDim; ++i) {</div>
+<div class="line"><a name="l00777"></a><span class="lineno">  777</span>&#160;            <span class="keywordflow">for</span> (<span class="keyword">typename</span> <a class="code" href="class_c_s_f_1_1_sparse_matrix_1_1_inner_iterator.html">SparseMatrix&lt;T, indexT, compressionLevel&gt;::InnerIterator</a> it(*<span class="keyword">this</span>, i); it; ++it) {</div>
+<div class="line"><a name="l00778"></a><span class="lineno">  778</span>&#160;                <span class="comment">// add the value to the matrix</span></div>
+<div class="line"><a name="l00779"></a><span class="lineno">  779</span>&#160;                eigenMatrix.insert(it.row(), it.col()) = it.value();</div>
+<div class="line"><a name="l00780"></a><span class="lineno">  780</span>&#160;            }</div>
+<div class="line"><a name="l00781"></a><span class="lineno">  781</span>&#160;        }</div>
+<div class="line"><a name="l00782"></a><span class="lineno">  782</span>&#160; </div>
+<div class="line"><a name="l00783"></a><span class="lineno">  783</span>&#160;        <span class="comment">// finalize the matrix</span></div>
+<div class="line"><a name="l00784"></a><span class="lineno">  784</span>&#160;        eigenMatrix.makeCompressed();</div>
+<div class="line"><a name="l00785"></a><span class="lineno">  785</span>&#160; </div>
+<div class="line"><a name="l00786"></a><span class="lineno">  786</span>&#160;        <span class="comment">// return the matrix</span></div>
+<div class="line"><a name="l00787"></a><span class="lineno">  787</span>&#160;        <span class="keywordflow">return</span> eigenMatrix;</div>
+<div class="line"><a name="l00788"></a><span class="lineno">  788</span>&#160;    }</div>
+<div class="line"><a name="l00789"></a><span class="lineno">  789</span>&#160; </div>
+<div class="line"><a name="l00790"></a><span class="lineno">  790</span>&#160;    <span class="keyword">template</span> &lt;<span class="keyword">typename</span> T, <span class="keyword">typename</span> indexT, u<span class="keywordtype">int</span>8_t compressionLevel, <span class="keywordtype">bool</span> columnMajor&gt;</div>
+<div class="line"><a name="l00791"></a><span class="lineno"><a class="line" href="class_c_s_f_1_1_sparse_matrix.html#a9b045b5f8db83ccbf269acb92f6b8a88">  791</a></span>&#160;    <a class="code" href="class_c_s_f_1_1_sparse_matrix_3_01_t_00_01index_t_00_011_00_01column_major_01_4.html">CSF::SparseMatrix&lt;T, indexT, 1, columnMajor&gt;</a> <a class="code" href="class_c_s_f_1_1_sparse_matrix.html#a9b045b5f8db83ccbf269acb92f6b8a88">SparseMatrix&lt;T, indexT, compressionLevel, columnMajor&gt;::toCSF1</a>() {</div>
+<div class="line"><a name="l00792"></a><span class="lineno">  792</span>&#160;        <span class="comment">// create a new sparse matrix</span></div>
+<div class="line"><a name="l00793"></a><span class="lineno">  793</span>&#160;        Eigen::SparseMatrix&lt;T, columnMajor ? Eigen::ColMajor : Eigen::RowMajor&gt; eigenMatrix(numRows, numCols);</div>
+<div class="line"><a name="l00794"></a><span class="lineno">  794</span>&#160; </div>
+<div class="line"><a name="l00795"></a><span class="lineno">  795</span>&#160;        <span class="comment">// iterate over the matrix</span></div>
+<div class="line"><a name="l00796"></a><span class="lineno">  796</span>&#160;        <span class="keywordflow">for</span> (uint32_t i = 0; i &lt; outerDim; ++i)</div>
+<div class="line"><a name="l00797"></a><span class="lineno">  797</span>&#160;        {</div>
+<div class="line"><a name="l00798"></a><span class="lineno">  798</span>&#160;            <span class="keywordflow">for</span> (<span class="keyword">typename</span> <a class="code" href="class_c_s_f_1_1_sparse_matrix_1_1_inner_iterator.html">SparseMatrix&lt;T, indexT, compressionLevel&gt;::InnerIterator</a> it(*<span class="keyword">this</span>, i); it; ++it)</div>
+<div class="line"><a name="l00799"></a><span class="lineno">  799</span>&#160;            {</div>
+<div class="line"><a name="l00800"></a><span class="lineno">  800</span>&#160;                <span class="comment">// add the value to the matrix</span></div>
+<div class="line"><a name="l00801"></a><span class="lineno">  801</span>&#160;                eigenMatrix.insert(it.row(), it.col()) = it.value();</div>
+<div class="line"><a name="l00802"></a><span class="lineno">  802</span>&#160;            }</div>
+<div class="line"><a name="l00803"></a><span class="lineno">  803</span>&#160;        }</div>
+<div class="line"><a name="l00804"></a><span class="lineno">  804</span>&#160; </div>
+<div class="line"><a name="l00805"></a><span class="lineno">  805</span>&#160;        <span class="comment">// finalize the matrix</span></div>
+<div class="line"><a name="l00806"></a><span class="lineno">  806</span>&#160;        eigenMatrix.makeCompressed();</div>
+<div class="line"><a name="l00807"></a><span class="lineno">  807</span>&#160; </div>
+<div class="line"><a name="l00808"></a><span class="lineno">  808</span>&#160;        <span class="comment">// make a csf1 matrix</span></div>
+<div class="line"><a name="l00809"></a><span class="lineno">  809</span>&#160;        <a class="code" href="class_c_s_f_1_1_sparse_matrix_3_01_t_00_01index_t_00_011_00_01column_major_01_4.html">CSF::SparseMatrix&lt;T, indexT, 1, columnMajor&gt;</a> csf1Matrix(eigenMatrix);</div>
+<div class="line"><a name="l00810"></a><span class="lineno">  810</span>&#160; </div>
+<div class="line"><a name="l00811"></a><span class="lineno">  811</span>&#160;        <span class="comment">// return the matrix</span></div>
+<div class="line"><a name="l00812"></a><span class="lineno">  812</span>&#160;        <span class="keywordflow">return</span> csf1Matrix;</div>
+<div class="line"><a name="l00813"></a><span class="lineno">  813</span>&#160;    }</div>
+<div class="line"><a name="l00814"></a><span class="lineno">  814</span>&#160; </div>
+<div class="line"><a name="l00815"></a><span class="lineno">  815</span>&#160;    <span class="comment">// template &lt;typename T, typename indexT, uint8_t compressionLevel, bool columnMajor&gt;</span></div>
+<div class="line"><a name="l00816"></a><span class="lineno">  816</span>&#160;    <span class="comment">// std::ostream&amp; operator&lt;&lt;(std::ostream &amp;os, const CSF::SparseMatrix&lt;T, indexT, compressionLevel, columnMajor&gt; &amp;mat) { //not working</span></div>
+<div class="line"><a name="l00817"></a><span class="lineno">  817</span>&#160;    <span class="comment">// // std::ostream&amp; SparseMatrix&lt;T, indexT, compressionLevel, columnMajor&gt;::operator&lt;&lt;(std::ostream &amp;os) {</span></div>
 <div class="line"><a name="l00818"></a><span class="lineno">  818</span>&#160; </div>
-<div class="line"><a name="l00819"></a><span class="lineno">  819</span>&#160;    <span class="comment">//     for (int i = 0; i &lt; mat.cols(); i++){</span></div>
-<div class="line"><a name="l00820"></a><span class="lineno">  820</span>&#160;    <span class="comment">//         for(typename CSF::SparseMatrix&lt;T, indexT, compressionLevel, columnMajor&gt;::InnerIterator it(mat, i); it; ++it){</span></div>
-<div class="line"><a name="l00821"></a><span class="lineno">  821</span>&#160;    <span class="comment">//             matrix[it.row()][it.col()] = it.value();</span></div>
-<div class="line"><a name="l00822"></a><span class="lineno">  822</span>&#160;    <span class="comment">//         }</span></div>
-<div class="line"><a name="l00823"></a><span class="lineno">  823</span>&#160;    <span class="comment">//     }</span></div>
-<div class="line"><a name="l00824"></a><span class="lineno">  824</span>&#160; </div>
-<div class="line"><a name="l00825"></a><span class="lineno">  825</span>&#160;    <span class="comment">//     for (int i = 0; i &lt; mat.rows(); i++){</span></div>
-<div class="line"><a name="l00826"></a><span class="lineno">  826</span>&#160;    <span class="comment">//         for (int j = 0; j &lt; mat.cols(); j++){</span></div>
-<div class="line"><a name="l00827"></a><span class="lineno">  827</span>&#160;    <span class="comment">//             os &lt;&lt; matrix[i][j] &lt;&lt; &quot; &quot;;</span></div>
-<div class="line"><a name="l00828"></a><span class="lineno">  828</span>&#160;    <span class="comment">//         }</span></div>
-<div class="line"><a name="l00829"></a><span class="lineno">  829</span>&#160;    <span class="comment">//         os &lt;&lt; std::endl;</span></div>
-<div class="line"><a name="l00830"></a><span class="lineno">  830</span>&#160;    <span class="comment">//     }</span></div>
-<div class="line"><a name="l00831"></a><span class="lineno">  831</span>&#160;    <span class="comment">//     return os;</span></div>
-<div class="line"><a name="l00832"></a><span class="lineno">  832</span>&#160;    <span class="comment">// }</span></div>
-<div class="line"><a name="l00833"></a><span class="lineno">  833</span>&#160; </div>
-<div class="line"><a name="l00834"></a><span class="lineno">  834</span>&#160;} <span class="comment">// end namespace CSF</span></div>
-<div class="ttc" id="aclass_c_s_f_1_1_sparse_matrix_1_1_inner_iterator_html"><div class="ttname"><a href="class_c_s_f_1_1_sparse_matrix_1_1_inner_iterator.html">CSF::SparseMatrix::InnerIterator</a></div><div class="ttdoc">An iterator over the inner dimension of a CSF matrix.</div><div class="ttdef"><b>Definition:</b> CSF_SparseMatrix.hpp:683</div></div>
-<div class="ttc" id="aclass_c_s_f_1_1_sparse_matrix_1_1_vector_html"><div class="ttname"><a href="class_c_s_f_1_1_sparse_matrix_1_1_vector.html">CSF::SparseMatrix::Vector</a></div><div class="ttdoc">A class to represent a vector in a CSF matrix.</div><div class="ttdef"><b>Definition:</b> CSF_SparseMatrix.hpp:923</div></div>
+<div class="line"><a name="l00819"></a><span class="lineno">  819</span>&#160;    <span class="comment">//     T matrix[mat.rows()][mat.cols()];</span></div>
+<div class="line"><a name="l00820"></a><span class="lineno">  820</span>&#160; </div>
+<div class="line"><a name="l00821"></a><span class="lineno">  821</span>&#160;    <span class="comment">//     for (int i = 0; i &lt; mat.cols(); i++){</span></div>
+<div class="line"><a name="l00822"></a><span class="lineno">  822</span>&#160;    <span class="comment">//         for(typename CSF::SparseMatrix&lt;T, indexT, compressionLevel, columnMajor&gt;::InnerIterator it(mat, i); it; ++it){</span></div>
+<div class="line"><a name="l00823"></a><span class="lineno">  823</span>&#160;    <span class="comment">//             matrix[it.row()][it.col()] = it.value();</span></div>
+<div class="line"><a name="l00824"></a><span class="lineno">  824</span>&#160;    <span class="comment">//         }</span></div>
+<div class="line"><a name="l00825"></a><span class="lineno">  825</span>&#160;    <span class="comment">//     }</span></div>
+<div class="line"><a name="l00826"></a><span class="lineno">  826</span>&#160; </div>
+<div class="line"><a name="l00827"></a><span class="lineno">  827</span>&#160;    <span class="comment">//     for (int i = 0; i &lt; mat.rows(); i++){</span></div>
+<div class="line"><a name="l00828"></a><span class="lineno">  828</span>&#160;    <span class="comment">//         for (int j = 0; j &lt; mat.cols(); j++){</span></div>
+<div class="line"><a name="l00829"></a><span class="lineno">  829</span>&#160;    <span class="comment">//             os &lt;&lt; matrix[i][j] &lt;&lt; &quot; &quot;;</span></div>
+<div class="line"><a name="l00830"></a><span class="lineno">  830</span>&#160;    <span class="comment">//         }</span></div>
+<div class="line"><a name="l00831"></a><span class="lineno">  831</span>&#160;    <span class="comment">//         os &lt;&lt; std::endl;</span></div>
+<div class="line"><a name="l00832"></a><span class="lineno">  832</span>&#160;    <span class="comment">//     }</span></div>
+<div class="line"><a name="l00833"></a><span class="lineno">  833</span>&#160;    <span class="comment">//     return os;</span></div>
+<div class="line"><a name="l00834"></a><span class="lineno">  834</span>&#160;    <span class="comment">// }</span></div>
+<div class="line"><a name="l00835"></a><span class="lineno">  835</span>&#160; </div>
+<div class="line"><a name="l00836"></a><span class="lineno">  836</span>&#160;} <span class="comment">// end namespace CSF</span></div>
+<div class="ttc" id="aclass_c_s_f_1_1_sparse_matrix_1_1_inner_iterator_html"><div class="ttname"><a href="class_c_s_f_1_1_sparse_matrix_1_1_inner_iterator.html">CSF::SparseMatrix::InnerIterator</a></div><div class="ttdoc">An iterator over the inner dimension of a CSF matrix.</div><div class="ttdef"><b>Definition:</b> CSF_SparseMatrix.hpp:687</div></div>
+<div class="ttc" id="aclass_c_s_f_1_1_sparse_matrix_1_1_vector_html"><div class="ttname"><a href="class_c_s_f_1_1_sparse_matrix_1_1_vector.html">CSF::SparseMatrix::Vector</a></div><div class="ttdoc">A class to represent a vector in a CSF matrix.</div><div class="ttdef"><b>Definition:</b> CSF_SparseMatrix.hpp:927</div></div>
 <div class="ttc" id="aclass_c_s_f_1_1_sparse_matrix_1_1_vector_html_a434e2c5b551989943b9587bd769a8915"><div class="ttname"><a href="class_c_s_f_1_1_sparse_matrix_1_1_vector.html#a434e2c5b551989943b9587bd769a8915">CSF::SparseMatrix::Vector::end</a></div><div class="ttdeci">void * end()</div><div class="ttdoc">Get a pointer to the end of the vector.</div><div class="ttdef"><b>Definition:</b> CSF_Vector.hpp:258</div></div>
 <div class="ttc" id="aclass_c_s_f_1_1_sparse_matrix_1_1_vector_html_a4b0954a7a2219c9736abadf9e4a33fcd"><div class="ttname"><a href="class_c_s_f_1_1_sparse_matrix_1_1_vector.html#a4b0954a7a2219c9736abadf9e4a33fcd">CSF::SparseMatrix::Vector::byteSize</a></div><div class="ttdeci">size_t byteSize()</div><div class="ttdoc">Get the size of the vector in bytes.</div><div class="ttdef"><b>Definition:</b> CSF_Vector.hpp:261</div></div>
 <div class="ttc" id="aclass_c_s_f_1_1_sparse_matrix_1_1_vector_html_a5e68ebf6592e961db82968f867e6396b"><div class="ttname"><a href="class_c_s_f_1_1_sparse_matrix_1_1_vector.html#a5e68ebf6592e961db82968f867e6396b">CSF::SparseMatrix::Vector::nonZeros</a></div><div class="ttdeci">uint32_t nonZeros()</div><div class="ttdoc">Get the number of non-zero values in the vector.</div><div class="ttdef"><b>Definition:</b> CSF_Vector.hpp:252</div></div>
 <div class="ttc" id="aclass_c_s_f_1_1_sparse_matrix_1_1_vector_html_a7526930119694d168f40105024cfe8ae"><div class="ttname"><a href="class_c_s_f_1_1_sparse_matrix_1_1_vector.html#a7526930119694d168f40105024cfe8ae">CSF::SparseMatrix::Vector::begin</a></div><div class="ttdeci">void * begin()</div><div class="ttdoc">Get a pointer to the beginning of the vector.</div><div class="ttdef"><b>Definition:</b> CSF_Vector.hpp:255</div></div>
 <div class="ttc" id="aclass_c_s_f_1_1_sparse_matrix_1_1_vector_html_a9163b80abb5197aaefb9ea6d321dea07"><div class="ttname"><a href="class_c_s_f_1_1_sparse_matrix_1_1_vector.html#a9163b80abb5197aaefb9ea6d321dea07">CSF::SparseMatrix::Vector::length</a></div><div class="ttdeci">uint32_t length()</div><div class="ttdoc">Get the length of the vector.</div><div class="ttdef"><b>Definition:</b> CSF_Vector.hpp:246</div></div>
-<div class="ttc" id="aclass_c_s_f_1_1_sparse_matrix_3_01_t_00_01index_t_00_011_00_01column_major_01_4_html"><div class="ttname"><a href="class_c_s_f_1_1_sparse_matrix_3_01_t_00_01index_t_00_011_00_01column_major_01_4.html">CSF::SparseMatrix&lt; T, indexT, 1, columnMajor &gt;</a></div><div class="ttdoc">Compression Level 1 CSF Matrix (CSC Format)</div><div class="ttdef"><b>Definition:</b> CSF_SparseMatrix.hpp:390</div></div>
-<div class="ttc" id="aclass_c_s_f_1_1_sparse_matrix_html"><div class="ttname"><a href="class_c_s_f_1_1_sparse_matrix.html">CSF::SparseMatrix</a></div><div class="ttdoc">A class to represent a sparse matrix compressed in the CSF format.</div><div class="ttdef"><b>Definition:</b> CSF_SparseMatrix.hpp:24</div></div>
+<div class="ttc" id="aclass_c_s_f_1_1_sparse_matrix_3_01_t_00_01index_t_00_011_00_01column_major_01_4_html"><div class="ttname"><a href="class_c_s_f_1_1_sparse_matrix_3_01_t_00_01index_t_00_011_00_01column_major_01_4.html">CSF::SparseMatrix&lt; T, indexT, 1, columnMajor &gt;</a></div><div class="ttdoc">Compression Level 1 CSF Matrix (CSC Format)</div><div class="ttdef"><b>Definition:</b> CSF_SparseMatrix.hpp:394</div></div>
+<div class="ttc" id="aclass_c_s_f_1_1_sparse_matrix_html"><div class="ttname"><a href="class_c_s_f_1_1_sparse_matrix.html">CSF::SparseMatrix</a></div><div class="ttdoc">A class to represent a sparse matrix compressed in the CSF format.</div><div class="ttdef"><b>Definition:</b> CSF_SparseMatrix.hpp:28</div></div>
 <div class="ttc" id="aclass_c_s_f_1_1_sparse_matrix_html_a01fa9af3e8ddac8ac1a9c491ef6a3118"><div class="ttname"><a href="class_c_s_f_1_1_sparse_matrix.html#a01fa9af3e8ddac8ac1a9c491ef6a3118">CSF::SparseMatrix::getVector</a></div><div class="ttdeci">CSF::SparseMatrix&lt; T, indexT, compressionLevel, columnMajor &gt;::Vector getVector(uint32_t vec)</div><div class="ttdoc">Get a vector copy from the CSF matrix.</div><div class="ttdef"><b>Definition:</b> CSF_Methods.hpp:322</div></div>
 <div class="ttc" id="aclass_c_s_f_1_1_sparse_matrix_html_a0576e0403ff32197d714365b7f81cb9e"><div class="ttname"><a href="class_c_s_f_1_1_sparse_matrix.html#a0576e0403ff32197d714365b7f81cb9e">CSF::SparseMatrix::append</a></div><div class="ttdeci">void append(typename SparseMatrix&lt; T, indexT, compressionLevel, columnMajor &gt;::Vector &amp;vec)</div><div class="ttdoc">Append a CSF vector to the outer dimension of the CSF matrix.</div><div class="ttdef"><b>Definition:</b> CSF_Methods.hpp:543</div></div>
 <div class="ttc" id="aclass_c_s_f_1_1_sparse_matrix_html_a19b5f24452199c215b09561b45d843f5"><div class="ttname"><a href="class_c_s_f_1_1_sparse_matrix.html#a19b5f24452199c215b09561b45d843f5">CSF::SparseMatrix::coeff</a></div><div class="ttdeci">T coeff(uint32_t row, uint32_t col)</div><div class="ttdoc">Get the value at the specified row and column.</div><div class="ttdef"><b>Definition:</b> CSF_Methods.hpp:325</div></div>
@@ -948,12 +950,12 @@ $(document).ready(function(){initNavTree('_c_s_f___methods_8hpp_source.html','')
 <div class="ttc" id="aclass_c_s_f_1_1_sparse_matrix_html_a46eb77aa0ff1e152dc39a0cfcda17f9d"><div class="ttname"><a href="class_c_s_f_1_1_sparse_matrix.html#a46eb77aa0ff1e152dc39a0cfcda17f9d">CSF::SparseMatrix::compressionSize</a></div><div class="ttdeci">size_t compressionSize() const</div><div class="ttdoc">Get the size of the CSF matrix in bytes.</div><div class="ttdef"><b>Definition:</b> CSF_Methods.hpp:319</div></div>
 <div class="ttc" id="aclass_c_s_f_1_1_sparse_matrix_html_a4ccfe0ecd350bbc747f36e81dde18713"><div class="ttname"><a href="class_c_s_f_1_1_sparse_matrix.html#a4ccfe0ecd350bbc747f36e81dde18713">CSF::SparseMatrix::nonZeros</a></div><div class="ttdeci">uint32_t nonZeros() const</div><div class="ttdoc">Get the number of non-zero values in the CSF matrix.</div><div class="ttdef"><b>Definition:</b> CSF_Methods.hpp:316</div></div>
 <div class="ttc" id="aclass_c_s_f_1_1_sparse_matrix_html_a5260d5302f25d2cb5a0806841464e58a"><div class="ttname"><a href="class_c_s_f_1_1_sparse_matrix.html#a5260d5302f25d2cb5a0806841464e58a">CSF::SparseMatrix::getVecSize</a></div><div class="ttdeci">size_t getVecSize(uint32_t vec) const</div><div class="ttdoc">Get the size of a vector in the CSF matrix.</div><div class="ttdef"><b>Definition:</b> CSF_Methods.hpp:301</div></div>
-<div class="ttc" id="aclass_c_s_f_1_1_sparse_matrix_html_a5a57392e2567e2d75193ae2b9de64bd4"><div class="ttname"><a href="class_c_s_f_1_1_sparse_matrix.html#a5a57392e2567e2d75193ae2b9de64bd4">CSF::SparseMatrix::toEigen</a></div><div class="ttdeci">Eigen::SparseMatrix&lt; T, columnMajor ? Eigen::ColMajor :Eigen::RowMajor &gt; toEigen()</div><div class="ttdoc">Convert the CSF matrix to an Eigen Sparse Matrix.</div><div class="ttdef"><b>Definition:</b> CSF_Methods.hpp:763</div></div>
+<div class="ttc" id="aclass_c_s_f_1_1_sparse_matrix_html_a5a57392e2567e2d75193ae2b9de64bd4"><div class="ttname"><a href="class_c_s_f_1_1_sparse_matrix.html#a5a57392e2567e2d75193ae2b9de64bd4">CSF::SparseMatrix::toEigen</a></div><div class="ttdeci">Eigen::SparseMatrix&lt; T, columnMajor ? Eigen::ColMajor :Eigen::RowMajor &gt; toEigen()</div><div class="ttdoc">Convert the CSF matrix to an Eigen Sparse Matrix.</div><div class="ttdef"><b>Definition:</b> CSF_Methods.hpp:765</div></div>
 <div class="ttc" id="aclass_c_s_f_1_1_sparse_matrix_html_a895975bf10335cceed65e4b9a441827f"><div class="ttname"><a href="class_c_s_f_1_1_sparse_matrix.html#a895975bf10335cceed65e4b9a441827f">CSF::SparseMatrix::transpose</a></div><div class="ttdeci">CSF::SparseMatrix&lt; T, indexT, compressionLevel, columnMajor &gt; transpose()</div><div class="ttdoc">Transposes the CSF matrix.</div><div class="ttdef"><b>Definition:</b> CSF_Methods.hpp:689</div></div>
-<div class="ttc" id="aclass_c_s_f_1_1_sparse_matrix_html_a9b045b5f8db83ccbf269acb92f6b8a88"><div class="ttname"><a href="class_c_s_f_1_1_sparse_matrix.html#a9b045b5f8db83ccbf269acb92f6b8a88">CSF::SparseMatrix::toCSF1</a></div><div class="ttdeci">CSF::SparseMatrix&lt; T, indexT, 1, columnMajor &gt; toCSF1()</div><div class="ttdoc">Convert the CSF matrix to a CSC format.</div><div class="ttdef"><b>Definition:</b> CSF_Methods.hpp:789</div></div>
+<div class="ttc" id="aclass_c_s_f_1_1_sparse_matrix_html_a9b045b5f8db83ccbf269acb92f6b8a88"><div class="ttname"><a href="class_c_s_f_1_1_sparse_matrix.html#a9b045b5f8db83ccbf269acb92f6b8a88">CSF::SparseMatrix::toCSF1</a></div><div class="ttdeci">CSF::SparseMatrix&lt; T, indexT, 1, columnMajor &gt; toCSF1()</div><div class="ttdoc">Convert the CSF matrix to a CSC format.</div><div class="ttdef"><b>Definition:</b> CSF_Methods.hpp:791</div></div>
 <div class="ttc" id="aclass_c_s_f_1_1_sparse_matrix_html_a9f892f9ffa23a41fce45c2a7cef88947"><div class="ttname"><a href="class_c_s_f_1_1_sparse_matrix.html#a9f892f9ffa23a41fce45c2a7cef88947">CSF::SparseMatrix::getVecPointer</a></div><div class="ttdeci">void * getVecPointer(uint32_t vec) const</div><div class="ttdoc">Get a pointer to a specific vector in the CSF matrix.</div><div class="ttdef"><b>Definition:</b> CSF_Methods.hpp:298</div></div>
 <div class="ttc" id="aclass_c_s_f_1_1_sparse_matrix_html_aa1c282fa543dce550061fdac2ccede93"><div class="ttname"><a href="class_c_s_f_1_1_sparse_matrix.html#aa1c282fa543dce550061fdac2ccede93">CSF::SparseMatrix::cols</a></div><div class="ttdeci">uint32_t cols() const</div><div class="ttdoc">Get the number of columns in the CSF matrix.</div><div class="ttdef"><b>Definition:</b> CSF_Methods.hpp:313</div></div>
-<div class="ttc" id="aclass_c_s_f_1_1_sparse_matrix_html_ae7113844af078bbe78826e26550021ad"><div class="ttname"><a href="class_c_s_f_1_1_sparse_matrix.html#ae7113844af078bbe78826e26550021ad">CSF::SparseMatrix::slice</a></div><div class="ttdeci">CSF::SparseMatrix&lt; T, indexT, compressionLevel, columnMajor &gt;::Vector * slice(uint32_t start, uint32_t end)</div><div class="ttdoc">Get a slice of a CSF matrix as an array of vectors.</div><div class="ttdef"><b>Definition:</b> CSF_Methods.hpp:737</div></div>
+<div class="ttc" id="aclass_c_s_f_1_1_sparse_matrix_html_ae7113844af078bbe78826e26550021ad"><div class="ttname"><a href="class_c_s_f_1_1_sparse_matrix.html#ae7113844af078bbe78826e26550021ad">CSF::SparseMatrix::slice</a></div><div class="ttdeci">CSF::SparseMatrix&lt; T, indexT, compressionLevel, columnMajor &gt;::Vector * slice(uint32_t start, uint32_t end)</div><div class="ttdoc">Get a slice of a CSF matrix as an array of vectors.</div><div class="ttdef"><b>Definition:</b> CSF_Methods.hpp:739</div></div>
 <div class="ttc" id="aclass_c_s_f_1_1_sparse_matrix_html_ae7b7291843ceac76c91fdbc599ab962b"><div class="ttname"><a href="class_c_s_f_1_1_sparse_matrix.html#ae7b7291843ceac76c91fdbc599ab962b">CSF::SparseMatrix::outerSize</a></div><div class="ttdeci">uint32_t outerSize() const</div><div class="ttdoc">Get the size of the outer dimension of the CSF matrix.</div><div class="ttdef"><b>Definition:</b> CSF_Methods.hpp:307</div></div>
 <div class="ttc" id="aclass_c_s_f_1_1_sparse_matrix_html_afb0529b596d3cdda91096fbb489de65c"><div class="ttname"><a href="class_c_s_f_1_1_sparse_matrix.html#afb0529b596d3cdda91096fbb489de65c">CSF::SparseMatrix::rows</a></div><div class="ttdeci">uint32_t rows() const</div><div class="ttdoc">Get the number of rows in the CSF matrix.</div><div class="ttdef"><b>Definition:</b> CSF_Methods.hpp:310</div></div>
 </div><!-- fragment --></div><!-- contents -->
@@ -962,7 +964,7 @@ $(document).ready(function(){initNavTree('_c_s_f___methods_8hpp_source.html','')
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_3c671e51c8fe89719da214d61af0c6d0.html">CSF</a></li><li class="navelem"><a class="el" href="dir_9fab0f9dccaa0425b309ca2b4a67f494.html">src</a></li><li class="navelem"><b>CSF_Methods.hpp</b></li>
-    <li class="footer">Generated on Fri Jun 9 2023 10:53:34 for CSF Matrix by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
+    <li class="footer">Generated on Fri Jun 9 2023 15:20:40 for CSF Matrix by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
   </ul>
 </div>
 </body>
