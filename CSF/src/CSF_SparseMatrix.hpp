@@ -1,10 +1,9 @@
-/*  @file CSF_SparseMatrix.hpp
-    @brief The header file for all CSF Sparse Matrix Definitions
-
-    [put long description here]
-
-    @author Skyler Ruiter & Seth Wolfgang
+/**  @file CSF_SparseMatrix.hpp
+ *   @brief The header file for all CSF Sparse Matrix Definitions
+ *
+ *   @author Skyler Ruiter & Seth Wolfgang
 */
+
 
 #pragma once
 

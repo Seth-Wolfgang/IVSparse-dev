@@ -581,6 +581,7 @@ namespace CSF {
         return csfMat;
     }
 
+    //! TODO: Implement this method w/o eigen
     template <typename T, typename indexT, bool columnMajor>
     CSF::SparseMatrix<T, indexT, 1, columnMajor> SparseMatrix<T, indexT, 1, columnMajor>::transpose()
     {
