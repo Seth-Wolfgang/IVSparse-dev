@@ -3,25 +3,30 @@
 #include "misc/matrix_creator.cpp"
 #include <chrono>
 // #define EIGEN_DONT_PARALLELIZE
-#define DATA_TYPE double
+#define DATA_TYPE int
 
+template<typename T, typename indexT>
+void sizeTest(int iterations);
 
 template <typename T, typename indexT, int compressionLevel> void iteratorTest();
 void getMat(Eigen::SparseMatrix<int>& myMatrix_e);
 
 int main() {
-    int rows = 10;
-    int cols = 10;
+    int rows = 2000;
+    int cols = 2000;
+    int sparsity = 1;
+    uint64_t seed = 1;
+    int maxVal = 10;
 
-    // create an eigen sparse matrix
-    Eigen::SparseMatrix<DATA_TYPE> eigen(rows, cols);
+        // create an eigen sparse matrix
+        // Eigen::SparseMatrix<DATA_TYPE> eigen(rows, cols);
     // getMat(eigen);
-    eigen = generateMatrix<DATA_TYPE>(rows, cols, 1, 1, 10);
+    // eigen = generateMatrix<DATA_TYPE>(rows, cols, 2, 1, 10);
     // std::cout << eigen << std::endl;
 
     // create a CSF sparse matrix
-    CSF::SparseMatrix<DATA_TYPE, int, 3> csf(eigen);
-    CSF::SparseMatrix<DATA_TYPE, int, 2> csf2(eigen);
+    // CSF::SparseMatrix<DATA_TYPE, int, 3> csf(eigen);
+    // CSF::SparseMatrix<DATA_TYPE, int, 2> csf2(eigen);
 
     // transpose the CSF matrix
     // CSF::SparseMatrix<DATA_TYPE, int, 3> csfT = csf.transpose();
@@ -34,14 +39,7 @@ int main() {
     // std::cout << eigen_e << std::endl;
     // std::cout << eigen.transpose() << std::endl;
 
-    int sum = 0; 
-    for (int i = 0; i < csf.cols(); i++) {
-        for(typename CSF::SparseMatrix<DATA_TYPE, int, 3>::InnerIterator it(csf, i); it; ++it) {
-            sum += it.value();
-            std::cout << "value: " << it.value() << " row: " << it.row() << " col: " << it.col() << std::endl;
-        }
-    }
-    std::cout << "sum: " << sum << std::endl;
+
 
     // make a vector of the CSF matrix
     // CSF::SparseMatrix<int, int, 3>::Vector skyVec(csf, 0);
@@ -49,23 +47,23 @@ int main() {
     // multiply the CSF by 3
     // csf *= 3;
 
-    std::cout << "CSF: " << csf.compressionSize() << std::endl;
-    std::cout << "CSF2: " << csf2.compressionSize() << std::endl;
-    uint64_t eigenSize = eigen.nonZeros() * sizeof(double) + eigen.nonZeros() * sizeof(uint32_t) + (eigen.outerSize() + 1) * sizeof(uint32_t);
-    std::cout << "eigen size: " << eigenSize << std::endl;
+    // std::cout << "CSF: " << csf.compressionSize() << std::endl;
+    // std::cout << "CSF2: " << csf2.compressionSize() << std::endl;
+    // uint64_t eigenSize = eigen.nonZeros() * sizeof(double) + eigen.nonZeros() * sizeof(uint32_t) + (eigen.outerSize() + 1) * sizeof(uint32_t);
+    // std::cout << "eigen size: " << eigenSize << std::endl;
 
-    Eigen::IOFormat clean(Eigen::StreamPrecision, Eigen::DontAlignCols, " ", "\n", "", "", "", "");
+    // Eigen::IOFormat clean(Eigen::StreamPrecision, Eigen::DontAlignCols, " ", "\n", "", "", "", "");
 
-    std::cout << Eigen::MatrixXd(eigen).format(clean) << std::endl << std::endl;
+    // std::cout << Eigen::MatrixXd(eigen).format(clean) << std::endl << std::endl;
 
-    std::cout << csf << std::endl;
+    // std::cout << csf << std::endl;
 
 
 
     //rows * columns * (end pointers + start pointers) + values * data type + metadata 
 
     //rows * columns (2 * pointers) * outersize + (sizeof(valueType) + sizeof(delimitor)) * outersize 
-    
+
 
     // std::cout << csf << std::endl;
     // std::cout << eigen << std::endl;
@@ -73,13 +71,63 @@ int main() {
 
     // * CSF Iterator Testing * //
     // #pragma omp parallel for num_threads(15)
-    // for (int i = 0; i < 1; i++) {
-    //     iteratorTest<int, uint64_t, 3>();
-    //     std::cout << "Test " << i << " passed" << std::endl;
+    for (int i = 0; i < 1; i++) {
+        iteratorTest<double, uint64_t, 3>();
+        std::cout << "Test " << i << " passed" << std::endl;
+    }
+
+    // for(int i = 0; i < 1; i++) {
+    //     std::cout << "i: " << i << std::endl;
+    //     sizeTest<int, uint64_t>(10);
     // }
 
 
     return 1;
+}
+
+template<typename T, typename indexT>
+void sizeTest(int iterations) {
+    int rows = 10000;
+    int cols = 10000;
+    int sparsity = 9;
+    uint64_t seed = 1;
+    int maxVal = 1000;
+
+    std::cout << "Rows: " << rows << " \nCols: " << cols << " \nSparsity: " << sparsity << " \nSeed: " << seed << " \nMaxVal " << maxVal << std::endl;
+
+    std::vector < uint64_t > csf2Sizes;
+    std::vector < uint64_t > csfSizes;
+
+    #pragma omp parallel for num_threads(15)
+    for (int i = 0; i < iterations; i++) {
+        // create an eigen sparse matrix
+        Eigen::SparseMatrix<T> eigen(rows, cols);
+        // getMat(eigen);
+        eigen = generateMatrix<T>(rows, cols, sparsity, rand(), maxVal);
+        // std::cout << eigen << std::endl;
+
+        // create a CSF sparse matrix
+        CSF::SparseMatrix<T, indexT, 3> csf(eigen);
+        CSF::SparseMatrix<T, indexT, 2> csf2(eigen);
+
+        csfSizes.push_back(csf.compressionSize());
+        csf2Sizes.push_back(csf2.compressionSize());
+    }
+
+    uint64_t avgCSF2Size = 0;
+    uint64_t avgCSFSize = 0;
+    for (int i = 0; i < csf2Sizes.size(); i++) {
+        avgCSF2Size += csf2Sizes[i];
+        avgCSFSize += csfSizes[i];
+    }
+    avgCSF2Size /= csf2Sizes.size();
+    avgCSFSize /= csfSizes.size();
+
+
+    std::cout << "CSF: " << avgCSFSize << std::endl;
+    std::cout << "CSF2: " << avgCSF2Size << std::endl;
+    // uint64_t eigenSize = eigen.nonZeros() * sizeof(double) + eigen.nonZeros() * sizeof(uint32_t) + (eigen.outerSize() + 1) * sizeof(uint32_t);
+    // std::cout << "eigen size: " << eigenSize << std::endl;
 }
 
 template <typename T, typename indexT, int compressionLevel>
@@ -87,13 +135,13 @@ void iteratorTest() {
 
     int numRows = 1000;//rand() % 1000 + 10;
     int numCols = 1000;//rand() % 1000 + 10;
-    int sparsity = 1;//rand() % 50 + 1;
+    int sparsity = 20;//rand() % 50 + 1;
     uint64_t seed = 1;//rand();
 
     // Initialize the random matrix
     Eigen::SparseMatrix<T> eigen(numRows, numCols);
     eigen.reserve(Eigen::VectorXi::Constant(numCols, numRows));
-    eigen = generateMatrix<T>(numRows, numCols, sparsity, seed, 10);
+    eigen = generateMatrix<T>(numRows, numCols, sparsity, rand(), 10);
     eigen.makeCompressed();
 
     //Create random matrix and vector to multiply with
@@ -115,12 +163,17 @@ void iteratorTest() {
     std::vector<uint64_t> timesForOld;
     uint64_t ours = 0;
     uint64_t old = 0;
-    for (int i = 0; i < 1000; i++) {
-        
+    for (int i = 0; i < 10000; i++) {
+
         //Measure time for CSF matrix
         T sum = 0;
         start = std::chrono::system_clock::now();
-        csfDenseMatrix = csfMatrix * randMatrix;
+        
+        for(int i = 0; i < csfMatrix.outerSize(); ++i) {
+            for(typename CSF::SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(csfMatrix, i); it; ++it) {
+                sum += it.value();
+            }
+        }
 
         end = std::chrono::system_clock::now();
         timesForNew.push_back(std::chrono::duration_cast<std::chrono::microseconds>(end - start).count());
@@ -140,7 +193,7 @@ void iteratorTest() {
         timesForOld.push_back(std::chrono::duration_cast<std::chrono::microseconds>(end - start).count());
         old = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
         assert(sum2 == sum);
-        // std::cout << "(CSF): " << ours << "(Eigen): " << old << std::endl;
+        std::cout << "(CSF): " << ours << "(Eigen): " << old << std::endl;
 
         // std::cout << "Eigen:\n " << eigenDenseMatrix << std::endl;
     }
@@ -165,11 +218,11 @@ void iteratorTest() {
 
     // std::cout << "Eigen: " << sumEigen << " CSF: " << sumCSF << std::endl;
 
-    if (sumCSF == 0 || sumEigen == 0 || sumCSF != sumEigen) {
-        std::cout << "Rows: " << numRows << " Cols: " << numCols << " Sparsity: " << sparsity << " Seed: " << seed << std::endl;
-        std::cout << "sum_csf: " << sumCSF << " Eigen: " << sumEigen << std::endl;
-        assert(sumCSF == sumEigen);
-    }
+    // if (sumCSF == 0 || sumEigen == 0 || sumCSF != sumEigen) {
+    //     std::cout << "Rows: " << numRows << " Cols: " << numCols << " Sparsity: " << sparsity << " Seed: " << seed << std::endl;
+    //     std::cout << "sum_csf: " << sumCSF << " Eigen: " << sumEigen << std::endl;
+    //     assert(sumCSF == sumEigen);
+    // }
 }
 
 

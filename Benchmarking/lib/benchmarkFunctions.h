@@ -39,13 +39,13 @@ template <typename T>
 void ArmadilloConstructorBenchmark(std::vector<Eigen::Triplet<T>>& eigenTriplet, std::vector<uint64_t>& data, int rows, int cols);
 
 template <typename T>
-void EigenInnerIteratorBenchmark(Eigen::SparseMatrix<T>& eigen, std::vector<uint64_t>& data);
+void EigenInnerIteratorBenchmark(Eigen::SparseMatrix<T> eigen, std::vector<uint64_t>& data);
 
 template <typename T, typename indexT>
-void CSF2InnerIteratorBenchmark(CSF::SparseMatrix<T, indexT, 2>& csf2, std::vector<uint64_t>& data);
+void CSF2InnerIteratorBenchmark(CSF::SparseMatrix<T, indexT, 2> csf2, std::vector<uint64_t>& data);
 
 template <typename T, typename indexT>
-void CSF3InnerIteratorBenchmark(CSF::SparseMatrix<T, indexT, 3>& csf3, std::vector<uint64_t>& data);
+void CSF3InnerIteratorBenchmark(CSF::SparseMatrix<T, indexT, 3> csf3, std::vector<uint64_t>& data);
 
 template <typename T>
 void ArmadilloInnerIteratorBenchmark(arma::sp_mat& mat, std::vector<uint64_t>& data);

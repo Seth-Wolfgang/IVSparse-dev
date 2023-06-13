@@ -33,7 +33,7 @@
 //// You will need to link your programs directly with -lopenblas -llapack instead of -larmadillo
 
 #if !defined(ARMA_USE_LAPACK)
-// #define ARMA_USE_LAPACK
+#define ARMA_USE_LAPACK
 //// Comment out the above line if you don't have LAPACK or a high-speed replacement for LAPACK,
 //// such as OpenBLAS, Intel MKL, or the Accelerate framework.
 //// LAPACK is required for matrix decompositions (eg. SVD) and matrix inverse.
@@ -111,7 +111,7 @@
 // #define ARMA_BLAS_NOEXCEPT
 //// Uncomment the above line if you require BLAS functions to have the 'noexcept' specification
 
-// #define ARMA_LAPACK_NOEXCEPT
+#define ARMA_LAPACK_NOEXCEPT
 //// Uncomment the above line if you require LAPACK functions to have the 'noexcept' specification
 
 #define ARMA_USE_FORTRAN_HIDDEN_ARGS
@@ -232,7 +232,7 @@
 
 
 #if !defined(ARMA_PRINT_EXCEPTIONS)
-  // #define ARMA_PRINT_EXCEPTIONS
+  #define ARMA_PRINT_EXCEPTIONS
   #if defined(ARMA_PRINT_EXCEPTIONS_INTERNAL)
     #undef  ARMA_PRINT_EXCEPTIONS
     #define ARMA_PRINT_EXCEPTIONS

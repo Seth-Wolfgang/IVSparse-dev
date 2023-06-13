@@ -3,7 +3,7 @@
 # echo "Running benchmark with $numCols columns, $numRows rows, $numNonzeros nonzeros, $numMatrices matrices, and \"$problemKind\" problem kind"
 
 # Compiling benchmark
-g++ -w -O2 benchmark.cpp -o benchmark
+g++ -w -O2 benchmark.cpp -o benchmark -llapack
 
 # Checking if compilation was successful
 if [ ! -f "benchmark" ]; then
@@ -23,7 +23,7 @@ if [ $# -ge 1 ]; then
     touch matrices.txt
 fi
 
-numMatrices=1000
+numMatrices=4000
 # Downloading matrices and running benchmark at the same time
 for x in $(seq 1 $numMatrices)
 do
@@ -50,8 +50,9 @@ do
     echo "Running C++ benchmark for matrix ID: \033[0;32m$id\033[0m"
 
     ./benchmark $MATRIX_PATH $id
-    rm -r $MATRIX_PATH
+    # rm -r $MATRIX_PATH
 done
 
 # Clean up
 rm -r matrices/
+
