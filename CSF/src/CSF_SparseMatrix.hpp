@@ -47,9 +47,11 @@ namespace CSF {
         void** endPointers;
         uint32_t* metadata;
 
-        // Benchmarking Data //
-
-        //! j Vector HERE
+        // i and j vectors
+        T *value_arr = nullptr;
+        uint32_t *counts_arr = nullptr;
+        uint32_t value_arr_size = 0;
+        bool performanceVecsOn = false;
 
         //* Private Class Methods *//
 
@@ -63,6 +65,10 @@ namespace CSF {
         void checkVal();
 
         void userChecks();
+
+        void undoCSF2Vecs();
+
+        void activateCSF2Vecs();
 
     public:
         //* Nested Subclasses *//
@@ -181,6 +187,10 @@ namespace CSF {
         void print();
 
         ///@}
+
+        bool isPerformanceVecsOn();
+
+        void setPerformanceVecs(bool on);
 
         //* Getters *//
 
@@ -716,6 +726,9 @@ namespace CSF {
         void* endPtr;
 
         bool firstIndex = true;
+
+        bool performanceVectors = false;
+        T *value_arr = nullptr;
 
         //* Private Class Methods *//
 

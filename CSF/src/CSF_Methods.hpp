@@ -107,7 +107,7 @@ namespace CSF {
             else {
                 // loop through the dictionary and calculate the size of the column
                 for (auto& pair : dict) {
-                    outerByteSize += sizeof(T) + 1 + (sizeof(indexT) * pair.second.size()) + sizeof(indexT);
+                    outerByteSize += sizeof(T) + (sizeof(indexT) * pair.second.size()) + sizeof(indexT);
                 }
             }
 
@@ -119,7 +119,7 @@ namespace CSF {
                 exit(1);
             }
 
-            //! print out the dictionary
+            //* print out the dictionary
             // for (auto &pair : dict) {
             //     std::cout << pair.first << ": ";
             //     for (indexT k = 0; k < pair.second.size(); k++) {
@@ -142,10 +142,7 @@ namespace CSF {
                     *(uint8_t*)helpPtr = (uint8_t)pair.second[0];
                     helpPtr = (uint8_t*)helpPtr + 1;
                 }
-                else {
-                    *(uint8_t*)helpPtr = sizeof(indexT);
-                    helpPtr = (uint8_t*)helpPtr + 1;
-                }
+
 
                 // write the indices
                 for (size_t k = 0; k < pair.second.size(); k++) {
@@ -292,6 +289,124 @@ namespace CSF {
         checkVal();
     }
 
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    void SparseMatrix<T, indexT, compressionLevel, columnMajor>::undoCSF2Vecs() {
+
+        // check if already undone
+        if (!performanceVecsOn) {
+            return;
+        }
+
+        size_t value_arr_index = 0;
+
+        performanceVecsOn = false;
+
+        // iterate through the whole matrix
+        for (uint32_t i = 0; i < outerDim; ++i) {
+            for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(*this, i); it; ++it) {
+                if (it.isNewRun()) {
+                    it.coeff(value_arr[value_arr_index]);
+                    value_arr_index++;
+                }
+            }
+        }
+
+        // free the value and count arrays
+        free(value_arr);
+        free(counts_arr);
+
+        // set the arrays to null
+        value_arr = nullptr;
+        counts_arr = nullptr;
+
+        // update compSize
+        compSize -= value_arr_size * sizeof(T) + value_arr_size * sizeof(uint32_t);
+
+        value_arr_size = 0;
+
+    }
+
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    void SparseMatrix<T, indexT, compressionLevel, columnMajor>::activateCSF2Vecs() {
+
+        // check if already activated
+        if (performanceVecsOn) {
+            return;
+        }
+
+        // make vectors to store the values and counts
+        std::vector<T> values;
+        std::vector<uint32_t> counts;
+
+        for (uint32_t i = 0; i < outerDim; ++i) {
+            for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(*this, i); it; ++it) {
+                if (it.isNewRun()) {
+                    values.push_back(it.value());
+                    counts.push_back(1);
+                    value_arr_size++;
+                } else {
+                    counts[counts.size() - 1]++;
+                }
+            }
+        }
+
+        // if the length of the values array is larger than can fit in T, then throw an error
+        if (value_arr_size > std::numeric_limits<T>::max()) {
+            std::cout << "Error: The length of the values array is larger than can fit in T" << std::endl;
+            exit(1);
+        }
+
+        // malloc space for the value array and counts array
+        try {
+            value_arr = (T*)malloc(value_arr_size * sizeof(T));
+            counts_arr = (uint32_t*)malloc(value_arr_size * sizeof(uint32_t));
+        }
+        catch (std::bad_alloc& e) {
+            std::cout << "Error: " << e.what() << std::endl;
+            exit(1);
+        }
+
+        // copy the values and counts into the arrays
+        memcpy(value_arr, values.data(), value_arr_size * sizeof(T));
+        memcpy(counts_arr, counts.data(), value_arr_size * sizeof(uint32_t));
+
+        // free the vectors
+        values.clear();
+        counts.clear();
+
+        // update compSize
+        compSize += value_arr_size * sizeof(T) + value_arr_size * sizeof(uint32_t);
+
+        // update the matrix
+        size_t value_arr_index = 0;
+
+        for (uint32_t i = 0; i < outerDim; ++i) {
+            for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(*this, i); it; ++it) {
+                if (it.isNewRun()) {
+                    it.coeff(value_arr_index);
+                    value_arr_index++;
+                }
+            }
+        }
+
+        performanceVecsOn = true;
+    }
+
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    bool SparseMatrix<T, indexT, compressionLevel, columnMajor>::isPerformanceVecsOn() {
+        return performanceVecsOn;
+    }
+
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    void SparseMatrix<T, indexT, compressionLevel, columnMajor>::setPerformanceVecs(bool on) {
+        if (on) {
+            activateCSF2Vecs();
+        }
+        else {
+            undoCSF2Vecs();
+        }
+    }
+
     //* Getters *//
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
@@ -336,6 +451,11 @@ namespace CSF {
         // write the metadata
         fwrite(metadata, 1, sizeof(uint32_t) * NUM_META_DATA, fp);
 
+        if (compressionLevel == 2 && performanceVecsOn) {
+            // undo the i and j vectors
+            undoCSF2Vecs();
+        }
+
         // write the distance between the end and start pointers
         for (uint32_t i = 0; i < outerDim; i++) {
             uint64_t size = (char*)endPointers[i] - (char*)data[i];
@@ -364,7 +484,7 @@ namespace CSF {
 
         std::cout << std::endl;
         std::cout << "CSF Matrix" << std::endl;
-        
+
 
         // loop through each row
         for (uint32_t i = 0; i < numRows; i++) {
@@ -443,8 +563,11 @@ namespace CSF {
 
             // set the data to null
             data = nullptr;
-
             endPointers = nullptr;
+
+            value_arr = nullptr;
+            counts_arr = nullptr;
+            value_arr_size = 0;
 
             // set the dimensions to 0
             outerDim = 0;
@@ -472,6 +595,9 @@ namespace CSF {
         free(endPointers);
 
         delete[] metadata;
+
+        free(value_arr);
+        free(counts_arr);
 
         // allocate metadata
         metadata = new uint32_t[NUM_META_DATA];
@@ -509,6 +635,20 @@ namespace CSF {
             }
             memcpy(data[i], other.data[i], other.getVecSize(i));
             endPointers[i] = (char*)data[i] + other.getVecSize(i);
+        }
+
+        // copy the i and j vectors
+        if constexpr (compressionLevel == 2) {
+            value_arr_size = other.value_arr_size;
+            try {
+                value_arr = (T*)malloc(sizeof(T) * value_arr_size);
+                counts_arr = (uint32_t*)malloc(sizeof(uint32_t) * value_arr_size);
+            }
+            catch (std::bad_alloc& ba) {
+                std::cerr << "bad_alloc caught: " << ba.what() << '\n';
+            }
+            memcpy(value_arr, other.value_arr, sizeof(T) * value_arr_size);
+            memcpy(counts_arr, other.counts_arr, sizeof(uint32_t) * value_arr_size);
         }
 
         return *this;

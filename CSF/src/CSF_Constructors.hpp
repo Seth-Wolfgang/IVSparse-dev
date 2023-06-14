@@ -262,7 +262,7 @@ namespace CSF {
                 // loop through the vectors of the map
                 for (auto& val : maps[i]) {
                     // add the size of the vector to the byteSize
-                    byteSize += sizeof(T) + 1 + (sizeof(indexT) * val.second.size()) + sizeof(indexT);
+                    byteSize += sizeof(T) + (sizeof(indexT) * val.second.size()) + sizeof(indexT);
                 }
             }
 
@@ -294,9 +294,6 @@ namespace CSF {
                 // write the index width
                 if constexpr (compressionLevel == 3) {
                     *(uint8_t *)helpPtr = (uint8_t)val.second[val.second.size() - 1];
-                    helpPtr = (uint8_t *)helpPtr + 1;
-                } else {
-                    *(uint8_t *)helpPtr = (uint8_t)sizeof(indexT);
                     helpPtr = (uint8_t *)helpPtr + 1;
                 }
 
@@ -736,6 +733,16 @@ namespace CSF {
         // free the end pointers
         if (endPointers != nullptr)
             free(endPointers);
+        
+
+        // if value array and counts are not null, free them
+        if (value_arr != nullptr) {
+            free(value_arr);
+        }
+
+        if (counts_arr != nullptr) {
+            free(counts_arr);
+        }
     }
 
 }

@@ -11,6 +11,11 @@ namespace CSF {
         // Sets the column
         this->outer = vec;
 
+        if (matrix.isPerformanceVecsOn()) {
+            performanceVectors = true;
+            value_arr = matrix.value_arr;
+        }
+
         // Sets the data pointer to the specified column of the matrix
         data = matrix.getVecPointer(vec);
 
@@ -28,9 +33,13 @@ namespace CSF {
         val = (T*)data;
         data = (uint8_t*)data + sizeof(T);
 
-        // Sets row width to the width of the first run
-        indexWidth = *(uint8_t*)data;
-        data = (uint8_t*)data + sizeof(uint8_t);
+        if constexpr (compressionLevel == 3) {
+            // Sets row width to the width of the first run
+            indexWidth = *(uint8_t*)data;
+            data = (uint8_t*)data + sizeof(uint8_t);
+        } else {
+            indexWidth = sizeof(indexT);
+        }
 
         decodeIndex();
         index = newIndex;
@@ -51,18 +60,19 @@ namespace CSF {
             return;
         }
 
-        // if constexpr (compressionLevel = 2) {
-        //     valueArray = vector.getValues();
-        // }
-
         val = (T*)data;
         data = (uint8_t*)data + sizeof(T);
 
         // set the end pointer
         endPtr = vector.end();
 
-        indexWidth = *(uint8_t*)data;
-        data = (uint8_t*)data + sizeof(uint8_t);
+        if constexpr (compressionLevel == 3) {
+            // Sets row width to the width of the first run
+            indexWidth = *(uint8_t*)data;
+            data = (uint8_t*)data + sizeof(uint8_t);
+        } else {
+            indexWidth = sizeof(indexT);
+        }
 
         decodeIndex();
         index = newIndex;
@@ -79,16 +89,22 @@ namespace CSF {
     indexT SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator::outerDim() { return outer; }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    T SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator::value() { return *val; }
-
-    // template <typename T, typename indexT, uint8_t compressionLevel = 2, bool columnMajor>
-    // T SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::value() { return valueArray[*val]; }
+    T SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator::value() { 
+        if (!performanceVectors) {
+            return *val;
+        } else {
+            return value_arr[*val];
+        }
+    }
     
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    T& SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator::operator*() { return *val; }
-
-    // template <typename T, typename indexT, uint8_t compressionLevel = 2, bool columnMajor>
-    // T SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::operator*() { return valueArray[*val]; }
+    T& SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator::operator*() { 
+        if (!performanceVectors) {
+            return *val;
+        } else {
+            return value_arr[*val];
+        }
+    }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     bool SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator::operator==(const InnerIterator& other) { return data == other.getIndex(); }
@@ -106,10 +122,14 @@ namespace CSF {
     indexT SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator::getIndex() { return index; }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    inline void SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator::coeff(T newValue) { *val = newValue; }
+    inline void SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator::coeff(T newValue) { 
+        if (!performanceVectors) {
+            *val = newValue;
+        } else {
+            value_arr[*val] = newValue;
+        }
+    }
 
-    // template <typename T, typename indexT, uint8_t compressionLevel = 2, bool columnMajor>
-    // inline void SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::coeffRef(T newValue) { *valueArray[*val] = newValue; }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     indexT SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator::row() {
@@ -147,9 +167,11 @@ namespace CSF {
             val = (T*)data;
             data = (uint8_t*)data + sizeof(T);
 
-            // indexWidth is the second val in the run
-            indexWidth = *(uint8_t*)data;
-            data = (uint8_t*)data + sizeof(uint8_t);
+            if constexpr (compressionLevel == 3) {
+                // Sets row width to the width of the first run
+                indexWidth = *(uint8_t*)data;
+                data = (uint8_t*)data + sizeof(uint8_t);
+            }
 
             // update currentCol to the next column
 
@@ -159,6 +181,7 @@ namespace CSF {
             firstIndex = true;
             return;
         }
+        
         firstIndex = false;
 
         // Depending on if the CSF::SparseMatrix is at compression level 2 or 3, we handle the row differently
@@ -193,7 +216,4 @@ namespace CSF {
         }
     }
 
-
-
-    // ---------------- Public Methods ---------------- //
 }

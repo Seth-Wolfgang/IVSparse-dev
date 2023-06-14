@@ -13,6 +13,15 @@ namespace CSF {
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::Vector(CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>& mat, uint32_t vec) {
 
+
+        bool performanceVecs = mat.isPerformanceVecsOn();
+
+        // if performance vectors are on kill them first
+        if (performanceVecs) {
+            mat.setPerformanceVecs(false);
+        }
+
+
         #ifdef CSF_DEBUG
         // make sure the vector is in bounds
         assert((vec >= 0 && vec < mat.outerSize()) && "Vector index out of bounds");
@@ -58,6 +67,11 @@ namespace CSF {
                 nnz++;
                 ++it;
             }
+        }
+
+        // if performance vectors were turned off turn them back on
+        if (performanceVecs) {
+            mat.setPerformanceVecs(true);
         }
     }
 
