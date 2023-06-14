@@ -12,21 +12,76 @@ template <typename T, typename indexT, int compressionLevel> void iteratorTest()
 void getMat(Eigen::SparseMatrix<int>& myMatrix_e);
 
 int main() {
-    int rows = 2000;
-    int cols = 2000;
+    int rows = 37;
+    int cols = 10;
     int sparsity = 1;
     uint64_t seed = 1;
-    int maxVal = 10;
+    int maxVal = 1;
 
-        // create an eigen sparse matrix
-        // Eigen::SparseMatrix<DATA_TYPE> eigen(rows, cols);
+    // create an eigen sparse matrix
+    Eigen::SparseMatrix<DATA_TYPE> eigen(rows, cols);
     // getMat(eigen);
-    // eigen = generateMatrix<DATA_TYPE>(rows, cols, 2, 1, 10);
+    eigen = generateMatrix<DATA_TYPE>(rows, cols, 1, 1, 1);
     // std::cout << eigen << std::endl;
 
+    // Eigen::MatrixXi mat(6, 6);
+    // mat << 0, 3, 4, 1,-1, 4,
+    //        3, 9, 0, 0,-6, 0,
+    //        0, 0,-5,-10, 0, 1,
+    //        9, 8, 7, 6, 5, 4,
+    //        0, 0, 0, 0, 0, 0,
+    //        0, 0, 0, 0, 0,-1;
+
+    // Eigen::SparseMatrix<DATA_TYPE> eigen = mat.sparseView();
+
     // create a CSF sparse matrix
-    // CSF::SparseMatrix<DATA_TYPE, int, 3> csf(eigen);
+    CSF::SparseMatrix<DATA_TYPE, int, 3> csf(eigen);
     // CSF::SparseMatrix<DATA_TYPE, int, 2> csf2(eigen);
+
+    std::cout << "Sum: " << csf.sum() << std::endl;
+
+
+    // DATA_TYPE* outerSum = new DATA_TYPE[csf.outerSize()];
+    // DATA_TYPE* innerSum = new DATA_TYPE[csf.innerSize()];
+
+    // memcpy(outerSum, csf.outerSum(), sizeof(DATA_TYPE) * csf.outerSize());
+    // memcpy(innerSum, csf.innerSum(), sizeof(DATA_TYPE) * csf.innerSize());
+
+    // std::cout << "Outer Sum: " << std::endl;
+    // for (int i = 0; i < csf.outerSize(); i++) {
+    //     std::cout << outerSum[i] << " ";
+    // }
+    // std::cout << std::endl;
+
+    // std::cout << std::endl << "Inner Sum: " << std::endl;
+    // for (int i = 0; i < csf.innerSize(); i++) {
+    //     std::cout << innerSum[i] << " ";
+    // }
+    // std::cout << std::endl;
+
+    // std::cout << "Min Col coeff: " << std::endl;
+    // for (int i = 0; i < csf.outerSize(); i++) {
+    //     std::cout << csf.minColCoeff()[i] << " ";
+    // }
+    // std::cout << std::endl;
+
+    // std::cout << "Max Col coeff: " << std::endl;
+    // for (int i = 0; i < csf.outerSize(); i++) {
+    //     std::cout << csf.maxColCoeff()[i] << " ";
+    // }
+    // std::cout << std::endl;
+    
+    // std::cout << "Min Row coeff: " <<  std::endl;
+    // for (int i = 0; i < csf.innerSize(); i++) {
+    //     std::cout << csf.minRowCoeff()[i] << " ";
+    // }
+    // std::cout << std::endl;
+
+    // std::cout << "Max Row coeff: " <<  std::endl;
+    // for (int i = 0; i < csf.innerSize(); i++) {
+    //     std::cout << csf.maxRowCoeff()[i] << " ";
+    // }
+    // std::cout << std::endl;
 
     // transpose the CSF matrix
     // CSF::SparseMatrix<DATA_TYPE, int, 3> csfT = csf.transpose();
@@ -71,10 +126,10 @@ int main() {
 
     // * CSF Iterator Testing * //
     // #pragma omp parallel for num_threads(15)
-    for (int i = 0; i < 1; i++) {
-        iteratorTest<double, uint64_t, 3>();
-        std::cout << "Test " << i << " passed" << std::endl;
-    }
+    // for (int i = 0; i < 1; i++) {
+    //     iteratorTest<double, uint64_t, 3>();
+    //     std::cout << "Test " << i << " passed" << std::endl;
+    // }
 
     // for(int i = 0; i < 1; i++) {
     //     std::cout << "i: " << i << std::endl;
@@ -98,7 +153,7 @@ void sizeTest(int iterations) {
     std::vector < uint64_t > csf2Sizes;
     std::vector < uint64_t > csfSizes;
 
-    #pragma omp parallel for num_threads(15)
+#pragma omp parallel for num_threads(15)
     for (int i = 0; i < iterations; i++) {
         // create an eigen sparse matrix
         Eigen::SparseMatrix<T> eigen(rows, cols);
@@ -168,9 +223,9 @@ void iteratorTest() {
         //Measure time for CSF matrix
         T sum = 0;
         start = std::chrono::system_clock::now();
-        
-        for(int i = 0; i < csfMatrix.outerSize(); ++i) {
-            for(typename CSF::SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(csfMatrix, i); it; ++it) {
+
+        for (int i = 0; i < csfMatrix.outerSize(); ++i) {
+            for (typename CSF::SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(csfMatrix, i); it; ++it) {
                 sum += it.value();
             }
         }

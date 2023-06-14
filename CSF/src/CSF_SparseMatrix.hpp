@@ -322,12 +322,12 @@ namespace CSF {
 
         //This method does not seem to work unless it is in this file
         friend std::ostream& operator<<(std::ostream& os, CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>& mat) {
-            // #ifndef CSF_DEBUG
-            // if (mat.cols() > 110) {
-            //     std::cout << "CSF matrix is too large to print" << std::endl;
-            //     return os;
-            // }
-            // #endif
+            #ifndef CSF_DEBUG
+            if (mat.cols() > 110) {
+                std::cout << "CSF matrix is too large to print" << std::endl;
+                return os;
+            }
+            #endif
 
             // create a matrix to store the full matrix representation of the CSF matrix
             T** matrix = new T * [mat.rows()];
@@ -379,6 +379,23 @@ namespace CSF {
 
         //WIP
         inline Eigen::Matrix<T, -1, -1> matrixMultiply2(Eigen::Matrix<T, -1, -1>& mat);
+
+        inline T* outerSum();
+
+        inline T* innerSum(); 
+
+        inline T* maxColCoeff();
+
+        inline T* maxRowCoeff();
+
+        inline T* minColCoeff();
+
+        inline T* minRowCoeff();
+
+        inline T trace();
+
+        inline T sum();
+
     };
 
 

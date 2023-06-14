@@ -149,4 +149,111 @@ namespace CSF {
         }
         return newMatrix;
     }
+
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    inline T* SparseMatrix<T, indexT, compressionLevel, columnMajor>::outerSum() {
+        T* outerSum = (T*)calloc(outerDim, sizeof(T));
+        for (int i = 0; i < outerDim; i++) {
+            for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(*this, i); it; ++it) {
+                outerSum[i] += it.value();
+            }
+        }
+        return outerSum;
+    }
+
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    inline T* SparseMatrix<T, indexT, compressionLevel, columnMajor>::innerSum() {
+        T* innerSum = (T*)calloc(innerDim, sizeof(T));
+        for (int i = 0; i < outerDim; i++) {
+            for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(*this, i); it; ++it) {
+                innerSum[it.row()] += it.value();
+            }
+        }
+        return innerSum;
+    }
+
+    template<typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    inline T* SparseMatrix<T, indexT, compressionLevel, columnMajor>::maxColCoeff() {
+        T* maxCoeff = (T*)calloc(outerDim, sizeof(T));
+        for (int i = 0; i < outerDim; i++) {
+            for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(*this, i); it; ++it) {
+                if (it.value() > maxCoeff[i]) {
+                    maxCoeff[i] = it.value();
+                }
+            }
+        }
+        return maxCoeff;
+    }
+
+    template<typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    inline T* SparseMatrix<T, indexT, compressionLevel, columnMajor>::maxRowCoeff() {
+        T* maxCoeff = (T*)calloc(innerDim, sizeof(T));
+        for (int i = 0; i < outerDim; i++) {
+            for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(*this, i); it; ++it) {
+                if (it.value() > maxCoeff[it.row()]) {
+                    maxCoeff[it.row()] = it.value();
+                }
+            }
+        }
+        return maxCoeff;
+    }
+
+    template<typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    inline T* SparseMatrix<T, indexT, compressionLevel, columnMajor>::minColCoeff() {
+        T* minCoeff = (T*)calloc(outerDim, sizeof(T));
+        for (int i = 0; i < outerDim; i++) {
+            for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(*this, i); it; ++it) {
+                if (it.value() < minCoeff[i]) {
+                    minCoeff[i] = it.value();
+                }
+            }
+        }
+        return minCoeff;
+    }
+
+    template<typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    inline T* SparseMatrix<T, indexT, compressionLevel, columnMajor>::minRowCoeff() {
+        T* minCoeff = (T*)calloc(innerDim, sizeof(T));
+        memset(minCoeff, 0xF, innerDim * sizeof(T));
+
+        for (int i = 0; i < outerDim; i++) {
+            for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(*this, i); it; ++it) {
+                if (it.value() < minCoeff[it.row()]) {
+                    minCoeff[it.row()] = it.value();
+                }
+            }
+        }
+        return minCoeff;
+    }
+
+    template<typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    inline T SparseMatrix<T, indexT, compressionLevel, columnMajor>::trace() {
+        assert(innerDim == outerDim && "Trace is only defined for square matrices!");
+
+        T trace = 0;
+        for (int i = 0; i < outerDim; i++) {
+            for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(*this, i); it; ++it) {
+                if (it.row() == i) {
+
+                    trace += it.value();
+                }
+                else if (it.row() > i) {
+                    continue;
+                }
+            }
+        }
+        return trace;
+    }
+
+    template<typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    inline T SparseMatrix<T, indexT, compressionLevel, columnMajor>::sum() {
+        T sum = 0;
+        for (int i = 0; i < outerDim; i++) {
+            for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(*this, i); it; ++it) {
+                sum += it.value();
+            }
+        }
+        return sum;
+    }
 }
+
