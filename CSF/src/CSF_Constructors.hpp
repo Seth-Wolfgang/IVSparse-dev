@@ -209,16 +209,16 @@ namespace CSF {
 
         // set class variables
         if constexpr (columnMajor) {
-            innerDim = num_rows;
-            outerDim = num_cols;
-        }
-        else {
             innerDim = num_cols;
             outerDim = num_rows;
         }
+        else {
+            innerDim = num_rows;
+            outerDim = num_cols;
+        }
 
-        numRows = num_rows;
-        numCols = num_cols;
+        numRows = num_cols;
+        numCols = num_rows;
 
         val_t = encodeVal();
         index_t = sizeof(indexT);
@@ -244,7 +244,7 @@ namespace CSF {
         #ifdef CSF_PARALLEL
         #pragma omp parallel for
         #endif
-        for (size_t i = 0; i < innerDim; i++) {
+        for (size_t i = 0; i < outerDim; i++) {
 
             // check if the column is empty
             if (maps[i].empty()) [[unlikely]] {
