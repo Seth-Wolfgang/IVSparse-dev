@@ -3,7 +3,9 @@
 # echo "Running benchmark with $numCols columns, $numRows rows, $numNonzeros nonzeros, $numMatrices matrices, and \"$problemKind\" problem kind"
 
 # Compiling benchmark
+# g++ -g -w -O2 benchmark.cpp -o benchmark -llapack
 g++ -w -O2 benchmark.cpp -o benchmark -llapack
+
 
 # Checking if compilation was successful
 if [ ! -f "benchmark" ]; then
@@ -49,6 +51,8 @@ do
     
     echo "Running C++ benchmark for matrix ID: \033[0;32m$id\033[0m"
 
+    
+    # valgrind -s --leak-check=full ./benchmark $MATRIX_PATH $id
     ./benchmark $MATRIX_PATH $id
     # rm -r $MATRIX_PATH
 done

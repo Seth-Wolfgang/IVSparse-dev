@@ -48,9 +48,9 @@ namespace CSF {
         uint32_t* metadata;
 
         // i and j vectors
-        T *value_arr = nullptr;
-        uint32_t *counts_arr = nullptr;
-        uint32_t value_arr_size = 0;
+        T** value_arr = nullptr;
+        uint32_t** counts_arr = nullptr;
+        uint32_t* value_arr_size = nullptr;
         bool performanceVecsOn = false;
 
         //* Private Class Methods *//
@@ -326,7 +326,7 @@ namespace CSF {
 
         bool operator!=(const SparseMatrix<T, indexT, compressionLevel, columnMajor>& other);
 
-        CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor> operator*(T scalar) const;
+        CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor> operator*(T scalar);
 
         void operator*=(T scalar);
 
@@ -342,8 +342,7 @@ namespace CSF {
             // create a matrix to store the full matrix representation of the CSF matrix
             T** matrix = new T * [mat.rows()];
             for (size_t i = 0; i < mat.rows(); i++) {
-                matrix[i] = new T[mat.cols()];
-                memset(matrix[i], 0, sizeof(matrix[i]) * mat.cols());
+                matrix[i] = (T*)calloc(mat.cols(), sizeof(T));
             }
 
             // Build the full matrix representation of the the CSF matrix
@@ -728,7 +727,7 @@ namespace CSF {
         bool firstIndex = true;
 
         bool performanceVectors = false;
-        T *value_arr = nullptr;
+        T* value_arr = nullptr;
 
         //* Private Class Methods *//
 

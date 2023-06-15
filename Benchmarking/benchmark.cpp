@@ -17,9 +17,15 @@
 int main(int argc, char** argv) {
 
     // Checks to make sure the correct number of arguments are passed
+    // if (argc < 1) {
+    //     fprintf(stderr, "Usage: %s currentFile\n ID", argv[0]);
+    //     exit(1);
+    // }
     if (argc < 2) {
-        fprintf(stderr, "Usage: %s currentFile\n ID", argv[0]);
-        exit(1);
+        argv[1] = (char*)malloc(sizeof(char) * 20);
+        strcpy(argv[1], "testMatrix2.mtx");
+        argv[2] = (char*)malloc(sizeof(char));
+        argv[2] = "1";
     }
 
     // Data vectors
@@ -57,12 +63,11 @@ int main(int argc, char** argv) {
     eigen.setFromTriplets(eigenTriplet.begin(), eigenTriplet.end());
     eigen.makeCompressed();
 
-
-
     // Create the CSF matrices
     // CSF::SparseMatrix<VALUE_TYPE, INDEX_TYPE, 1> csf(eigen);
     CSF::SparseMatrix<VALUE_TYPE, INDEX_TYPE, 2> csf2(eigen);
     CSF::SparseMatrix<VALUE_TYPE, INDEX_TYPE, 3> csf3(eigen);
+    csf2.setPerformanceVecs(true);
 
     // Calculate matrix entropy
     matrixData.at(4) = averageRedundancy(eigen);
@@ -124,7 +129,7 @@ int main(int argc, char** argv) {
             }
 
             // Runs the selected benchmark
-            std::cout << "Running benchmark " << currentlySelected << std::endl;
+            // std::cout << "Running benchmark " << currentlySelected << std::endl;
             switch (currentlySelected) {
             case 0:
                 EigenConstructorBenchmark<VALUE_TYPE>(eigenTriplet, data, matrixData[1], matrixData[2]);
@@ -184,7 +189,7 @@ int main(int argc, char** argv) {
                 CSF3MemoryFootprintBenchmark<VALUE_TYPE, INDEX_TYPE>(data, eigenTriplet, matrixData[1], matrixData[2]);
                 continue;
             case 19:
-                ArmadilloMemoryFootprintBenchmark<VALUE_TYPE>(data, eigenTriplet, matrixData[1], matrixData[2]);
+                // ArmadilloMemoryFootprintBenchmark<VALUE_TYPE>(data, eigenTriplet, matrixData[1], matrixData[2]);
                 continue;
             case 20:
                 eigenTransposeBenchmark<VALUE_TYPE>(eigen, data);
@@ -224,6 +229,9 @@ int main(int argc, char** argv) {
 
     // Class to calculate the maxes and averages of the benchmarking data
     bench.printTimesToCSV();
+
+    // free(argv[1]);
+    // free(argv[2]);
     return 1;
 }
 
@@ -569,7 +577,7 @@ void EigenInnerIteratorBenchmark(Eigen::SparseMatrix<T> eigen, std::vector<uint6
  */
 
 template <typename T, typename indexT>
-void CSF2InnerIteratorBenchmark(CSF::SparseMatrix<T, indexT, 2> csf2, std::vector<uint64_t>& data) {
+void CSF2InnerIteratorBenchmark(CSF::SparseMatrix<T, indexT, 2>& csf2, std::vector<uint64_t>& data) {
     std::chrono::time_point<std::chrono::system_clock> start, end;
     VALUE_TYPE total = 0;
 
@@ -842,12 +850,12 @@ void CSF3MemoryFootprintBenchmark(std::vector<uint64_t>& data, std::vector<Eigen
 
 template <typename T>
 void ArmadilloMemoryFootprintBenchmark(std::vector<uint64_t>& data, std::vector<Eigen::Triplet<T>>& eigenTriplet, uint32_t inner, uint32_t outer) {
+    std::cout << "Armadillo Memory Footprint Benchmark" << std::endl;
     arma::mat* aMat = new arma::mat(inner, outer);
     for (auto& triplet : eigenTriplet) {
         aMat->at(triplet.row(), triplet.col()) = triplet.value();
     }
     arma::sp_mat armaMatrix(*aMat);
-    delete aMat;
 
     //Same as Eigen, both are CSC
     data.at(19) = armaMatrix.n_nonzero * sizeof(double) + armaMatrix.n_nonzero * sizeof(uint32_t) + (armaMatrix.n_cols + 1) * sizeof(uint32_t);

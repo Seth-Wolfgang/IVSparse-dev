@@ -3,7 +3,7 @@
 #include "misc/matrix_creator.cpp"
 #include <chrono>
 // #define EIGEN_DONT_PARALLELIZE
-#define DATA_TYPE int
+#define DATA_TYPE uint
 
 template<typename T, typename indexT>
 void sizeTest(int iterations);
@@ -12,16 +12,16 @@ template <typename T, typename indexT, int compressionLevel> void iteratorTest()
 void getMat(Eigen::SparseMatrix<int>& myMatrix_e);
 
 int main() {
-    int rows = 37;
+    int rows = 10;
     int cols = 10;
-    int sparsity = 1;
+    int sparsity = 10;
     uint64_t seed = 1;
     int maxVal = 1;
 
     // create an eigen sparse matrix
     Eigen::SparseMatrix<DATA_TYPE> eigen(rows, cols);
     // getMat(eigen);
-    eigen = generateMatrix<DATA_TYPE>(rows, cols, 1, 1, 1);
+    eigen = generateMatrix<DATA_TYPE>(rows, cols, 1, 1, 9);
     // std::cout << eigen << std::endl;
 
     // Eigen::MatrixXi mat(6, 6);
@@ -36,9 +36,14 @@ int main() {
 
     // create a CSF sparse matrix
     CSF::SparseMatrix<DATA_TYPE, int, 3> csf(eigen);
-    // CSF::SparseMatrix<DATA_TYPE, int, 2> csf2(eigen);
+    CSF::SparseMatrix<DATA_TYPE, int, 2> csf2(eigen);
+    csf2.setPerformanceVecs(true);
+
+    // std::cout << "Sum: " << csf.sum() << std::endl;
+    // std::cout << "Sum2: " << csf2.sum() << std::endl;
 
     std::cout << "Sum: " << csf.sum() << std::endl;
+    std::cout << "Sum: " << csf2.sum() << std::endl;
 
 
     // DATA_TYPE* outerSum = new DATA_TYPE[csf.outerSize()];
@@ -70,7 +75,7 @@ int main() {
     //     std::cout << csf.maxColCoeff()[i] << " ";
     // }
     // std::cout << std::endl;
-    
+
     // std::cout << "Min Row coeff: " <<  std::endl;
     // for (int i = 0; i < csf.innerSize(); i++) {
     //     std::cout << csf.minRowCoeff()[i] << " ";
