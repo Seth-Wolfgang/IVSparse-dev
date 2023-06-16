@@ -216,6 +216,8 @@ namespace CSF {
 
         numRows = num_cols;
         numCols = num_rows;
+        numRows = num_cols;
+        numCols = num_rows;
 
         val_t = encodeVal();
         index_t = sizeof(indexT);
@@ -238,9 +240,9 @@ namespace CSF {
         //* logic here
 
         // loop through the array
-#ifdef CSF_PARALLEL
-#pragma omp parallel for
-#endif
+        #ifdef CSF_PARALLEL
+        #pragma omp parallel for
+        #endif
         for (size_t i = 0; i < outerDim; i++) {
 
             // check if the column is empty
