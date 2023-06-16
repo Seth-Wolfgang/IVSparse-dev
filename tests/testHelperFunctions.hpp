@@ -1,10 +1,120 @@
 #include "../CSF/SparseMatrix"
-#include "../misc/matrix_creator.cpp"
+// #include "../misc/matrix_creator.cpp"
+#include <limits>
 
+class rng {
+private:
+    uint64_t state;
+
+public:
+    rng(uint64_t state): state(state) {}
+
+    void advance_state() {
+        state ^= state << 19;
+        state ^= state >> 7;
+        state ^= state << 36;
+    }
+
+    uint64_t operator*() const {
+        return state;
+    }
+
+    uint64_t rand() {
+        uint64_t x = state ^ (state << 38);
+        x ^= x >> 13;
+        x ^= x << 23;
+
+        return x;
+    }
+
+    uint64_t rand(uint64_t i) {
+        // advance i
+        i ^= i << 19;
+        i ^= i >> 7;
+        i ^= i << 36;
+
+        // add i to state
+        uint64_t x = state + i;
+
+        // advance state
+        x ^= x << 38;
+        x ^= x >> 13;
+        x ^= x << 23;
+
+        return x;
+    }
+
+    uint64_t rand(uint64_t i, uint64_t j) {
+        uint64_t x = rand(i);
+
+        // advance j
+        j ^= j >> 7;
+        j ^= j << 23;
+        j ^= j >> 8;
+
+        // add j to state
+        x += j;
+
+        // advance state
+        x ^= x >> 7;
+        x ^= x << 53;
+        x ^= x >> 4;
+
+        return x;
+    }
+
+    template <typename T>
+    T sample(T max_value) {
+        return rand() % max_value;
+    }
+
+    template <typename T>
+    T sample(uint64_t i, T max_value) {
+        return rand(i) % max_value;
+    }
+
+    template <typename T>
+    T sample(uint64_t i, uint64_t j, T max_value) {
+        return rand(i, j) % max_value;
+    }
+
+    template <typename T>
+    bool draw(T probability) {
+        return sample(probability) == 0;
+    }
+
+    template <typename T>
+    bool draw(uint64_t i, T probability) {
+        return sample(i, probability) == 0;
+    }
+
+    template <typename T>
+    bool draw(uint64_t i, uint64_t j, T probability) {
+        sample(i, j, probability);
+        return sample(i, j, probability) == 0;
+    }
+
+    template <typename T>
+    double uniform() {
+        T x = (T)rand() / UINT64_MAX;
+        return x - std::floor(x);
+    }
+
+    template <typename T>
+    double uniform(uint64_t i) {
+        T x = (T)rand(i) / UINT64_MAX;
+        return x - std::floor(x);
+    }
+
+    template <typename T>
+    double uniform(uint64_t i, uint64_t j) {
+        T x = (T)rand(i, j) / UINT64_MAX;
+        return x - std::floor(x);
+    }
+};
 
 /**
  * @brief Genearates a random sparse matrix using Eigen
- *
  *
  *
  * @tparam T
@@ -21,11 +131,12 @@ Eigen::SparseMatrix<T> generateEigenMatrix(int numRows, int numCols, int sparsit
     rng randMatrixGen = rng(seed);
 
     Eigen::SparseMatrix<T> myMatrix(numRows, numCols);
-    myMatrix.reserve(Eigen::VectorXi::Constant(numRows * numRows, numCols * numCols));
+    myMatrix.reserve(Eigen::VectorXi::Constant(numRows, numCols));
+
     for (int i = 0; i < numRows; i++) {
         for (int j = 0; j < numCols; j++) {
             if (randMatrixGen.draw<int>(i, j, sparsity)) {
-                myMatrix.insert(i, j) = 100 * randMatrixGen.uniform<double>(j);
+                myMatrix.insert(i, j) = 10 * randMatrixGen.uniform<double>();
             }
         }
     }
@@ -50,7 +161,7 @@ CSF::SparseMatrix<T, indexType, compressionLevel> getCSFMatrix(int numRows, int 
 
     //Generating a random sparse matrix using Eigen, because we know it works
     Eigen::SparseMatrix<T> eigenMatrix(numRows, numCols);
-    eigenMatrix = generateEigenMatrix<T>(numRows, numCols, sparsity, seed);
+    generateEigenMatrix<T>(eigenMatrix, sparsity, seed);
     eigenMatrix.makeCompressed();
 
     // Converting to CSF
@@ -66,21 +177,19 @@ CSF::SparseMatrix<T, indexType, compressionLevel> getCSFMatrix(int numRows, int 
  */
 
 template <typename T, typename indexType, int compressionLevel>
-T getSum(CSF::SparseMatrix<T, indexType, compressionLevel> matrix) {
+T getSumCSF(CSF::SparseMatrix<T, indexType, compressionLevel> matrix) {
     T CSFTotal = 0;
-    typename CSF::SparseMatrix<T, indexType, compressionLevel>::Iterator newIter(matrix);
-    T value = *newIter;
-    // std::cout << newIter.getColumnAddress(0) << std::endl;
-    while (newIter) {
-        newIter++;
-        CSFTotal += *newIter;
-        if (*newIter != value) {
-            value = *newIter;
+
+    for (indexType k = 0; k < matrix.outerSize(); ++k) {
+        for (typename CSF::SparseMatrix<T, indexType, compressionLevel>::InnerIterator it(matrix, k); it; ++it) {
+            CSFTotal += it.value();
+            // std::cout << it.value() << " " << it.index() << " " << it.col() << std::endl;
+            // std::cout << CSFTotal << std::endl;
         }
     }
-
     return CSFTotal;
 }
+
 
 /**
  * @brief Returns the sum of all values in the matrix
@@ -95,6 +204,7 @@ T getSum(Eigen::SparseMatrix<T> matrix) {
     T eigenTotal = 0;
     for (int i = 0; i < matrix.cols(); ++i) {
         for (typename Eigen::SparseMatrix<T>::InnerIterator it(matrix, i); it; ++it) {
+            // std::cout << it.value() << " " << it.index() << " " << it.col() << std::endl;
             eigenTotal += it.value();
         }
     }
@@ -159,3 +269,27 @@ CSF::SparseMatrix<T, T, 3> generateVector(int numRows, T* array) {
     CSF::SparseMatrix<T, indexType, compressionLevel> CSFVector(eigenVector);
     return CSFVector;
 }
+
+/**
+ * @brief Returns a large number based on the type of the template
+ *        For larger types, a sufficiently large number is returned.
+ *        i.e. uint32_t and uint64_t return 50,000
+ *
+ * @return T
+ */
+
+template <typename T>
+T getLargeNumber() {
+    T max = std::numeric_limits<T>::max();
+
+    if (max > 50000) {
+        return 50000;
+    }
+    else if (max > 10000) {
+        return 10000;
+    }
+    else {
+        return max;
+    }
+}
+

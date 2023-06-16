@@ -16,3 +16,5 @@ _deps
 CMakeFiles
 CMAKE
 *workspace
+/matrices
+/MM
