@@ -13,7 +13,7 @@ namespace CSF {
 
         if (matrix.isPerformanceVecsOn()) {
             performanceVectors = true;
-            value_arr = matrix.value_arr;
+            value_arr = matrix.value_arr[vec];
         }
 
         // Sets the data pointer to the specified column of the matrix
@@ -90,10 +90,14 @@ namespace CSF {
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     T SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator::value() { 
+        // std::cout << "performanceVectors: " << performanceVectors << std::endl;
         if (!performanceVectors) {
             return *val;
         } else {
-            return value_arr[*val];
+            // std::cout << "VAL Index"  << *val << " size: " << sizeof(value_arr) / sizeof(T) << std::endl;
+            // std::cout << "row: " << row() << std::endl;
+            // std::cout << "col: " << col() << std::endl;
+            return value_arr[(int)*val];
         }
     }
     
@@ -126,7 +130,7 @@ namespace CSF {
         if (!performanceVectors) {
             *val = newValue;
         } else {
-            value_arr[*val] = newValue;
+            value_arr[(int)*val] = newValue;
         }
     }
 
