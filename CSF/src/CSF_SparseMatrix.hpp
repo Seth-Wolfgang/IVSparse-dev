@@ -405,6 +405,10 @@ namespace CSF {
 
         inline T sum();
 
+        inline double norm();
+
+        inline double vectorLength(uint32_t col);
+
     };
 
 

@@ -39,15 +39,23 @@ int main() {
     CSF::SparseMatrix<DATA_TYPE, int, 2> csf2(eigen);
     csf2.setPerformanceVecs(true);
 
-    std::cout << "Sum: " << csf.sum() << std::endl;
-    std::cout << "Sum2: " << csf2.sum() << std::endl;
+    // std::cout << "Sum: " << csf.sum() << std::endl;
+    // std::cout << "Sum2: " << csf2.sum() << std::endl;
 
-    int* maxes = csf2.maxColCoeff();
+    int* maxes2 = csf2.minColCoeff();
+    int* maxes3 = csf.minColCoeff();
 
     for(int i = 0; i < csf2.outerSize(); i++) {
-        std::cout << maxes[i] << " ";
+        std::cout << maxes2[i] << " ";
     }
-    free(maxes);
+    free(maxes2);
+    std::cout << std::endl;
+
+    for(int i = 0; i < csf.outerSize(); i++) {
+        std::cout << maxes3[i] << " ";
+    }
+    free(maxes3);
+    std::cout << std::endl;
 
 
     // DATA_TYPE* outerSum = new DATA_TYPE[csf.outerSize()];
