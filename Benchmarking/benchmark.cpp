@@ -650,10 +650,11 @@ void EigenScalarMultiplicationBenchmark(Eigen::SparseMatrix<T> eigen, std::vecto
 
     //Eigen
     start = std::chrono::system_clock::now();
-    eigen * 2;
+    eigen *= 2;
     end = std::chrono::system_clock::now();
 
     data.at(8) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+    std::cout << "Eigen: " << data.at(8) << " SUM: " << eigen.sum() << std::endl;
 }
 
 /**
@@ -664,13 +665,15 @@ void EigenScalarMultiplicationBenchmark(Eigen::SparseMatrix<T> eigen, std::vecto
 template <typename T, typename indexT>
 void CSF2ScalarMultiplicationBenchmark(CSF::SparseMatrix<T, indexT, 2> csf2, std::vector<uint64_t>& data) {
     std::chrono::time_point<std::chrono::system_clock> start, end;
+    csf2.setPerformanceVecs(true);
 
     //CSF 2
     start = std::chrono::system_clock::now();
-    csf2 * 2;
+    csf2 *= 2;
     // csf2 = csf2 * 2;
     end = std::chrono::system_clock::now();
     data.at(9) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+    std::cout << "CSF 2: " << data.at(9) << " SUM: " << csf2.sum() << std::endl;
 }
 
 /**
@@ -684,11 +687,13 @@ void CSF3scalarMultiplicationBenchmark(CSF::SparseMatrix<T, indexT, 3> csf3, std
 
     //CSF 3
     start = std::chrono::system_clock::now();
-    csf3 * 2;
+    csf3 *= 2;
     // csf3 = csf3 * 2;
     end = std::chrono::system_clock::now();
 
     data.at(10) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+    std::cout << "CSF 3: " << data.at(10) << " SUM: " << csf3.sum() << std::endl;
+
 }
 
 template <typename T>
@@ -697,7 +702,7 @@ void ArmadilloScalarMultiplicationBenchmark(arma::sp_mat armaMat, std::vector<ui
 
     //Eigen
     start = std::chrono::system_clock::now();
-    armaMat * 2;
+    armaMat *= 2;
     end = std::chrono::system_clock::now();
 
     data.at(11) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();

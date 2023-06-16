@@ -3,7 +3,7 @@
 #include "misc/matrix_creator.cpp"
 #include <chrono>
 // #define EIGEN_DONT_PARALLELIZE
-#define DATA_TYPE uint
+#define DATA_TYPE int
 
 template<typename T, typename indexT>
 void sizeTest(int iterations);
@@ -19,31 +19,35 @@ int main() {
     int maxVal = 1;
 
     // create an eigen sparse matrix
-    Eigen::SparseMatrix<DATA_TYPE> eigen(rows, cols);
+    // Eigen::SparseMatrix<DATA_TYPE> eigen(rows, cols);
     // getMat(eigen);
-    eigen = generateMatrix<DATA_TYPE>(rows, cols, 1, 1, 9);
+    // eigen = generateMatrix<DATA_TYPE>(rows, cols, 1, 1, 9);
     // std::cout << eigen << std::endl;
 
-    // Eigen::MatrixXi mat(6, 6);
-    // mat << 0, 3, 4, 1,-1, 4,
-    //        3, 9, 0, 0,-6, 0,
-    //        0, 0,-5,-10, 0, 1,
-    //        9, 8, 7, 6, 5, 4,
-    //        0, 0, 0, 0, 0, 0,
-    //        0, 0, 0, 0, 0,-1;
+    Eigen::MatrixXi mat(6, 6);
+    mat << 0, 3, 4, 1,-1, 4,
+           3, 9, 0, 0,-6, 0,
+           0, 0,-5,-10, 0, 1,
+           9, 8, 7, 6, 5, 4,
+           0, 0, 0, 0, 0, 0,
+           0, 0, 0, 0, 0,-1;
 
-    // Eigen::SparseMatrix<DATA_TYPE> eigen = mat.sparseView();
+    Eigen::SparseMatrix<DATA_TYPE> eigen = mat.sparseView();
 
     // create a CSF sparse matrix
     CSF::SparseMatrix<DATA_TYPE, int, 3> csf(eigen);
     CSF::SparseMatrix<DATA_TYPE, int, 2> csf2(eigen);
     csf2.setPerformanceVecs(true);
 
-    // std::cout << "Sum: " << csf.sum() << std::endl;
-    // std::cout << "Sum2: " << csf2.sum() << std::endl;
-
     std::cout << "Sum: " << csf.sum() << std::endl;
-    std::cout << "Sum: " << csf2.sum() << std::endl;
+    std::cout << "Sum2: " << csf2.sum() << std::endl;
+
+    int* maxes = csf2.maxColCoeff();
+
+    for(int i = 0; i < csf2.outerSize(); i++) {
+        std::cout << maxes[i] << " ";
+    }
+    free(maxes);
 
 
     // DATA_TYPE* outerSum = new DATA_TYPE[csf.outerSize()];

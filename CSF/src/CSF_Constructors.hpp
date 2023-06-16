@@ -577,24 +577,22 @@ namespace CSF {
                 // copy mat and put it in mat2
                 mat2 = mat;
                 performanceVecsOn = mat.performanceVecsOn;
+                
                 if (performanceVecsOn) {
                     value_arr = (T**)malloc(sizeof(T*) * mat.outerDim);
                     counts_arr = (uint32_t**)malloc(sizeof(uint32_t*) * mat.outerDim);
-
                     value_arr_size = (uint32_t*)malloc(sizeof(uint32_t) * mat.outerDim);
+
                     memcpy(value_arr_size, mat.value_arr_size, sizeof(uint32_t) * mat.outerDim);
 
                     for (int i = 0; i < mat.outerDim; i++) {
-
                         value_arr[i] = (T*)malloc(sizeof(T*) * mat.value_arr_size[i]);
                         counts_arr[i] = (uint32_t*)malloc(sizeof(uint32_t*) * mat.value_arr_size[i]);
 
                         memcpy(value_arr[i], mat.value_arr[i], sizeof(T) * mat.value_arr_size[i]);
                         memcpy(counts_arr[i], mat.counts_arr[i], sizeof(uint32_t) * mat.value_arr_size[i]);
                     }
-
                 }
-
             }
             else if constexpr (compressionLevel == 3) {
                 // convert the incoming matrix to CSF 3 by going through eigen first
@@ -661,14 +659,14 @@ namespace CSF {
 
         val_t = encodeVal();
 
-        std::cout << std::endl;
-        for (int i = 0; i < outerDim; i++) {
-            std::cout << "value_arr[" << i << "]: ";
-            for (int j = 0; j < value_arr_size[i]; j++) {
-                std::cout << value_arr[i][j] << " ";
-            }
-            std::cout << std::endl;
-        }
+        // std::cout << std::endl;
+        // for (int i = 0; i < outerDim; i++) {
+        //     std::cout << "value_arr[" << i << "]: ";
+        //     for (int j = 0; j < value_arr_size[i]; j++) {
+        //         std::cout << value_arr[i][j] << " ";
+        //     }
+        //     std::cout << std::endl;
+        // }
     }
 
 

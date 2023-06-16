@@ -675,12 +675,11 @@ namespace CSF {
                     memcpy(value_arr_size, other.value_arr_size, sizeof(uint32_t) * outerDim);
 
                     for (int i = 0; i < outerDim; i++) {
-                        std::cout << "Value arr size: " << value_arr_size[i] << std::endl;
                         value_arr[i] = (T*)malloc(sizeof(T) * value_arr_size[i]);
                         counts_arr[i] = (uint32_t*)malloc(sizeof(uint32_t) * value_arr_size[i]);
 
-                        memcpy(value_arr, other.value_arr, sizeof(T) * value_arr_size[i]);
-                        memcpy(counts_arr, other.counts_arr, sizeof(uint32_t) * value_arr_size[i]);
+                        memcpy(value_arr[i], other.value_arr[i], sizeof(T) * value_arr_size[i]);
+                        memcpy(counts_arr[i], other.counts_arr[i], sizeof(uint32_t) * value_arr_size[i]);
                     }
                 }
                 catch (std::bad_alloc& ba) {

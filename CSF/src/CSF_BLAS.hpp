@@ -20,7 +20,7 @@ namespace CSF {
 
             }
         }
-        std::cout << "Using old thing :(" << std::endl;
+    
         #pragma omp parallel for schedule(dynamic)
         for (uint32_t i = 0; i < this->outerDim; ++i) {
             for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(newMatrix, i); it; ++it) {
@@ -160,12 +160,24 @@ namespace CSF {
         return newMatrix;
     }
 
+    /**
+     * @brief Returns the sum of each column of the matrix
+     * 
+     * @tparam T
+     * @tparam indexT
+     * @tparam compressionLevel
+     * @tparam columnMajor
+     * 
+     * @return T*
+    */
+
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     inline T* SparseMatrix<T, indexT, compressionLevel, columnMajor>::outerSum() {
         T* outerSum = (T*)calloc(outerDim, sizeof(T));
 
         if constexpr (compressionLevel == 2) {
             if (performanceVecsOn) {
+
                 #pragma omp parallel for schedule(dynamic)
                 for (int i = 0; i < outerDim; i++) {
                     for (int j = 0; j < value_arr_size[i]; j++) {
@@ -184,9 +196,21 @@ namespace CSF {
         return outerSum;
     }
 
+    /**
+     * @brief Returns the sum of each row of the matrix
+     * 
+     * @tparam T
+     * @tparam indexT
+     * @tparam compressionLevel
+     * @tparam columnMajor
+     * 
+     * @return T*
+    */
+
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     inline T* SparseMatrix<T, indexT, compressionLevel, columnMajor>::innerSum() {
         T* innerSum = (T*)calloc(innerDim, sizeof(T));
+
         for (int i = 0; i < outerDim; i++) {
             for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(*this, i); it; ++it) {
                 innerSum[it.row()] += it.value();
@@ -194,6 +218,17 @@ namespace CSF {
         }
         return innerSum;
     }
+
+    /**
+     * @brief Returns the maximum value in each column of the matrix
+     * 
+     * @tparam T
+     * @tparam indexT
+     * @tparam compressionLevel
+     * @tparam columnMajor
+     * 
+     * @return T*
+    */
 
     template<typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     inline T* SparseMatrix<T, indexT, compressionLevel, columnMajor>::maxColCoeff() {
@@ -223,6 +258,17 @@ namespace CSF {
         return maxCoeff;
     }
 
+    /**
+     * @brief Returns the maximum value in each row of the matrix
+     * 
+     * @tparam T
+     * @tparam indexT
+     * @tparam compressionLevel
+     * @tparam columnMajor
+     * 
+     * @return T*
+    */
+
     template<typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     inline T* SparseMatrix<T, indexT, compressionLevel, columnMajor>::maxRowCoeff() {
         T* maxCoeff = (T*)calloc(innerDim, sizeof(T));
@@ -236,6 +282,17 @@ namespace CSF {
         return maxCoeff;
     }
 
+    /**
+     * @brief Returns the minimum value in each column of the matrix
+     * 
+     * @tparam T
+     * @tparam indexT
+     * @tparam compressionLevel
+     * @tparam columnMajor
+     * 
+     * @return T*
+    */
+
     template<typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     inline T* SparseMatrix<T, indexT, compressionLevel, columnMajor>::minColCoeff() {
         T* minCoeff = (T*)calloc(outerDim, sizeof(T));
@@ -248,6 +305,17 @@ namespace CSF {
         }
         return minCoeff;
     }
+
+    /**
+     * @brief Returns the minimum value in each row of the matrix
+     * 
+     * @tparam T
+     * @tparam indexT
+     * @tparam compressionLevel
+     * @tparam columnMajor
+     * 
+     * @return T*
+    */
 
     template<typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     inline T* SparseMatrix<T, indexT, compressionLevel, columnMajor>::minRowCoeff() {
@@ -263,6 +331,17 @@ namespace CSF {
         }
         return minCoeff;
     }
+
+    /**
+     * @brief Returns the trace of the matrix
+     * 
+     * @tparam T
+     * @tparam indexT
+     * @tparam compressionLevel
+     * @tparam columnMajor
+     * 
+     * @return T*
+    */
 
     template<typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     inline T SparseMatrix<T, indexT, compressionLevel, columnMajor>::trace() {
@@ -283,12 +362,25 @@ namespace CSF {
         return trace;
     }
 
+    /**
+     * @brief Returns the sum of all the elements in the matrix
+     * 
+     * @tparam T
+     * @tparam indexT
+     * @tparam compressionLevel
+     * @tparam columnMajor
+     * 
+     * @return T*
+    */
+
     template<typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     inline T SparseMatrix<T, indexT, compressionLevel, columnMajor>::sum() {
         T sum = 0;
 
         if constexpr (compressionLevel == 2) {
             if (performanceVecsOn) {
+                            std::cout << "Using new" << std::endl;
+
                 #pragma omp parallel for schedule(dynamic)
                 for (int i = 0; i < outerDim; i++) {
                     for (int j = 0; j < value_arr_size[i]; j++) {
