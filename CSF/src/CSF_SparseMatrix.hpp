@@ -965,15 +965,24 @@ namespace CSF {
         void* data;
         void* endPtr;
 
-        uint32_t vecLength;
+        uint32_t length;
 
         uint8_t indexWidth = 1;
 
         uint32_t nnz = 0;
 
+        bool performanceVectors = false;
+        T* value_arr = nullptr;
+        uint32_t counts = nullptr;
+        uint32_t value_arr_size = 0;
+
         //* Private Class Methods *//
 
         void userChecks();
+
+        void activatePerformanceVecs();
+
+        void undoPerformanceVecs();
 
     public:
         //* Constructors & Destructor *//
@@ -1007,7 +1016,7 @@ namespace CSF {
         ///@}
 
         // map encoding constructor (for testing and transpose)
-        Vector(std::unordered_map<T, std::vector<indexT>>& map, uint32_t vecLength);
+        Vector(std::unordered_map<T, std::vector<indexT>>& map, uint32_t vecSize);
 
         // destructor
         ~Vector();
@@ -1056,7 +1065,7 @@ namespace CSF {
          * 
          * @return uint32_t The length of the vector
          */
-        uint32_t length();
+        uint32_t innerSize();
 
         /**
          * @brief Get the outer dimension of the CSF matrix
@@ -1086,6 +1095,11 @@ namespace CSF {
          * 
          */
         void print();
+
+
+        bool isPerformanceVecsOn();
+
+        void setPerformanceVecs(bool on);
     };
 
     /**
@@ -1107,7 +1121,8 @@ namespace CSF {
         indexT* indices = nullptr;
 
         uint32_t nnz = 0;
-        uint32_t vecLength = 0;
+        uint32_t vecSize = 0;
+        uint32_t length = 0;
 
         //* Private Class Methods *//
 
@@ -1154,11 +1169,11 @@ namespace CSF {
         //* Getters *//
 
         /**
-         * @brief Get the length of the vector
+         * @brief Get the size of the vector in terms of elements, not the the length.
          * 
-         * @return uint32_t The length of the vector
+         * @return uint32_t The size of the vector
          */
-        uint32_t length();
+        uint32_t elementLength();
 
         /**
          * @brief Get the number of non-zero values in the vector
@@ -1202,6 +1217,7 @@ namespace CSF {
          *
          */
         void print();
+
     };
 
 }

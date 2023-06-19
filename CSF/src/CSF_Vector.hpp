@@ -7,12 +7,11 @@ namespace CSF {
         data = nullptr;
         endPtr = nullptr;
         size = 0;
-        vecLength = 0;
+        length = 0;
     }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::Vector(CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>& mat, uint32_t vec) {
-
 
         bool performanceVecs = mat.isPerformanceVecsOn();
 
@@ -22,17 +21,17 @@ namespace CSF {
         }
 
 
-        #ifdef CSF_DEBUG
+#ifdef CSF_DEBUG
         // make sure the vector is in bounds
         assert((vec >= 0 && vec < mat.outerSize()) && "Vector index out of bounds");
 
         // make sure the matrix is not empty
         assert((mat.outerSize() > 0 && mat.innerSize() > 0) && "Matrix is empty");
-        #endif
+#endif
 
-        // get the vecLength of the vector
+        // get the length of the vector
         size = mat.getVecSize(vec);
-        vecLength = mat.innerSize();
+        length = mat.innerSize();
 
         // if the size is 0 then the vector is empty
         if (size == 0) {
@@ -56,14 +55,12 @@ namespace CSF {
         endPtr = (uint8_t*)data + size;
 
         // set the nnz
-        if (nnz == 0 && size > 0)
-        {
+        if (nnz == 0 && size > 0) {
             // make an iterator for the vector
             CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator it(*this);
 
             // iterate through the vector until the index is found
-            while (it)
-            {
+            while (it) {
                 nnz++;
                 ++it;
             }
@@ -81,8 +78,8 @@ namespace CSF {
         // set the size
         size = vec.size;
 
-        // set the vecLength
-        vecLength = vec.vecLength;
+        // set the length
+        length = vec.length;
 
         // if the size is 0 then the vector is empty
         if (size == 0) {
@@ -108,13 +105,13 @@ namespace CSF {
         // set the nnz
         nnz = vec.nonZeros();
 
-        #ifdef CSF_DEBUG
-            userChecks();
-        #endif
+#ifdef CSF_DEBUG
+        userChecks();
+#endif
     }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::Vector(std::unordered_map<T, std::vector<indexT>>& map, uint32_t vecLength) {
+    SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::Vector(std::unordered_map<T, std::vector<indexT>>& map, uint32_t length) {
         // loop through and get the size to store the data
         size = 0;
         if constexpr (compressionLevel == 3) {
@@ -128,8 +125,8 @@ namespace CSF {
             }
         }
 
-        // set the vecLength
-        this->vecLength = vecLength;
+        // set the length
+        this->length = length;
 
         // if the size is 0 then the vector is empty
         if (size == 0) {
@@ -241,11 +238,17 @@ namespace CSF {
         if (data != nullptr) {
             free(data);
         }
+
+        if (value_arr != nullptr) {
+            free(value_arr);
+            free(counts);
+        }
+
+
     }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    void SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::userChecks()
-    {
+    void SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::userChecks() {
         assert(std::is_floating_point<indexT>::value == false && "The index type must be a non-floating point type");
 
         assert((compressionLevel == 1 || compressionLevel == 2 || compressionLevel == 3) && "The compression level must be either 1, 2, or 3");
@@ -257,7 +260,7 @@ namespace CSF {
     }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    uint32_t SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::length() { return vecLength; }
+    uint32_t SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::innerSize() { return length; }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     uint32_t SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::outerSize() { return 1; }
@@ -278,7 +281,74 @@ namespace CSF {
     T SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::coeff(uint32_t index) { return (*this)[index]; }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::operator=(typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector &other) {
+    void SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::setPerformanceVecs(bool on) {
+        if (on) {
+            activateCSF2Vecs();
+        }
+        else {
+            undoCSF2Vecs();
+        }
+    }
+
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    bool SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::isPerformanceVecsOn() { return performanceVectors; }
+
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    void SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::undoPerformanceVecs() {
+
+        if (!performanceVectors) {
+            return;
+        }
+        performanceVectors = false;
+
+        free(value_arr);
+        free(counts);
+        value_arr_size = 0;
+    }
+
+
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    void SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::activatePerformanceVecs() {
+
+        if (performanceVectors) {
+            return;
+        }
+        performanceVectors = true;
+
+        std::vector<T> values;
+        std::vector<uint32_t> countsVector;
+
+        for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(*this); it; ++it) {
+            if (it.isNewRun()) {
+                values.push_back(it.value());
+                countsVector.push_back(1);
+                value_arr_size++;
+            }
+            else {
+                countsVector[countsVector.size() - 1]++;
+            }
+        }
+
+        try {
+            value_arr = (T*)malloc(sizeof(T) * value_arr_size);
+            memcpy(value_arr, values.data(), sizeof(T) * value_arr_size);
+
+            counts = (uint32_t*)malloc(sizeof(uint32_t) * value_arr_size);
+            memcpy(counts, countsVector.data(), sizeof(uint32_t) * value_arr_size);
+        }
+        catch (std::bad_alloc& e) {
+            std::cout << "Error: " << e.what() << std::endl;
+            exit(1);
+        }
+
+        values.clear();
+        countsVector.clear();
+
+        compSize += value_arr_size * sizeof(T) + value_arr_size * sizeof(uint32_t);
+    }
+
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::operator=(typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector& other) {
         // check if the vector is the same
         if (this == &other) {
             return *this;
@@ -297,7 +367,7 @@ namespace CSF {
         size = other.size;
 
         // set the length
-        vecLength = other.vecLength;
+        length = other.length;
 
         // set the nnz
         nnz = other.nnz;
@@ -305,17 +375,27 @@ namespace CSF {
         // set the end pointer
         endPtr = (uint8_t*)data + size;
 
+        if (other.performanceVectors) {
+            value_arr = (T*)malloc(sizeof(T) * other.value_arr_size);
+            counts = (uint32_t*)malloc(sizeof(uint32_t) * other.value_arr_size);
+
+            memcpy(counts, other.counts, sizeof(uint32_t) * other.value_arr_size);
+            memcpy(value_arr, other.value_arr, sizeof(T) * other.value_arr_size);
+
+            value_arr_size = other.value_arr_size;
+        }
+
         // return this
         return *this;
     }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     T SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::operator[](uint32_t index) {
-        
-        #ifdef CSF_DEBUG
-            // check if the index is out of bounds
-            assert(index < vecLength && "The index is out of bounds");
-        #endif
+
+#ifdef CSF_DEBUG
+        // check if the index is out of bounds
+        assert(index < length && "The index is out of bounds");
+#endif
 
         // make an iterator for the vector
         CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator it(*this);
@@ -347,8 +427,8 @@ namespace CSF {
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     void SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::print() {
 
-        // if vecLength is larger than 100 then print then don't print
-        if (vecLength > 100) {
+        // if length is larger than 100 then print then don't print
+        if (length > 100) {
             std::cout << "Vector is too large to print" << std::endl;
             return;
         }
@@ -357,7 +437,7 @@ namespace CSF {
         std::cout << std::endl;
 
         // print a dense vector
-        for (uint32_t i = 0; i < vecLength; i++) {
+        for (uint32_t i = 0; i < length; i++) {
             std::cout << (*this)[i] << " ";
         }
 

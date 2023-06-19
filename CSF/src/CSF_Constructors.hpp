@@ -47,11 +47,10 @@ namespace CSF {
         compress(mat.valuePtr(), mat.innerIndexPtr(), mat.outerIndexPtr());
     }
 
-    // TODO: Test the array of vectors constructor
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector vec[], size_t size) {
 
-#ifdef CSF_DEBUG
+        #ifdef CSF_DEBUG
         // ensure the vectors are all the same length
         for (size_t i = 1; i < size; i++) {
             assert(vec[i].length() == vec[i - 1].length() && "All vectors must be the same length!");
@@ -59,7 +58,7 @@ namespace CSF {
 
         // size is greater than 0
         assert(size > 0 && "The size of the array must be greater than 0!");
-#endif
+        #endif
 
         if (columnMajor) {
             outerDim = size;
@@ -86,14 +85,14 @@ namespace CSF {
         bool exception_occurred = false;
         std::string exception_msg;
 
-#pragma omp parallel for shared(exception_occurred, exception_msg)
+        #pragma omp parallel for shared(exception_occurred, exception_msg)
         for (size_t i = 0; i < outerDim; i++) {
             if (!exception_occurred) {
                 try {
                     data[i] = malloc(vec[i].byteSize());
                 }
                 catch (const std::exception& e) {
-#pragma omp critical
+                    #pragma omp critical
                     {
                         exception_occurred = true;
                         exception_msg = e.what();
@@ -201,6 +200,10 @@ namespace CSF {
         compress(vals, innerIndices, outerPtr);
     }
 
+    /**
+     * Transpose constructor
+    */
+
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(std::unordered_map<T, std::vector<indexT>> maps[], uint32_t num_rows, uint32_t num_cols) {
 
@@ -216,9 +219,6 @@ namespace CSF {
 
         numRows = num_cols;
         numCols = num_rows;
-        numRows = num_cols;
-        numCols = num_rows;
-
         val_t = encodeVal();
         index_t = sizeof(indexT);
 
@@ -382,11 +382,14 @@ namespace CSF {
         metadata[5] = index_t;
 
         // run the user checks
-#ifdef CSF_DEBUG
+        #ifdef CSF_DEBUG
         userChecks();
-#endif
+        #endif
     }
 
+    /**
+     * Vector -> Matrix constructor
+    */
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(typename CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector& vec) {
         // if it is the matrix is empty and we need to construct it
@@ -462,9 +465,9 @@ namespace CSF {
         compSize += sizeof(uint32_t) * NUM_META_DATA;
 
         // run the user checks
-#ifdef CSF_DEBUG
+        #ifdef CSF_DEBUG
         userChecks();
-#endif
+        #endif
     }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
@@ -497,9 +500,9 @@ namespace CSF {
         }
 
         // run the user checks
-#ifdef CSF_DEBUG
+        #ifdef CSF_DEBUG
         userChecks();
-#endif
+        #endif
 
         // malloc the data
         try {
@@ -671,11 +674,12 @@ namespace CSF {
         // }
     }
 
+    /**
+     * Deep copy constructor
+    */
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(const CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>& other) {
-
-        // do a deep copy of the matrix
 
         // Set the number of rows, columns and non-zero elements
         innerDim = other.innerSize();
@@ -695,21 +699,6 @@ namespace CSF {
         catch (const std::exception& e) {
             std::cerr << e.what() << '\n';
         }
-
-        // if (other.isPerformanceVecsOn()) {
-        //     performanceVecsOn = true;
-        //     value_arr = (T*)malloc(sizeof(T**) * other.outerDim);
-        //     counts_arr = (uint32_t*)malloc(sizeof(T**) * other.outerDim);
-
-        //     value_arr_size = (uint32_t*)malloc(sizeof(uint32_t*) * other.outerDim);
-        //     memcpy(value_arr, other.value_arr, sizeof(uint32_t) * outerDim);
-
-        //     for (int i = 0; i < outerDim; i++) {
-        //         value_arr[i] = (T*)malloc(sizeof(T*) * value_arr_size[i]);
-        //         counts_arr[i] = (uint32_t*)malloc(sizeof(uint32_t*) * value_arr_size[i]);
-        //     }
-        // }
-
 
         // #ifdef CSF_PARALLEL
         // #pragma omp parallel for

@@ -23,9 +23,9 @@ namespace CSF {
         metadata[4] = val_t;
         metadata[5] = index_t;
 
-#ifdef CSF_DEBUG
+        #ifdef CSF_DEBUG
         userChecks();
-#endif
+        #endif
 
         // malloc space for the data
         try {
@@ -38,9 +38,9 @@ namespace CSF {
         }
 
         // loop through each column
-#ifdef CSF_PARALLEL
-#pragma omp parallel for
-#endif
+        #ifdef CSF_PARALLEL
+        #pragma omp parallel for
+        #endif
         for (size_t i = 0; i < outerDim; i++) {
             // construct the dictionary
 
@@ -215,14 +215,7 @@ namespace CSF {
 
         // add up the size of each col and add it to compSize
         for (size_t i = 0; i < outerDim; i++) {
-            // compSize += ((uint8_t *)endPointers)[i] - ((uint8_t *)data)[i];
-            //compSize += (uint8_t *)endPointers[i] - (uint8_t *)data[i];
-
             compSize += *((uint8_t**)endPointers + i) - *((uint8_t**)data + i);
-
-            // printf("Start: %p  End: %p  Difference: %d\n", *((uint8_t**)data + i), *((uint8_t**)endPointers + i), *((uint8_t**)endPointers + i) - *((uint8_t**)data + i));
-
-
         }
 
     } // end compress
@@ -329,7 +322,6 @@ namespace CSF {
         }
 
         value_arr_size = 0;
-
     }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
@@ -559,10 +551,10 @@ namespace CSF {
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator[](uint32_t vec) {
 
-#ifdef CSF_DEBUG
+        #ifdef CSF_DEBUG
         // check if the vector is out of bounds
         assert((vec < outerDim && vec >= 0) && "Vector index out of bounds");
-#endif
+        #endif
 
         // return a CSF vector
         CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector newVector(*this, vec);
@@ -782,9 +774,9 @@ namespace CSF {
 
             compSize += sizeof(uint32_t) * NUM_META_DATA;
 
-#ifdef CSF_DEBUG
+            #ifdef CSF_DEBUG
             userChecks();
-#endif
+            #endif
         }
         else {
 
@@ -911,18 +903,18 @@ namespace CSF {
     // slice method that returns an array of vectors
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     typename CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector* SparseMatrix<T, indexT, compressionLevel, columnMajor>::slice(uint32_t start, uint32_t end) {
-#ifdef CSF_DEBUG
+        #ifdef CSF_DEBUG
         // check that the start and end are valid
         assert(start < outerDim && end <= outerDim && start < end && "Invalid start and end values!");
-#endif
+        #endif
 
         // create a new array of vectors
         CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector* vectors = new CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector[end - start];
 
         // iterate over the matrix
-#ifdef CSF_PARALLEL
-#pragma omp parallel for
-#endif
+        #ifdef CSF_PARALLEL
+        #pragma omp parallel for
+        #endif
         for (uint32_t i = start; i < end; ++i) {
             // create a new vector
             CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector vec(*this, i);
@@ -938,10 +930,10 @@ namespace CSF {
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     Eigen::SparseMatrix<T, columnMajor ? Eigen::ColMajor : Eigen::RowMajor> SparseMatrix<T, indexT, compressionLevel, columnMajor>::toEigen() {
 
-#ifdef CSF_DEBUG
+        #ifdef CSF_DEBUG
         // assert that the matrix is not empty
         assert(outerDim > 0 && "Cannot convert an empty matrix to an Eigen matrix!");
-#endif
+        #endif
 
         // create a new sparse matrix
         Eigen::SparseMatrix<T, columnMajor ? Eigen::ColMajor : Eigen::RowMajor> eigenMatrix(numRows, numCols);
@@ -983,26 +975,5 @@ namespace CSF {
         // return the matrix
         return csf1Matrix;
     }
-
-    // template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    // std::ostream& operator<<(std::ostream &os, const CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor> &mat) { //not working
-    // // std::ostream& SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator<<(std::ostream &os) {
-
-    //     T matrix[mat.rows()][mat.cols()];
-
-    //     for (int i = 0; i < mat.cols(); i++){
-    //         for(typename CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator it(mat, i); it; ++it){
-    //             matrix[it.row()][it.col()] = it.value();
-    //         }
-    //     }
-
-    //     for (int i = 0; i < mat.rows(); i++){
-    //         for (int j = 0; j < mat.cols(); j++){
-    //             os << matrix[i][j] << " ";
-    //         }
-    //         os << std::endl;
-    //     }
-    //     return os;
-    // }
 
 } // end namespace CSF

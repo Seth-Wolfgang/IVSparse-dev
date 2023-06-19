@@ -39,79 +39,9 @@ int main() {
     CSF::SparseMatrix<DATA_TYPE, int, 2> csf2(eigen);
     csf2.setPerformanceVecs(true);
 
-    // std::cout << "Sum: " << csf.sum() << std::endl;
-    // std::cout << "Sum2: " << csf2.sum() << std::endl;
-
-    int* maxes2 = csf2.minColCoeff();
-    int* maxes3 = csf.minColCoeff();
-
-    for(int i = 0; i < csf2.outerSize(); i++) {
-        std::cout << maxes2[i] << " ";
-    }
-    free(maxes2);
-    std::cout << std::endl;
-
-    for(int i = 0; i < csf.outerSize(); i++) {
-        std::cout << maxes3[i] << " ";
-    }
-    free(maxes3);
-    std::cout << std::endl;
-
-
-    // DATA_TYPE* outerSum = new DATA_TYPE[csf.outerSize()];
-    // DATA_TYPE* innerSum = new DATA_TYPE[csf.innerSize()];
-
-    // memcpy(outerSum, csf.outerSum(), sizeof(DATA_TYPE) * csf.outerSize());
-    // memcpy(innerSum, csf.innerSum(), sizeof(DATA_TYPE) * csf.innerSize());
-
-    // std::cout << "Outer Sum: " << std::endl;
-    // for (int i = 0; i < csf.outerSize(); i++) {
-    //     std::cout << outerSum[i] << " ";
-    // }
-    // std::cout << std::endl;
-
-    // std::cout << std::endl << "Inner Sum: " << std::endl;
-    // for (int i = 0; i < csf.innerSize(); i++) {
-    //     std::cout << innerSum[i] << " ";
-    // }
-    // std::cout << std::endl;
-
-    // std::cout << "Min Col coeff: " << std::endl;
-    // for (int i = 0; i < csf.outerSize(); i++) {
-    //     std::cout << csf.minColCoeff()[i] << " ";
-    // }
-    // std::cout << std::endl;
-
-    // std::cout << "Max Col coeff: " << std::endl;
-    // for (int i = 0; i < csf.outerSize(); i++) {
-    //     std::cout << csf.maxColCoeff()[i] << " ";
-    // }
-    // std::cout << std::endl;
-
-    // std::cout << "Min Row coeff: " <<  std::endl;
-    // for (int i = 0; i < csf.innerSize(); i++) {
-    //     std::cout << csf.minRowCoeff()[i] << " ";
-    // }
-    // std::cout << std::endl;
-
-    // std::cout << "Max Row coeff: " <<  std::endl;
-    // for (int i = 0; i < csf.innerSize(); i++) {
-    //     std::cout << csf.maxRowCoeff()[i] << " ";
-    // }
-    // std::cout << std::endl;
-
-    // transpose the CSF matrix
-    // CSF::SparseMatrix<DATA_TYPE, int, 3> csfT = csf.transpose();
-    // std::cout << csfT << std::endl;
-
-    // turn the CSF matrix into an eigen matrix
-    // Eigen::SparseMatrix<DATA_TYPE> eigen_e = csfT.toEigen();
-
-    // print the eigen matrix
-    // std::cout << eigen_e << std::endl;
-    // std::cout << eigen.transpose() << std::endl;
-
-
+    std::cout << "Sum: " << csf2.sum() << std::endl;
+    csf2.setPerformanceVecs(false);
+    std::cout << "Sum: " << csf2.sum() << std::endl;
 
     // make a vector of the CSF matrix
     // CSF::SparseMatrix<int, int, 3>::Vector skyVec(csf, 0);

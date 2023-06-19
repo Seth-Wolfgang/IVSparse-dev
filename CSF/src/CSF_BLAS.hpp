@@ -2,7 +2,16 @@
 
 namespace CSF {
 
-    //* New Return Scalar Matrix Multiplication *//
+    /**
+     * @brief scalar multiplication operator
+     * 
+     * @tparam T
+     * @tparam indexT
+     * @tparam compressionLevel
+     * 
+     * @param scalar
+    */
+
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor> SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator*(T scalar) {
 
@@ -34,6 +43,16 @@ namespace CSF {
         return newMatrix;
     }
 
+    /**
+     * In place scalar multiplication 
+     * 
+     * @tparam T
+     * @tparam indexT
+     * @tparam compressionLevel
+     * 
+     * @param scalar
+    */
+
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     void SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator*=(T scalar) {
         // make a copy of this
@@ -58,21 +77,59 @@ namespace CSF {
         }
     }
 
+    /**
+     * @brief operator for SpM * V multiplication with Eigen::VectorXd 
+     * 
+     * @tparam T
+     * @tparam indexT
+     * @tparam compressionLevel
+     * 
+     * @param vec
+     * 
+     * @return Eigen::VectorXd
+    */
+
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     Eigen::VectorXd SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator*(Eigen::VectorXd& vec) {
         return vectorMultiply(vec);
     }
 
+    /**
+     * @brief operator for SpM * V multiplication with CSF::Vector
+     * 
+     * @tparam T
+     * @tparam indexT
+     * @tparam compressionLevel
+     * 
+     * @param vec
+     * 
+     * @return Eigen::VectorXd
+    */
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     Eigen::VectorXd SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator*(SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector& vec) {
         return vectorMultiply(vec);
     }
 
+    /**
+     * @brief operator for SpM * M multiplication with Eigen::MatrixXd
+     * 
+     * @tparam T
+     * @tparam indexT
+     * @tparam compressionLevel
+     * 
+     * @param mat
+     * 
+    */
+
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     Eigen::Matrix<T, -1, -1> SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator*(Eigen::Matrix<T, -1, -1> mat) {
         return matrixMultiply(mat);
     }
+
+    /**
+     * @brief helper function for SpM * V multiplication with Eigen::VectorXd
+    */
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     inline Eigen::Matrix<T, -1, -1> SparseMatrix<T, indexT, compressionLevel, columnMajor>::vectorMultiply(Eigen::VectorXd& vec) {
@@ -93,6 +150,10 @@ namespace CSF {
         }
         return eigenTemp;
     }
+
+    /**
+     * @brief helper function for SpM * V multiplication with CSF::Vector
+    */
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     inline Eigen::Matrix<T, -1, 1> SparseMatrix<T, indexT, compressionLevel, columnMajor>::vectorMultiply(typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector& vec) {
@@ -138,6 +199,10 @@ namespace CSF {
     //      }
     //      return newMatrix;
     //  }
+
+    /**
+     * @brief helper function for SpM * M multiplication with Eigen::MatrixXd
+    */
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     inline Eigen::Matrix<T, -1, -1> SparseMatrix<T, indexT, compressionLevel, columnMajor>::matrixMultiply(Eigen::Matrix<T, -1, -1>& mat) {
@@ -467,7 +532,64 @@ namespace CSF {
      * 
      ************************************************************************************/
 
+    
+    // template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    // inline double SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::length() {
+    //     double norm = 0;
 
+    //     if constexpr (compressionLevel == 2) {
+    //         if (performanceVecsOn) {
+    //             #pragma omp parallel for schedule(dynamic)
+    //             for (int i = 0; i < value_arr_size; i++) {
+    //                 norm += value_arr[i] * value_arr[i] * counts_arr[i];
+    //             }
+    //             return sqrt(norm);
+    //         }
+    //     }
+    //     for(typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(*this); it; ++it) {
+    //         norm += it.value() * it.value();
+    //     }
+    //     return sqrt(norm);
+    // }
 
+    // template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    // inline double typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::operator*=(T scalar) {
+
+    //     if constexpr (compressionLevel == 2) {
+    //         if (performanceVecsOn) {
+    //             #pragma omp parallel for schedule(dynamic)
+    //             for (int i = 0; i < value_arr_size; i++) {
+    //                 value_arr[i] *= scalar;
+    //             }
+    //             return;
+    //         }
+    //     }
+    // }
+
+    // template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    // typename CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::operator*(T scalar) {
+
+    //     CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector newVector(*this);
+    //     if constexpr (compressionLevel == 2) {
+    //         if (performanceVecsOn) {
+    //             #pragma omp parallel for schedule(dynamic)
+    //             for (int i = 0; i < outerDim; i++) {
+    //                 for (int j = 0; j < value_arr_size[i]; j++) {
+    //                     newVector.value_arr[i][j] *= scalar;
+    //                 }
+    //             }
+    //             return newMatrix;
+    //         }
+    //     }
+    
+    //     #pragma omp parallel for schedule(dynamic)
+    //     for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(newVector); it; ++it) {
+    //         if (it.isNewRun()) {
+    //             it.coeff(it.value() * scalar);
+    //         }
+    //     }
+
+    //     return newMatrix;
+    // }
 }
 
