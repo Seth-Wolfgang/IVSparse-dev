@@ -82,6 +82,8 @@ int main() {
      * Ex. 
      * if our vector looks like this -> Value: 3 indices: [1, 2, 3, 4, 5, 6, 7, 8, 9] and we change the value to 17
      * Then our vector will look like -> Value: 17 indices: [1, 2, 3, 4, 5, 6, 7, 8, 9].
+     * 
+     * Notice they are very similar, but the value is the only part that changes, and it changes for all occurrences of the value.
     */
 
     // Here we will create a random Eigen::SparseMatrix with 20 columns, 4 rows, and a max value of 5
@@ -105,7 +107,6 @@ int main() {
      *                                                                                            *
      *                                                                                            *
      *                                          VECTORS                                           *
-     *                                                                                            *
      *                                                                                            *
      *                                                                                            *
      *                                                                                            *
