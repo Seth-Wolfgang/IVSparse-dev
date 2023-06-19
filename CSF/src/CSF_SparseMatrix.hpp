@@ -1096,10 +1096,17 @@ namespace CSF {
          */
         void print();
 
-
         bool isPerformanceVecsOn();
 
         void setPerformanceVecs(bool on);
+
+        void operator *= (T scalar);
+
+        typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vecctor operator * (T scalar);
+
+        double norm();
+
+
     };
 
     /**

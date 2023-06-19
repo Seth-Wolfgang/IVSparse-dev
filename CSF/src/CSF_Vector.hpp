@@ -21,13 +21,13 @@ namespace CSF {
         }
 
 
-#ifdef CSF_DEBUG
+        #ifdef CSF_DEBUG
         // make sure the vector is in bounds
         assert((vec >= 0 && vec < mat.outerSize()) && "Vector index out of bounds");
 
         // make sure the matrix is not empty
         assert((mat.outerSize() > 0 && mat.innerSize() > 0) && "Matrix is empty");
-#endif
+        #endif
 
         // get the length of the vector
         size = mat.getVecSize(vec);
