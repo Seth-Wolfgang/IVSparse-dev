@@ -97,15 +97,15 @@ namespace CSF {
                         exception_occurred = true;
                         exception_msg = e.what();
                     }
-#pragma omp cancel for
+                #pragma omp cancel for
                 }
                 if (!exception_occurred) {
                     memcpy(data[i], vec[i].data(), vec[i].byteSize());
                     endPointers[i] = (char*)data[i] + vec[i].byteSize();
 
-#pragma omp atomic
+                    #pragma omp atomic
                     nnz += vec[i].nonZeros();
-#pragma omp atomic
+                    #pragma omp atomic
                     compSize += vec[i].byteSize();
                 }
             }
@@ -133,9 +133,9 @@ namespace CSF {
         compSize += NUM_META_DATA * sizeof(uint32_t) + (outerDim * sizeof(void*) * 2);
 
         // run the user checks
-#ifdef CSF_DEBUG
+        #ifdef CSF_DEBUG
         userChecks();
-#endif
+        #endif
     }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
@@ -765,9 +765,8 @@ namespace CSF {
                 free(counts_arr);
             }
 
-            if (value_arr_size != nullptr) {
-                free(value_arr_size);
-            }
+            free(value_arr_size);
+
         }
     }
 

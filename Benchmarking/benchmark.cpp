@@ -265,12 +265,12 @@ void readFile(std::vector<Eigen::Triplet<T>>& eigenTriplet, std::vector<double>&
     }
 
     // Makes sure the matrix is not complex
-    // if (!mm_is_symmetric(matcode)) {
-    //     std::cout << "\033[31;1;4mError: This application does not support \033[0m" << std::endl;
-    //     std::cout << "\033[31;1;4mMarket Market type: \033[0m" << mm_typecode_to_str(matcode) << std::endl;
-    //     std::cout << "Matrix might be complex or not a matrix";
-    //     exit(1);
-    // }
+    if (!mm_is_symmetric(matcode) || mm_is_pattern(matcode)) {
+        std::cout << "\033[31;1;4mError: This application does not support \033[0m" << std::endl;
+        std::cout << "\033[31;1;4mMarket Market type: \033[0m" << mm_typecode_to_str(matcode) << std::endl;
+        std::cout << "Matrix might be complex or not a matrix";
+        exit(1);
+    }
 
     // Reads the dimensions and number of nonzeros
     if ((retCode = mm_read_mtx_crd_size(f, &rows, &cols, &nonzeros)) != 0) {
@@ -278,10 +278,10 @@ void readFile(std::vector<Eigen::Triplet<T>>& eigenTriplet, std::vector<double>&
         exit(1);
     }
 
-    // if (nonzeros > 100000) {
-    //     std::cout << "\033[31;1;4mMatrix too large, skipping...\033[0m" << std::endl;
-    //     exit(1);
-    // }
+    if (nonzeros > 100000) {
+        std::cout << "\033[31;1;4mMatrix too large, skipping...\033[0m" << std::endl;
+        exit(1);
+    }
 
     // Allocate memory for the matrix
     I = (int*)malloc(nonzeros * sizeof(int));
@@ -511,6 +511,7 @@ void CSF2ConstructorBenchmark(Eigen::SparseMatrix<T>& eigen, std::vector<uint64_
     //benchmark the CSF2 constructor
     start = std::chrono::system_clock::now();
     CSF::SparseMatrix<T, int, 2> csf2(eigen);
+    csf2.setPerformanceVecs(true);
     end = std::chrono::system_clock::now();
 
     data.at(1) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();

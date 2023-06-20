@@ -43,6 +43,8 @@ int main() {
     csf2.setPerformanceVecs(false);
     std::cout << "Sum: " << csf2.sum() << std::endl;
 
+    std::vector<int> sums = csf2.outerSum();
+
     // make a vector of the CSF matrix
     // CSF::SparseMatrix<int, int, 3>::Vector skyVec(csf, 0);
 

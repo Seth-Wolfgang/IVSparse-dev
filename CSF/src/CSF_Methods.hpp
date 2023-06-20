@@ -321,6 +321,7 @@ namespace CSF {
             compSize -= value_arr_size[i] * sizeof(T) + value_arr_size[i] * sizeof(uint32_t);
         }
 
+        free(value_arr_size);
         value_arr_size = 0;
     }
 

@@ -94,7 +94,7 @@ namespace CSF {
     T SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator::value() {
         if (performanceVectors)
             return value_arr[(int)*val];
-        else 
+        else
             return *val;
     }
 
@@ -125,7 +125,7 @@ namespace CSF {
     inline void SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator::coeff(T newValue) {
         if (!performanceVectors)
             *val = newValue;
-        else 
+        else
             value_arr[(int)*val] = newValue;
     }
 
