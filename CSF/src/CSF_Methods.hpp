@@ -338,12 +338,15 @@ namespace CSF {
         value_arr_size = (uint32_t*)calloc(outerDim, sizeof(uint32_t));
 
         for (uint32_t i = 0; i < outerDim; ++i) {
+            size_t value_arr_index = 0;
             for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(*this, i); it; ++it) {
                 values.push_back(std::vector<T>());
                 counts.push_back(std::vector<uint32_t>());
                 if (it.isNewRun()) {
                     values[i].push_back(it.value());
                     counts[i].push_back(1);
+                    it.coeff(value_arr_index);
+                    value_arr_index++;
                     value_arr_size[i]++;
                 }
                 else {
@@ -391,19 +394,6 @@ namespace CSF {
         // update compSize
         compSize += total_value_arr_size * sizeof(T) + total_value_arr_size * sizeof(uint32_t);
 
-
-
-        // update the matrix
-
-        for (uint32_t i = 0; i < outerDim; ++i) {
-            size_t value_arr_index = 0;
-            for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(*this, i); it; ++it) {
-                if (it.isNewRun()) {
-                    it.coeff(value_arr_index);
-                    value_arr_index++;
-                }
-            }
-        }
         // std::cout << "value array:" << std::endl;
         // for(int i = 0; i < value_arr_size; i++) {
         //     std::cout << value_arr[i] << " ";

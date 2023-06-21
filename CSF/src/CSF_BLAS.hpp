@@ -19,7 +19,7 @@ namespace CSF {
 
         if constexpr (compressionLevel == 2) {
             if (performanceVecsOn) {
-#pragma omp parallel for schedule(dynamic)
+                #pragma omp parallel for schedule(dynamic)
                 for (int i = 0; i < outerDim; i++) {
                     for (int j = 0; j < value_arr_size[i]; j++) {
                         newMatrix.value_arr[i][j] *= scalar;
@@ -30,7 +30,7 @@ namespace CSF {
             }
         }
 
-#pragma omp parallel for schedule(dynamic)
+        #pragma omp parallel for schedule(dynamic)
         for (uint32_t i = 0; i < this->outerDim; ++i) {
             for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(newMatrix, i); it; ++it) {
                 if (it.isNewRun()) {
@@ -58,7 +58,7 @@ namespace CSF {
         // make a copy of this
         if constexpr (compressionLevel == 2) {
             if (performanceVecsOn) {
-#pragma omp parallel for schedule(dynamic)
+                #pragma omp parallel for schedule(dynamic)
                 for (int i = 0; i < outerDim; i++) {
                     for (int j = 0; j < value_arr_size[i]; j++) {
                         value_arr[i][j] *= scalar;
@@ -67,7 +67,7 @@ namespace CSF {
             }
             return;
         }
-#pragma omp parallel for schedule(dynamic)
+        #pragma omp parallel for schedule(dynamic)
         for (uint32_t i = 0; i < outerDim; ++i) {
             for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(*this, i); it; ++it) {
                 if (it.isNewRun()) {
@@ -134,9 +134,9 @@ namespace CSF {
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     inline Eigen::Matrix<T, -1, -1> SparseMatrix<T, indexT, compressionLevel, columnMajor>::vectorMultiply(Eigen::VectorXd& vec) {
         // check that the vector is the correct size
-#ifdef CSF_DEBUG
+        #ifdef CSF_DEBUG
         assert(vec.rows() == outerDim && "The vector must be the same size as the number of columns in the matrix!");
-#endif
+        #endif
 
         Eigen::Matrix<T, -1, 1> eigenTemp(innerDim, 1);
         eigenTemp.setZero();
@@ -158,10 +158,10 @@ namespace CSF {
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     inline Eigen::Matrix<T, -1, 1> SparseMatrix<T, indexT, compressionLevel, columnMajor>::vectorMultiply(typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector& vec) {
         // check that the vector is the correct size
-#ifdef CSF_DEBUG
+        #ifdef CSF_DEBUG
         if (vec.length() != outerDim)
             throw std::invalid_argument("The vector must be the same size as the number of columns in the matrix!");
-#endif
+        #endif
 
         Eigen::Matrix<T, -1, 1> newVector = Eigen::Matrix<T, -1, 1>::Zero(innerDim, 1);
 
@@ -207,10 +207,10 @@ namespace CSF {
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     inline Eigen::Matrix<T, -1, -1> SparseMatrix<T, indexT, compressionLevel, columnMajor>::matrixMultiply(Eigen::Matrix<T, -1, -1>& mat) {
         // check that the matrix is the correct size
-#ifdef CSF_DEBUG
+        #ifdef CSF_DEBUG
         if (mat.rows() != outerDim)
             throw std::invalid_argument("The matrix must be the same size as the number of columns in the matrix!");
-#endif
+        #endif
 
         Eigen::Matrix<T, -1, -1> newMatrix = Eigen::Matrix<T, -1, -1>::Zero(innerDim, mat.cols());
 

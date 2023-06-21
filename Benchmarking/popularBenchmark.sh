@@ -1,6 +1,6 @@
 #!/bin/sh
 
-g++ -w -O2 benchmark.cpp -o benchmark
+g++ -w -O2 lib/benchmark.cpp -o benchmark
 
 echo "Running Dense Matrix Benchmark"
 

@@ -2,6 +2,7 @@
 #include "CSF/SparseMatrix"
 #include "misc/matrix_creator.cpp"
 #include <chrono>
+#include "Benchmarking/lib/armadillo"
 // #define EIGEN_DONT_PARALLELIZE
 #define DATA_TYPE int
 
@@ -12,8 +13,8 @@ template <typename T, typename indexT, int compressionLevel> void iteratorTest()
 void getMat(Eigen::SparseMatrix<int>& myMatrix_e);
 
 int main() {
-    int rows = 10;
-    int cols = 10;
+    int rows = 1000;
+    int cols = 1000;
     int sparsity = 10;
     uint64_t seed = 1;
     int maxVal = 1;
@@ -34,16 +35,42 @@ int main() {
 
     Eigen::SparseMatrix<DATA_TYPE> eigen = mat.sparseView();
 
+    //put all of eigen into an eigenTriplet
+    std::vector<Eigen::Triplet<DATA_TYPE>> eigenTriplet;
+    for (int i = 0; i < eigen.outerSize(); ++i) {
+        for (typename Eigen::SparseMatrix<DATA_TYPE>::InnerIterator it(eigen, i); it; ++it) {
+            eigenTriplet.push_back(Eigen::Triplet<DATA_TYPE>(it.row(), it.col(), it.value()));
+        }
+    }
+
+    arma::mat* aMat = new arma::mat(6, 6);
+    for (auto& triplet : eigenTriplet) {
+        aMat->at(triplet.row(), triplet.col()) = triplet.value();
+    }
+    arma::sp_mat armaMat(*aMat);
+    delete aMat;
+
+    arma::vec result = armaMat * arma::ones<arma::vec>(6);
+
+    for(int i = 0; i < result.size(); i++) {
+        std::cout << result[i] << std::endl;
+    }
+    
+    std::cout << std::endl;
+
     // create a CSF sparse matrix
     CSF::SparseMatrix<DATA_TYPE, int, 3> csf(eigen);
     CSF::SparseMatrix<DATA_TYPE, int, 2> csf2(eigen);
-    csf2.setPerformanceVecs(true);
 
-    std::cout << "Sum: " << csf2.sum() << std::endl;
-    csf2.setPerformanceVecs(false);
-    std::cout << "Sum: " << csf2.sum() << std::endl;
+    std::vector csf2Result = csf2.innerSum();
 
-    std::vector<int> sums = csf2.outerSum();
+    for(int i = 0; i < csf2Result.size(); i++) {
+        std::cout << csf2Result[i] << std::endl;
+    }
+
+    // csf2.setPerformanceVecs(true);
+    // std::cout << "Sum: " << csf2.sum() << std::endl;
+
 
     // make a vector of the CSF matrix
     // CSF::SparseMatrix<int, int, 3>::Vector skyVec(csf, 0);

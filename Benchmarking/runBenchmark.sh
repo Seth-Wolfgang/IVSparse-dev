@@ -4,7 +4,7 @@
 
 # Compiling benchmark
 # g++ -g -w -O2 benchmark.cpp -o benchmark -llapack
-g++ -w -ftree-vectorize -O2 benchmark.cpp -o benchmark -llapack
+g++ -w -ftree-vectorize -O2 lib/benchmark.cpp -o benchmark -llapack
 
 
 # Checking if compilation was successful
