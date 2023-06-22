@@ -27,9 +27,21 @@
 
 // Library Classes
 #include "src/CSF_SparseMatrix.hpp"
-#include "src/CSF_CSC.hpp"
-#include "src/CSF_Methods.hpp"
+
+#include "src/CSF1/CSF1_SparseMatrix.hpp"
+#include "src/CSF1/CSF1_Constructors.hpp"
+#include "src/CSF1/CSF1_Iterator/CSF1_Iterator.hpp"
+#include "src/CSF1/CSF1_Vector/CSF1_Vector.hpp"
+#include "src/CSF1/CSF1_Methods.hpp"
+
 #include "src/CSF_Constructors.hpp"
-#include "src/CSF_Iterators.hpp"
-#include "src/CSF_Vector.hpp"
+#include "src/CSF_Private_Methods.hpp"
+#include "src/CSF_Operators.hpp"
+#include "src/CSF_Methods.hpp"
 #include "src/CSF_BLAS.hpp"
+
+#include "src/Iterator/CSF_Iterator.hpp"
+#include "src/Iterator/CSF_Iterator_Methods.hpp"
+
+#include "src/Vector/CSF_Vector.hpp"
+#include "src/Vector/CSF_Vector_Methods.hpp"
