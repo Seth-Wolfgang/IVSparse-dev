@@ -44,11 +44,11 @@ namespace CSF {
 
         nnz = mat.nonZeros();
 
-        compress(mat.valuePtr(), mat.innerIndexPtr(), mat.outerIndexPtr());
+        compressCSC(mat.valuePtr(), mat.innerIndexPtr(), mat.outerIndexPtr());
     }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector vec[], size_t size) {
+    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector vec [], size_t size) {
 
         #ifdef CSF_DEBUG
         // ensure the vectors are all the same length
@@ -73,7 +73,7 @@ namespace CSF {
             numRows = size;
         }
 
-        //allocate memory for data
+        // allocate memory for data
         try {
             data = (void**)malloc(outerDim * sizeof(void*));
             endPointers = (void**)malloc(outerDim * sizeof(void*));
@@ -97,7 +97,7 @@ namespace CSF {
                         exception_occurred = true;
                         exception_msg = e.what();
                     }
-                #pragma omp cancel for
+                    #pragma omp cancel for
                 }
                 if (!exception_occurred) {
                     memcpy(data[i], vec[i].data(), vec[i].byteSize());
@@ -116,7 +116,7 @@ namespace CSF {
         }
 
         //  set the val_t and index_t
-        val_t = encodeVal();
+        val_t = encodeValueType();
         index_t = sizeof(indexT);
 
         // malloc space for the meta data
@@ -164,7 +164,7 @@ namespace CSF {
 
         nnz = mat.nonZeros();
 
-        compress(mat.valuePtr(), mat.innerIndexPtr(), mat.outerIndexPtr());
+        compressCSC(mat.valuePtr(), mat.innerIndexPtr(), mat.outerIndexPtr());
     }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
@@ -197,15 +197,15 @@ namespace CSF {
 
         this->nnz = nnz;
 
-        compress(vals, innerIndices, outerPtr);
+        compressCSC(vals, innerIndices, outerPtr);
     }
 
     /**
      * Transpose constructor
-    */
+     */
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(std::unordered_map<T, std::vector<indexT>> maps[], uint32_t num_rows, uint32_t num_cols) {
+    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(std::unordered_map<T, std::vector<indexT>> maps [], uint32_t num_rows, uint32_t num_cols) {
 
         // set class variables
         if constexpr (columnMajor) {
@@ -219,7 +219,7 @@ namespace CSF {
 
         numRows = num_cols;
         numCols = num_rows;
-        val_t = encodeVal();
+        encodeValueType();
         index_t = sizeof(indexT);
 
         // allocate memory for the data
@@ -277,7 +277,7 @@ namespace CSF {
             // set the end pointer
             endPointers[i] = (char*)data[i] + byteSize;
 
-            // compress the column
+            // compressCSC the column
             void* helpPtr = data[i];
 
             for (auto& val : maps[i]) {
@@ -357,9 +357,7 @@ namespace CSF {
                     *(indexT*)helpPtr = (indexT)DELIM;
                     helpPtr = (indexT*)helpPtr + 1;
                 }
-
             }
-
         }
 
         //* end logic
@@ -389,19 +387,19 @@ namespace CSF {
 
     /**
      * Vector -> Matrix constructor
-    */
+     */
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(typename CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector& vec) {
         // if it is the matrix is empty and we need to construct it
         if (columnMajor) {
-            numRows = vec.length();
+            numRows = vec.getLength();
             numCols = 1;
             innerDim = numRows;
             outerDim = numCols;
         }
         else {
             numRows = 1;
-            numCols = vec.length();
+            numCols = vec.getLength();
             innerDim = numCols;
             outerDim = numRows;
         }
@@ -419,7 +417,7 @@ namespace CSF {
         nnz = vec.nonZeros();
         compSize = vec.byteSize() + sizeof(void*) * 2;
 
-        val_t = encodeVal();
+        encodeValueType();
         index_t = sizeof(indexT);
 
         // malloc the data
@@ -570,7 +568,6 @@ namespace CSF {
             if constexpr (compressionLevel == 2) {
                 // convert the incoming matrix to CSF 2
                 mat2 = mat.toCSF2();
-
             }
             else if constexpr (compressionLevel == 3) {
                 // convert the incoming matrix to CSF 3
@@ -581,21 +578,21 @@ namespace CSF {
             if constexpr (compressionLevel == 2) {
                 // copy mat and put it in mat2
                 mat2 = mat;
-                performanceVecsOn = mat.performanceVecsOn;
-                
-                if (performanceVecsOn) {
-                    value_arr = (T**)malloc(sizeof(T*) * mat.outerDim);
-                    counts_arr = (uint32_t**)malloc(sizeof(uint32_t*) * mat.outerDim);
-                    value_arr_size = (uint32_t*)malloc(sizeof(uint32_t) * mat.outerDim);
+                performanceVectors = mat.performanceVectors;
 
-                    memcpy(value_arr_size, mat.value_arr_size, sizeof(uint32_t) * mat.outerDim);
+                if (performanceVectors) {
+                    valueArray = (T**)malloc(sizeof(T*) * mat.outerDim);
+                    countsArray = (uint32_t**)malloc(sizeof(uint32_t*) * mat.outerDim);
+                    valueArraySize = (uint32_t*)malloc(sizeof(uint32_t) * mat.outerDim);
+
+                    memcpy(valueArraySize, mat.valueArraySize, sizeof(uint32_t) * mat.outerDim);
 
                     for (int i = 0; i < mat.outerDim; i++) {
-                        value_arr[i] = (T*)malloc(sizeof(T*) * mat.value_arr_size[i]);
-                        counts_arr[i] = (uint32_t*)malloc(sizeof(uint32_t*) * mat.value_arr_size[i]);
+                        valueArray[i] = (T*)malloc(sizeof(T*) * mat.valueArraySize[i]);
+                        countsArray[i] = (uint32_t*)malloc(sizeof(uint32_t*) * mat.valueArraySize[i]);
 
-                        memcpy(value_arr[i], mat.value_arr[i], sizeof(T) * mat.value_arr_size[i]);
-                        memcpy(counts_arr[i], mat.counts_arr[i], sizeof(uint32_t) * mat.value_arr_size[i]);
+                        memcpy(valueArray[i], mat.valueArray[i], sizeof(T) * mat.valueArraySize[i]);
+                        memcpy(countsArray[i], mat.countsArray[i], sizeof(uint32_t) * mat.valueArraySize[i]);
                     }
                 }
             }
@@ -621,7 +618,6 @@ namespace CSF {
             }
         }
 
-
         // Set the number of rows, columns and non-zero elements
         innerDim = mat2.innerSize();
         outerDim = mat2.outerSize();
@@ -631,7 +627,7 @@ namespace CSF {
 
         nnz = mat2.nonZeros();
 
-        compSize = mat2.compressionSize();
+        compSize = mat2.byteSize();
 
         try {
             data = (void**)malloc(outerDim * sizeof(void*));
@@ -646,29 +642,29 @@ namespace CSF {
         // #endif
         for (size_t i = 0; i < outerDim; i++) {
             try {
-                data[i] = malloc(mat2.getVecSize(i));
+                data[i] = malloc(mat2.getVectorSize(i));
             }
             catch (const std::exception& e) {
                 //! Potential Parallelism issue here
                 std::cerr << e.what() << '\n';
             }
-            memcpy(data[i], mat2.getVecPointer(i), mat2.getVecSize(i));
-            endPointers[i] = (char*)data[i] + mat2.getVecSize(i);
+            memcpy(data[i], mat2.vectorPointer(i), mat2.getVectorSize(i));
+            endPointers[i] = (char*)data[i] + mat2.getVectorSize(i);
         }
 
-        //allocate memory for metadata
+        // allocate memory for metadata
         metadata = new uint32_t[NUM_META_DATA];
         memcpy(metadata, mat2.metadata, NUM_META_DATA * sizeof(uint32_t));
 
         index_t = mat2.index_t;
 
-        val_t = encodeVal();
+        encodeValueType();
 
         // std::cout << std::endl;
         // for (int i = 0; i < outerDim; i++) {
-        //     std::cout << "value_arr[" << i << "]: ";
-        //     for (int j = 0; j < value_arr_size[i]; j++) {
-        //         std::cout << value_arr[i][j] << " ";
+        //     std::cout << "valueArray[" << i << "]: ";
+        //     for (int j = 0; j < valueArraySize[i]; j++) {
+        //         std::cout << valueArray[i][j] << " ";
         //     }
         //     std::cout << std::endl;
         // }
@@ -676,7 +672,7 @@ namespace CSF {
 
     /**
      * Deep copy constructor
-    */
+     */
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(const CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>& other) {
@@ -690,7 +686,7 @@ namespace CSF {
 
         nnz = other.nonZeros();
 
-        compSize = other.compressionSize();
+        compSize = other.byteSize();
 
         try {
             data = (void**)malloc(outerDim * sizeof(void*));
@@ -705,30 +701,29 @@ namespace CSF {
         // #endif
         for (size_t i = 0; i < outerDim; i++) {
             try {
-                data[i] = malloc(other.getVecSize(i));
+                data[i] = malloc(other.getVectorSize(i));
             }
             catch (const std::exception& e) {
                 //! Potential Parallelism issue here
                 std::cerr << e.what() << '\n';
             }
-            memcpy(data[i], other.getVecPointer(i), other.getVecSize(i));
-            endPointers[i] = (char*)data[i] + other.getVecSize(i);
+            memcpy(data[i], other.vectorPointer(i), other.getVectorSize(i));
+            endPointers[i] = (char*)data[i] + other.getVectorSize(i);
         }
 
-        //allocate memory for metadata
+        // allocate memory for metadata
         metadata = new uint32_t[NUM_META_DATA];
         memcpy(metadata, other.metadata, NUM_META_DATA * sizeof(uint32_t));
 
         index_t = other.index_t;
-        val_t = encodeVal();
-
+        val_t = encodeValueType();
     }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     SparseMatrix<T, indexT, compressionLevel, columnMajor>::~SparseMatrix() {
         // delete the meta data
         if (metadata != nullptr) {
-            delete[] metadata;
+            delete [] metadata;
         }
 
         // free the data
@@ -747,26 +742,25 @@ namespace CSF {
 
         if constexpr (compressionLevel == 2) {
             // if value array and counts are not null, free them
-            if (value_arr != nullptr) {
+            if (valueArray != nullptr) {
                 for (int i = 0; i < outerDim; i++) {
-                    if (value_arr[i] != nullptr) {
-                        free(value_arr[i]);
+                    if (valueArray[i] != nullptr) {
+                        free(valueArray[i]);
                     }
                 }
-                free(value_arr);
+                free(valueArray);
             }
 
-            if (counts_arr != nullptr) {
+            if (countsArray != nullptr) {
                 for (int i = 0; i < outerDim; i++) {
-                    if (counts_arr[i] != nullptr) {
-                        free(counts_arr[i]);
+                    if (countsArray[i] != nullptr) {
+                        free(countsArray[i]);
                     }
                 }
-                free(counts_arr);
+                free(countsArray);
             }
 
-            free(value_arr_size);
-
+            free(valueArraySize);
         }
     }
 

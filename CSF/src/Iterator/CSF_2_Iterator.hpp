@@ -13,12 +13,12 @@ namespace CSF {
 
         if (matrix.isPerformanceVecsOn()) {
             performanceVectors = true;
-            value_arr = matrix.value_arr[vec];
-            counts_arr = matrix.counts_arr[vec];
+            valueArray = matrix.valueArray[vec];
+            countsArray = matrix.countsArray[vec];
         }
 
         // Sets the data pointer to the specified column of the matrix
-        data = matrix.getVecPointer(vec);
+        data = matrix.vectorPointer(vec);
 
         // If the column is all zeros, set the data to the end pointer
         if (data == nullptr) [[unlikely]] {
@@ -54,8 +54,8 @@ namespace CSF {
 
         if (vector.isPerformanceVecsOn()) {
             performanceVectors = true;
-            value_arr = vector.value_arr[0];
-            counts_arr = vector.counts_arr[0];
+            valueArray = vector.valueArray[0];
+            countsArray = vector.countsArray[0];
         }
 
         // set the data pointer
@@ -100,7 +100,7 @@ namespace CSF {
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     T SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator::value() {
         if (performanceVectors)
-            return value_arr[(int)*val];
+            return valueArray[(int)*val];
         else
             return *val;
     }
@@ -108,7 +108,7 @@ namespace CSF {
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     T& SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator::operator*() {
         if (performanceVectors)
-            return value_arr[*val];
+            return valueArray[*val];
         else
             return *val;
     }
@@ -133,7 +133,7 @@ namespace CSF {
         if (!performanceVectors)
             *val = newValue;
         else
-            value_arr[(int)*val] = newValue;
+            valueArray[(int)*val] = newValue;
     }
 
 
@@ -160,7 +160,7 @@ namespace CSF {
         decodeIndex();
 
         // If new_row is 0 and not the first row, then the row is a delimitor
-        if (*counts_arr == count) {
+        if (*countsArray == count) {
 
             if (data >= (uint8_t*)endPtr - indexWidth) [[unlikely]] {
                 return;
@@ -175,7 +175,7 @@ namespace CSF {
             index = newIndex;
             firstIndex = true;
             count = 0;
-            counts_arr = (uint8_t*)counts_arr + sizeof(uint32_t);
+            countsArray = (uint8_t*)countsArray + sizeof(uint32_t);
             return;
         }
         

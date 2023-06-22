@@ -13,14 +13,6 @@ namespace CSF {
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::Vector(CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>& mat, uint32_t vec) {
 
-        bool performanceVecs = mat.isPerformanceVecsOn();
-
-        // if performance vectors are on kill them first
-        if (performanceVecs) {
-            mat.setPerformanceVecs(false);
-        }
-
-
         #ifdef CSF_DEBUG
         // make sure the vector is in bounds
         assert((vec >= 0 && vec < mat.outerSize()) && "Vector index out of bounds");
@@ -30,7 +22,7 @@ namespace CSF {
         #endif
 
         // get the length of the vector
-        size = mat.getVecSize(vec);
+        size = mat.getVectorSize(vec);
         length = mat.innerSize();
 
         // if the size is 0 then the vector is empty
@@ -49,10 +41,31 @@ namespace CSF {
         }
 
         // copy the vector data into the vector
-        memcpy(data, mat.getVecPointer(vec), size);
+        memcpy(data, mat.vectorPointer(vec), size);
 
         // set the end pointer
         endPtr = (uint8_t*)data + size;
+
+        if (mat.performanceVectorsInitialized()) {
+            performanceVectors = true;
+
+            valueArraySize = mat.valueArraySize[vec];
+
+            // allocate space for the value array
+            try {
+                valueArray = (T*)malloc(sizeof(T) * valueArraySize);
+                countsArray = (uint32_t*)malloc(sizeof(uint32_t) * valueArraySize);
+            }
+            catch (std::bad_alloc& e) {
+                std::cerr << e.what() << '\n';
+            }
+
+            // copy the value array
+            memcpy(valueArray, mat.valueArray[vec], sizeof(T) * valueArraySize);
+
+            // copy the counts array
+            memcpy(countsArray, mat.countsArray[vec], sizeof(uint32_t) * valueArraySize);
+        }
 
         // set the nnz
         if (nnz == 0 && size > 0) {
@@ -66,10 +79,6 @@ namespace CSF {
             }
         }
 
-        // if performance vectors were turned off turn them back on
-        if (performanceVecs) {
-            mat.setPerformanceVecs(true);
-        }
     }
 
     // Deep copy constructor
@@ -96,6 +105,28 @@ namespace CSF {
             std::cerr << e.what() << '\n';
         }
 
+        // if performance vectors are on copy those as well
+        if (vec.performanceVectors) {
+            performanceVectors = true;
+
+            valueArraySize = vec.valueArraySize;
+
+            // allocate space for the value array
+            try {
+                valueArray = (T*)malloc(sizeof(T) * valueArraySize);
+                countsArray = (uint32_t*)malloc(sizeof(uint32_t) * valueArraySize);
+            }
+            catch (std::bad_alloc& e) {
+                std::cerr << e.what() << '\n';
+            }
+
+            // copy the value array
+            memcpy(valueArray, vec.valueArray, sizeof(T) * valueArraySize);
+
+            // copy the counts array
+            memcpy(countsArray, vec.countsArray, sizeof(uint32_t) * valueArraySize);
+        }
+
         // copy the vector data into the vector
         memcpy(data, vec.data, size);
 
@@ -105,9 +136,9 @@ namespace CSF {
         // set the nnz
         nnz = vec.nonZeros();
 
-        #ifdef CSF_DEBUG
+#ifdef CSF_DEBUG
         userChecks();
-        #endif
+#endif
     }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
@@ -146,7 +177,6 @@ namespace CSF {
 
         // set the end pointer
         endPtr = (uint8_t*)data + size;
-
 
         void* helpPtr = data;
 
@@ -230,7 +260,6 @@ namespace CSF {
                 helpPtr = (indexT*)helpPtr + 1;
             }
         }
-
     }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
@@ -239,18 +268,10 @@ namespace CSF {
             free(data);
         }
 
-        if constexpr (compressionLevel == 2){
-            if(isPerformanceVecsOn()){
-                if (value_arr != nullptr) {
-                    free(value_arr);
-                    free(counts_arr);
-                }
-            }
+        if (valueArray != nullptr) {
+            free(valueArray);
+            free(countsArray);
         }
-
-
-
-
     }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
@@ -262,7 +283,6 @@ namespace CSF {
         assert((std::is_arithmetic<T>::value && std::is_arithmetic<indexT>::value) && "The value and index types must be numeric types");
 
         assert((std::is_same<indexT, bool>::value == false) && "The index type must not be bool");
-
     }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
@@ -287,26 +307,20 @@ namespace CSF {
     T SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::coeff(uint32_t index) { return (*this)[index]; }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    void SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::setPerformanceVecs(bool on) {
+    uint32_t SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::getLength() { return length; }
+
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    void SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::setPerformanceVectors(bool on) {
         if (on) {
-            activateCSF2Vecs();
+            initPerformanceVectors();
         }
         else {
-            undoCSF2Vecs();
+            deletePerformanceVectors();
         }
     }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    uint32_t SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::getValueArraySize() { return value_arr_size; }
-
-    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    T* SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::getValueArray() { return value_arr; }
-
-    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    uint32_t* SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::getCountsArray() { return counts; }
-
-    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    bool SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::isPerformanceVecsOn() { return performanceVectors; }
+    bool SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::performanceVectorsInitialized() { return performanceVectors; }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     void SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::undoPerformanceVecs() {
@@ -316,11 +330,10 @@ namespace CSF {
         }
         performanceVectors = false;
 
-        free(value_arr);
-        free(counts);
-        value_arr_size = 0;
+        free(valueArray);
+        free(countsArray);
+        valueArraySize = 0;
     }
-
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     void SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::activatePerformanceVecs() {
@@ -337,7 +350,7 @@ namespace CSF {
             if (it.isNewRun()) {
                 values.push_back(it.value());
                 countsVector.push_back(1);
-                value_arr_size++;
+                valueArraySize++;
             }
             else {
                 countsVector[countsVector.size() - 1]++;
@@ -345,11 +358,11 @@ namespace CSF {
         }
 
         try {
-            value_arr = (T*)malloc(sizeof(T) * value_arr_size);
-            memcpy(value_arr, values.data(), sizeof(T) * value_arr_size);
+            valueArray = (T*)malloc(sizeof(T) * valueArraySize);
+            memcpy(valueArray, values.data(), sizeof(T) * valueArraySize);
 
-            counts = (uint32_t*)malloc(sizeof(uint32_t) * value_arr_size);
-            memcpy(counts, countsVector.data(), sizeof(uint32_t) * value_arr_size);
+            countsArray = (uint32_t*)malloc(sizeof(uint32_t) * valueArraySize);
+            memcpy(countsArray, countsVector.data(), sizeof(uint32_t) * valueArraySize);
         }
         catch (std::bad_alloc& e) {
             std::cout << "Error: " << e.what() << std::endl;
@@ -359,7 +372,7 @@ namespace CSF {
         values.clear();
         countsVector.clear();
 
-        compSize += value_arr_size * sizeof(T) + value_arr_size * sizeof(uint32_t);
+        compSize += valueArraySize * sizeof(T) + valueArraySize * sizeof(uint32_t);
     }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
@@ -372,6 +385,11 @@ namespace CSF {
         // free the data if it is not null
         if (data != nullptr) {
             free(data);
+        }
+
+        if (valueArray != nullptr) {
+            free(valueArray);
+            free(countsArray);
         }
 
         // copy the data
@@ -391,13 +409,13 @@ namespace CSF {
         endPtr = (uint8_t*)data + size;
 
         if (other.performanceVectors) {
-            value_arr = (T*)malloc(sizeof(T) * other.value_arr_size);
-            counts = (uint32_t*)malloc(sizeof(uint32_t) * other.value_arr_size);
+            valueArray = (T*)malloc(sizeof(T) * other.valueArraySize);
+            countsArray = (uint32_t*)malloc(sizeof(uint32_t) * other.valueArraySize);
 
-            memcpy(counts, other.counts, sizeof(uint32_t) * other.value_arr_size);
-            memcpy(value_arr, other.value_arr, sizeof(T) * other.value_arr_size);
+            memcpy(countsArray, other.countsArray, sizeof(uint32_t) * other.valueArraySize);
+            memcpy(valueArray, other.valueArray, sizeof(T) * other.valueArraySize);
 
-            value_arr_size = other.value_arr_size;
+            valueArraySize = other.valueArraySize;
         }
 
         // return this
@@ -457,6 +475,22 @@ namespace CSF {
         }
 
         std::cout << std::endl;
+    }
+
+    // get values method
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    T* SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::getValues() {
+        return valueArray;
+    }
+
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    uint32_t* SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::getCounts() {
+        return countsArray;
+    }
+
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    uint32_t SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::getValueArraySize() {
+        return valueArraySize;
     }
 
 }

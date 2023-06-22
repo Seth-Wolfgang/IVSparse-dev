@@ -48,9 +48,9 @@ int main() {
     CSF::SparseMatrix<DATA_TYPE, uint32_t, 2, false> csf2(eigen);
 
     typename CSF::SparseMatrix<DATA_TYPE, uint32_t, 3>::Vector vec = csf3[0];
-    std::cout << vec.dot(eigenVec) << std::endl;
-    vec.print();
-
+    // std::cout << vec.dot(eigenVec) << std::endl;
+    std::cout << eigen.sum() << std::endl;
+    std::cout << csf3.sum() << std::endl;
 
     return 1;
 }
