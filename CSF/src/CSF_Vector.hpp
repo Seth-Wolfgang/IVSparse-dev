@@ -105,9 +105,9 @@ namespace CSF {
         // set the nnz
         nnz = vec.nonZeros();
 
-#ifdef CSF_DEBUG
+        #ifdef CSF_DEBUG
         userChecks();
-#endif
+        #endif
     }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
@@ -239,10 +239,16 @@ namespace CSF {
             free(data);
         }
 
-        if (value_arr != nullptr) {
-            free(value_arr);
-            free(counts);
+        if constexpr (compressionLevel == 2){
+            if(isPerformanceVecsOn()){
+                if (value_arr != nullptr) {
+                    free(value_arr);
+                    free(counts_arr);
+                }
+            }
         }
+
+
 
 
     }
@@ -289,6 +295,15 @@ namespace CSF {
             undoCSF2Vecs();
         }
     }
+
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    uint32_t SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::getValueArraySize() { return value_arr_size; }
+
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    T* SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::getValueArray() { return value_arr; }
+
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    uint32_t* SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::getCountsArray() { return counts; }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     bool SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::isPerformanceVecsOn() { return performanceVectors; }

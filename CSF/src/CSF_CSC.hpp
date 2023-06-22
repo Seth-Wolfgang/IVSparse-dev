@@ -64,9 +64,9 @@ namespace CSF {
         memcpy(outerPtr, mat.outerIndexPtr(), sizeof(indexT) * (outerDim + 1));
 
         // run the user checks
-#ifdef CSF_DEBUG
+        #ifdef CSF_DEBUG
         userChecks();
-#endif
+        #endif
     }
 
     // eigen sparse matrix constructor (row major)
@@ -105,9 +105,9 @@ namespace CSF {
         memcpy(outerPtr, mat.outerIndexPtr(), sizeof(indexT) * (outerDim + 1));
 
         // run the user checks
-#ifdef CSF_DEBUG
+        #ifdef CSF_DEBUG
         userChecks();
-#endif
+        #endif
     }
 
     // generalized constructor
@@ -185,9 +185,9 @@ namespace CSF {
         val_t = encodeVal();
 
         // run the user checks
-#ifdef CSF_DEBUG
+        #ifdef CSF_DEBUG
         userChecks();
-#endif
+        #endif
     }
 
     // vector constructor

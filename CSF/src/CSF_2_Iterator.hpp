@@ -5,8 +5,8 @@ namespace CSF {
 
     // ---------------- InnerIterator Constructors ---------------- //
 
-    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    inline SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator::InnerIterator(CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>& matrix, uint32_t vec) {
+    template <typename T, typename indexT, bool columnMajor>
+    inline SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::InnerIterator(CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>& matrix, uint32_t vec) {
 
         // Sets the column
         this->outer = vec;
@@ -52,11 +52,10 @@ namespace CSF {
         // set the column to -1
         this->outer = 0;
 
-        if(vector.isPerformanceVecsOn()) {
+        if (vector.isPerformanceVecsOn()) {
             performanceVectors = true;
-            value_arr = vector.getValueArray();
-            counts_arr = vector.getCountsArray();
-            value_arr_size = vector.getValueArraySize();
+            value_arr = vector.value_arr[0];
+            counts_arr = vector.counts_arr[0];
         }
 
         // set the data pointer
@@ -154,50 +153,38 @@ namespace CSF {
             return outer;
     }
 
-    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    void SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator::operator++() {
 
+    void operator++() {
         data = (uint8_t*)data + indexWidth;
 
         decodeIndex();
 
         // If new_row is 0 and not the first row, then the row is a delimitor
-        if (newIndex == 0) {
+        if (*counts_arr == count) {
 
             if (data >= (uint8_t*)endPtr - indexWidth) [[unlikely]] {
                 return;
             }
 
-            data = (uint8_t*)data + indexWidth;
-
             // val is the first row of the run
             val = (T*)data;
             data = (uint8_t*)data + sizeof(T);
-
-            if constexpr (compressionLevel == 3) {
-                // Sets row width to the width of the first run
-                indexWidth = *(uint8_t*)data;
-                data = (uint8_t*)data + sizeof(uint8_t);
-            }
-
-            // update currentCol to the next column
 
             // Make row 0 as it is a new run
             decodeIndex();
             index = newIndex;
             firstIndex = true;
+            count = 0;
+            counts_arr = (uint8_t*)counts_arr + sizeof(uint32_t);
             return;
         }
+        
 
         firstIndex = false;
-
+        count++;
         // Depending on if the CSF::SparseMatrix is at compression level 2 or 3, we handle the row differently
         // Compression level 3 is postive delta encoded, so we return the sum of the current row and the previous ones
-        if constexpr (compressionLevel == 2) {
-            index = newIndex;
-        }
-        else
-            index += newIndex;
+        index = newIndex;
     }
 
 

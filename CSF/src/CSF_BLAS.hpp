@@ -18,21 +18,21 @@ namespace CSF {
         CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor> newMatrix(*this);
 
         if constexpr (compressionLevel == 2) {
-            if (performanceVecsOn) {
+            if (isPerformanceVecsOn()) {
                 #pragma omp parallel for schedule(dynamic)
                 for (int i = 0; i < outerDim; i++) {
                     for (int j = 0; j < value_arr_size[i]; j++) {
                         newMatrix.value_arr[i][j] *= scalar;
                     }
                 }
+                
                 return newMatrix;
-
             }
         }
 
         #pragma omp parallel for schedule(dynamic)
         for (uint32_t i = 0; i < this->outerDim; ++i) {
-            for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(newMatrix, i); it; ++it) {
+            for (typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator it(newMatrix, i); it; ++it) {
                 if (it.isNewRun()) {
                     it.coeff(it.value() * scalar);
                 }
@@ -57,7 +57,7 @@ namespace CSF {
     void SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator*=(T scalar) {
         // make a copy of this
         if constexpr (compressionLevel == 2) {
-            if (performanceVecsOn) {
+            if (isPerformanceVecsOn()) {
                 #pragma omp parallel for schedule(dynamic)
                 for (int i = 0; i < outerDim; i++) {
                     for (int j = 0; j < value_arr_size[i]; j++) {
@@ -67,9 +67,10 @@ namespace CSF {
             }
             return;
         }
+
         #pragma omp parallel for schedule(dynamic)
         for (uint32_t i = 0; i < outerDim; ++i) {
-            for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(*this, i); it; ++it) {
+            for (typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator it(*this, i); it; ++it) {
                 if (it.isNewRun()) {
                     it.coeff(it.value() * scalar);
                 }
@@ -134,9 +135,7 @@ namespace CSF {
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     inline Eigen::Matrix<T, -1, -1> SparseMatrix<T, indexT, compressionLevel, columnMajor>::vectorMultiply(Eigen::VectorXd& vec) {
         // check that the vector is the correct size
-        #ifdef CSF_DEBUG
         assert(vec.rows() == outerDim && "The vector must be the same size as the number of columns in the matrix!");
-        #endif
 
         Eigen::Matrix<T, -1, 1> eigenTemp(innerDim, 1);
         eigenTemp.setZero();
@@ -144,7 +143,7 @@ namespace CSF {
         // iterate over the vector and multiply the corresponding row of the matrix by the vecIter value
         for (int i = 0; i < vec.rows(); ++i) {
             if (vec(i) == 0) continue;
-            for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator matIter(*this, i); matIter; ++matIter) {
+            for (typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator matIter(*this, i); matIter; ++matIter) {
                 eigenTemp.coeffRef(matIter.row()) += matIter.value() * vec(i);
             }
         }
@@ -157,17 +156,14 @@ namespace CSF {
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     inline Eigen::Matrix<T, -1, 1> SparseMatrix<T, indexT, compressionLevel, columnMajor>::vectorMultiply(typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector& vec) {
-        // check that the vector is the correct size
-        #ifdef CSF_DEBUG
         if (vec.length() != outerDim)
             throw std::invalid_argument("The vector must be the same size as the number of columns in the matrix!");
-        #endif
 
         Eigen::Matrix<T, -1, 1> newVector = Eigen::Matrix<T, -1, 1>::Zero(innerDim, 1);
 
         // iterate over the vector and multiply the corresponding row of the matrix by the vecIter value
-        for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator vecIter(vec); vecIter; ++vecIter) {
-            for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator matIter(*this, vecIter.row()); matIter; ++matIter) {
+        for (typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator vecIter(vec); vecIter; ++vecIter) {
+            for (typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator matIter(*this, vecIter.row()); matIter; ++matIter) {
                 newVector.coeffRef(matIter.row()) += matIter.value() * vecIter.value();
             }
         }
@@ -193,7 +189,7 @@ namespace CSF {
     //          // linear indexing considers a matrix as a vector, in this case we let it be column-major
     //          int col = i / this->rows(); // integer division!
     //          int row = i % this->rows(); // modulus of integer division!
-    //          for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator matIter(*this, row); matIter; ++matIter) {
+    //          for (typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator matIter(*this, row); matIter; ++matIter) {
     //              newMatrix.coeffRef(row, col) += matIter.value() * mat(row, col);
     //          }
     //      }
@@ -217,7 +213,7 @@ namespace CSF {
         // #pragma omp parallel for num_threads(8)
         for (int col = 0; col < mat.cols(); col++) {
             for (int row = 0; row < mat.rows(); row++) {
-                for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator matIter(*this, row); matIter; ++matIter) {
+                for (typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator matIter(*this, row); matIter; ++matIter) {
                     newMatrix.coeffRef(matIter.row(), col) += matIter.value() * mat(row, col);
                 }
             }
@@ -242,7 +238,7 @@ namespace CSF {
         std::vector<T> outerSum = std::vector<T>(outerDim);
 
         if constexpr (compressionLevel == 2) {
-            if (performanceVecsOn) {
+            if (isPerformanceVecsOn()) {
 
                 #pragma omp parallel for schedule(dynamic)
                 for (int i = 0; i < outerDim; i++) {
@@ -255,7 +251,7 @@ namespace CSF {
         }
 
         for (int i = 0; i < outerDim; i++) {
-            for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(*this, i); it; ++it) {
+            for (typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator it(*this, i); it; ++it) {
                 outerSum[i] += it.value();
             }
         }
@@ -278,7 +274,7 @@ namespace CSF {
         std::vector<T> innerSum = std::vector<T>(innerDim);
 
         for (int i = 0; i < outerDim; i++) {
-            for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(*this, i); it; ++it) {
+            for (typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator it(*this, i); it; ++it) {
                 innerSum[it.row()] += it.value();
             }
         }
@@ -301,7 +297,7 @@ namespace CSF {
         std::vector<T> maxCoeff = std::vector<T>(innerDim);
 
         if constexpr (compressionLevel == 2) {
-            if (performanceVecsOn) {
+            if (isPerformanceVecsOn()) {
                 #pragma omp parallel for schedule(dynamic)
                 for (int i = 0; i < outerDim; i++) {
                     for (int j = 0; j < value_arr_size[i]; j++) {
@@ -315,7 +311,7 @@ namespace CSF {
         }
 
         for (int i = 0; i < outerDim; i++) {
-            for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(*this, i); it; ++it) {
+            for (typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator it(*this, i); it; ++it) {
                 if (it.value() > maxCoeff[i]) {
                     maxCoeff[i] = it.value();
                 }
@@ -340,7 +336,7 @@ namespace CSF {
         std::vector<T> maxCoeff = std::vector<T>(innerDim);
 
         for (int i = 0; i < outerDim; i++) {
-            for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(*this, i); it; ++it) {
+            for (typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator it(*this, i); it; ++it) {
                 if (it.value() > maxCoeff[it.row()]) {
                     maxCoeff[it.row()] = it.value();
                 }
@@ -365,7 +361,7 @@ namespace CSF {
         std::vector<T> minCoeff = std::vector<T>(innerDim);
 
         if constexpr (compressionLevel == 2) {
-            if (performanceVecsOn) {
+            if (isPerformanceVecsOn()) {
                 #pragma omp parallel for schedule(dynamic)
                 for (int i = 0; i < outerDim; i++) {
                     for (int j = 0; j < value_arr_size[i]; j++) {
@@ -379,7 +375,7 @@ namespace CSF {
         }
 
         for (int i = 0; i < outerDim; i++) {
-            for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(*this, i); it; ++it) {
+            for (typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator it(*this, i); it; ++it) {
                 if (it.value() < minCoeff[i]) {
                     minCoeff[i] = it.value();
                 }
@@ -405,7 +401,7 @@ namespace CSF {
         memset(minCoeff.data(), 0xF, innerDim * sizeof(T));
 
         for (int i = 0; i < outerDim; i++) {
-            for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(*this, i); it; ++it) {
+            for (typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator it(*this, i); it; ++it) {
                 if (it.value() < minCoeff[it.row()]) {
                     minCoeff[it.row()] = it.value();
                 }
@@ -431,9 +427,8 @@ namespace CSF {
 
         T trace = 0;
         for (int i = 0; i < outerDim; i++) {
-            for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(*this, i); it; ++it) {
+            for (typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator it(*this, i); it; ++it) {
                 if (it.row() == i) {
-
                     trace += it.value();
                 }
                 else if (it.row() > i) {
@@ -460,7 +455,7 @@ namespace CSF {
         T sum = 0;
 
         if constexpr (compressionLevel == 2) {
-            if (performanceVecsOn) {
+            if (isPerformanceVecsOn()) {
                 #pragma omp parallel for schedule(dynamic)
                 for (int i = 0; i < outerDim; i++) {
                     for (int j = 0; j < value_arr_size[i]; j++) {
@@ -472,19 +467,30 @@ namespace CSF {
         }
 
         for (int i = 0; i < outerDim; i++) {
-            for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(*this, i); it; ++it) {
+            for (typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator it(*this, i); it; ++it) {
                 sum += it.value();
             }
         }
         return sum;
     }
 
+    /**
+     * @brief Returns the frobenius norm of the matrix
+     * 
+     * @tparam T
+     * @tparam indexT
+     * @tparam compressionLevel
+     * @tparam columnMajor
+     * 
+     * @return double
+    */
+
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     inline double SparseMatrix<T, indexT, compressionLevel, columnMajor>::norm() {
         double norm = 0;
 
         if constexpr (compressionLevel == 2) {
-            if (performanceVecsOn) {
+            if (isPerformanceVecsOn()) {
                 #pragma omp parallel for schedule(dynamic)
                 for (int i = 0; i < outerDim; i++) {
                     for (int j = 0; j < value_arr_size[i]; j++) {
@@ -496,19 +502,30 @@ namespace CSF {
         }
 
         for (int i = 0; i < outerDim; i++) {
-            for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(*this, i); it; ++it) {
+            for (typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator it(*this, i); it; ++it) {
                 norm += it.value() * it.value();
             }
         }
         return sqrt(norm);
     }
 
+    /**
+     * @brief returns the length of a specified vector
+     * 
+     * @tparam T
+     * @tparam indexT
+     * @tparam compressionLevel
+     * @tparam columnMajor
+     * 
+     * @param col
+    */
+
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     inline double SparseMatrix<T, indexT, compressionLevel, columnMajor>::vectorLength(uint32_t col) {
         double norm = 0;
 
         if constexpr (compressionLevel == 2) {
-            if (performanceVecsOn) {
+            if (isPerformanceVecsOn()) {
                 #pragma omp parallel for schedule(dynamic)
                 for (int i = 0; i < value_arr_size[col]; i++) {
                     norm += value_arr[col][i] * value_arr[col][i] * counts_arr[col][i];
@@ -517,80 +534,10 @@ namespace CSF {
             }
         }
 
-        for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(*this, col); it; ++it) {
+        for (typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator it(*this, col); it; ++it) {
             norm += it.value() * it.value();
             return sqrt(norm);
         }
     }
-
-
-    /************************************************************************************
-     *
-     *
-     *                                 VECTOR METHODS
-     *                                     (WIP)
-     *
-     *
-     ************************************************************************************/
-
-
-//     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-//     inline double SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::norm() {
-//         double norm = 0;
-
-//         if constexpr (compressionLevel == 2) {
-//             if (performanceVecsOn) {
-// #pragma omp parallel for schedule(dynamic)
-//                 for (int i = 0; i < value_arr_size; i++) {
-//                     norm += value_arr[i] * value_arr[i] * counts_arr[i];
-//                 }
-//                 return sqrt(norm);
-//             }
-//         }
-//         for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(*this); it; ++it) {
-//             norm += it.value() * it.value();
-//         }
-//         return sqrt(norm);
-//     }
-
-//     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-//     double typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector SparseMatrix::operator*=(T scalar) {
-
-//         if constexpr (compressionLevel == 2) {
-//             if (performanceVecsOn) {
-//                 #pragma omp parallel for schedule(dynamic)
-//                 for (int i = 0; i < value_arr_size; i++) {
-//                     value_arr[i] *= scalar;
-//                 }
-//                 return;
-//             }
-//         }
-//     }
-
-//     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-//     typename CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::operator*(T scalar) {
-
-//         typename CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector newVector(*this);
-//         if constexpr (compressionLevel == 2) {
-//             if (performanceVecsOn) {
-//                 #pragma omp parallel for schedule(dynamic)
-//                 for (int i = 0; i < outerDim; i++) {
-//                     for (int j = 0; j < value_arr_size[i]; j++) {
-//                         newVector.value_arr[i][j] *= scalar;
-//                     }
-//                 }
-//                 return newMatrix;
-//             }
-//         }
-
-// #pragma omp parallel for schedule(dynamic)
-//         for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(newVector); it; ++it) {
-//             if (it.isNewRun()) {
-//                 it.coeff(it.value() * scalar);
-//             }
-//         }
-
-//         return newMatrix;
-//     }
 }
 

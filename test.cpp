@@ -2,7 +2,6 @@
 #include "CSF/SparseMatrix"
 #include "misc/matrix_creator.cpp"
 #include <chrono>
-#include "Benchmarking/lib/armadillo"
 // #define EIGEN_DONT_PARALLELIZE
 #define DATA_TYPE int
 
@@ -13,104 +12,44 @@ template <typename T, typename indexT, int compressionLevel> void iteratorTest()
 void getMat(Eigen::SparseMatrix<int>& myMatrix_e);
 
 int main() {
-    int rows = 1000;
-    int cols = 1000;
+    int rows = 100;
+    int cols = 100;
     int sparsity = 10;
     uint64_t seed = 1;
     int maxVal = 1;
 
     // create an eigen sparse matrix
     // Eigen::SparseMatrix<DATA_TYPE> eigen(rows, cols);
-    // getMat(eigen);
     // eigen = generateMatrix<DATA_TYPE>(rows, cols, 1, 1, 9);
     // std::cout << eigen << std::endl;
 
     Eigen::MatrixXi mat(6, 6);
-    mat << 0, 3, 4, 1,-1, 4,
-           3, 9, 0, 0,-6, 0,
-           0, 0,-5,-10, 0, 1,
-           9, 8, 7, 6, 5, 4,
-           0, 0, 0, 0, 0, 0,
-           0, 0, 0, 0, 0,-1;
+    mat << 0, 3, 4,  1, -1, 4,
+           3, 9, 0,  0, -6, 0,
+           0, 0,-5,-10,  0, 1,
+           9, 8, 7,  6,  5, 4,
+           0, 0, 0,  0,  0, 0,
+           0, 0, 0,  0,  0,-1;
+
+    Eigen::Vector<DATA_TYPE, 6> eigenVec(6,1);
+    eigenVec << 0,
+           3,
+           0,
+           9,
+           0,
+           0;
+        
 
     Eigen::SparseMatrix<DATA_TYPE> eigen = mat.sparseView();
+    Eigen::SparseVector<DATA_TYPE> eigenVector = eigenVec.sparseView();
 
-    //put all of eigen into an eigenTriplet
-    std::vector<Eigen::Triplet<DATA_TYPE>> eigenTriplet;
-    for (int i = 0; i < eigen.outerSize(); ++i) {
-        for (typename Eigen::SparseMatrix<DATA_TYPE>::InnerIterator it(eigen, i); it; ++it) {
-            eigenTriplet.push_back(Eigen::Triplet<DATA_TYPE>(it.row(), it.col(), it.value()));
-        }
-    }
+    CSF::SparseMatrix<DATA_TYPE, uint32_t, 1> csf(eigen);
+    CSF::SparseMatrix<DATA_TYPE, uint32_t, 3> csf3(eigen);
+    CSF::SparseMatrix<DATA_TYPE, uint32_t, 2, false> csf2(eigen);
 
-    arma::mat* aMat = new arma::mat(6, 6);
-    for (auto& triplet : eigenTriplet) {
-        aMat->at(triplet.row(), triplet.col()) = triplet.value();
-    }
-    arma::sp_mat armaMat(*aMat);
-    delete aMat;
-
-    arma::vec result = armaMat * arma::ones<arma::vec>(6);
-
-    for(int i = 0; i < result.size(); i++) {
-        std::cout << result[i] << std::endl;
-    }
-    
-    std::cout << std::endl;
-
-    // create a CSF sparse matrix
-    CSF::SparseMatrix<DATA_TYPE, int, 3> csf(eigen);
-    CSF::SparseMatrix<DATA_TYPE, int, 2> csf2(eigen);
-
-    std::vector csf2Result = csf2.innerSum();
-
-    for(int i = 0; i < csf2Result.size(); i++) {
-        std::cout << csf2Result[i] << std::endl;
-    }
-
-    // csf2.setPerformanceVecs(true);
-    // std::cout << "Sum: " << csf2.sum() << std::endl;
-
-
-    // make a vector of the CSF matrix
-    // CSF::SparseMatrix<int, int, 3>::Vector skyVec(csf, 0);
-
-    // multiply the CSF by 3
-    // csf *= 3;
-
-    // std::cout << "CSF: " << csf.compressionSize() << std::endl;
-    // std::cout << "CSF2: " << csf2.compressionSize() << std::endl;
-    // uint64_t eigenSize = eigen.nonZeros() * sizeof(double) + eigen.nonZeros() * sizeof(uint32_t) + (eigen.outerSize() + 1) * sizeof(uint32_t);
-    // std::cout << "eigen size: " << eigenSize << std::endl;
-
-    // Eigen::IOFormat clean(Eigen::StreamPrecision, Eigen::DontAlignCols, " ", "\n", "", "", "", "");
-
-    // std::cout << Eigen::MatrixXd(eigen).format(clean) << std::endl << std::endl;
-
-    // std::cout << csf << std::endl;
-
-
-
-    //rows * columns * (end pointers + start pointers) + values * data type + metadata 
-
-    //rows * columns (2 * pointers) * outersize + (sizeof(valueType) + sizeof(delimitor)) * outersize 
-
-
-    // std::cout << csf << std::endl;
-    // std::cout << eigen << std::endl;
-
-
-    // * CSF Iterator Testing * //
-    // #pragma omp parallel for num_threads(15)
-    // for (int i = 0; i < 1; i++) {
-    //     iteratorTest<double, uint64_t, 3>();
-    //     std::cout << "Test " << i << " passed" << std::endl;
-    // }
-
-    // for(int i = 0; i < 1; i++) {
-    //     std::cout << "i: " << i << std::endl;
-    //     sizeTest<int, uint64_t>(10);
-    // }
+    typename CSF::SparseMatrix<DATA_TYPE, uint32_t, 3>::Vector vec = csf3[0];
+    std::cout << vec.dot(eigenVec) << std::endl;
+    vec.print();
 
 
     return 1;

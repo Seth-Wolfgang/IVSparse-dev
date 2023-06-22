@@ -80,7 +80,7 @@ int main() {
      * This algorithm is in O(n^2)
     */
 
-    int* columnSums = csfSparseMatrix.outerSum();
+    std::vector<int> columnSums = csfSparseMatrix.outerSum();
 
     //Print the column sums
     for (int i = 0; i < csfSparseMatrix.cols(); i++) {
@@ -97,7 +97,7 @@ int main() {
      * This algorithm is in O(n^2)
     */
 
-    int* rowSums = csfSparseMatrix.innerSum();
+    std::vector<int> rowSums = csfSparseMatrix.innerSum();
 
     //Print the row sums
     for (int i = 0; i < csfSparseMatrix.rows(); i++) {
@@ -113,7 +113,7 @@ int main() {
      * This algorithm is in O(n^2)
     */
 
-    int* maxOuterCoefficients = csfSparseMatrix.maxColCoeff();
+    std::vector<int> maxOuterCoefficients = csfSparseMatrix.maxColCoeff();
 
     //Print the max outer coefficients
     for (int i = 0; i < csfSparseMatrix.cols(); i++) {
@@ -130,7 +130,7 @@ int main() {
      * This algorithm is in O(n^2)
     */
 
-    int* maxInnerCoefficients = csfSparseMatrix.maxRowCoeff();
+    std::vector<int> maxInnerCoefficients = csfSparseMatrix.maxRowCoeff();
 
     //Print the max inner coefficients
     for (int i = 0; i < csfSparseMatrix.rows(); i++) {
@@ -146,7 +146,7 @@ int main() {
      * This algorithm is in O(n^2)
     */
 
-    int* minOuterCoefficients = csfSparseMatrix.minColCoeff();
+    std::vector<int> minOuterCoefficients = csfSparseMatrix.minColCoeff();
 
     //Print the min outer coefficients
     for (int i = 0; i < csfSparseMatrix.cols(); i++) {
@@ -163,7 +163,7 @@ int main() {
      * This algorithm is in O(n^2)
     */
 
-    int* minInnerCoefficients = csfSparseMatrix.minRowCoeff();
+    std::vector<int> minInnerCoefficients = csfSparseMatrix.minRowCoeff();
 
     //Print the min inner coefficients
     for (int i = 0; i < csfSparseMatrix.rows(); i++) {

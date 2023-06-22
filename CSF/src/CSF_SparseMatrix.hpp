@@ -332,12 +332,12 @@ namespace CSF {
 
         //This method does not seem to work unless it is in this file
         friend std::ostream& operator<<(std::ostream& os, CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>& mat) {
-#ifndef CSF_DEBUG
+            #ifndef CSF_DEBUG
             if (mat.cols() > 110) {
                 std::cout << "CSF matrix is too large to print" << std::endl;
                 return os;
             }
-#endif
+            #endif
 
             // create a matrix to store the full matrix representation of the CSF matrix
             T** matrix = new T * [mat.rows()];
@@ -702,6 +702,19 @@ namespace CSF {
         T operator()(uint32_t row, uint32_t col);
 
         CSF::SparseMatrix<T, indexT, 1, columnMajor>& operator=(const CSF::SparseMatrix<T, indexT, 1, columnMajor>& other);
+
+        void operator*=(T scalar);
+
+        CSF::SparseMatrix<T, indexT, 1, columnMajor> operator*(T scalar);
+
+        Eigen::VectorXd operator*(typename SparseMatrix<T, indexT, 1, columnMajor>::Vector& vec);
+
+        Eigen::VectorXd operator*(Eigen::VectorXd& vec);
+
+        Eigen::Matrix<T, -1, -1> operator*(Eigen::Matrix<T, -1, -1> mat);
+
+        T sum();
+
     };
 
     /**
@@ -731,7 +744,11 @@ namespace CSF {
         bool firstIndex = true;
 
         bool performanceVectors = false;
+
         T* value_arr = nullptr;
+        uint32_t* counts_arr = nullptr;
+        uint32_t count;
+        uint32_t value_arr_size;
 
         //* Private Class Methods *//
 
@@ -766,7 +783,12 @@ namespace CSF {
 
         //* Operator Overloads *//
 
-        void __attribute__((hot)) operator++();
+        // template <uint8_t level = compressionLevel, std::enable_if_t<(level != 2) && (level != 3), int> = 0>
+        // void operator++() {
+        //     static_assert(true, "Compression level must be 2 or 3 to use this CSF operator");
+        // }
+
+        void operator++();
 
         bool operator==(const InnerIterator& other);
 
@@ -836,6 +858,7 @@ namespace CSF {
     };
 
 
+
     /**
      * @brief An iterator over the inner dimension of a CSF matrix (Compression Level 1)
      *
@@ -855,7 +878,7 @@ namespace CSF {
 
         T* vals;
         indexT* indices;
-        T* endPtr;
+        indexT* endPtr;
 
     public:
 
@@ -973,7 +996,7 @@ namespace CSF {
 
         bool performanceVectors = false;
         T* value_arr = nullptr;
-        uint32_t counts = nullptr;
+        uint32_t* counts = nullptr;
         uint32_t value_arr_size = 0;
 
         //* Private Class Methods *//
@@ -1109,12 +1132,23 @@ namespace CSF {
 
         void setPerformanceVecs(bool on);
 
-        void operator *= (T scalar);
+        uint32_t getValueArraySize();
 
-        typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vecctor operator * (T scalar);
+        T* getValueArray();
+
+        uint32_t* getCountsArray();
+
+        void operator*=(T scalar);
+
+        typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector operator * (T scalar);
 
         double norm();
 
+        double dot(Eigen::Vector<T,-1> other);
+
+        double dot(Eigen::SparseVector<T, -1> other);
+
+        T sum();
 
     };
 
