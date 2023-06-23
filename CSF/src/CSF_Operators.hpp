@@ -1,10 +1,9 @@
 /**
  * @file CSF_Operators.hpp
  * @author Skyler Ruiter and Seth Wolfgang
- * @brief 
+ * @brief The operator overloads for the CSF Sparse Matrix Library.
  * @version 0.1
  * @date 2023-06-21
- * 
  */
 
 #pragma once
@@ -116,7 +115,7 @@ namespace CSF {
             }
 
             // if other's performance vectors are on turn on this matrix's
-            if (other.performanceVectors)
+            if (other.performanceVectors && compressionLevel == 2)
             {
                 performanceVectors = true;
 
@@ -175,9 +174,7 @@ namespace CSF {
     // Inequality Operator
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     bool SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator!=(const SparseMatrix<T, indexT, compressionLevel, columnMajor> &other)
-    {
-        return !(*this == other);
-    }
+    { return !(*this == other); }
 
     // Coefficent Access Operator
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
@@ -210,11 +207,7 @@ namespace CSF {
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator[](uint32_t vec)
     {
-
-        #ifdef CSF_DEBUG
-        // check if the vector is out of bounds
         assert((vec < outerDim && vec >= 0) && "Vector index out of bounds");
-        #endif
 
         // return a CSF vector
         CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector newVector(*this, vec);
@@ -227,35 +220,25 @@ namespace CSF {
     // Scalar Multiplication
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor> SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator*(T scalar)
-    {
-        return scalarMultiply(scalar);
-    }
+    { return scalarMultiply(scalar); }
 
     // In place scalar multiplication
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     void SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator*=(T scalar)
-    {
-        return inPlaceScalarMultiply(scalar);
-    }
+    { return inPlaceScalarMultiply(scalar); }
 
     // Matrix Vector Multiplication (CSF CSF -> Eigen)
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     Eigen::VectorXi SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator*(SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector &vec)
-    {
-        return vectorMultiply(vec);
-    }
+    { return vectorMultiply(vec); }
 
     // Matrix Vector Multiplication (CSF Eigen -> Eigen)
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     Eigen::VectorXi SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator*(Eigen::VectorXi &vec)
-    {
-        return vectorMultiply(vec);
-    }
+    { return vectorMultiply(vec); }
 
     // Matrix Matrix Multiplication (CSF Eigen -> Eigen)
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     Eigen::Matrix<T, -1, -1> SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator*(Eigen::Matrix<T, -1, -1> mat)
-    {
-        return matrixMultiply(mat);
-    }
+    { return matrixMultiply(mat); }
 }

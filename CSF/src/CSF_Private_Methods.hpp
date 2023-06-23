@@ -1,12 +1,9 @@
 /**
  * @file CSF_Private_Methods.hpp
- * @author your name (you@domain.com)
+ * @author Skyler Ruiter and Seth Wolfgang
  * @brief 
  * @version 0.1
  * @date 2023-06-21
- * 
- * @copyright Copyright (c) 2023
- * 
  */
 
 #pragma once
@@ -53,6 +50,7 @@ namespace CSF {
             exit(1);
         }
 
+        // if CSF2 then allocate space for the performance vectors
         if constexpr (compressionLevel == 2)
         {
             // allocate space for the value array size
@@ -319,8 +317,9 @@ namespace CSF {
         } // end of column loop
     }
 
+    // Method to get the byte width of a number
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    uint8_t SparseMatrix<T, indexT, compressionLevel, columnMajor>::byteWidth(size_t size)
+    inline uint8_t SparseMatrix<T, indexT, compressionLevel, columnMajor>::byteWidth(size_t size)
     {
         if (size <= ONE_BYTE_MAX)
         {
@@ -340,7 +339,8 @@ namespace CSF {
         }
     }
 
-        template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    // Encodes the value type of the matrix in a uint32_t
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     void SparseMatrix<T, indexT, compressionLevel, columnMajor>::encodeValueType()
     {
         uint8_t byte0 = sizeof(T);
@@ -351,6 +351,7 @@ namespace CSF {
         val_t = (byte3 << 24) | (byte2 << 16) | (byte1 << 8) | byte0;
     }
 
+    // Checks if the value type is correct for the matrix
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     void SparseMatrix<T, indexT, compressionLevel, columnMajor>::checkValueType()
     {
@@ -368,6 +369,7 @@ namespace CSF {
         assert(byte3 == columnMajor && "Major direction does not match");
     }
 
+    // performs some simple user checks on the matrices metadata
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     void SparseMatrix<T, indexT, compressionLevel, columnMajor>::userChecks()
     {
@@ -387,51 +389,7 @@ namespace CSF {
         checkValueType();
     }
 
-    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    void SparseMatrix<T, indexT, compressionLevel, columnMajor>::deletePerformanceVectors()
-    {
-
-        // check if they are already deleted
-        if (!performanceVectors)
-        {
-            return;
-        }
-
-        performanceVectors = false;
-
-        // iterate through the whole matrix
-        for (uint32_t i = 0; i < outerDim; ++i)
-        {
-            size_t valueArrayIndex = 0;
-            for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(*this, i); it; ++it)
-            {
-                if (it.isNewRun())
-                {
-                    it.coeff(valueArray[i][valueArrayIndex]);
-                    valueArrayIndex++;
-                }
-            }
-        }
-
-        // free the memory
-        for (uint32_t i = 0; i < outerDim; ++i)
-        {
-            free(valueArray[i]);
-            free(countsArray[i]);
-        }
-
-        free(valueArray);
-        free(countsArray);
-
-        valueArray = nullptr;
-        countsArray = nullptr;
-
-        calculateCompSize();
-
-        free(valueArraySize);
-        valueArraySize = nullptr;
-    }
-
+    // Itializes the performance vectors for the current matrix
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     void SparseMatrix<T, indexT, compressionLevel, columnMajor>::initPerformanceVectors()
     {
@@ -509,7 +467,64 @@ namespace CSF {
         }
 
         performanceVectors = true;
+
+        calculateCompSize();
+
+        #ifdef CSF_DEBUG
+        userChecks();
+        #endif
     }
+
+    // Deletes the performance vectors from the current matrix
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    void SparseMatrix<T, indexT, compressionLevel, columnMajor>::deletePerformanceVectors()
+    {
+
+        // check if they are already deleted
+        if (!performanceVectors)
+        {
+            return;
+        }
+
+        performanceVectors = false;
+
+        // iterate through the whole matrix and undo the indexing in runs
+        for (uint32_t i = 0; i < outerDim; ++i)
+        {
+            size_t valueArrayIndex = 0;
+            for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(*this, i); it; ++it)
+            {
+                if (it.isNewRun())
+                {
+                    it.coeff(valueArray[i][valueArrayIndex]);
+                    valueArrayIndex++;
+                }
+            }
+        }
+
+        // free the memory
+        for (uint32_t i = 0; i < outerDim; ++i)
+        {
+            free(valueArray[i]);
+            free(countsArray[i]);
+        }
+
+        free(valueArray);
+        free(countsArray);
+
+        valueArray = nullptr;
+        countsArray = nullptr;
+
+        free(valueArraySize);
+        valueArraySize = nullptr;
+
+        calculateCompSize();
+
+        #ifdef CSF_DEBUG
+        userChecks();
+        #endif
+    }
+
 
     // Calcuate Comp Size Method
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>

@@ -1,3 +1,11 @@
+/**
+ * @file CSF_Iterator_Methods.hpp
+ * @author Skyler Ruiter and Seth Wolfgang
+ * @brief All of the iterator definitions for the CSF class.
+ * @version 0.1
+ * @date 2023-06-23
+ */
+
 #pragma once
 
 namespace CSF
@@ -5,6 +13,7 @@ namespace CSF
 
     // ---------------- InnerIterator Constructors ---------------- //
 
+    // CSF Matrix Constructor
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     inline SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator::InnerIterator(CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor> &matrix, uint32_t vec)
     {
@@ -51,6 +60,7 @@ namespace CSF
         index = newIndex;
     }
 
+    // CSF Vector Constructor
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator::InnerIterator(SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector &vector)
     {
@@ -93,12 +103,15 @@ namespace CSF
 
     // ---------------- Public Methods ---------------- //
 
+    // Check for a new run method
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     inline bool SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator::isNewRun() { return firstIndex; }
 
+    // Get the outer dimension
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     indexT SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator::outerDim() { return outer; }
 
+    // gets the current value
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     T SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator::value()
     {
@@ -108,6 +121,7 @@ namespace CSF
             return *val;
     }
 
+    // Dereference operator
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     T &SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator::operator*()
     {
@@ -117,21 +131,27 @@ namespace CSF
             return *val;
     }
 
+    // Equality operator
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     bool SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator::operator==(const InnerIterator &other) { return data == other.getIndex(); }
 
+    // Inequality operator
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     bool SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator::operator!=(const InnerIterator &other) { return data != other.getIndex(); }
 
+    // Less than operator
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     bool SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator::operator<(const InnerIterator &other) { return data < other.getIndex(); }
 
+    // Greater than operator
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     bool SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator::operator>(const InnerIterator &other) { return data > other.getIndex(); }
 
+    // Get the index of the iterator
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     indexT SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator::getIndex() { return index; }
 
+    // Method to update the current value to a new value
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     inline void SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator::coeff(T newValue)
     {
@@ -141,6 +161,7 @@ namespace CSF
             valueArray[(int)*val] = newValue;
     }
 
+    // Get the row of the iterator
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     indexT SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator::row()
     {
@@ -150,6 +171,7 @@ namespace CSF
             return index;
     }
 
+    // Get the column of the iterator
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     indexT SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator::col()
     {
@@ -159,6 +181,7 @@ namespace CSF
             return outer;
     }
 
+    // Postfix increment operator
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     void SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator::operator++()
     {
@@ -212,6 +235,7 @@ namespace CSF
 
     // ---------------- Private Methods ---------------- //
 
+    // Method to decode the index
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     inline void __attribute__((hot)) SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator::decodeIndex()
     {

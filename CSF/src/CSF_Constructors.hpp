@@ -1,3 +1,11 @@
+/**
+ * @file CSF_Constructors.hpp
+ * @author Skyler Ruiter and Seth Wolfgang
+ * @brief All the constructors for the CSF Sparse Matrix base class.
+ * @version 0.1
+ * @date 2023-06-23
+ */
+
 #pragma once
 
 namespace CSF
@@ -137,11 +145,7 @@ namespace CSF
 
     // Deep Copy Constructor
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(const CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor> &other)
-    {
-        // Deep copy the matrix
-        *this = other;
-    }
+    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(const CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor> &other) { *this = other; }
 
     // Conversion Constructor
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
@@ -650,12 +654,12 @@ namespace CSF
             endPointers[i] = nullptr;
         }
 
-//* logic here
+        //* logic here
 
-// loop through the array
-#ifdef CSF_PARALLEL
-#pragma omp parallel for
-#endif
+        // loop through the array
+        #ifdef CSF_PARALLEL
+        #pragma omp parallel for
+        #endif
         for (size_t i = 0; i < outerDim; i++)
         {
 
@@ -806,10 +810,10 @@ namespace CSF
 
         calculateCompSize();
 
-// run the user checks
-#ifdef CSF_DEBUG
+        // run the user checks
+        #ifdef CSF_DEBUG
         userChecks();
-#endif
+        #endif
     }
 
 }

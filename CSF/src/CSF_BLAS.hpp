@@ -1,3 +1,11 @@
+/**
+ * @file CSF_BLAS.hpp
+ * @author Skyler Ruiter and Seth Wolfgang
+ * @brief File for BLAS level routines and other matrix calculations.
+ * @version 0.1
+ * @date 2023-06-23
+ */
+
 #pragma once
 
 namespace CSF {

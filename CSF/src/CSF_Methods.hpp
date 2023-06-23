@@ -1,70 +1,73 @@
+/**
+ * @file CSF_Methods.hpp
+ * @author Skyler Ruiter and Seth Wolfgang
+ * @brief The majority of public methods for the CSF sparse matrix class.
+ * @version 0.1
+ * @date 2023-06-23
+ */
+
 #pragma once
 
 namespace CSF {
 
-    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    bool SparseMatrix<T, indexT, compressionLevel, columnMajor>::performanceVectorsInitialized()
-    {
-        return performanceVectors;
-    }
-
-    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    void SparseMatrix<T, indexT, compressionLevel, columnMajor>::setPerformanceVectors(bool on)
-    {
-        if (on)
-        {
-            initPerformanceVectors();
-        }
-        else
-        {
-            deletePerformanceVectors();
-        }
-    }
-
     //* Getters *//
+
+    // Gets the inner dimension of the matrix
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    uint32_t SparseMatrix<T, indexT, compressionLevel, columnMajor>::innerSize() const { return innerDim; }
+
+    // Gets the outer dimension of the matrix
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    uint32_t SparseMatrix<T, indexT, compressionLevel, columnMajor>::outerSize() const { return outerDim; }
+
+    // Gets the number of rows in the matrix
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    uint32_t SparseMatrix<T, indexT, compressionLevel, columnMajor>::rows() const { return numRows; }
+
+    // Gets the number of columns in the matrix
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    uint32_t SparseMatrix<T, indexT, compressionLevel, columnMajor>::cols() const { return numCols; }
+
+    // Gets the number of nonzeros in the matrix
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    uint32_t SparseMatrix<T, indexT, compressionLevel, columnMajor>::nonZeros() const { return nnz; }
+
+    // Gets the byte size in memory of the matrix
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    size_t SparseMatrix<T, indexT, compressionLevel, columnMajor>::byteSize() const { return compSize; }
+
+    // Gets the element stored at the given row and column
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    T SparseMatrix<T, indexT, compressionLevel, columnMajor>::coeff(uint32_t row, uint32_t col) { return (*this)(row, col); }
 
     // Check for Column Major
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     bool SparseMatrix<T, indexT, compressionLevel, columnMajor>::isColumnMajor() const { return columnMajor; }
 
+    // Checks if the performance vectors are initialized or not
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    bool SparseMatrix<T, indexT, compressionLevel, columnMajor>::performanceVectorsInitialized()
+    { return performanceVectors; }
+
+    // Returns a pointer to the given vector
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     void *SparseMatrix<T, indexT, compressionLevel, columnMajor>::vectorPointer(uint32_t vec) { return data[vec]; }
 
-    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    size_t SparseMatrix<T, indexT, compressionLevel, columnMajor>::getVectorSize(uint32_t vec) const { return (char *)endPointers[vec] - (char *)data[vec]; }
-
-    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    uint32_t SparseMatrix<T, indexT, compressionLevel, columnMajor>::innerSize() const { return innerDim; }
-
-    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    uint32_t SparseMatrix<T, indexT, compressionLevel, columnMajor>::outerSize() const { return outerDim; }
-
-    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    uint32_t SparseMatrix<T, indexT, compressionLevel, columnMajor>::rows() const { return numRows; }
-
-    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    uint32_t SparseMatrix<T, indexT, compressionLevel, columnMajor>::cols() const { return numCols; }
-
-    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    uint32_t SparseMatrix<T, indexT, compressionLevel, columnMajor>::nonZeros() const { return nnz; }
-
-    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    size_t SparseMatrix<T, indexT, compressionLevel, columnMajor>::byteSize() const { return compSize; }
-
+    // Gets a CSF vector copy of the given vector
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector SparseMatrix<T, indexT, compressionLevel, columnMajor>::getVector(uint32_t vec) { return (*this)[vec]; }
 
+    // Gets the byte size of a given vector
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    size_t SparseMatrix<T, indexT, compressionLevel, columnMajor>::getVectorSize(uint32_t vec) const { return (char *)endPointers[vec] - (char *)data[vec]; }
+
+    // Gets the number of unique values in a given vector
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     size_t SparseMatrix<T, indexT, compressionLevel, columnMajor>::getPerformanceVectorSize(uint32_t vec) const { return valueArraySize[vec]; }
 
-    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    T SparseMatrix<T, indexT, compressionLevel, columnMajor>::coeff(uint32_t row, uint32_t col)
-    {
-        return (*this)(row, col);
-    }
-
     //* Utility Methods *//
 
+    // Write the current matrix to file
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     void SparseMatrix<T, indexT, compressionLevel, columnMajor>::write(const char *filename)
     {
@@ -133,6 +136,7 @@ namespace CSF {
         fclose(fp);
     }
 
+    // Print the current matrix to the console
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     void SparseMatrix<T, indexT, compressionLevel, columnMajor>::print()
     {
@@ -184,6 +188,12 @@ namespace CSF {
         }
     }
 
+    // Sets the performance vectors to on or off
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    void SparseMatrix<T, indexT, compressionLevel, columnMajor>::setPerformanceVectors(bool on)
+    { if (on) { initPerformanceVectors(); }
+        else { deletePerformanceVectors(); } }
+
     // Convert a CSF2 or 3 matrix to CSF1
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     CSF::SparseMatrix<T, indexT, 1, columnMajor> SparseMatrix<T, indexT, compressionLevel, columnMajor>::toCSF1()
@@ -217,10 +227,7 @@ namespace CSF {
     {
 
         // if already CSF2 return a copy
-        if (compressionLevel == 2)
-        {
-            return *this;
-        }
+        if constexpr (compressionLevel == 2) { return *this; }
 
         // declare a sparse matrix
         CSF::SparseMatrix<T, indexT, 2, columnMajor> csf2Matrix;
@@ -367,10 +374,7 @@ namespace CSF {
     {
 
         // if already CSF3 return a copy
-        if (compressionLevel == 3)
-        {
-            return *this;
-        }
+        if constexpr (compressionLevel == 3) { return *this; }
 
         //* compress the data
 
@@ -425,185 +429,38 @@ namespace CSF {
         return mat;
     }
 
-    //* Conversion/Transformation Methods *//
-
+    // Converts current matrix into an eigen matrix which gets returned
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    void SparseMatrix<T, indexT, compressionLevel, columnMajor>::append(typename CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector &vec)
+    Eigen::SparseMatrix<T, columnMajor ? Eigen::ColMajor : Eigen::RowMajor> SparseMatrix<T, indexT, compressionLevel, columnMajor>::toEigen()
     {
-        // check if the matrix is empty
-        if (nnz == 0) [[unlikely]]
+
+        #ifdef CSF_DEBUG
+        assert(outerDim > 0 && "Cannot convert an empty matrix to an Eigen matrix!");
+        #endif
+
+        // create a new sparse matrix
+        Eigen::SparseMatrix<T, columnMajor ? Eigen::ColMajor : Eigen::RowMajor> eigenMatrix(numRows, numCols);
+
+        // iterate over the matrix
+        for (uint32_t i = 0; i < outerDim; ++i)
         {
-            *this = CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>(vec);
-        } else {
-            // check if the vector is empty, if so change the implementation details
-            if (vec.begin() == vec.end()) [[unlikely]]
+            for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(*this, i); it; ++it)
             {
-
-                if (columnMajor)
-                {
-                    numCols++;
-                }
-                else
-                {
-                    numRows++;
-                }
-                outerDim++;
-
-                // update metadata
-                metadata[2] = outerDim;
-
-                // realloc the data to be one larger
-                try
-                {
-                    data = (void **)realloc(data, outerDim * sizeof(void *));
-                    endPointers = (void **)realloc(endPointers, outerDim * sizeof(void *));
-                }
-                catch (std::bad_alloc &e)
-                {
-                    throw std::bad_alloc();
-                }
-
-                // set the new vector to nullptr
-                data[outerDim - 1] = nullptr;
-                endPointers[outerDim - 1] = nullptr;
-
-
-                // if perforamnce vectors are on
-                if (performanceVectors)
-                {
-                    // realloc the valueArray to be one larger
-                    try
-                    {
-                        valueArray = (T **)realloc(valueArray, outerDim * sizeof(T *));
-                        countsArray = (uint32_t **)realloc(countsArray, outerDim * sizeof(uint32_t *));
-                    }
-                    catch (std::bad_alloc &e)
-                    {
-                        throw std::bad_alloc();
-                    }
-
-                    // set the new vector to nullptr
-                    valueArray[outerDim - 1] = nullptr;
-                    countsArray[outerDim - 1] = nullptr;
-
-                    // realloc the valueArraySize to be one larger
-                    try
-                    {
-                        valueArraySize = (uint32_t *)realloc(valueArraySize, outerDim * sizeof(uint32_t));
-                    }
-                    catch (std::bad_alloc &e)
-                    {
-                        throw std::bad_alloc();
-                    }
-
-                    // set the new valueArraySize to 0
-                    valueArraySize[outerDim - 1] = 0;
-
-                }
-
-                calculateCompSize();
-
-                return;
-            }
-            else
-            {
-
-                // check that the vector is the correct size
-                if ((vec.getLength() != innerDim))
-                    throw std::invalid_argument("The vector must be the same size as the outer dimension of the matrix!");
-
-                outerDim++;
-                nnz += vec.nonZeros();
-                if (columnMajor)
-                {
-                    numCols++;
-                }
-                else
-                {
-                    numRows++;
-                }
-
-                // update metadata
-                metadata[2] = outerDim;
-                metadata[3] = nnz;
-
-                // realloc the data to be one larger
-                try
-                {
-                    data = (void **)realloc(data, outerDim * sizeof(void *));
-                    endPointers = (void **)realloc(endPointers, outerDim * sizeof(void *));
-                }
-                catch (std::bad_alloc &e)
-                {
-                    throw std::bad_alloc();
-                }
-
-                // malloc the new vector
-                try
-                {
-                    data[outerDim - 1] = malloc(vec.byteSize());
-                    endPointers[outerDim - 1] = (char *)data[outerDim - 1] + vec.byteSize();
-                }
-                catch (std::bad_alloc &e)
-                {
-                    throw std::bad_alloc();
-                }
-
-                // copy the vector into the new space
-                memcpy(data[outerDim - 1], vec.begin(), vec.byteSize());
-
-
-
-                // if perforamnce vectors are on
-                if (performanceVectors) {
-
-                    // realloc the valueArray to be one larger
-                    try
-                    {
-                        valueArray = (T **)realloc(valueArray, outerDim * sizeof(T *));
-                        countsArray = (uint32_t **)realloc(countsArray, outerDim * sizeof(uint32_t *));
-                    }
-                    catch (std::bad_alloc &e)
-                    {
-                        throw std::bad_alloc();
-                    }
-
-                    // malloc the new vector
-                    try
-                    {
-                        valueArray[outerDim - 1] = (T *)malloc(vec.getValueArraySize() * sizeof(T));
-                        countsArray[outerDim - 1] = (uint32_t *)malloc(vec.getValueArraySize() * sizeof(uint32_t));
-                    }
-                    catch (std::bad_alloc &e)
-                    {
-                        throw std::bad_alloc();
-                    }
-
-                    // copy the valueArray into the new space
-                    memcpy(valueArray[outerDim - 1], vec.getValues(), vec.getValueArraySize() * sizeof(T));
-                    memcpy(countsArray[outerDim - 1], vec.getCounts(), vec.getValueArraySize() * sizeof(uint32_t));
-
-                    // realloc the valueArraySize to be one larger
-                    try
-                    {
-                        valueArraySize = (uint32_t *)realloc(valueArraySize, outerDim * sizeof(uint32_t));
-                    }
-                    catch (std::bad_alloc &e)
-                    {
-                        throw std::bad_alloc();
-                    }
-
-                    // copy the valueArraySize into the new space
-                    valueArraySize[outerDim - 1] = vec.getValueArraySize();
-
-
-                }
-
-                calculateCompSize();
+                // add the value to the matrix
+                eigenMatrix.insert(it.row(), it.col()) = it.value();
             }
         }
+
+        // finalize the matrix
+        eigenMatrix.makeCompressed();
+
+        // return the matrix
+        return eigenMatrix;
     }
 
+    //* Matrix Manipulation Methods *//
+
+    // Tranposes the current matrix and returns it
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor> SparseMatrix<T, indexT, compressionLevel, columnMajor>::transpose()
     {
@@ -611,29 +468,18 @@ namespace CSF {
         std::unordered_map<T, std::vector<indexT>> mapsT[innerDim];
 
         // populate the transpose data structure
-        for (uint32_t i = 0; i < outerDim; ++i)
-        {
-            for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(*this, i); it; ++it)
-            {
+        for (uint32_t i = 0; i < outerDim; ++i) {
+            for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(*this, i); it; ++it) {
                 // add the value to the map
-                if constexpr (columnMajor)
-                {
-                    mapsT[it.row()][it.value()].push_back(it.col());
-                }
-                else
-                {
-                    mapsT[it.col()][it.value()].push_back(it.row());
-                }
+                if constexpr (columnMajor) { mapsT[it.row()][it.value()].push_back(it.col()); }
+                else { mapsT[it.col()][it.value()].push_back(it.row()); }
             }
         }
 
         // if compression level 3 the indices need to be encoded and packed
-        if constexpr (compressionLevel == 3)
-        {
-            for (auto &row : mapsT)
-            {
-                for (auto &col : row)
-                {
+        if constexpr (compressionLevel == 3) {
+            for (auto &row : mapsT) {
+                for (auto &col : row) {
 
                     // find the max value in the vector
                     size_t max = col.second[0];
@@ -726,12 +572,168 @@ namespace CSF {
         }
     }
 
+    // Appends a vector onto the current matrix in the correct storage order (appends onto the end only)
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    void SparseMatrix<T, indexT, compressionLevel, columnMajor>::append(typename CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector &vec)
+    {
+        // check if the matrix is empty
+        if (nnz == 0) {
+            *this = CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>(vec);
+        } else {
+            // check if the vector is empty, if so change the implementation details
+            if (vec.begin() == vec.end()) [[unlikely]] {
+                
+                if (columnMajor) { numCols++; }
+                else { numRows++; }
+                outerDim++;
+
+                // update metadata
+                metadata[2] = outerDim;
+
+                // realloc the data to be one larger
+                try
+                {
+                    data = (void **)realloc(data, outerDim * sizeof(void *));
+                    endPointers = (void **)realloc(endPointers, outerDim * sizeof(void *));
+                }
+                catch (std::bad_alloc &e)
+                {
+                    throw std::bad_alloc();
+                }
+
+                // set the new vector to nullptr
+                data[outerDim - 1] = nullptr;
+                endPointers[outerDim - 1] = nullptr;
+
+
+                // if perforamnce vectors are on
+                if (performanceVectors)
+                {
+                    // realloc the valueArray to be one larger
+                    try
+                    {
+                        valueArray = (T **)realloc(valueArray, outerDim * sizeof(T *));
+                        countsArray = (uint32_t **)realloc(countsArray, outerDim * sizeof(uint32_t *));
+                    }
+                    catch (std::bad_alloc &e)
+                    {
+                        throw std::bad_alloc();
+                    }
+
+                    // set the new vector to nullptr
+                    valueArray[outerDim - 1] = nullptr;
+                    countsArray[outerDim - 1] = nullptr;
+
+                    // realloc the valueArraySize to be one larger
+                    try
+                    {
+                        valueArraySize = (uint32_t *)realloc(valueArraySize, outerDim * sizeof(uint32_t));
+                    }
+                    catch (std::bad_alloc &e)
+                    {
+                        throw std::bad_alloc();
+                    }
+
+                    // set the new valueArraySize to 0
+                    valueArraySize[outerDim - 1] = 0;
+
+                }
+
+                calculateCompSize();
+
+                return;
+            }
+            else
+            {
+
+                // check that the vector is the correct size
+                if ((vec.getLength() != innerDim))
+                    throw std::invalid_argument("The vector must be the same size as the outer dimension of the matrix!");
+
+                outerDim++;
+                nnz += vec.nonZeros();
+
+                if (columnMajor)
+                { numCols++; }
+                else { numRows++; }
+
+                // update metadata
+                metadata[2] = outerDim;
+                metadata[3] = nnz;
+
+                // realloc the data to be one larger
+                try
+                {
+                    data = (void **)realloc(data, outerDim * sizeof(void *));
+                    endPointers = (void **)realloc(endPointers, outerDim * sizeof(void *));
+                }
+                catch (std::bad_alloc &e)
+                {
+                    throw std::bad_alloc();
+                }
+
+                // malloc the new vector
+                try
+                {
+                    data[outerDim - 1] = malloc(vec.byteSize());
+                    endPointers[outerDim - 1] = (char *)data[outerDim - 1] + vec.byteSize();
+                }
+                catch (std::bad_alloc &e)
+                {
+                    throw std::bad_alloc();
+                }
+
+                // copy the vector into the new space
+                memcpy(data[outerDim - 1], vec.begin(), vec.byteSize());
+
+
+
+                // if perforamnce vectors are on
+                if (performanceVectors) {
+
+                    // realloc the valueArray to be one larger
+                    try
+                    {
+                        valueArray = (T **)realloc(valueArray, outerDim * sizeof(T *));
+                        countsArray = (uint32_t **)realloc(countsArray, outerDim * sizeof(uint32_t *));
+                    }
+                    catch (std::bad_alloc &e)
+                    {
+                        throw std::bad_alloc();
+                    }
+
+                    // malloc the new vector
+                    try
+                    {
+                        valueArray[outerDim - 1] = (T *)malloc(vec.getValueArraySize() * sizeof(T));
+                        countsArray[outerDim - 1] = (uint32_t *)malloc(vec.getValueArraySize() * sizeof(uint32_t));
+                    }
+                    catch (std::bad_alloc &e)
+                    {
+                        throw std::bad_alloc();
+                    }
+
+                    // copy the valueArray into the new space
+                    memcpy(valueArray[outerDim - 1], vec.getValues(), vec.getValueArraySize() * sizeof(T));
+                    memcpy(countsArray[outerDim - 1], vec.getCounts(), vec.getValueArraySize() * sizeof(uint32_t));
+
+                    // realloc the valueArraySize to be one larger
+                    try { valueArraySize = (uint32_t *)realloc(valueArraySize, outerDim * sizeof(uint32_t)); }
+                    catch (std::bad_alloc &e) { throw std::bad_alloc(); }
+
+                    // copy the valueArraySize into the new space
+                    valueArraySize[outerDim - 1] = vec.getValueArraySize();
+                }
+                calculateCompSize();
+            }
+        }
+    }
+
     // slice method that returns an array of vectors
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     typename CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector *SparseMatrix<T, indexT, compressionLevel, columnMajor>::slice(uint32_t start, uint32_t end)
     {
         #ifdef CSF_DEBUG
-        // check that the start and end are valid
         assert(start < outerDim && end <= outerDim && start < end && "Invalid start and end values!");
         #endif
 
@@ -752,36 +754,6 @@ namespace CSF {
         }
 
         return vectors;
-    }
-
-    // to eigen method
-    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    Eigen::SparseMatrix<T, columnMajor ? Eigen::ColMajor : Eigen::RowMajor> SparseMatrix<T, indexT, compressionLevel, columnMajor>::toEigen()
-    {
-
-        #ifdef CSF_DEBUG
-        // assert that the matrix is not empty
-        assert(outerDim > 0 && "Cannot convert an empty matrix to an Eigen matrix!");
-        #endif
-
-        // create a new sparse matrix
-        Eigen::SparseMatrix<T, columnMajor ? Eigen::ColMajor : Eigen::RowMajor> eigenMatrix(numRows, numCols);
-
-        // iterate over the matrix
-        for (uint32_t i = 0; i < outerDim; ++i)
-        {
-            for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(*this, i); it; ++it)
-            {
-                // add the value to the matrix
-                eigenMatrix.insert(it.row(), it.col()) = it.value();
-            }
-        }
-
-        // finalize the matrix
-        eigenMatrix.makeCompressed();
-
-        // return the matrix
-        return eigenMatrix;
     }
 
 } // end namespace CSF

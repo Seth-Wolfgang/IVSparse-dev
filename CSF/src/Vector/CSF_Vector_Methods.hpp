@@ -1,7 +1,34 @@
+/**
+ * @file CSF_Vector_Methods.hpp
+ * @author Skyler Ruiter and Seth Wolfgang
+ * @brief The CSF Vector class method definitions.
+ * @version 0.1
+ * @date 2023-06-23
+ */
+
 #pragma once
 
 namespace CSF {
 
+    //* Constructors & Destructor *//
+
+    // Destructor
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::~Vector()
+    {
+        if (data != nullptr)
+        {
+            free(data);
+        }
+
+        if (valueArray != nullptr)
+        {
+            free(valueArray);
+            free(countsArray);
+        }
+    }
+
+    // Default constructor
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::Vector()
     {
@@ -11,6 +38,7 @@ namespace CSF {
         length = 0;
     }
 
+    // Constructor for a vector from a CSF matrix
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::Vector(CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor> &mat, uint32_t vec)
     {
@@ -152,160 +180,9 @@ namespace CSF {
         #endif
     }
 
-    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::Vector(std::unordered_map<T, std::vector<indexT>> &map, uint32_t length)
-    {
-        // loop through and get the size to store the data
-        size = 0;
-        if constexpr (compressionLevel == 3)
-        {
-            for (auto &it : map)
-            {
-                size += sizeof(T) + 1 + (it.second[it.second.size() - 1] * (it.second.size() - 1)) + it.second[it.second.size() - 1];
-            }
-        }
-        else
-        {
-            for (auto &it : map)
-            {
-                size += sizeof(T) + 1 + (sizeof(indexT) * it.second.size()) + sizeof(indexT);
-            }
-        }
+    //* Methods *//
 
-        // set the length
-        this->length = length;
-
-        // if the size is 0 then the vector is empty
-        if (size == 0)
-        {
-            data = nullptr;
-            endPtr = nullptr;
-            return;
-        }
-
-        // set data pointer
-        try
-        {
-            data = malloc(size);
-        }
-        catch (std::bad_alloc &e)
-        {
-            std::cout << "Error: " << e.what() << std::endl;
-            exit(1);
-        }
-
-        // set the end pointer
-        endPtr = (uint8_t *)data + size;
-
-        void *helpPtr = data;
-
-        // loop through the map and copy the data into the vector
-        for (auto &it : map)
-        {
-            if constexpr (compressionLevel == 3)
-                nnz += it.second.size() - 1;
-            else
-                nnz += it.second.size();
-
-            // write the value
-            *(T *)helpPtr = it.first;
-            helpPtr = (uint8_t *)helpPtr + sizeof(T);
-
-            // write the index width
-            if constexpr (compressionLevel == 3)
-            {
-                *(uint8_t *)helpPtr = (uint8_t)it.second[it.second.size() - 1];
-                helpPtr = (uint8_t *)helpPtr + 1;
-            }
-            else
-            {
-                *(uint8_t *)helpPtr = sizeof(indexT);
-                helpPtr = (uint8_t *)helpPtr + 1;
-            }
-
-            // write the indices
-            for (size_t k = 0; k < it.second.size(); k++)
-            {
-
-                if constexpr (compressionLevel == 3)
-                {
-                    if (k == it.second.size() - 1)
-                        break;
-
-                    switch (it.second[it.second.size() - 1])
-                    {
-                    case 1:
-                        *(uint8_t *)helpPtr = (uint8_t)it.second[k];
-                        helpPtr = (uint8_t *)helpPtr + 1;
-                        break;
-                    case 2:
-                        *(uint16_t *)helpPtr = (uint16_t)it.second[k];
-                        helpPtr = (uint16_t *)helpPtr + 1;
-                        break;
-                    case 4:
-                        *(uint32_t *)helpPtr = (uint32_t)it.second[k];
-                        helpPtr = (uint32_t *)helpPtr + 1;
-                        break;
-                    case 8:
-                        *(uint64_t *)helpPtr = (uint64_t)it.second[k];
-                        helpPtr = (uint64_t *)helpPtr + 1;
-                        break;
-                    }
-                }
-                else
-                {
-                    *(indexT *)helpPtr = it.second[k];
-                    helpPtr = (indexT *)helpPtr + 1;
-                }
-            }
-
-            // write the delimiter
-            if constexpr (compressionLevel == 3)
-            {
-                // write a delimiter of the correct width
-                switch (it.second[it.second.size() - 1])
-                {
-                case 1:
-                    *(uint8_t *)helpPtr = (uint8_t)DELIM;
-                    helpPtr = (uint8_t *)helpPtr + 1;
-                    break;
-                case 2:
-                    *(uint16_t *)helpPtr = (uint16_t)DELIM;
-                    helpPtr = (uint16_t *)helpPtr + 1;
-                    break;
-                case 4:
-                    *(uint32_t *)helpPtr = (uint32_t)DELIM;
-                    helpPtr = (uint32_t *)helpPtr + 1;
-                    break;
-                case 8:
-                    *(uint64_t *)helpPtr = (uint64_t)DELIM;
-                    helpPtr = (uint64_t *)helpPtr + 1;
-                    break;
-                }
-            }
-            else
-            {
-                *(indexT *)helpPtr = (indexT)DELIM;
-                helpPtr = (indexT *)helpPtr + 1;
-            }
-        }
-    }
-
-    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::~Vector()
-    {
-        if (data != nullptr)
-        {
-            free(data);
-        }
-
-        if (valueArray != nullptr)
-        {
-            free(valueArray);
-            free(countsArray);
-        }
-    }
-
+    // Does user checks on the vectors metadata
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     void SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::userChecks()
     {
@@ -318,48 +195,53 @@ namespace CSF {
         assert((std::is_same<indexT, bool>::value == false) && "The index type must not be bool");
     }
 
+    // returns the inner dimension of the vector
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     uint32_t SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::innerSize() { return length; }
 
+    // returns the outer dimension of the vector
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     uint32_t SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::outerSize() { return 1; }
 
+    // returns the number of non-zero elements in the vector
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     uint32_t SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::nonZeros() { return nnz; }
 
+    // returns a pointer to the beginning of the CSF Vector Data
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     void *SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::begin() { return data; }
 
+    // Returns a pointer to the end of the CSF vector data
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     void *SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::end() { return endPtr; }
 
+    // returns the byte size of the vector in memory
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     size_t SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::byteSize() { return size; }
 
+    // returns the element at a given index
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     T SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::coeff(uint32_t index) { return (*this)[index]; }
 
+    // returns the dimension of the vector
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     uint32_t SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::getLength() { return length; }
 
+    // sets the performance vectors on or off
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     void SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::setPerformanceVectors(bool on)
     {
-        if (on)
-        {
-            initPerformanceVectors();
-        }
-        else
-        {
-            deletePerformanceVectors();
-        }
+        if (on) { initPerformanceVectors(); }
+        else { deletePerformanceVectors(); }
     }
 
+    // returns if the performance vectors are in use or not
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     bool SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::performanceVectorsInitialized() { return performanceVectors; }
 
+    // deletes the performance vectors 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    void SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::undoPerformanceVecs()
+    void SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::deletePerformanceVectors()
     {
 
         if (!performanceVectors)
@@ -368,13 +250,25 @@ namespace CSF {
         }
         performanceVectors = false;
 
+        size_t valueArrayIndex = 0;
+
+        for (typename CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor> it(*this); it; ++it)
+        {
+            if (it.isNewRun())
+            {
+                it.coeff(valueArray[valueArrayIndex]);
+                valueArrayIndex++;
+            }
+        }
+
         free(valueArray);
         free(countsArray);
         valueArraySize = 0;
     }
 
+    // turns on the performance vectors
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    void SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::activatePerformanceVecs()
+    void SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::initPerformanceVectors()
     {
 
         if (performanceVectors)
@@ -420,6 +314,7 @@ namespace CSF {
         compSize += valueArraySize * sizeof(T) + valueArraySize * sizeof(uint32_t);
     }
 
+    // Assignment Operator
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::operator=(typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector &other)
     {
@@ -472,6 +367,7 @@ namespace CSF {
         return *this;
     }
 
+    // Index acces operator
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     T SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::operator[](uint32_t index)
     {
@@ -498,6 +394,7 @@ namespace CSF {
         return 0;
     }
 
+    // writes the vector to file (DOES NOT WRITE PERFORMANCE VECTORS)
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     void SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::write(const char *filename)
     {
@@ -511,6 +408,7 @@ namespace CSF {
         fclose(fp);
     }
 
+    // prints the vector to console
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     void SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::print()
     {
@@ -534,19 +432,21 @@ namespace CSF {
         std::cout << std::endl;
     }
 
-    // get values method
+    // returns the value performance vector
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     T *SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::getValues()
     {
         return valueArray;
     }
 
+    // returns the counts performance vector
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     uint32_t *SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::getCounts()
     {
         return countsArray;
     }
 
+    // returns the size of the performance vectors (equivalent to the number of unique values in the vector)
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     uint32_t SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::getValueArraySize()
     {
