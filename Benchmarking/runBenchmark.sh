@@ -25,7 +25,7 @@ if [ $# -ge 1 ]; then
     touch matrices.txt
 fi
 
-numMatrices=100
+numMatrices=1000
 # Downloading matrices and running benchmark at the same time
 for x in $(seq 1 $numMatrices)
 do
@@ -54,9 +54,9 @@ do
     
     # valgrind -s --leak-check=full ./benchmark $MATRIX_PATH $id
     ./benchmark $MATRIX_PATH $id
-    # rm -r $MATRIX_PATH
+    rm -r $MATRIX_PATH
 done
 
 # Clean up
 rm -r matrices/
-
+rm benchmark

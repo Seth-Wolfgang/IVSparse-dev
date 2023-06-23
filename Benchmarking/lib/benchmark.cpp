@@ -11,7 +11,7 @@
  * Source: https://math.nist.gov/MatrixMarket/mmio/c/example_read.c
  */
 
-#define NUM_ITERATIONS 1
+#define NUM_ITERATIONS 10
 #include "benchmarkFunctions.h"
 
 int main(int argc, char** argv) {
@@ -23,7 +23,7 @@ int main(int argc, char** argv) {
     // }
     if (argc < 2) {
         argv[1] = (char*)malloc(sizeof(char) * 20);
-        strcpy(argv[1], "../testMatrix.mtx");
+        strcpy(argv[1], "../testMatrixFail.mtx");
         argv[2] = (char*)malloc(sizeof(char));
         argv[2] = "1";
     }
@@ -302,7 +302,7 @@ void readFile(std::vector<Eigen::Triplet<T>>& eigenTriplet, std::vector<double>&
     }
 
     // Makes sure the matrix is not complex
-    if (!mm_is_symmetric(matcode)){//|| mm_is_pattern(matcode)) {
+    if (mm_is_complex(matcode)){//|| mm_is_pattern(matcode)) {
         std::cout << "\033[31;1;4mError: This application does not support \033[0m" << std::endl;
         std::cout << "\033[31;1;4mMarket Market type: \033[0m" << mm_typecode_to_str(matcode) << std::endl;
         std::cout << "Matrix might be complex or not a matrix";
