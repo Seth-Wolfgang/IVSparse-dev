@@ -196,7 +196,7 @@ int main(int argc, char** argv) {
                 eigenTransposeBenchmark<VALUE_TYPE>(eigen, data);
                 continue;
             case 21:
-                // CSF2TransposeBenchmark<VALUE_TYPE>(csf2, data);
+                CSF2TransposeBenchmark<VALUE_TYPE>(csf2, data);
                 continue;
             case 22:
                 CSF3TransposeBenchmark<VALUE_TYPE>(csf3, data);

@@ -9,12 +9,10 @@ namespace CSF {
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     void SparseMatrix<T, indexT, compressionLevel, columnMajor>::setPerformanceVectors(bool on) {
-        if (on) {
+        if (on)
             initPerformanceVectors();
-        }
-        else {
+        else
             deletePerformanceVectors();
-        }
     }
 
     //* Getters *//
@@ -350,6 +348,7 @@ namespace CSF {
 
         if constexpr (compressionLevel == 2) {
             // initialize the performance vectors
+            // temp.performanceVectors = true;
             temp.setPerformanceVectors(true);
         }
 

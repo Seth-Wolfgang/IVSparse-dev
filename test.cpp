@@ -12,61 +12,63 @@ template <typename T, typename indexT, int compressionLevel> void iteratorTest()
 void getMat(Eigen::SparseMatrix<int>& myMatrix_e);
 
 int main() {
-    int rows = 100;
-    int cols = 100;
+    int rows = 10000;
+    int cols = 10000;
     int sparsity = 10;
-    uint64_t seed = 1;
-    int maxVal = 1;
+    uint64_t seed = 52352;
+    int maxVal = 10000;
 
-    // create an eigen sparse matrix
     // Eigen::SparseMatrix<DATA_TYPE> eigen(rows, cols);
-    // eigen = generateMatrix<DATA_TYPE>(rows, cols, 1, 1, 9);
+    // eigen = generateMatrix<DATA_TYPE>(rows, cols, sparsity, 1, maxVal);
     // std::cout << eigen << std::endl;
 
     Eigen::MatrixXi mat(6, 6);
     mat << 0, 6, 4,  1, -1, 4,
-           3, 9, 0,  0, -6, 0,
+           3, 9, 0,  0, -6, 4,
            0, 0,-5,-10,  0, 1,
            9, 8, 7,  6,  5, 4,
-           0, 0, 0,  0,  0, 0,
+           0, 0, 0,  0,  0, 4,
            0, 0, 0,  0,  0,-1;
 
-    Eigen::Vector<DATA_TYPE, 6> eigenVec(6,1);
-    eigenVec << 0,
-                3,
-                0,
-                9,
-                0,
-                0;
+    // Eigen::Vector<DATA_TYPE, 6> eigenVec(6,1);
+    // eigenVec << 0,
+                // 3,
+                // 0,
+                // 9,
+                // 0,
+                // 0;
         
 
     Eigen::SparseMatrix<DATA_TYPE> eigen = mat.sparseView();
-    Eigen::SparseVector<DATA_TYPE> eigenVector = eigenVec.sparseView();
+    // Eigen::SparseVector<DATA_TYPE> eigenVector = eigenVec.sparseView();
 
     CSF::SparseMatrix<DATA_TYPE, uint32_t, 1> csf(eigen);
     CSF::SparseMatrix<DATA_TYPE, uint32_t, 3> csf3(eigen);
     CSF::SparseMatrix<DATA_TYPE, uint32_t, 2> csf2(eigen);
 
-    typename CSF::SparseMatrix<DATA_TYPE, uint32_t, 3>::Vector vec = csf3[0];
+    // typename CSF::SparseMatrix<DATA_TYPE, uint32_t, 3>::Vector vec = csf3[0];
     // std::cout << vec.dot(eigenVec) << std::endl;
-    // std::cout << eigen.sum() << std::endl;
-    // std::cout << csf3.sum() << std::endl;
+    std::cout << csf2.sum() << std::endl;
+    // csf2 = csf2 * 2;
+    csf2 = csf2.transpose();
+    std::cout << csf2.sum() << std::endl;
+    std::cout << csf2 << std::endl;
     
-    for (int i = 0; i < csf2.cols(); i++) {
-        for (typename CSF::SparseMatrix<DATA_TYPE, uint32_t, 2>::InnerIterator it(csf2, i); it; ++it) {
-            std::cout << it.value() << " ";
-        }
-        std::cout << std::endl;
-    }
-        std::cout << std::endl;
-        std::cout << std::endl;
+    // for (int i = 0; i < csf2.cols(); i++) {
+    //     for (typename CSF::SparseMatrix<DATA_TYPE, uint32_t, 2>::InnerIterator it(csf2, i); it; ++it) {
+    //         std::cout << it.value() << " ";
+    //     }
+    //     std::cout << std::endl;
+    // }
+    //     std::cout << std::endl;
+    //     std::cout << std::endl;
 
-    for (int i = 0; i < csf3.cols(); i++) {
-        for (typename CSF::SparseMatrix<DATA_TYPE, uint32_t, 3>::InnerIterator it(csf3, i); it; ++it) {
-            std::cout << it.value() << " ";
-        }
-        std::cout << std::endl;
-    }
+    // for (int i = 0; i < csf3.cols(); i++) {
+    //     for (typename CSF::SparseMatrix<DATA_TYPE, uint32_t, 3>::InnerIterator it(csf3, i); it; ++it) {
+    //         std::cout << it.value() << " ";
+    //     }
+    //     std::cout << std::endl;
+    // }
 
     return 1;
 }

@@ -9,7 +9,7 @@ namespace CSF {
 
         indexT outer;
         indexT index;
-        T* val;
+        T* val = nullptr;
 
         indexT newIndex;
 
@@ -20,10 +20,10 @@ namespace CSF {
 
         bool firstIndex = true;
 
-        T* valueArray = nullptr;
         uint32_t* countsArray = nullptr;
-        uint32_t* valueArraySize = nullptr;
+        uint32_t valueArraySize;
         uint32_t count = 1;
+        uint8_t valueArrayCounter = 1;
 
         //* Private Class Methods *//
 
@@ -50,7 +50,18 @@ namespace CSF {
 
         bool operator>(const InnerIterator& other);
 
-        inline __attribute__((hot)) operator bool() { return (char*)endPtr - indexWidth > data; };
+        inline __attribute__((hot)) operator bool() {
+
+            if constexpr (compressionLevel == 3)
+                return (char*)endPtr - indexWidth > data;
+            else {
+                // std::cout << "valueArrayCounter: " << (int)valueArrayCounter << std::endl;
+                // std::cout << "valueArraySize: " << (int)*valueArraySize << std::endl;
+                return (char*)endPtr > data;
+
+            }
+        }
+
 
         T& operator*();
 

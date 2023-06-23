@@ -207,6 +207,20 @@ namespace CSF {
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(std::unordered_map<T, std::vector<indexT>> maps [], uint32_t num_rows, uint32_t num_cols) {
 
+        if constexpr (compressionLevel == 2) {
+            performanceVectors = true;
+            valueArray = (T**)malloc(sizeof(T*) * num_cols);
+            countsArray = (uint32_t**)malloc(sizeof(uint32_t*) * num_cols);
+            valueArraySize = (uint32_t*)malloc(sizeof(uint32_t) * num_cols);
+
+            for (size_t i = 0; i < num_cols; i++) {
+                valueArray[i] = (T*)malloc(sizeof(T*) * maps[i].size());
+                countsArray[i] = (uint32_t*)malloc(sizeof(T*) * maps[i].size());
+                valueArraySize[i] = 0;
+            }
+
+        }
+
         // set class variables
         if constexpr (columnMajor) {
             innerDim = num_cols;
@@ -287,16 +301,22 @@ namespace CSF {
                 }
                 else {
                     nnz += val.second.size();
+                    valueArraySize[i]++;
+                    valueArray[i][valueArraySize[i] - 1] = val.first;
+                    countsArray[i][valueArraySize[i] - 1] = val.second.size();
                 }
-
-                // set the value
-                *(T*)helpPtr = val.first;
-                helpPtr = (char*)helpPtr + sizeof(T);
 
                 // write the index width
                 if constexpr (compressionLevel == 3) {
+                    // set the value
+                    *(T*)helpPtr = val.first;
+                    helpPtr = (char*)helpPtr + sizeof(T);
                     *(uint8_t*)helpPtr = (uint8_t)val.second[val.second.size() - 1];
                     helpPtr = (uint8_t*)helpPtr + 1;
+                }
+                else {
+                    // *valueArray[i] = val.first;
+                    // valueArraySize[i]++;
                 }
 
                 // write the indices
@@ -328,6 +348,7 @@ namespace CSF {
                     else {
                         *(indexT*)helpPtr = val.second[k];
                         helpPtr = (indexT*)helpPtr + 1;
+                        // countsArray[i][valueArraySize[i] - 1]++;
                     }
                 }
 
@@ -353,10 +374,6 @@ namespace CSF {
                         break;
                     }
                 }
-                // else {
-                //     *(indexT*)helpPtr = (indexT)DELIM;
-                //     helpPtr = (indexT*)helpPtr + 1;
-                // }
             }
         }
 

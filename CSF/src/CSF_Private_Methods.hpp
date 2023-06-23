@@ -192,10 +192,11 @@ namespace CSF {
                     countsArray[i][performanceVecSize] = pair.second.size();
 
                     // write the index to memory
-                    *(T*)helpPtr = (T)performanceVecSize;
-                    helpPtr = (T*)helpPtr + 1;
+                    // *(T*)helpPtr = (T)performanceVecSize;
+                    // helpPtr = (T*)helpPtr + 1;
 
                     performanceVecSize++;
+                    
                 }
                 else {
                     // Write the value to memory
@@ -269,8 +270,8 @@ namespace CSF {
                     }
                 }
                 else {
-                    *(indexT*)helpPtr = (indexT)DELIM;
-                    helpPtr = (indexT*)helpPtr + 1;
+                    // *(indexT*)helpPtr = (indexT)DELIM;
+                    // helpPtr = (indexT*)helpPtr + 1;
                 }
 
                 // Set a pointer to the end of the data
