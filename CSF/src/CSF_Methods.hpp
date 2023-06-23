@@ -75,8 +75,14 @@ namespace CSF {
         fwrite(metadata, 1, NUM_META_DATA * sizeof(uint32_t), fp);
 
         // check if the performance vectors are on
-        if (performanceVectors)
+        if constexpr (compressionLevel == 2)
         {
+            // if performance vectors are off turn them on
+            if (!performanceVectors)
+            {
+                setPerformanceVectors(true);
+            }
+
             // write the performance vectors
 
             // first write the size of each vector
@@ -443,6 +449,9 @@ namespace CSF {
                 }
                 outerDim++;
 
+                // update metadata
+                metadata[2] = outerDim;
+
                 // realloc the data to be one larger
                 try
                 {
@@ -513,6 +522,10 @@ namespace CSF {
                 {
                     numRows++;
                 }
+
+                // update metadata
+                metadata[2] = outerDim;
+                metadata[3] = nnz;
 
                 // realloc the data to be one larger
                 try

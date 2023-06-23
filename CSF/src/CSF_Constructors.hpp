@@ -185,10 +185,10 @@ namespace CSF
         // other should be the same compression level as this now
         *this = other;
 
-// run the user checks
-#ifdef CSF_DEBUG
+        // run the user checks
+        #ifdef CSF_DEBUG
         userChecks();
-#endif
+        #endif
     }
 
     // Raw CSC Constructor
@@ -313,10 +313,10 @@ namespace CSF
 
         calculateCompSize();
 
-// run the user checks
-#ifdef CSF_DEBUG
+        // run the user checks
+        #ifdef CSF_DEBUG
         userChecks();
-#endif
+        #endif
     }
 
     // Array of Vectors Constructor
@@ -324,7 +324,7 @@ namespace CSF
     SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector vec[], size_t size)
     {
 
-#ifdef CSF_DEBUG
+        #ifdef CSF_DEBUG
         // ensure the vectors are all the same length
         for (size_t i = 1; i < size; i++)
         {
@@ -333,7 +333,7 @@ namespace CSF
 
         // size is greater than 0
         assert(size > 0 && "The size of the array must be greater than 0!");
-#endif
+        #endif
 
         if (columnMajor)
         {
@@ -364,7 +364,7 @@ namespace CSF
         bool exception_occurred = false;
         std::string exception_msg;
 
-#pragma omp parallel for shared(exception_occurred, exception_msg)
+        #pragma omp parallel for shared(exception_occurred, exception_msg)
         for (size_t i = 0; i < outerDim; i++)
         {
             if (!exception_occurred)
@@ -375,19 +375,19 @@ namespace CSF
                 }
                 catch (const std::exception &e)
                 {
-#pragma omp critical
+                #pragma omp critical
                     {
                         exception_occurred = true;
                         exception_msg = e.what();
                     }
-#pragma omp cancel for
+                #pragma omp cancel for
                 }
                 if (!exception_occurred)
                 {
                     memcpy(data[i], vec[i].data(), vec[i].byteSize());
                     endPointers[i] = (char *)data[i] + vec[i].byteSize();
 
-#pragma omp atomic
+                    #pragma omp atomic
                     nnz += vec[i].nonZeros();
                 }
             }
@@ -413,10 +413,10 @@ namespace CSF
         metadata[4] = val_t;
         metadata[5] = index_t;
 
-// run the user checks
-#ifdef CSF_DEBUG
+        // run the user checks
+        #ifdef CSF_DEBUG
         userChecks();
-#endif
+        #endif
     }
 
     // File Constructor
@@ -427,49 +427,153 @@ namespace CSF
 
         if (fp == nullptr)
         {
-            throw std::runtime_error("File not found");
+            throw std::runtime_error("Error: Could not open file");
         }
 
-        // read the meta data
+        // read the metadata
         metadata = new uint32_t[NUM_META_DATA];
-
         fread(metadata, sizeof(uint32_t), NUM_META_DATA, fp);
 
-        // set the meta data
+        // set the matrix info
         innerDim = metadata[1];
         outerDim = metadata[2];
         nnz = metadata[3];
         val_t = metadata[4];
         index_t = metadata[5];
 
-        if (columnMajor)
-        {
-            numRows = innerDim;
-            numCols = outerDim;
-        }
-        else
-        {
-            numRows = outerDim;
-            numCols = innerDim;
-        }
+        numRows = columnMajor ? innerDim : outerDim;
+        numCols = columnMajor ? outerDim : innerDim;
 
-// run the user checks
-#ifdef CSF_DEBUG
-        userChecks();
-#endif
-
-        // malloc the data
+        // allocate the memory
         try
         {
-            data = (void **)malloc(sizeof(void *) * outerDim);
-            endPointers = (void **)malloc(sizeof(void *) * outerDim);
+            data = (void **)malloc(outerDim * sizeof(void *));
+            endPointers = (void **)malloc(outerDim * sizeof(void *));
         }
         catch (std::bad_alloc &e)
         {
-            throw std::bad_alloc();
+            std::cerr << "Error: Could not allocate memory for CSF matrix" << std::endl;
+            exit(1);
         }
 
-        // read the data
+        // if compression level 2 do the performance vectors
+        if constexpr (compressionLevel == 2)
+        {
+            try
+            {
+                valueArray = (T **)malloc(outerDim * sizeof(T *));
+                countsArray = (uint32_t **)malloc(outerDim * sizeof(uint32_t *));
+                valueArraySize = (uint32_t *)malloc(outerDim * sizeof(uint32_t));
+            }
+            catch (std::bad_alloc &e)
+            {
+                std::cerr << "Error: Could not allocate memory for CSF matrix" << std::endl;
+                exit(1);
+            }
+
+            // set all the arrays to nullptr
+            for (size_t i = 0; i < outerDim; i++)
+            {
+                valueArray[i] = nullptr;
+                countsArray[i] = nullptr;
+            }
+
+            // read the performance vectors size
+            for (size_t i = 0; i < outerDim; i++)
+            {
+                fread(&valueArraySize[i], sizeof(uint32_t), 1, fp);
+            }
+
+            // read in the values vector
+            for (size_t i = 0; i < outerDim; i++)
+            {
+                if (valueArraySize[i] == 0)
+                {
+                    continue;
+                }
+
+                try
+                {
+                    valueArray[i] = (T *)malloc(valueArraySize[i] * sizeof(T));
+                }
+                catch (std::bad_alloc &e)
+                {
+                    std::cerr << "Error: Could not allocate memory for CSF matrix" << std::endl;
+                    exit(1);
+                }
+
+                fread(valueArray[i], sizeof(T), valueArraySize[i], fp);
+            }
+
+            // read in the counts vector
+            for (size_t i = 0; i < outerDim; i++)
+            {
+                if (valueArraySize[i] == 0)
+                {
+                    continue;
+                }
+
+                try
+                {
+                    countsArray[i] = (uint32_t *)malloc(valueArraySize[i] * sizeof(uint32_t));
+                }
+                catch (std::bad_alloc &e)
+                {
+                    std::cerr << "Error: Could not allocate memory for CSF matrix" << std::endl;
+                    exit(1);
+                }
+
+                fread(countsArray[i], sizeof(uint32_t), valueArraySize[i], fp);
+            }
+
+            // read the data
+            for (size_t i = 0; i < outerDim; i++)
+            {
+                uint64_t size = 0;
+
+                if (valueArraySize[i] == 0)
+                {
+                    continue;
+                }
+
+                // calculate the size of the column data
+                for (size_t j = 0; j < valueArraySize[i]; j++)
+                {
+                    size += sizeof(T) + (sizeof(indexT) * countsArray[i][j]) + sizeof(indexT);
+                }
+
+                // malloc the column
+                try
+                {
+                    data[i] = malloc(size);
+                    endPointers[i] = (char *)data[i] + size;
+                }
+                catch (std::bad_alloc &e)
+                {
+                    std::cerr << "Error: Could not allocate memory for CSF matrix" << std::endl;
+                    exit(1);
+                }
+
+                fread(data[i], 1, (uint8_t *)endPointers[i] - (uint8_t *)data[i], fp);
+            }
+
+            // close the file
+            fclose(fp);
+
+            // calculate the compresssion size
+            calculateCompSize();
+
+            performanceVectors = true;
+
+            // run the user checks
+            #ifdef CSF_DEBUG
+            userChecks();
+            #endif
+
+            return;
+        }
+
+        // get the vector sizes and allocate memory
         for (size_t i = 0; i < outerDim; i++)
         {
             // get the size of the column
@@ -494,10 +598,16 @@ namespace CSF
             fread(data[i], 1, (uint8_t *)endPointers[i] - (uint8_t *)data[i], fp);
         }
 
+        // close the file
         fclose(fp);
 
-        // calculate the compressed size
+        // calculate the compresssion size
         calculateCompSize();
+
+        // run the user checks
+        #ifdef CSF_DEBUG
+        userChecks();
+        #endif
     }
 
     // Private Transpose Constructor
