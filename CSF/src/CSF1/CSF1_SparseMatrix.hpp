@@ -110,7 +110,7 @@ namespace CSF
         SparseMatrix(Eigen::SparseMatrix<T, Eigen::RowMajor> &mat);
 
         /**
-         * @tparam compressionLevel2 The compression level of the CSF matrix to convert
+         * @tparam otherCompressionLevel The compression level of the CSF matrix to convert
          * @param mat The CSF matrix to convert
          *
          * Convert a CSF matrix of a different compression level to level 1. \n \n
@@ -120,8 +120,8 @@ namespace CSF
          *
          * @note Needs More Testing also not a copying constructor.
          */
-        template <uint8_t compressionLevel2>
-        SparseMatrix(CSF::SparseMatrix<T, indexT, compressionLevel2, columnMajor> &mat);
+        template <uint8_t otherCompressionLevel>
+        SparseMatrix(CSF::SparseMatrix<T, indexT, otherCompressionLevel, columnMajor> &mat);
 
         /**
          * @param other The CSF matrix to be copied

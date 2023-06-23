@@ -65,9 +65,9 @@ namespace CSF
         memcpy(outerPtr, mat.outerIndexPtr(), sizeof(indexT) * (outerDim + 1));
 
         // run the user checks
-#ifdef CSF_DEBUG
+        #ifdef CSF_DEBUG
         userChecks();
-#endif
+        #endif
     }
 
     // eigen sparse matrix constructor (row major)
@@ -114,8 +114,8 @@ namespace CSF
 
     // generalized constructor
     template <typename T, typename indexT, bool columnMajor>
-    template <uint8_t compressionLevel2>
-    SparseMatrix<T, indexT, 1, columnMajor>::SparseMatrix(CSF::SparseMatrix<T, indexT, compressionLevel2, columnMajor> &mat)
+    template <uint8_t otherCompressionLevel>
+    SparseMatrix<T, indexT, 1, columnMajor>::SparseMatrix(CSF::SparseMatrix<T, indexT, otherCompressionLevel, columnMajor> &mat)
     {
 
         // check if the matrix is empty
@@ -145,11 +145,11 @@ namespace CSF
         CSF::SparseMatrix<T, indexT, 1, columnMajor> temp;
 
         // if the incoming matrix is csf 2, convert it to csf1
-        if constexpr (compressionLevel2 == 2)
+        if constexpr (otherCompressionLevel == 2)
         {
             temp = mat.toCSF1();
         }
-        else if constexpr (compressionLevel2 == 3)
+        else if constexpr (otherCompressionLevel == 3)
         {
             temp = mat.toCSF1();
         }

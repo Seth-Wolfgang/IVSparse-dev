@@ -55,6 +55,9 @@ namespace CSF {
     typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector SparseMatrix<T, indexT, compressionLevel, columnMajor>::getVector(uint32_t vec) { return (*this)[vec]; }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    size_t SparseMatrix<T, indexT, compressionLevel, columnMajor>::getPerformanceVectorSize(uint32_t vec) const { return valueArraySize[vec]; }
+
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     T SparseMatrix<T, indexT, compressionLevel, columnMajor>::coeff(uint32_t row, uint32_t col)
     {
         return (*this)(row, col);
@@ -175,6 +178,247 @@ namespace CSF {
         }
     }
 
+    // Convert a CSF2 or 3 matrix to CSF1
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    CSF::SparseMatrix<T, indexT, 1, columnMajor> SparseMatrix<T, indexT, compressionLevel, columnMajor>::toCSF1()
+    {
+        // create a new sparse matrix
+        Eigen::SparseMatrix<T, columnMajor ? Eigen::ColMajor : Eigen::RowMajor> eigenMatrix(numRows, numCols);
+
+        // iterate over the matrix
+        for (uint32_t i = 0; i < outerDim; ++i)
+        {
+            for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(*this, i); it; ++it)
+            {
+                // add the value to the matrix
+                eigenMatrix.insert(it.row(), it.col()) = it.value();
+            }
+        }
+
+        // finalize the matrix
+        eigenMatrix.makeCompressed();
+
+        // make a csf1 matrix
+        CSF::SparseMatrix<T, indexT, 1, columnMajor> csf1Matrix(eigenMatrix);
+
+        // return the matrix
+        return csf1Matrix;
+    }
+
+    // Convert a CSF3 matrix to a CSF2 matrix
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    CSF::SparseMatrix<T, indexT, 2, columnMajor> SparseMatrix<T, indexT, compressionLevel, columnMajor>::toCSF2()
+    {
+
+        // if already CSF2 return a copy
+        if (compressionLevel == 2)
+        {
+            return *this;
+        }
+
+        // declare a sparse matrix
+        CSF::SparseMatrix<T, indexT, 2, columnMajor> csf2Matrix;
+
+        // set the dimensions
+        csf2Matrix.numRows = numRows;
+        csf2Matrix.numCols = numCols;
+        csf2Matrix.outerDim = outerDim;
+        csf2Matrix.innerDim = innerDim;
+        csf2Matrix.nnz = nnz;
+        csf2Matrix.val_t = val_t;
+        csf2Matrix.index_t = index_t;
+
+        // allocate the memory
+        try
+        {
+            csf2Matrix.data = (void **)malloc(outerDim * sizeof(void *));
+            csf2Matrix.endPointers = (void **)malloc(outerDim * sizeof(void *));
+            csf2Matrix.metadata = new uint32_t[NUM_META_DATA];
+
+            // allocate memory for the performance vectors
+            csf2Matrix.valueArraySize = (uint32_t *)malloc(outerDim * sizeof(uint32_t));
+            csf2Matrix.valueArray = (T **)malloc(outerDim * sizeof(T *));
+            csf2Matrix.countsArray = (uint32_t **)malloc(outerDim * sizeof(uint32_t *));
+        }
+        catch (std::bad_alloc &e)
+        {
+            std::cerr << "Error: Could not allocate memory for CSF matrix" << std::endl;
+            exit(1);
+        }
+
+        // copy the metadata
+        mempcpy(csf2Matrix.metadata, metadata, NUM_META_DATA * sizeof(uint32_t));
+
+        //* uncompress the data
+
+        size_t performanceVecSize = 0;
+
+        // iterate through the data using the iterator
+        for (uint32_t i = 0; i < outerDim; ++i)
+        {
+
+            size_t size = 0;
+            performanceVecSize = 0;
+
+            for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(*this, i); it; ++it)
+            {
+                if (it.isNewRun())
+                {
+                    size += sizeof(T) + sizeof(indexT) + 1;
+                    performanceVecSize++;
+                }
+                else
+                {
+                    size += sizeof(indexT);
+                }
+            }
+
+            // allocate the memory
+            try
+            {
+                csf2Matrix.data[i] = malloc(size);
+
+                csf2Matrix.valueArray[i] = (T *)malloc(performanceVecSize * sizeof(T));
+                csf2Matrix.countsArray[i] = (uint32_t *)malloc(performanceVecSize * sizeof(uint32_t));
+                csf2Matrix.valueArraySize[i] = performanceVecSize;
+            }
+            catch (std::bad_alloc &e)
+            {
+                std::cerr << "Error: Could not allocate memory for CSF matrix" << std::endl;
+                exit(1);
+            }
+            csf2Matrix.endPointers[i] = (uint8_t *)csf2Matrix.data[i] + size;
+        }
+
+        // iterate again and copy the data into the new matrix
+        for (uint32_t i = 0; i < outerDim; ++i)
+        {
+
+            void *dataPtr = (uint8_t *)csf2Matrix.data[i];
+            void *endPtr = (uint8_t *)csf2Matrix.endPointers[i];
+
+            performanceVecSize = 0;
+
+            for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(*this, i); it; ++it)
+            {
+                if (it.isNewRun())
+                {
+
+                    if ((uint8_t *)dataPtr != (uint8_t *)csf2Matrix.data[i])
+                    {
+                        // add the delimiter to the previous run
+                        *(indexT *)dataPtr = (indexT)DELIM;
+                        dataPtr = (uint8_t *)dataPtr + sizeof(indexT);
+                    }
+
+                    if (performanceVecSize != 0)
+                    {
+                        // increment performanceVecSize
+                        performanceVecSize++;
+                    }
+
+                    csf2Matrix.valueArray[i][performanceVecSize] = it.value();
+                    csf2Matrix.countsArray[i][performanceVecSize] += 1;
+
+                    // copy the value
+                    *(T *)dataPtr = performanceVecSize;
+                    dataPtr = (uint8_t *)dataPtr + sizeof(T);
+
+                    // copy the index
+                    *(indexT *)dataPtr = it.index();
+                    dataPtr = (uint8_t *)dataPtr + sizeof(indexT);
+                }
+                else
+                {
+                    // copy the index
+                    *(indexT *)dataPtr = it.index();
+                    dataPtr = (uint8_t *)dataPtr + sizeof(indexT);
+
+                    // update the count
+                    csf2Matrix.countsArray[i][performanceVecSize] += 1;
+                }
+            }
+
+            *(indexT *)dataPtr = (indexT)DELIM;
+            dataPtr = (uint8_t *)dataPtr + sizeof(indexT);
+
+            // check that the dataPtr is at the end of the data
+            if (dataPtr != endPtr)
+            {
+                std::cerr << "Error: Data pointer is not at the end of the data" << std::endl;
+                exit(1);
+            }
+        }
+
+        csf2Matrix.calculateCompSize();
+
+        return csf2Matrix;
+    }
+
+    // Convert a CSF2 matrix to a CSF3 matrix
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    CSF::SparseMatrix<T, indexT, 3, columnMajor> SparseMatrix<T, indexT, compressionLevel, columnMajor>::toCSF3()
+    {
+
+        // if already CSF3 return a copy
+        if (compressionLevel == 3)
+        {
+            return *this;
+        }
+
+        //* compress the data
+
+        // make a pointer for the CSC pointers
+        T *values = (T *)malloc(nnz * sizeof(T));
+        indexT *indices = (indexT *)malloc(nnz * sizeof(indexT));
+        indexT *colPtrs = (indexT *)malloc((outerDim + 1) * sizeof(indexT));
+
+        colPtrs[0] = 0;
+
+        // make an array of ordered maps to hold the data
+        std::map<indexT, T> dict[outerDim];
+
+        // iterate through the data using the iterator
+        for (uint32_t i = 0; i < outerDim; ++i)
+        {
+            size_t count = 0;
+
+            for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(*this, i); it; ++it)
+            {
+                dict[i][it.index()] = it.value();
+                count++;
+            }
+
+            colPtrs[i + 1] = colPtrs[i] + count;
+        }
+
+        size_t count = 0;
+
+        // loop through the dictionary and populate values and indices
+        for (uint32_t i = 0; i < outerDim; ++i)
+        {
+            for (auto &pair : dict[i])
+            {
+                values[count] = pair.second;
+                indices[count] = pair.first;
+                count++;
+            }
+        }
+
+        // delete the dictionary
+        dict.clear();
+
+        // return a CSF3 matrix from the CSC vectors
+        CSF::SparseMatrix<T, indexT, 3, columnMajor> mat(values, indices, colPtrs, numRows, numCols, nnz);
+
+        // free the CSC vectors
+        free(values);
+        free(indices);
+        free(colPtrs);
+
+        return mat;
+    }
+
     //* Conversion/Transformation Methods *//
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
@@ -214,7 +458,6 @@ namespace CSF {
                 data[outerDim - 1] = nullptr;
                 endPointers[outerDim - 1] = nullptr;
 
-                compSize += sizeof(void *) * 2;
 
                 // if perforamnce vectors are on
                 if (performanceVectors)
@@ -247,9 +490,9 @@ namespace CSF {
                     // set the new valueArraySize to 0
                     valueArraySize[outerDim - 1] = 0;
 
-                    compSize += sizeof(T *) * 2;
-                    compSize += sizeof(uint32_t);
                 }
+
+                calculateCompSize();
 
                 return;
             }
@@ -296,9 +539,7 @@ namespace CSF {
                 // copy the vector into the new space
                 memcpy(data[outerDim - 1], vec.begin(), vec.byteSize());
 
-                // update the compression size
-                compSize += vec.byteSize();
-                compSize += sizeof(void *) * 2;
+
 
                 // if perforamnce vectors are on
                 if (performanceVectors) {
@@ -342,11 +583,10 @@ namespace CSF {
                     // copy the valueArraySize into the new space
                     valueArraySize[outerDim - 1] = vec.getValueArraySize();
 
-                    // update the compression size
-                    compSize += sizeof(T *) * 2;
-                    compSize += sizeof(uint32_t);
 
                 }
+
+                calculateCompSize();
             }
         }
     }
