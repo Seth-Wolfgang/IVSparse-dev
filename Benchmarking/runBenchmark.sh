@@ -25,7 +25,7 @@ if [ $# -ge 1 ]; then
     touch matrices.txt
 fi
 
-numMatrices=4000
+numMatrices=100
 # Downloading matrices and running benchmark at the same time
 for x in $(seq 1 $numMatrices)
 do

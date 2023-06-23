@@ -67,7 +67,6 @@ int main(int argc, char** argv) {
     // CSF::SparseMatrix<VALUE_TYPE, INDEX_TYPE, 1> csf(eigen);
     CSF::SparseMatrix<VALUE_TYPE, INDEX_TYPE, 2> csf2(eigen);
     CSF::SparseMatrix<VALUE_TYPE, INDEX_TYPE, 3> csf3(eigen);
-    csf2.setPerformanceVecs(true);
 
     // Calculate matrix entropy
     matrixData.at(4) = averageRedundancy(eigen);
@@ -131,7 +130,7 @@ int main(int argc, char** argv) {
             }
 
             // Runs the selected benchmark
-            // std::cout << "Running benchmark " << currentlySelected << std::endl;
+            std::cout << "Running benchmark " << currentlySelected << std::endl;
             switch (currentlySelected) {
             case 0:
                 EigenConstructorBenchmark<VALUE_TYPE>(eigenTriplet, data, matrixData[1], matrixData[2]);
@@ -197,7 +196,7 @@ int main(int argc, char** argv) {
                 eigenTransposeBenchmark<VALUE_TYPE>(eigen, data);
                 continue;
             case 21:
-                CSF2TransposeBenchmark<VALUE_TYPE>(csf2, data);
+                // CSF2TransposeBenchmark<VALUE_TYPE>(csf2, data);
                 continue;
             case 22:
                 CSF3TransposeBenchmark<VALUE_TYPE>(csf3, data);
@@ -549,7 +548,6 @@ void CSF2ConstructorBenchmark(Eigen::SparseMatrix<T>& eigen, std::vector<uint64_
     //benchmark the CSF2 constructor
     start = std::chrono::system_clock::now();
     CSF::SparseMatrix<T, int, 2> csf2(eigen);
-    csf2.setPerformanceVecs(true);
     end = std::chrono::system_clock::now();
 
     data.at(1) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
@@ -703,12 +701,10 @@ void EigenScalarMultiplicationBenchmark(Eigen::SparseMatrix<T> eigen, std::vecto
 template <typename T>
 void CSF2ScalarMultiplicationBenchmark(CSF::SparseMatrix<T, INDEX_TYPE, 2> csf2, std::vector<uint64_t>& data) {
     std::chrono::time_point<std::chrono::system_clock> start, end;
-    csf2.setPerformanceVecs(true);
 
     //CSF 2
     start = std::chrono::system_clock::now();
     csf2 *= 2;
-    // csf2 = csf2 * 2;
     end = std::chrono::system_clock::now();
     data.at(9) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
 }
@@ -867,7 +863,7 @@ void CSF2MemoryFootprintBenchmark(std::vector<uint64_t>& data, std::vector<Eigen
 
     // CSF Construction
     CSF::SparseMatrix<VALUE_TYPE, INDEX_TYPE, 2> csf2Matrix(eigenMatrix);
-    data.at(17) = csf2Matrix.compressionSize();
+    data.at(17) = csf2Matrix.byteSize();
 
 }
 
@@ -885,7 +881,7 @@ void CSF3MemoryFootprintBenchmark(std::vector<uint64_t>& data, std::vector<Eigen
 
     // CSF Construction
     CSF::SparseMatrix<VALUE_TYPE, INDEX_TYPE, 3> csf3Matrix(eigenMatrix);
-    data.at(18) = csf3Matrix.compressionSize();
+    data.at(18) = csf3Matrix.byteSize();
 }
 
 template <typename T>

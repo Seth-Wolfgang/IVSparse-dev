@@ -23,6 +23,7 @@ namespace CSF {
         T* valueArray = nullptr;
         uint32_t* countsArray = nullptr;
         uint32_t* valueArraySize = nullptr;
+        uint32_t count = 1;
 
         //* Private Class Methods *//
 
@@ -71,4 +72,5 @@ namespace CSF {
 
         bool isNewRun();
     };
+
 }

@@ -41,6 +41,7 @@ namespace CSF {
         }
         else {
             indexWidth = sizeof(indexT);
+            data = (uint8_t*)data + sizeof(indexT);
         }
 
         decodeIndex();
@@ -94,7 +95,7 @@ namespace CSF {
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     T SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator::value() {
         if constexpr (compressionLevel == 2) {
-            return valueArray[(int)*val];
+            return valueArray[*val];
         }
         else {
             return *val;
@@ -104,7 +105,7 @@ namespace CSF {
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     T& SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator::operator*() {
         if constexpr (compressionLevel == 2) {
-            return valueArray[*val];
+            return valueArray[(int)*val];
         }
         else {
             return *val;
@@ -136,7 +137,6 @@ namespace CSF {
         }
     }
 
-
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     indexT SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator::row() {
         if constexpr (!columnMajor)
@@ -159,33 +159,58 @@ namespace CSF {
         data = (uint8_t*)data + indexWidth;
 
         decodeIndex();
-
+        
         // If new_row is 0 and not the first row, then the row is a delimitor
-        if (newIndex == 0) {
+        if constexpr (compressionLevel == 2) {
+            std::cout << "count: " << count << std::endl;
 
-            if (data >= (uint8_t*)endPtr - indexWidth) [[unlikely]] {
+            if (countsArray[0] == count) {
+
+                if (data >= (uint8_t*)endPtr - indexWidth) [[unlikely]] {
+                    return;
+                }
+                std::cout << "counts: " << countsArray[0] << " count: " << count << std::endl;
+
+                // val is the first row of the run
+                val = (T*)data;
+                data = (uint8_t*)data + sizeof(T);
+                // Make row 0 as it is a new run
+                decodeIndex();
+                index = newIndex;
+                firstIndex = true;
+                count = 0;
+                countsArray = (uint8_t*)countsArray + sizeof(uint32_t);
                 return;
             }
+            count++;
+        }
+        else {
+            if (newIndex == 0) {
 
-            data = (uint8_t*)data + indexWidth;
+                if (data >= (uint8_t*)endPtr - indexWidth) [[unlikely]] {
+                    return;
+                }
 
-            // val is the first row of the run
-            val = (T*)data;
-            data = (uint8_t*)data + sizeof(T);
+                data = (uint8_t*)data + indexWidth;
 
-            if constexpr (compressionLevel == 3) {
-                // Sets row width to the width of the first run
-                indexWidth = *(uint8_t*)data;
-                data = (uint8_t*)data + sizeof(uint8_t);
+                // val is the first row of the run
+                val = (T*)data;
+                data = (uint8_t*)data + sizeof(T);
+
+                if constexpr (compressionLevel == 3) {
+                    // Sets row width to the width of the first run
+                    indexWidth = *(uint8_t*)data;
+                    data = (uint8_t*)data + sizeof(uint8_t);
+                }
+
+                // update currentCol to the next column
+
+                // Make row 0 as it is a new run
+                decodeIndex();
+                index = newIndex;
+                firstIndex = true;
+                return;
             }
-
-            // update currentCol to the next column
-
-            // Make row 0 as it is a new run
-            decodeIndex();
-            index = newIndex;
-            firstIndex = true;
-            return;
         }
 
         firstIndex = false;

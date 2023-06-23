@@ -158,30 +158,30 @@ namespace CSF {
         data = (uint8_t*)data + indexWidth;
 
         decodeIndex();
-
         // If new_row is 0 and not the first row, then the row is a delimitor
-        if (*countsArray == count) {
+        if constexpr (compressionLevel == 2) {
+            if (countsArray[0] == count) {
 
-            if (data >= (uint8_t*)endPtr - indexWidth) [[unlikely]] {
+                if (data >= (uint8_t*)endPtr - indexWidth) [[unlikely]] {
+                    return;
+                }
+
+                    // val is the first row of the run
+                val = (T*)data;
+                data = (uint8_t*)data + sizeof(T);
+
+                // Make row 0 as it is a new run
+                decodeIndex();
+                index = newIndex;
+                firstIndex = true;
+                count = 1;
+                countsArray = (uint8_t*)countsArray + sizeof(uint32_t);
                 return;
             }
-
-            // val is the first row of the run
-            val = (T*)data;
-            data = (uint8_t*)data + sizeof(T);
-
-            // Make row 0 as it is a new run
-            decodeIndex();
-            index = newIndex;
-            firstIndex = true;
-            count = 0;
-            countsArray = (uint8_t*)countsArray + sizeof(uint32_t);
-            return;
+            count++;
         }
-        
 
         firstIndex = false;
-        count++;
         // Depending on if the CSF::SparseMatrix is at compression level 2 or 3, we handle the row differently
         // Compression level 3 is postive delta encoded, so we return the sum of the current row and the previous ones
         index = newIndex;

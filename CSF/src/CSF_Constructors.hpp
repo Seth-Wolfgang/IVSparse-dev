@@ -353,10 +353,10 @@ namespace CSF {
                         break;
                     }
                 }
-                else {
-                    *(indexT*)helpPtr = (indexT)DELIM;
-                    helpPtr = (indexT*)helpPtr + 1;
-                }
+                // else {
+                //     *(indexT*)helpPtr = (indexT)DELIM;
+                //     helpPtr = (indexT*)helpPtr + 1;
+                // }
             }
         }
 
