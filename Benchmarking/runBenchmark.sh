@@ -25,7 +25,7 @@ if [ $# -ge 1 ]; then
     touch matrices.txt
 fi
 
-numMatrices=1000
+numMatrices=800
 # Downloading matrices and running benchmark at the same time
 for x in $(seq 1 $numMatrices)
 do
@@ -52,11 +52,11 @@ do
     echo "Running C++ benchmark for matrix ID: \033[0;32m$id\033[0m"
 
     
-    # valgrind -s --leak-check=full ./benchmark $MATRIX_PATH $id
     ./benchmark $MATRIX_PATH $id
-    rm -r $MATRIX_PATH
+    # valgrind --leak-check=full --track-origins=yes ./benchmark $MATRIX_PATH $id
+    # rm -r $MATRIX_PATH
 done
 
 # Clean up
-rm -r matrices/
+rm -rf matrices/
 rm benchmark

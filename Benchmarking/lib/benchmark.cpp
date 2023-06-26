@@ -11,7 +11,7 @@
  * Source: https://math.nist.gov/MatrixMarket/mmio/c/example_read.c
  */
 
-#define NUM_ITERATIONS 10
+#define NUM_ITERATIONS 5
 #include "benchmarkFunctions.h"
 
 int main(int argc, char** argv) {
@@ -23,7 +23,7 @@ int main(int argc, char** argv) {
     // }
     if (argc < 2) {
         argv[1] = (char*)malloc(sizeof(char) * 20);
-        strcpy(argv[1], "../testMatrixFail.mtx");
+        strcpy(argv[1], "../testMatrix231.mtx");
         argv[2] = (char*)malloc(sizeof(char));
         argv[2] = "1";
     }
@@ -103,7 +103,7 @@ int main(int argc, char** argv) {
 
     // Random array to select a random benchmark
     int myList[NUM_OF_BENCHMARKS];
-    for(int i = 0; i < NUM_OF_BENCHMARKS; i++) myList[i] = i;
+    for (int i = 0; i < NUM_OF_BENCHMARKS; i++) myList[i] = i;
 
     int tempList[NUM_OF_BENCHMARKS];
 
@@ -196,7 +196,7 @@ int main(int argc, char** argv) {
                 eigenTransposeBenchmark<VALUE_TYPE>(eigen, data);
                 continue;
             case 21:
-                CSF2TransposeBenchmark<VALUE_TYPE>(csf2, data);
+                // CSF2TransposeBenchmark<VALUE_TYPE>(csf2, data);
                 continue;
             case 22:
                 CSF3TransposeBenchmark<VALUE_TYPE>(csf3, data);
@@ -302,7 +302,7 @@ void readFile(std::vector<Eigen::Triplet<T>>& eigenTriplet, std::vector<double>&
     }
 
     // Makes sure the matrix is not complex
-    if (mm_is_complex(matcode)){//|| mm_is_pattern(matcode)) {
+    if (mm_is_complex(matcode)) {//|| mm_is_pattern(matcode)) {
         std::cout << "\033[31;1;4mError: This application does not support \033[0m" << std::endl;
         std::cout << "\033[31;1;4mMarket Market type: \033[0m" << mm_typecode_to_str(matcode) << std::endl;
         std::cout << "Matrix might be complex or not a matrix";
@@ -506,11 +506,11 @@ bool checkMatrixEquality(Eigen::SparseMatrix<T>& eigen, CSF::SparseMatrix<T, IND
 
     // Free the memory
     for (size_t i = 0; i < eigen.rows(); i++) {
-        delete[] csfMatrix[i];
-        delete[] eigenMatrix[i];
+        delete [] csfMatrix[i];
+        delete [] eigenMatrix[i];
     }
-    delete[] csfMatrix;
-    delete[] eigenMatrix;
+    delete [] csfMatrix;
+    delete [] eigenMatrix;
 
     return true;
 }
@@ -648,13 +648,9 @@ void CSF3InnerIteratorBenchmark(CSF::SparseMatrix<T, INDEX_TYPE, 3> csf3, std::v
     for (uint32_t i = 0; i < csf3.outerSize(); ++i) {
         for (typename CSF::SparseMatrix<double, INDEX_TYPE, 3>::InnerIterator it(csf3, i); it; ++it) {
             total += it.value();
-            // std::cout << it.value() << ",";
-            // std::cout << it.value() << std::endl;
-
         }
     }
     end = std::chrono::system_clock::now();
-    // std::cout << "\nCSF 3: " << total << std::endl;
 
     data.at(6) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
 }
@@ -664,7 +660,6 @@ void ArmadilloInnerIteratorBenchmark(arma::sp_mat& armaMat, std::vector<uint64_t
     std::chrono::time_point<std::chrono::system_clock> start, end;
     uint64_t total = 0;
 
-    //Eigen
     start = std::chrono::system_clock::now();
     for (int i = 0; i < armaMat.n_cols; ++i) {
         for (arma::sp_mat::iterator it = armaMat.begin_col(i); it != armaMat.end_col(i); ++it) {
@@ -672,7 +667,6 @@ void ArmadilloInnerIteratorBenchmark(arma::sp_mat& armaMat, std::vector<uint64_t
         }
     }
     end = std::chrono::system_clock::now();
-    // std::cout << "Armadillo: " << total << std::endl;
     data.at(7) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
 }
 
@@ -1080,7 +1074,7 @@ void ArmadilloOuterSumBenchmark(arma::sp_mat& armaMat, std::vector<uint64_t>& da
     //Eigen
     start = std::chrono::system_clock::now();
 
-    for(int i = 0; i < armaMat.n_cols; ++i) {
+    for (int i = 0; i < armaMat.n_cols; ++i) {
         result(i) = arma::accu(armaMat.col(i));
     }
 

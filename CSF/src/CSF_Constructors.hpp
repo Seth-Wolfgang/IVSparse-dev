@@ -6,6 +6,7 @@ namespace CSF {
     SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix() {
         val_t = 0;
         index_t = 0;
+        compSize = 0;
 
         data = nullptr;
         endPointers = nullptr;
@@ -45,6 +46,8 @@ namespace CSF {
         nnz = mat.nonZeros();
 
         compressCSC(mat.valuePtr(), mat.innerIndexPtr(), mat.outerIndexPtr());
+        calculateCompSize();
+
     }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
@@ -136,6 +139,8 @@ namespace CSF {
         #ifdef CSF_DEBUG
         userChecks();
         #endif
+        calculateCompSize();
+
     }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
@@ -165,6 +170,8 @@ namespace CSF {
         nnz = mat.nonZeros();
 
         compressCSC(mat.valuePtr(), mat.innerIndexPtr(), mat.outerIndexPtr());
+        calculateCompSize();
+
     }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
@@ -198,6 +205,8 @@ namespace CSF {
         this->nnz = nnz;
 
         compressCSC(vals, innerIndices, outerPtr);
+        calculateCompSize();
+
     }
 
     /**
@@ -209,17 +218,11 @@ namespace CSF {
 
         if constexpr (compressionLevel == 2) {
             performanceVectors = true;
-            valueArray = (T**)malloc(sizeof(T*) * num_cols);
-            countsArray = (uint32_t**)malloc(sizeof(uint32_t*) * num_cols);
-            valueArraySize = (uint32_t*)malloc(sizeof(uint32_t) * num_cols);
-
-            for (size_t i = 0; i < num_cols; i++) {
-                valueArray[i] = (T*)malloc(sizeof(T*) * maps[i].size());
-                countsArray[i] = (uint32_t*)malloc(sizeof(T*) * maps[i].size());
-                valueArraySize[i] = 0;
-            }
-
+            valueArray = (T**)calloc(sizeof(T*), num_rows);
+            countsArray = (uint32_t**)calloc(sizeof(uint32_t*), num_rows);
+            valueArraySize = (uint32_t*)malloc(sizeof(uint32_t) * num_rows);
         }
+        
 
         // set class variables
         if constexpr (columnMajor) {
@@ -273,6 +276,9 @@ namespace CSF {
                 }
             }
             else {
+                valueArray[i] = (T*)malloc(sizeof(T) * maps[i].size());                
+                countsArray[i] = (uint32_t*)malloc(sizeof(uint32_t) * maps[i].size());
+                valueArraySize[i] = 0;
                 // loop through the vectors of the map
                 for (auto& val : maps[i]) {
                     // add the size of the vector to the byteSize
@@ -302,8 +308,8 @@ namespace CSF {
                 else {
                     nnz += val.second.size();
                     valueArraySize[i]++;
-                    valueArray[i][valueArraySize[i] - 1] = val.first;
                     countsArray[i][valueArraySize[i] - 1] = val.second.size();
+                    valueArray[i][valueArraySize[i] - 1] = val.first;
                 }
 
                 // write the index width
@@ -314,10 +320,7 @@ namespace CSF {
                     *(uint8_t*)helpPtr = (uint8_t)val.second[val.second.size() - 1];
                     helpPtr = (uint8_t*)helpPtr + 1;
                 }
-                else {
-                    // *valueArray[i] = val.first;
-                    // valueArraySize[i]++;
-                }
+
 
                 // write the indices
                 for (size_t k = 0; k < val.second.size(); k++) {
@@ -400,6 +403,8 @@ namespace CSF {
         #ifdef CSF_DEBUG
         userChecks();
         #endif
+        calculateCompSize();
+
     }
 
     /**
@@ -483,6 +488,8 @@ namespace CSF {
         #ifdef CSF_DEBUG
         userChecks();
         #endif
+        calculateCompSize();
+
     }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
@@ -557,6 +564,7 @@ namespace CSF {
         for (size_t i = 0; i < outerDim; i++) {
             compSize += (uint8_t*)endPointers[i] - (uint8_t*)data[i];
         }
+        calculateCompSize();
     }
 
     // generalized conversion constructor
@@ -676,15 +684,7 @@ namespace CSF {
         index_t = mat2.index_t;
 
         encodeValueType();
-
-        // std::cout << std::endl;
-        // for (int i = 0; i < outerDim; i++) {
-        //     std::cout << "valueArray[" << i << "]: ";
-        //     for (int j = 0; j < valueArraySize[i]; j++) {
-        //         std::cout << valueArray[i][j] << " ";
-        //     }
-        //     std::cout << std::endl;
-        // }
+        calculateCompSize();
     }
 
     /**
@@ -734,6 +734,8 @@ namespace CSF {
 
         index_t = other.index_t;
         val_t = encodeValueType();
+        calculateCompSize();
+
     }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
@@ -761,7 +763,7 @@ namespace CSF {
             // if value array and counts are not null, free them
             if (valueArray != nullptr) {
                 for (int i = 0; i < outerDim; i++) {
-                    if (valueArray[i] != nullptr) {
+                    if (valueArray[i] != nullptr || valueArray[i] != NULL) {
                         free(valueArray[i]);
                     }
                 }

@@ -187,16 +187,11 @@ namespace CSF {
             for (auto& pair : dict) {
 
                 // if compression level 2 write the value to the performance vector
+                // We don't write delimitors or valueArray indices to helpPtr, only row indices
                 if constexpr (compressionLevel == 2) {
                     valueArray[i][performanceVecSize] = pair.first;
                     countsArray[i][performanceVecSize] = pair.second.size();
-
-                    // write the index to memory
-                    // *(T*)helpPtr = (T)performanceVecSize;
-                    // helpPtr = (T*)helpPtr + 1;
-
                     performanceVecSize++;
-                    
                 }
                 else {
                     // Write the value to memory
@@ -269,35 +264,10 @@ namespace CSF {
                         break;
                     }
                 }
-                else {
-                    // *(indexT*)helpPtr = (indexT)DELIM;
-                    // helpPtr = (indexT*)helpPtr + 1;
-                }
-
                 // Set a pointer to the end of the data
                 endPointers[i] = helpPtr;
 
             } // End of dictionary loop
-
-            // update the compression size of the total matrix
-            compSize += META_DATA_SIZE + (sizeof(void*) * outerDim) * 2;
-
-            // if compression level 2 update the compression size
-            if constexpr (compressionLevel == 2) {
-                compSize += (sizeof(uint32_t) * outerDim) * 2;
-                compSize += (sizeof(T*) * outerDim);
-            }
-
-            // add up the size of each col and add it to compSize
-            for (size_t i = 0; i < outerDim; i++) {
-                compSize += *((uint8_t**)endPointers + i) - *((uint8_t**)data + i);
-
-                if constexpr (compressionLevel == 2) {
-                    compSize += (sizeof(T) * valueArraySize[i]);
-                    compSize += (sizeof(uint32_t) * valueArraySize[i]);
-                }
-            }
-
         } // end of column loop
     }
 
@@ -393,15 +363,6 @@ namespace CSF {
 
         valueArray = nullptr;
         countsArray = nullptr;
-
-        // update compression size
-        compSize -= (sizeof(T*) * outerDim);
-        compSize -= (sizeof(uint32_t*) * outerDim);
-
-        for (uint32_t i = 0; i < outerDim; ++i) {
-            compSize -= (sizeof(T) * valueArraySize[i]);
-            compSize -= (sizeof(uint32_t) * valueArraySize[i]);
-        }
 
         free(valueArraySize);
         valueArraySize = nullptr;
@@ -625,24 +586,8 @@ namespace CSF {
                 exit(1);
             }
         }
-
-        csf2Matrix.compSize += META_DATA_SIZE + (sizeof(void*) * outerDim) * 2;
-
-        // if compression level 2 update the compression size
-        if constexpr (compressionLevel == 2) {
-            csf2Matrix.compSize += (sizeof(uint32_t) * outerDim) * 2;
-            csf2Matrix.compSize += (sizeof(T*) * outerDim);
-        }
-
-        // set the compression size
-        for (uint32_t i = 0; i < outerDim; ++i) {
-            csf2Matrix.compSize += (uint8_t*)csf2Matrix.endPointers[i] - (uint8_t*)csf2Matrix.data[i];
-            if constexpr (compressionLevel == 2) {
-                csf2Matrix.compSize += (sizeof(T) * csf2Matrix.valueArraySize[i]);
-                csf2Matrix.compSize += (sizeof(uint32_t) * csf2Matrix.valueArraySize[i]);
-            }
-        }
-
+        
+        csf2Matrix.calculateCompSize();
         return csf2Matrix;
     }
 
@@ -703,4 +648,38 @@ namespace CSF {
 
         return mat;
     }
+
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    void SparseMatrix<T, indexT, compressionLevel, columnMajor>::calculateCompSize() {
+
+        // set compSize to zero
+        compSize = 0;
+
+        // add the size of the metadata
+        compSize += META_DATA_SIZE;
+
+        // add the size of the data pointers
+        compSize += (sizeof(void*) * outerDim) * 2;
+
+        // add the size of the data itself
+        for (uint32_t i = 0; i < outerDim; i++) {
+            compSize += *((uint8_t**)endPointers + i) - *((uint8_t**)data + i);
+        }
+
+        // if performance vectors are on add them to the compression size
+        if (performanceVectors) {
+            compSize += (sizeof(T*) * outerDim);
+            compSize += (sizeof(uint32_t*) * outerDim);
+
+            compSize += (sizeof(uint32_t) * outerDim);
+
+            for (uint32_t i = 0; i < outerDim; i++) {
+                compSize += (sizeof(T) * valueArraySize[i]);
+                compSize += (sizeof(uint32_t) * valueArraySize[i]);
+            }
+        } 
+        // std::cout << "\n\n\ncompression size: " << compSize << "\n\n\n";
+
+    }
+
 }

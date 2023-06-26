@@ -11,9 +11,12 @@ void sizeTest(int iterations);
 template <typename T, typename indexT, int compressionLevel> void iteratorTest();
 void getMat(Eigen::SparseMatrix<int>& myMatrix_e);
 
+// For my convenience
+//  clear; rm a.out; g++ test.cpp; ./a.out
+
 int main() {
     int rows = 10000;
-    int cols = 10000;
+    int cols = 100;
     int sparsity = 10;
     uint64_t seed = 52352;
     int maxVal = 10000;
@@ -37,7 +40,7 @@ int main() {
                 // 9,
                 // 0,
                 // 0;
-        
+
 
     Eigen::SparseMatrix<DATA_TYPE> eigen = mat.sparseView();
     // Eigen::SparseVector<DATA_TYPE> eigenVector = eigenVec.sparseView();
@@ -48,11 +51,25 @@ int main() {
 
     // typename CSF::SparseMatrix<DATA_TYPE, uint32_t, 3>::Vector vec = csf3[0];
     // std::cout << vec.dot(eigenVec) << std::endl;
-    std::cout << csf2.sum() << std::endl;
-    // csf2 = csf2 * 2;
+    // std::cout << csf3<< std::endl;
+
     csf2 = csf2.transpose();
-    std::cout << csf2.sum() << std::endl;
+
+    csf2 = csf2.transpose();
+    csf2 = csf2.transpose();
+
+    csf2 = csf2.transpose();
+    csf2 = csf2.transpose();
+
+    csf2 = csf2.transpose();
+    csf2 = csf2.transpose();
+
+    csf2 *= 2;
     std::cout << csf2 << std::endl;
+    // csf2 = csf2.transpose();
+    
+
+    // std::cout << csf2 << std::endl;
     
     // for (int i = 0; i < csf2.cols(); i++) {
     //     for (typename CSF::SparseMatrix<DATA_TYPE, uint32_t, 2>::InnerIterator it(csf2, i); it; ++it) {

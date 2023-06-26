@@ -13,7 +13,7 @@ namespace CSF {
 
     // Assignment Operator
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>& SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator=(const CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>& other) {
+    SparseMatrix<T, indexT, compressionLevel, columnMajor>& SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator=(const CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>& other) {
 
         if (this != &other) {
 
@@ -32,7 +32,7 @@ namespace CSF {
 
             // Free the metadata
             if (metadata != nullptr)
-                delete [] metadata;
+                delete[] metadata;
 
             // Free the performance vectors
             if (valueArray != nullptr) {
@@ -88,7 +88,7 @@ namespace CSF {
             // copy the data
             for (uint32_t i = 0; i < outerDim; i++) {
                 try {
-                    data[i] = malloc(other.getVectorSize(i));
+                    data[i] = malloc(other.getVectorSize(i) * 1.2);
                 }
                 catch (std::bad_alloc& e) {
                     std::cerr << "Error: Could not allocate memory for CSF matrix" << std::endl;
@@ -117,14 +117,14 @@ namespace CSF {
                 memcpy(valueArraySize, other.valueArraySize, sizeof(uint32_t) * outerDim);
 
                 for (uint32_t i = 0; i < outerDim; i++) {
-                    valueArray[i] = (T*)malloc(sizeof(T*) * valueArraySize[i]);
-                    countsArray[i] = (uint32_t*)malloc(sizeof(uint32_t*) * valueArraySize[i]);
+                    valueArray[i] = (T*)malloc(sizeof(T*) * other.valueArraySize[i]);
+                    countsArray[i] = (uint32_t*)malloc(sizeof(uint32_t*) * other.valueArraySize[i]);
                 }
 
                 // copy the performance vectors
                 for (uint32_t i = 0; i < outerDim; i++) {
-                    memcpy(valueArray[i], other.valueArray[i], sizeof(T) * valueArraySize[i]);
-                    memcpy(countsArray[i], other.countsArray[i], sizeof(uint32_t) * valueArraySize[i]);
+                    memcpy(valueArray[i], other.valueArray[i], sizeof(T) * other.valueArraySize[i]);
+                    memcpy(countsArray[i], other.countsArray[i], sizeof(uint32_t) * other.valueArraySize[i]);
                 }
             }
         }
@@ -259,6 +259,11 @@ namespace CSF {
             }
             os << std::endl;
         }
+
+        for (int i = 0; i < mat.rows(); i++) {
+            free(matrix[i]);
+        }
+        delete [] matrix;
 
         return os;
     }

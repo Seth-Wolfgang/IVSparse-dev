@@ -42,8 +42,8 @@ namespace CSF {
     uint32_t index_t; // Information about the index type (size)
 
     //* The Matrix Data *//
-    void** data;        // The data of the matrix
-    void** endPointers; // The pointers to the end of each column
+    void** data = nullptr;        // The data of the matrix
+    void** endPointers = nullptr; // The pointers to the end of each column
 
     uint32_t* metadata; // The metadata of the matrix
 
@@ -450,6 +450,12 @@ namespace CSF {
     */
     inline double vectorLength(uint32_t vec);
 
+    /**
+     * @brief Calculates the size of the compressed matrix in bytes
+     */
+    void calculateCompSize();
+
+
     ///@}
 
     //* Operator Overloads *//
@@ -479,4 +485,6 @@ namespace CSF {
     Eigen::Matrix<T, -1, -1> operator*(Eigen::Matrix<T, -1, -1> mat);
   };
 
+
 }
+

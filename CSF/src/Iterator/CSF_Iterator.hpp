@@ -54,12 +54,8 @@ namespace CSF {
 
             if constexpr (compressionLevel == 3)
                 return (char*)endPtr - indexWidth > data;
-            else {
-                // std::cout << "valueArrayCounter: " << (int)valueArrayCounter << std::endl;
-                // std::cout << "valueArraySize: " << (int)*valueArraySize << std::endl;
+            else
                 return (char*)endPtr > data;
-
-            }
         }
 
 
