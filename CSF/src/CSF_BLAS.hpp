@@ -78,56 +78,6 @@ namespace CSF {
     }
 
     /**
-     * @brief operator for SpM * V multiplication with Eigen::VectorXd
-     *
-     * @tparam T
-     * @tparam indexT
-     * @tparam compressionLevel
-     *
-     * @param vec
-     *
-     * @return Eigen::VectorXd
-    */
-
-    // template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    // Eigen::VectorXd SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator*(Eigen::VectorXd& vec) {
-    //     return vectorMultiply(vec);
-    // }
-
-    /**
-     * @brief operator for SpM * V multiplication with CSF::Vector
-     *
-     * @tparam T
-     * @tparam indexT
-     * @tparam compressionLevel
-     *
-     * @param vec
-     *
-     * @return Eigen::VectorXd
-    */
-
-    // template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    // Eigen::VectorXd SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator*(SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector& vec) {
-    //     return vectorMultiply(vec);
-    // }
-
-    /**
-     * @brief operator for SpM * M multiplication with Eigen::MatrixXd
-     *
-     * @tparam T
-     * @tparam indexT
-     * @tparam compressionLevel
-     *
-     * @param mat
-     *
-    */
-
-    // template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    // Eigen::Matrix<T, -1, -1> SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator*(Eigen::Matrix<T, -1, -1> mat) {
-    //     return matrixMultiply(mat);
-    // }
-
-    /**
      * @brief helper function for SpM * V multiplication with Eigen::VectorXd
     */
 
@@ -192,7 +142,7 @@ namespace CSF {
     inline Eigen::Matrix<T, -1, -1> SparseMatrix<T, indexT, compressionLevel, columnMajor>::matrixMultiply(Eigen::Matrix<T, -1, -1>& mat) {
         // check that the matrix is the correct size
         if (mat.rows() != outerDim)
-            throw std::invalid_argument("The matrix must be the same size as the number of columns in the matrix!");
+            throw std::invalid_argument("The left matrix must be the same size as the number of columns in the right matrix!");
 
         Eigen::Matrix<T, -1, -1> newMatrix = Eigen::Matrix<T, -1, -1>::Zero(innerDim, mat.cols());
 
@@ -514,7 +464,8 @@ namespace CSF {
 
         for (typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator it(*this, col); it; ++it) {
             norm += it.value() * it.value();
-            return sqrt(norm);
         }
+        return sqrt(norm);
+
     }
 }

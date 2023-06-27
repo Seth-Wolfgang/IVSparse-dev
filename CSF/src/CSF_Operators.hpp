@@ -206,8 +206,18 @@ namespace CSF {
     void SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator*=(T scalar) {
         return inPlaceScalarMultiply(scalar);
     }
+    /**
+     * @brief Matrix Vector Multiplication (CSF -> Eigen)
+     *
+     * @tparam T
+     * @tparam indexT
+     * @tparam compressionLevel
+     *
+     * @param vec
+     *
+     * @return Eigen::VectorXd
+    */
 
-    // Matrix Vector Multiplication (CSF CSF -> Eigen)
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     Eigen::VectorXd SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator*(SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector& vec) {
         return vectorMultiply(vec);

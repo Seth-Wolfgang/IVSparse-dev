@@ -678,8 +678,6 @@ namespace CSF {
                 compSize += (sizeof(uint32_t) * valueArraySize[i]);
             }
         } 
-        // std::cout << "\n\n\ncompression size: " << compSize << "\n\n\n";
-
     }
 
 }

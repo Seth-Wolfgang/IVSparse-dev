@@ -4,15 +4,24 @@
 int main() {
 
     //For ease of use, create an Eigen::SparseMatrix
-    Eigen::SparseMatrix<int> eigenSparseMatrix(20, 4);
-    eigenSparseMatrix = generateMatrix<int>(20, 4, 1, 0, 10);
+    Eigen::SparseMatrix<int> eigenSparseMatrix(5, 5);
+    eigenSparseMatrix = generateMatrix<int>(5, 5, 1, 0, 10);
     eigenSparseMatrix.makeCompressed();
+
+    Eigen::MatrixXi mat(5, 4);
+    mat << 0, 6, 4,  1,
+           3, 9, 0,  0,
+           0, 0,-5,-10,
+           9, 8, 7,  6,
+           0, 0, 0,  0;
+    Eigen::SparseMatrix<int> CSC_Mat = mat.sparseView();
 
     //Create a CSF::SparseMatrix from the Eigen::SparseMatrix
     CSF::SparseMatrix<int> csfSparseMatrix(eigenSparseMatrix);
 
     //Print the CSF::SparseMatrix
-    std::cout << csfSparseMatrix.toEigen() << std::endl;
+    std::cout << "Construction: " << std::endl;
+    std::cout << csfSparseMatrix << std::endl;
 
     /**
      * Scalar multiplication
@@ -28,7 +37,8 @@ int main() {
     csfSparseMatrix = csfSparseMatrix * 2;
 
     //Print the CSF::SparseMatrix
-    std::cout << csfSparseMatrix.toEigen() << std::endl;
+    std::cout << "\nScalar Multiplication" << std::endl;
+    std::cout << csfSparseMatrix << std::endl;
 
     /**
      * Vector multiplication
@@ -39,10 +49,18 @@ int main() {
      * The product does produce an Eigen::Vector as opposed to a CSF::SparseMatrix.
      * 
      */
-    Eigen::VectorXi eigenVector = Eigen::VectorXi::Random(4);
+    Eigen::VectorXi eigenVector(5);
+
+    eigenVector << 1,
+                   2,
+                   3,
+                   4,
+                   5;
+
     Eigen::VectorXi eigenResult = csfSparseMatrix * eigenVector;
 
     //Print the Eigen::VectorXd
+    std::cout << "\nSpM * V Multiplication" << std::endl;
     std::cout << eigenResult << std::endl;
 
     /**
@@ -54,8 +72,7 @@ int main() {
      * This algorithm is O(n^3). 
      * 
      */
-    Eigen::MatrixXi eigenMatrix = Eigen::MatrixXi::Random(4, 4);        //Create a random matrix
-    Eigen::MatrixXi eigenMatrixResult = csfSparseMatrix * eigenMatrix;  //Multiply the CSF::SparseMatrix by the Eigen::Matrix
+    Eigen::MatrixXi eigenMatrixResult = csfSparseMatrix * CSC_Mat;  //Multiply the CSF::SparseMatrix by the Eigen::Matrix
 
     /**
      * Matrix Transpose
@@ -69,6 +86,7 @@ int main() {
 
 
     //Print the Eigen::MatrixXd
+    std::cout << "\nSpM * M Multiplication" << std::endl;
     std::cout << eigenMatrixResult << std::endl;
 
     /**
@@ -83,6 +101,7 @@ int main() {
     std::vector<int> columnSums = csfSparseMatrix.outerSum();
 
     //Print the column sums
+    std::cout << "\nOuter Sums" << std::endl;
     for (int i = 0; i < csfSparseMatrix.cols(); i++) {
         std::cout << columnSums[i] << std::endl;
     }
@@ -100,6 +119,7 @@ int main() {
     std::vector<int> rowSums = csfSparseMatrix.innerSum();
 
     //Print the row sums
+    std::cout << "\nInner Sums" << std::endl;
     for (int i = 0; i < csfSparseMatrix.rows(); i++) {
         std::cout << rowSums[i] << std::endl;
     }
@@ -116,6 +136,7 @@ int main() {
     std::vector<int> maxOuterCoefficients = csfSparseMatrix.maxColCoeff();
 
     //Print the max outer coefficients
+    std::cout << "\nMax Outer Coefficients" << std::endl;
     for (int i = 0; i < csfSparseMatrix.cols(); i++) {
         std::cout << maxOuterCoefficients[i] << std::endl;
     }
@@ -133,6 +154,7 @@ int main() {
     std::vector<int> maxInnerCoefficients = csfSparseMatrix.maxRowCoeff();
 
     //Print the max inner coefficients
+    std::cout << "\nMax Inner Coefficients" << std::endl;
     for (int i = 0; i < csfSparseMatrix.rows(); i++) {
         std::cout << maxInnerCoefficients[i] << std::endl;
     }
@@ -149,6 +171,7 @@ int main() {
     std::vector<int> minOuterCoefficients = csfSparseMatrix.minColCoeff();
 
     //Print the min outer coefficients
+    std::cout << "\nMin Outer Coefficients" << std::endl;
     for (int i = 0; i < csfSparseMatrix.cols(); i++) {
         std::cout << minOuterCoefficients[i] << std::endl;
     }
@@ -166,6 +189,7 @@ int main() {
     std::vector<int> minInnerCoefficients = csfSparseMatrix.minRowCoeff();
 
     //Print the min inner coefficients
+    std::cout << "\nMin Inner Coefficients" << std::endl;
     for (int i = 0; i < csfSparseMatrix.rows(); i++) {
         std::cout << minInnerCoefficients[i] << std::endl;
     }
@@ -182,7 +206,7 @@ int main() {
     int trace = csfSparseMatrix.trace();
 
     //Print the trace
-    std::cout << trace << std::endl;
+    std::cout << "\nTrace: " << trace << std::endl;
 
 
     /**
@@ -198,7 +222,7 @@ int main() {
     int sum = csfSparseMatrix.sum();
 
     //Print the sum
-    std::cout << sum << std::endl;
+    std::cout << "Sum of Coefficients: " << sum << std::endl;
 
     /**
      * Frobenius Norm
@@ -213,7 +237,7 @@ int main() {
     double frobeniusNorm = csfSparseMatrix.norm();
 
     //Print the Frobenius norm
-    std::cout << frobeniusNorm << std::endl;
+    std::cout << "Frobenius Norm: " << frobeniusNorm << std::endl;
 
     /**
      * Vector Length
@@ -228,7 +252,7 @@ int main() {
     double vectorLength = csfSparseMatrix.vectorLength(0); // This is the length of the first vector
 
     //Print the vector length
-    std::cout << vectorLength << std::endl;
+    std::cout << "Length of first vector: " << vectorLength << std::endl;
 
 
     return 1;

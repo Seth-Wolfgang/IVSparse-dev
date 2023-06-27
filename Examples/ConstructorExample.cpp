@@ -48,8 +48,8 @@ int main() {
     std::cout << csfMatrix2 << std::endl;
 
     // The difference here is the size in memory
-    std::cout << "Size of csfMatrix2: " << csfMatrix2.compressionSize() << std::endl;
-    std::cout << "Size of csfMatrix3: " << csfMatrix3.compressionSize() << std::endl;
+    std::cout << "Size of csfMatrix2: " << csfMatrix2.byteSize() << std::endl;
+    std::cout << "Size of csfMatrix3: " << csfMatrix3.byteSize() << std::endl;
 
     // we can also use CSF level 3
 
@@ -58,7 +58,7 @@ int main() {
     // The size for this is slightly higher due to added bytes for reading each run
     // in larger matrices, this value should be smaller than level 2.
     // The middle template, indexType, does not matter for level 3 compression due to byte packing.
-    std::cout << "Size of csfMatrix3: " << csfMatrix4.compressionSize() << std::endl;
+    std::cout << "Size of csfMatrix3: " << csfMatrix4.byteSize() << std::endl;
     std::cout << std::endl;
     // We can also create a CSF matrix from a CSR matrix.
     CSF::SparseMatrix<int, int, 2, false> csfMatrixRow(values, rowIndices, colPointers, 3, 3, 9);

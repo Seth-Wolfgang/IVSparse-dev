@@ -14,39 +14,38 @@
 // Library Preprocessor Directives
 #define CSF_PARALLEL
 #define CSF_DEBUG
-#define EigenFunctions //Start adding these as we make our own stuff
+#define EigenFunctions 
 
-// Library Includes
-#include <omp.h>
-#include <Eigen/Sparse>
-#include <iostream>
-#include <vector>
-#include <map>
-#include <algorithm>
-#include <type_traits>
-#include <iomanip>
-#include <type_traits>
+ // Library Includes
+ #include <omp.h>
+ #include <Eigen/Sparse>
+ #include <iostream>
+ #include <vector>
+ #include <map>
+ #include <algorithm>
+ #include <type_traits>
+ #include <iomanip>
+ #include <type_traits>
 
-// Library Classes
-#include "src/CSF_SparseMatrix.hpp"
+ // Library Classes
+ #include "src/CSF_SparseMatrix.hpp"
 
-#include "src/CSF1/CSF1_SparseMatrix.hpp"
-#include "src/CSF1/CSF1_Constructors.hpp"
-#include "src/CSF1/CSF1_Iterator/CSF1_Iterator.hpp"
-#include "src/CSF1/CSF1_Vector/CSF1_Vector.hpp"
-#include "src/CSF1/CSF1_Methods.hpp"
+ #include "src/CSF1/CSF1_SparseMatrix.hpp"
+ #include "src/CSF1/CSF1_Constructors.hpp"
+ #include "src/CSF1/CSF1_Iterator/CSF1_Iterator.hpp"
+ #include "src/CSF1/CSF1_Vector/CSF1_Vector.hpp"
+ #include "src/CSF1/CSF1_Methods.hpp"
 
-#include "src/CSF_Constructors.hpp"
-#include "src/CSF_Private_Methods.hpp"
-#include "src/CSF_Operators.hpp"
-#include "src/CSF_Methods.hpp"
-#include "src/CSF_BLAS.hpp"
+ #include "src/CSF_Constructors.hpp"
+ #include "src/CSF_Private_Methods.hpp"
+ #include "src/CSF_Operators.hpp"
+ #include "src/CSF_Methods.hpp"
+ #include "src/CSF_BLAS.hpp"
 
-#include "src/Iterator/CSF_Iterator.hpp"
-#include "src/Iterator/CSF_Iterator_Methods.hpp"
-// #include "src/Iterator/CSF_2_Iterator.hpp"
+ #include "src/Iterator/CSF_Iterator.hpp"
+ #include "src/Iterator/CSF_Iterator_Methods.hpp"
 
-#include "src/Vector/CSF_Vector.hpp"
-#include "src/Vector/CSF_Vector_Methods.hpp"
+ #include "src/Vector/CSF_Vector.hpp"
+ #include "src/Vector/CSF_Vector_Methods.hpp"
 
-#include "src/Vector/CSF_Vec_BLAS.hpp"
+ #include "src/Vector/CSF_Vec_BLAS.hpp"

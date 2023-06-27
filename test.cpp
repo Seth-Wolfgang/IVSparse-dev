@@ -33,13 +33,13 @@ int main() {
            0, 0, 0,  0,  0, 4,
            0, 0, 0,  0,  0,-1;
 
-    // Eigen::Vector<DATA_TYPE, 6> eigenVec(6,1);
-    // eigenVec << 0,
-                // 3,
-                // 0,
-                // 9,
-                // 0,
-                // 0;
+    Eigen::Vector<DATA_TYPE, 6> eigenVec(6,1);
+    eigenVec << 0,
+                3,
+                0,
+                9,
+                0,
+                0;
 
 
     Eigen::SparseMatrix<DATA_TYPE> eigen = mat.sparseView();
