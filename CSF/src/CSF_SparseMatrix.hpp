@@ -45,7 +45,7 @@ namespace CSF {
     void** data = nullptr;        // The data of the matrix
     void** endPointers = nullptr; // The pointers to the end of each column
 
-    uint32_t* metadata; // The metadata of the matrix
+    uint32_t* metadata = nullptr; // The metadata of the matrix
 
     //* Optional Performance Data *//
     T** valueArray = nullptr;           // The array of values in a 2d array
