@@ -145,9 +145,6 @@ namespace CSF {
                 // loop through the dictionary and calculate the size of the column
                 for (auto& pair : dict) {
                     outerByteSize += (sizeof(indexT) * pair.second.size());
-                    
-                    //! Makes no sense to me why this fixes memory issues this should be NOT HERE
-                    outerByteSize += sizeof(T) + sizeof(indexT);
 
                     performanceVecSize++;
                 }

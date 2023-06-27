@@ -42,7 +42,6 @@ namespace CSF
 
         nnz = mat.nonZeros();
 
-        val_t ;
         encodeValueType();
         index_t = sizeof(indexT);
 
@@ -120,7 +119,7 @@ namespace CSF
     {
 
         // check if the matrix is empty
-        if (mat.nnz == 0)
+        if (mat.nonZeros() == 0)
         {
             // set everything to zero or the nullptr
 
@@ -167,7 +166,7 @@ namespace CSF
 
         nnz = temp.nnz;
 
-        val_t = temp.val_t;
+        encodeValueType();
         index_t = temp.index_t;
 
         compSize = temp.compSize;
@@ -189,12 +188,11 @@ namespace CSF
         memcpy(innerIdx, temp.innerIdx, sizeof(indexT) * nnz);
         memcpy(outerPtr, temp.outerPtr, sizeof(indexT) * (outerDim + 1));
 
-        val_t = encodeValueType();
 
         // run the user checks
-#ifdef CSF_DEBUG
+        #ifdef CSF_DEBUG
         userChecks();
-#endif
+        #endif
     }
 
     // vector constructor

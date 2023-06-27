@@ -177,7 +177,7 @@ namespace CSF {
         Eigen::SparseMatrix<T> eigenMat(numRows, numCols);
 
         // add the values to the matrix
-        for (indexT i = 0; i < outerDim; i++) {
+        for (uint32_t i = 0; i < outerDim; i++) {
             for (indexT j = outerPtr[i]; j < outerPtr[i + 1]; j++) {
                 eigenMat.insert(innerIdx[j], i) = vals[j];
             }
@@ -290,21 +290,21 @@ namespace CSF {
         }
 
         // check if the value arrays are the same
-        for (indexT i = 0; i < nnz; i++) {
+        for (uint32_t i = 0; i < nnz; i++) {
             if (vals[i] != other.vals[i]) {
                 return false;
             }
         }
 
         // check if the inner index arrays are the same
-        for (indexT i = 0; i < nnz; i++) {
+        for (uint32_t i = 0; i < nnz; i++) {
             if (innerIdx[i] != other.innerIdx[i]) {
                 return false;
             }
         }
 
         // check if the outer pointer arrays are the same
-        for (indexT i = 0; i < outerDim + 1; i++) {
+        for (uint32_t i = 0; i < outerDim + 1; i++) {
             if (outerPtr[i] != other.outerPtr[i]) {
                 return false;
             }
@@ -435,7 +435,7 @@ namespace CSF {
         compSize = other.compSize;
 
         index_t = other.index_t;
-        val_t = encodeValueType();
+        encodeValueType();
 
         // allocate memory for the values, inner index, and outer pointers
         vals = new T[nnz];

@@ -179,127 +179,51 @@ namespace CSF {
             return *this;
         }
 
-        // declare a sparse matrix
-        CSF::SparseMatrix<T, indexT, 2, columnMajor> csf2Matrix;
+        //* compress the data
 
-        // set the dimensions
-        csf2Matrix.numRows = numRows;
-        csf2Matrix.numCols = numCols;
-        csf2Matrix.outerDim = outerDim;
-        csf2Matrix.innerDim = innerDim;
-        csf2Matrix.nnz = nnz;
-        csf2Matrix.val_t = val_t;
-        csf2Matrix.index_t = index_t;
+        // make a pointer for the CSC pointers
+        T* values = (T*)malloc(nnz * sizeof(T));
+        indexT* indices = (indexT*)malloc(nnz * sizeof(indexT));
+        indexT* colPtrs = (indexT*)malloc((outerDim + 1) * sizeof(indexT));
 
-        // allocate the memory
-        try {
-            csf2Matrix.data = (void**)malloc(outerDim * sizeof(void*));
-            csf2Matrix.endPointers = (void**)malloc(outerDim * sizeof(void*));
-            csf2Matrix.metadata = new uint32_t[NUM_META_DATA];
+        colPtrs[0] = 0;
 
-            // allocate memory for the performance vectors
-            csf2Matrix.valueArraySize = (uint32_t*)malloc(outerDim * sizeof(uint32_t));
-            csf2Matrix.valueArray = (T**)malloc(outerDim * sizeof(T*));
-            csf2Matrix.countsArray = (uint32_t**)malloc(outerDim * sizeof(uint32_t*));
-        }
-        catch (std::bad_alloc& e) {
-            std::cerr << "Error: Could not allocate memory for CSF matrix" << std::endl;
-            exit(1);
-        }
-
-        // copy the metadata
-        mempcpy(csf2Matrix.metadata, metadata, NUM_META_DATA * sizeof(uint32_t));
-
-        //* uncompress the data
-
-        size_t performanceVecSize = 0;
+        // make an array of ordered maps to hold the data
+        std::map<indexT, T> dict[outerDim];
 
         // iterate through the data using the iterator
         for (uint32_t i = 0; i < outerDim; ++i) {
-
-            size_t size = 0;
-            performanceVecSize = 0;
+            size_t count = 0;
 
             for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(*this, i); it; ++it) {
-                if (it.isNewRun()) {
-                    size += sizeof(T) + sizeof(indexT) + 1;
-                    performanceVecSize++;
-                }
-                else {
-                    size += sizeof(indexT);
-                }
+                dict[i][it.getIndex()] = it.value();
+                count++;
             }
 
-            // allocate the memory
-            try {
-                csf2Matrix.data[i] = malloc(size);
-
-                csf2Matrix.valueArray[i] = (T*)malloc(performanceVecSize * sizeof(T));
-                csf2Matrix.countsArray[i] = (uint32_t*)malloc(performanceVecSize * sizeof(uint32_t));
-                csf2Matrix.valueArraySize[i] = performanceVecSize;
-            }
-            catch (std::bad_alloc& e) {
-                std::cerr << "Error: Could not allocate memory for CSF matrix" << std::endl;
-                exit(1);
-            }
-            csf2Matrix.endPointers[i] = (uint8_t*)csf2Matrix.data[i] + size;
+            colPtrs[i + 1] = colPtrs[i] + count;
         }
 
-        // iterate again and copy the data into the new matrix
+        size_t count = 0;
+
+        // loop through the dictionary and populate values and indices
         for (uint32_t i = 0; i < outerDim; ++i) {
-
-            void* dataPtr = (uint8_t*)csf2Matrix.data[i];
-            void* endPtr = (uint8_t*)csf2Matrix.endPointers[i];
-
-            performanceVecSize = 0;
-
-            for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(*this, i); it; ++it) {
-                if (it.isNewRun()) {
-
-                    if ((uint8_t*)dataPtr != (uint8_t*)csf2Matrix.data[i]) {
-                        // add the delimiter to the previous run
-                        *(indexT*)dataPtr = (indexT)DELIM;
-                        dataPtr = (uint8_t*)dataPtr + sizeof(indexT);
-                    }
-
-                    if (performanceVecSize != 0) {
-                        // increment performanceVecSize
-                        performanceVecSize++;
-                    }
-
-                    csf2Matrix.valueArray[i][performanceVecSize] = it.value();
-                    csf2Matrix.countsArray[i][performanceVecSize] += 1;
-
-                    // copy the value
-                    *(T*)dataPtr = performanceVecSize;
-                    dataPtr = (uint8_t*)dataPtr + sizeof(T);
-
-                    // copy the index
-                    *(indexT*)dataPtr = it.index();
-                    dataPtr = (uint8_t*)dataPtr + sizeof(indexT);
-                }
-                else {
-                    // copy the index
-                    *(indexT*)dataPtr = it.index();
-                    dataPtr = (uint8_t*)dataPtr + sizeof(indexT);
-
-                    // update the count
-                    csf2Matrix.countsArray[i][performanceVecSize] += 1;
-                }
-            }
-
-            *(indexT*)dataPtr = (indexT)DELIM;
-            dataPtr = (uint8_t*)dataPtr + sizeof(indexT);
-
-            // check that the dataPtr is at the end of the data
-            if (dataPtr != endPtr) {
-                std::cerr << "Error: Data pointer is not at the end of the data" << std::endl;
-                exit(1);
+            for (auto& pair : dict[i]) {
+                values[count] = pair.second;
+                indices[count] = pair.first;
+                count++;
             }
         }
-        
-        csf2Matrix.calculateCompSize();
-        return csf2Matrix;
+
+
+        // return a CSF3 matrix from the CSC vectors
+        CSF::SparseMatrix<T, indexT, 2, columnMajor> mat(values, indices, colPtrs, numRows, numCols, nnz);
+
+        // free the CSC vectors
+        free(values);
+        free(indices);
+        free(colPtrs);
+
+        return mat;
     }
 
     // Convert a CSF2 matrix to a CSF3 matrix
@@ -328,7 +252,7 @@ namespace CSF {
             size_t count = 0;
 
             for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(*this, i); it; ++it) {
-                dict[i][it.index()] = it.value();
+                dict[i][it.getIndex()] = it.value();
                 count++;
             }
 
@@ -346,8 +270,6 @@ namespace CSF {
             }
         }
 
-        // delete the dictionary
-        dict.clear();
 
         // return a CSF3 matrix from the CSC vectors
         CSF::SparseMatrix<T, indexT, 3, columnMajor> mat(values, indices, colPtrs, numRows, numCols, nnz);

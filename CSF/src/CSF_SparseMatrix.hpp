@@ -24,7 +24,7 @@ namespace CSF {
    */
   template <typename T, typename indexT = uint64_t, uint8_t compressionLevel = 3, bool columnMajor = true>
   class SparseMatrix {
-  private:
+    private:
 
     //* The Matrix Info *//
     uint32_t innerDim = 0; // The inner dimension of the matrix
@@ -91,7 +91,7 @@ namespace CSF {
     // Matrix Matrix Multiplication
     inline Eigen::Matrix<T, -1, -1> matrixMultiply(Eigen::Matrix<T, -1, -1>& mat);
 
-  public:
+    public:
     //* Nested Subclasses *//
 
     // Vector Class

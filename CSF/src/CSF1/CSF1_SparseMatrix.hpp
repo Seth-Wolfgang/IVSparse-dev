@@ -61,12 +61,6 @@ namespace CSF
         // Does checks on the class to ensure it is valid
         void userChecks();
 
-        // Converts the CSF1 Matrix to CSF2
-        CSF::SparseMatrix<T, indexT, 2, columnMajor> toCSF2();
-
-        // Converts the CSF1 Matrix to CSF3
-        CSF::SparseMatrix<T, indexT, 3, columnMajor> toCSF3();
-
         public:
         //* Nested Subclasses *//
 
@@ -201,6 +195,12 @@ namespace CSF
          * See the storage order of the CSF matrix.
          */
         bool isColumnMajor() const;
+
+        // Converts the CSF1 Matrix to CSF2
+        CSF::SparseMatrix<T, indexT, 2, columnMajor> toCSF2();
+
+        // Converts the CSF1 Matrix to CSF3
+        CSF::SparseMatrix<T, indexT, 3, columnMajor> toCSF3();
 
         ///@}
 

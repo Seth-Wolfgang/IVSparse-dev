@@ -118,7 +118,7 @@ namespace CSF {
 
         }
 
-        #pragma omp parallel for schedule(dynamic)
+        //#pragma omp parallel for schedule(dynamic)
         for (typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator it(newVector); it; ++it) {
             if (it.isNewRun()) {
                 it.coeff(it.value() * scalar);

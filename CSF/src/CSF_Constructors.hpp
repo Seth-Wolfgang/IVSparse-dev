@@ -35,7 +35,7 @@ namespace CSF {
         if constexpr (compressionLevel == 2) {
             // if value array and counts are not null, free them
             if (valueArray != nullptr) {
-                for (int i = 0; i < outerDim; i++) {
+                for (uint32_t i = 0; i < outerDim; i++) {
                     if (valueArray[i] != nullptr || valueArray[i] != NULL) {
                         free(valueArray[i]);
                     }
@@ -44,7 +44,7 @@ namespace CSF {
             }
 
             if (countsArray != nullptr) {
-                for (int i = 0; i < outerDim; i++) {
+                for (uint32_t i = 0; i < outerDim; i++) {
                     if (countsArray[i] != nullptr) {
                         free(countsArray[i]);
                     }
@@ -134,7 +134,7 @@ namespace CSF {
     template <uint8_t otherCompressionLevel>
     SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(CSF::SparseMatrix<T, indexT, otherCompressionLevel, columnMajor> &other) {
         // check if the matrix is empty
-        if (other.nnz == 0) {
+        if (other.nonZeros() == 0) {
             val_t = 0;
             index_t = 0;
 
@@ -144,21 +144,30 @@ namespace CSF {
             return;
         }
 
+        // if already the right compression level
+        if constexpr (otherCompressionLevel == compressionLevel) {
+            *this = other;
+            return;
+        }
+
+        // make a temporary matrix of the correct compression level
+        CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor> temp;
+
         // convert other to the right compression level
         if constexpr (otherCompressionLevel == 1) {
             if constexpr (compressionLevel == 2) {
-                other = other.toCSF2();
+                temp = other.toCSF2();
             } else {
-                other = other.toCSF3();
+                temp = other.toCSF3();
             }
         } else if constexpr (otherCompressionLevel == 2 && compressionLevel == 3) {
-            other = other.toCSF3();
+            temp = other.toCSF3();
         } else if constexpr (otherCompressionLevel == 3 && compressionLevel == 2) {
-            other = other.toCSF2();
+            temp = other.toCSF2();
         }
 
         // other should be the same compression level as this now
-        *this = other;
+        *this = temp;
 
         // run the user checks
         #ifdef CSF_DEBUG
@@ -321,10 +330,7 @@ namespace CSF {
     {
         FILE *fp = fopen(filename, "rb");
 
-        if (fp == nullptr)
-        {
-            throw std::runtime_error("Error: Could not open file");
-        }
+        if (fp == nullptr) { throw std::runtime_error("Error: Could not open file"); }
 
         // read the metadata
         metadata = new uint32_t[NUM_META_DATA];
@@ -336,6 +342,12 @@ namespace CSF {
         nnz = metadata[3];
         val_t = metadata[4];
         index_t = metadata[5];
+
+        // if the compression level of the file is different than the compression level of the class
+        if (metadata[0] != compressionLevel) {
+            // throw an error
+            throw std::runtime_error("Error: Compression level of file does not match compression level of class");
+        }
 
         numRows = columnMajor ? innerDim : outerDim;
         numCols = columnMajor ? outerDim : innerDim;
@@ -408,7 +420,7 @@ namespace CSF {
 
                 // calculate the size of the column data
                 for (size_t j = 0; j < valueArraySize[i]; j++) {
-                    size += sizeof(T) + (sizeof(indexT) * countsArray[i][j]) + sizeof(indexT);
+                    size += (sizeof(indexT) * countsArray[i][j]);
                 }
 
                 // malloc the column
