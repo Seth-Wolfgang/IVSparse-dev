@@ -51,7 +51,6 @@ namespace CSF {
     T** valueArray = nullptr;           // The array of values in a 2d array
     uint32_t** countsArray = nullptr;   // The array of counts of values per column
     uint32_t* valueArraySize = nullptr; // The size of the value arrays
-    bool performanceVectors = false;    // Whether the performance vectors are initialized
 
     //* Private Methods *//
 
@@ -71,24 +70,11 @@ namespace CSF {
     // Does checks on the class to ensure it is valid
     void userChecks();
 
-    // Method to initialize the performance vectors for a CSF2 Matrix
-    void initPerformanceVectors();
+    // Method to calcuate and set the byte size of the matrix in memory
+    void calculateCompSize();
 
-    // Method to delete the performance vectors for a CSF2 Matrix
-    void deletePerformanceVectors();
-
-    //! Can we refactor this out?
     // Private Helper Constructor for tranposing a CSF matrix
     SparseMatrix(std::unordered_map<T, std::vector<indexT>> maps [], uint32_t num_rows, uint32_t num_cols);
-
-    // Private helper method for converting a CSF2 or CSF3 Matrix to CSF1
-    CSF::SparseMatrix<T, indexT, 1, columnMajor> toCSF1();
-
-    // Private helper method for converting a CSF3 Matrix to CSF2
-    CSF::SparseMatrix<T, indexT, 2, columnMajor> toCSF2();
-
-    // Private helper method for converting a CSF2 Matrix to CSF3
-    CSF::SparseMatrix<T, indexT, 3, columnMajor> toCSF3();
 
     // Scalar Multiplication
     inline CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor> scalarMultiply(T scalar);
@@ -190,15 +176,12 @@ namespace CSF {
     SparseMatrix(typename CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector& vec);
 
     /**
-     * @param vec The vector array to construct the matrix from
-     * @param size The numer of vectors in the array
+     * @param vecs The vector of CSF vectors to construct from.
      *
-     * Array of CSF Vectors Constructor \n \n
-     * This constructor takes in an array of CSF vectors and creates a CSF matrix from them.
-     *
-     * @warning This constructor is currently in development and is not recommended for use.
+     * Vector of CSF Vectors Constructor \n \n
+     * This constructor takes in an vector of CSF vectors and creates a CSF matrix from them.
      */
-    SparseMatrix(typename CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector* vec, size_t size);
+    SparseMatrix(std::vector<typename CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector> &vecs);
 
     /**
      * @param filename The filepath of the matrix to be read in
@@ -214,59 +197,6 @@ namespace CSF {
      * @brief Destroy the Sparse Matrix object
      */
     ~SparseMatrix();
-
-    ///@}
-
-    //* Utility Methods *//
-    /**
-     * @name Utility Methods
-     */
-     ///@{
-
-     /**
-      * @param filename The filename of the matrix to write to
-      *
-      * This method writes the CSF matrix to a file in binary format.
-      * This can then be read in later using the file constructor.
-      * Currently .csf is the perfered file extension.
-      *
-      * @note Useful to split a matrix up and then write each part separately.
-      */
-    void write(const char* filename);
-
-    /**
-     * Prints "CSF Matrix:" followed by the dense representation of the matrix to the console.
-     *
-     * @note Useful for debugging but only goes up to 100 of either dimension.
-     */
-    void print();
-
-    /**
-     * @returns true If the matrix is stored in column major format
-     * @returns false If the matrix is stored in row major format
-     *
-     * See the storage order of the CSF matrix.
-     */
-    bool isColumnMajor() const;
-
-    /**
-     * @returns true If the performance vectors are on
-     * @returns false If the performance vectors are off
-     *
-     * Checks if the optional performance vectors are on or off.
-     */
-    bool performanceVectorsInitialized();
-
-    /**
-     * @param on Whether to turn the performance vectors on or off.
-     *
-     * Set the Performance Vectors to on or off. \n \n
-     * The performance vectors are optional vectors that can be initialized to speed
-     * up BLAS level 1 routines on a CSF2 Matrix by storing the values and their counts
-     * in a seperate 2d array for each column for easy access. This is not needed for
-     * operations and will increase storage space by some degree.
-     */
-    void setPerformanceVectors(bool on);
 
     ///@}
 
@@ -288,34 +218,12 @@ namespace CSF {
     T coeff(uint32_t row, uint32_t col);
 
     /**
-     * @param vec The vector to get the pointer to
-     * @returns void* The pointer to the vector
+     * @returns true If the matrix is stored in column major format
+     * @returns false If the matrix is stored in row major format
      *
-     * Get a pointer to a vector in the CSF matrix such as the first column.
-     *
-     * @note Can only get vectors in the storage order of the matrix.
+     * See the storage order of the CSF matrix.
      */
-    void* vectorPointer(uint32_t vec);
-
-    /**
-     * @param vec The vector to get a copy of
-     * @returns Vector The vector copy returned
-     *
-     * Get a copy of a CSF vector from the CSF matrix such as the first column.
-     *
-     * @note Can only get vectors in the storage order of the matrix.
-     */
-    typename CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector getVector(uint32_t vec);
-
-    /**
-     * @param vec The vector to get the size of
-     * @returns size_t The size of the vector
-     *
-     * Get the size of a vector in the CSF matrix in bytes.
-     *
-     * @note Can only get vectors in the storage order of the matrix.
-     */
-    size_t getVectorSize(uint32_t vec) const;
+    bool isColumnMajor() const;
 
     /**
      * @returns The Inner Dimension of the matrix
@@ -350,44 +258,41 @@ namespace CSF {
      */
     size_t byteSize() const;
 
-    ///@}
-
-    //* Matrix Manipulation Methods *//
     /**
-     * @name Matrix Manipulation Methods
-     */
-     ///@{
-
-     /**
-      * @returns An Eigen Sparse Matrix constructed from the CSF matrix data.
-      */
-    Eigen::SparseMatrix<T, columnMajor ? Eigen::ColMajor : Eigen::RowMajor> toEigen();
-
-    /**
-     * @returns A transposed version of the CSF matrix.
+     * @param vec The vector to get the pointer to
+     * @returns void* The pointer to the vector
      *
-     * @warning This method is not very efficient for CSF2 and CSF3 matrices.
-     */
-    CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor> transpose();
-
-    /**
-     * Transposes the matrix in place instead of returning a new matrix.
+     * Get a pointer to a vector in the CSF matrix such as the first column.
      *
-     * @warning This method is not very efficient for CSF2 and CSF3 matrices.
+     * @note Can only get vectors in the storage order of the matrix.
      */
-    void inPlaceTranspose();
+    void *vectorPointer(uint32_t vec);
 
     /**
-     * @param vec The vector to append to the matrix in the correct storage order.
+     * @param vec The vector to get a copy of
+     * @returns Vector The vector copy returned
      *
-     * Appends a CSF vector to the current matrix in the storage order of the matrix.
+     * Get a copy of a CSF vector from the CSF matrix such as the first column.
+     *
+     * @note Can only get vectors in the storage order of the matrix.
      */
-    void append(typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector& vec);
+    typename CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector getVector(uint32_t vec);
 
     /**
-     * @returns A pointer array of CSF Vectors in the storage order of the matrix from start to end.
+     * @param vec The vector to get the size of
+     * @returns size_t The size of the vector
+     *
+     * Get the size of a vector in the CSF matrix in bytes.
+     *
+     * @note Can only get vectors in the storage order of the matrix.
      */
-    typename CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector* slice(uint32_t start, uint32_t end);
+    size_t getVectorSize(uint32_t vec) const;
+
+    /**
+     * @returns The number of elements in the a column or row of the performance vector.
+     * @note This is equal to the number of unique values in the column.
+     */
+    size_t getPerformanceVectorSize(uint32_t vec) const;
 
     ///@}
 
@@ -444,17 +349,90 @@ namespace CSF {
     */
     inline double norm();
 
-    //? why?
     /**
      * @returns Returns the length of the specified vector.
     */
     inline double vectorLength(uint32_t vec);
 
-    /**
-     * @brief Calculates the size of the compressed matrix in bytes
-     */
-    void calculateCompSize();
+    ///@}
 
+    //* Utility Methods *//
+    /**
+     * @name Utility Methods
+     */
+     ///@{
+
+     /**
+      * @param filename The filename of the matrix to write to
+      *
+      * This method writes the CSF matrix to a file in binary format.
+      * This can then be read in later using the file constructor.
+      * Currently .csf is the perfered file extension.
+      *
+      * @note Useful to split a matrix up and then write each part separately.
+      */
+    void write(const char* filename);
+
+    /**
+     * Prints "CSF Matrix:" followed by the dense representation of the matrix to the console.
+     *
+     * @note Useful for debugging but only goes up to 100 of either dimension.
+     */
+    void print();
+
+    /**
+     * @returns The current matrix as uncompressed to CSC format.
+     */
+    CSF::SparseMatrix<T, indexT, 1, columnMajor> toCSF1();
+
+    /**
+     * @returns The current matrix as a CSF2 Matrix.
+     */
+    CSF::SparseMatrix<T, indexT, 2, columnMajor> toCSF2();
+
+    /**
+     * @returns The current matrix as a CSF3 Matrix.
+     */
+    CSF::SparseMatrix<T, indexT, 3, columnMajor> toCSF3();
+
+    /**
+     * @returns An Eigen Sparse Matrix constructed from the CSF matrix data.
+     */
+    Eigen::SparseMatrix<T, columnMajor ? Eigen::ColMajor : Eigen::RowMajor> toEigen();
+
+    ///@}
+
+    //* Matrix Manipulation Methods *//
+    /**
+     * @name Matrix Manipulation Methods
+     */
+     ///@{
+
+    /**
+     * @returns A transposed version of the CSF matrix.
+     *
+     * @warning This method is not very efficient for CSF2 and CSF3 matrices.
+     */
+    CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor> transpose();
+
+    /**
+     * Transposes the matrix in place instead of returning a new matrix.
+     *
+     * @warning This method is not very efficient for CSF2 and CSF3 matrices.
+     */
+    void inPlaceTranspose();
+
+    /**
+     * @param vec The vector to append to the matrix in the correct storage order.
+     *
+     * Appends a CSF vector to the current matrix in the storage order of the matrix.
+     */
+    void append(typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector& vec);
+
+    /**
+     * @returns A vector of CSF vectors that represent a slice of the CSF matrix.
+     */
+    std::vector<typename CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector> slice(uint32_t start, uint32_t end);
 
     ///@}
 

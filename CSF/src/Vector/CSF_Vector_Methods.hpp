@@ -46,9 +46,7 @@ namespace CSF {
         // set the end pointer
         endPtr = (uint8_t*)data + size;
 
-        if (mat.performanceVectorsInitialized()) {
-            performanceVectors = true;
-
+        if (compressionLevel == 2) {
             valueArraySize = mat.valueArraySize[vec];
 
             // allocate space for the value array
@@ -311,12 +309,7 @@ namespace CSF {
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     void SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::setPerformanceVectors(bool on) {
-        if (on) {
-            initPerformanceVectors();
-        }
-        else {
-            deletePerformanceVectors();
-        }
+        
     }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>

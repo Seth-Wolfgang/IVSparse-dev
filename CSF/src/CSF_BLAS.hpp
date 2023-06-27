@@ -1,17 +1,18 @@
+/**
+ * @file CSF_BLAS.hpp
+ * @author Skyler Ruiter and Seth Wolfgang
+ * @brief File for BLAS level routines and other matrix calculations.
+ * @version 0.1
+ * @date 2023-06-23
+ */
+
 #pragma once
 
 namespace CSF {
 
-    /**
-     * @brief scalar multiplication operator
-     *
-     * @tparam T
-     * @tparam indexT
-     * @tparam compressionLevel
-     *
-     * @param scalar
-    */
+    //* BLAS Level 1 Routines *//
 
+    // Scalar Multiply
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     inline CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor> SparseMatrix<T, indexT, compressionLevel, columnMajor>::scalarMultiply(T scalar) {
 
@@ -41,16 +42,7 @@ namespace CSF {
         return newMatrix;
     }
 
-    /**
-     * In place scalar multiplication
-     *
-     * @tparam T
-     * @tparam indexT
-     * @tparam compressionLevel
-     *
-     * @param scalar
-    */
-
+    // In Place Scalar Multiply
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     inline void SparseMatrix<T, indexT, compressionLevel, columnMajor>::inPlaceScalarMultiply(T scalar) {
 
@@ -77,10 +69,9 @@ namespace CSF {
         }
     }
 
-    /**
-     * @brief helper function for SpM * V multiplication with Eigen::VectorXd
-    */
+    //* BLAS Level 2 Routines *//
 
+    // Matrix Vector Multiplication (Eigen::VectorXd * CSF::SparseMatrix)
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     inline Eigen::VectorXd SparseMatrix<T, indexT, compressionLevel, columnMajor>::vectorMultiply(Eigen::VectorXd& vec) {
         // check that the vector is the correct size
@@ -100,10 +91,7 @@ namespace CSF {
         return eigenTemp;
     }
 
-    /**
-     * @brief helper function for SpM * V multiplication with CSF::Vector
-    */
-
+    // Matrix Vector Multiplication (CSF::SparseMatrix::Vector * CSF::SparseMatrix)
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     inline Eigen::VectorXd SparseMatrix<T, indexT, compressionLevel, columnMajor>::vectorMultiply(typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector& vec) {
         if (vec.length() != outerDim)
@@ -120,24 +108,9 @@ namespace CSF {
         return newVector;
     }
 
-    //      Eigen::Matrix<T, -1,-1> newMatrix = Eigen::Matrix<T, -1,-1>::Zero(innerDim, mat.cols());
+    //* BLAS Level 3 Routines *//
 
-    //     #pragma omp parallel for
-    //      for (int i = 0; i < this->rows() * mat.cols(); ++i) {
-    //          // linear indexing considers a matrix as a vector, in this case we let it be column-major
-    //          int col = i / this->rows(); // integer division!
-    //          int row = i % this->rows(); // modulus of integer division!
-    //          for (typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator matIter(*this, row); matIter; ++matIter) {
-    //              newMatrix.coeffRef(row, col) += matIter.value() * mat(row, col);
-    //          }
-    //      }
-    //      return newMatrix;
-    //  }
-
-    /**
-     * @brief helper function for SpM * M multiplication with Eigen::MatrixXd
-    */
-
+    // Matrix Vector Multiplication (CSF::SparseMatrix * Eigen::Matrix)
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     inline Eigen::Matrix<T, -1, -1> SparseMatrix<T, indexT, compressionLevel, columnMajor>::matrixMultiply(Eigen::Matrix<T, -1, -1>& mat) {
         // check that the matrix is the correct size
@@ -157,16 +130,7 @@ namespace CSF {
         return newMatrix;
     }
 
-    /**
-     * @brief Returns the sum of each column of the matrix
-     *
-     * @tparam T
-     * @tparam indexT
-     * @tparam compressionLevel
-     * @tparam columnMajor
-     *
-     * @return T*
-    */
+    //* Other Matrix Calculations *//
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     inline std::vector<T> SparseMatrix<T, indexT, compressionLevel, columnMajor>::outerSum() {
@@ -192,16 +156,6 @@ namespace CSF {
         return outerSum;
     }
 
-    /**
-     * @brief Returns the sum of each row of the matrix
-     *
-     * @tparam T
-     * @tparam indexT
-     * @tparam compressionLevel
-     * @tparam columnMajor
-     *
-     * @return T*
-    */
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     inline std::vector<T> SparseMatrix<T, indexT, compressionLevel, columnMajor>::innerSum() {
@@ -215,17 +169,6 @@ namespace CSF {
         }
         return innerSum;
     }
-
-    /**
-     * @brief Returns the maximum value in each column of the matrix
-     *
-     * @tparam T
-     * @tparam indexT
-     * @tparam compressionLevel
-     * @tparam columnMajor
-     *
-     * @return T*
-    */
 
     //! Make aware of storage order?
     template<typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
@@ -255,17 +198,6 @@ namespace CSF {
         return maxCoeff;
     }
 
-    /**
-     * @brief Returns the maximum value in each row of the matrix
-     *
-     * @tparam T
-     * @tparam indexT
-     * @tparam compressionLevel
-     * @tparam columnMajor
-     *
-     * @return T*
-    */
-
     template<typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     inline std::vector<T>  SparseMatrix<T, indexT, compressionLevel, columnMajor>::maxRowCoeff() {
         std::vector<T> maxCoeff = std::vector<T>(innerDim);
@@ -280,17 +212,6 @@ namespace CSF {
         }
         return maxCoeff;
     }
-
-    /**
-     * @brief Returns the minimum value in each column of the matrix
-     *
-     * @tparam T
-     * @tparam indexT
-     * @tparam compressionLevel
-     * @tparam columnMajor
-     *
-     * @return T*
-    */
 
     template<typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     inline std::vector<T> SparseMatrix<T, indexT, compressionLevel, columnMajor>::minColCoeff() {
@@ -318,17 +239,6 @@ namespace CSF {
         return minCoeff;
     }
 
-    /**
-     * @brief Returns the minimum value in each row of the matrix
-     *
-     * @tparam T
-     * @tparam indexT
-     * @tparam compressionLevel
-     * @tparam columnMajor
-     *
-     * @return T*
-    */
-
     template<typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     inline std::vector<T> SparseMatrix<T, indexT, compressionLevel, columnMajor>::minRowCoeff() {
         std::vector<T> minCoeff = std::vector<T>(innerDim);
@@ -343,17 +253,6 @@ namespace CSF {
         }
         return minCoeff;
     }
-
-    /**
-     * @brief Returns the trace of the matrix
-     *
-     * @tparam T
-     * @tparam indexT
-     * @tparam compressionLevel
-     * @tparam columnMajor
-     *
-     * @return T*
-    */
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     inline T SparseMatrix<T, indexT, compressionLevel, columnMajor>::trace() {
@@ -372,17 +271,6 @@ namespace CSF {
         }
         return trace;
     }
-
-    /**
-     * @brief Returns the sum of all the elements in the matrix
-     *
-     * @tparam T
-     * @tparam indexT
-     * @tparam compressionLevel
-     * @tparam columnMajor
-     *
-     * @return T*
-    */
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     inline T SparseMatrix<T, indexT, compressionLevel, columnMajor>::sum() {
@@ -406,17 +294,6 @@ namespace CSF {
         return sum;
     }
 
-    /**
-     * @brief Returns the frobenius norm of the matrix
-     *
-     * @tparam T
-     * @tparam indexT
-     * @tparam compressionLevel
-     * @tparam columnMajor
-     *
-     * @return double
-    */
-
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     inline double SparseMatrix<T, indexT, compressionLevel, columnMajor>::norm() {
         double norm = 0;
@@ -438,17 +315,6 @@ namespace CSF {
         }
         return sqrt(norm);
     }
-
-    /**
-     * @brief returns the length of a specified vector
-     *
-     * @tparam T
-     * @tparam indexT
-     * @tparam compressionLevel
-     * @tparam columnMajor
-     *
-     * @param col
-    */
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     inline double SparseMatrix<T, indexT, compressionLevel, columnMajor>::vectorLength(uint32_t col) {

@@ -1,10 +1,9 @@
 /**
  * @file CSF_Operators.hpp
  * @author Skyler Ruiter and Seth Wolfgang
- * @brief
+ * @brief The operator overloads for the CSF Sparse Matrix Library.
  * @version 0.1
  * @date 2023-06-21
- *
  */
 
 #pragma once
@@ -100,8 +99,7 @@ namespace CSF {
             }
 
             // if other's performance vectors are on turn on this matrix's
-            if (other.performanceVectors) {
-                performanceVectors = true;
+            if (compressionLevel == 2) {
 
                 // allocate the memory
                 try {
@@ -206,18 +204,8 @@ namespace CSF {
     void SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator*=(T scalar) {
         return inPlaceScalarMultiply(scalar);
     }
-    /**
-     * @brief Matrix Vector Multiplication (CSF -> Eigen)
-     *
-     * @tparam T
-     * @tparam indexT
-     * @tparam compressionLevel
-     *
-     * @param vec
-     *
-     * @return Eigen::VectorXd
-    */
 
+    // CSF Matrix * CSF Vector Multiplication
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     Eigen::VectorXd SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator*(SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector& vec) {
         return vectorMultiply(vec);
@@ -235,6 +223,7 @@ namespace CSF {
         return matrixMultiply(mat);
     }
 
+    // Outstream Operator
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     std::ostream& operator<<(std::ostream& os, CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>& mat) {
         #ifndef CSF_DEBUG
