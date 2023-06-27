@@ -49,8 +49,8 @@ namespace CSF {
 
     //* Optional Performance Data *//
     T** valueArray = nullptr;           // The array of values in a 2d array
-    uint32_t** countsArray = nullptr;   // The array of counts of values per column
-    uint32_t* valueArraySize = nullptr; // The size of the value arrays
+    indexT** countsArray = nullptr;   // The array of counts of values per column
+    indexT* valueArraySize = nullptr; // The size of the value arrays
 
     //* Private Methods *//
 

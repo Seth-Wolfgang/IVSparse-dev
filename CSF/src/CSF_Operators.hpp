@@ -104,25 +104,25 @@ namespace CSF {
                 // allocate the memory
                 try {
                     valueArray = (T**)malloc(other.outerDim * sizeof(T*));
-                    countsArray = (uint32_t**)malloc(other.outerDim * sizeof(uint32_t*));
-                    valueArraySize = (uint32_t*)malloc(other.outerDim * sizeof(uint32_t));
+                    countsArray = (indexT**)malloc(other.outerDim * sizeof(indexT*));
+                    valueArraySize = (indexT*)malloc(other.outerDim * sizeof(indexT));
                 }
                 catch (std::bad_alloc& e) {
                     std::cerr << "Error: Could not allocate memory for CSF matrix" << std::endl;
                     exit(1);
                 }
 
-                memcpy(valueArraySize, other.valueArraySize, sizeof(uint32_t) * outerDim);
+                memcpy(valueArraySize, other.valueArraySize, sizeof(indexT) * outerDim);
 
                 for (uint32_t i = 0; i < outerDim; i++) {
                     valueArray[i] = (T*)malloc(sizeof(T*) * other.valueArraySize[i]);
-                    countsArray[i] = (uint32_t*)malloc(sizeof(uint32_t*) * other.valueArraySize[i]);
+                    countsArray[i] = (indexT*)malloc(sizeof(indexT*) * other.valueArraySize[i]);
                 }
 
                 // copy the performance vectors
                 for (uint32_t i = 0; i < outerDim; i++) {
                     memcpy(valueArray[i], other.valueArray[i], sizeof(T) * other.valueArraySize[i]);
-                    memcpy(countsArray[i], other.countsArray[i], sizeof(uint32_t) * other.valueArraySize[i]);
+                    memcpy(countsArray[i], other.countsArray[i], sizeof(indexT) * other.valueArraySize[i]);
                 }
             }
         }

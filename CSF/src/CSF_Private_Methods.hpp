@@ -50,9 +50,9 @@ namespace CSF {
         if constexpr (compressionLevel == 2) {
             // allocate space for the value array size
             try {
-                valueArraySize = (uint32_t*)malloc(outerDim * sizeof(uint32_t));
+                valueArraySize = (indexT*)malloc(outerDim * sizeof(indexT));
                 valueArray = (T**)malloc(outerDim * sizeof(T*));
-                countsArray = (uint32_t**)malloc(outerDim * sizeof(uint32_t*));
+                countsArray = (indexT**)malloc(outerDim * sizeof(indexT*));
             }
             catch (std::bad_alloc& e) {
                 std::cout << "Error: " << e.what() << std::endl;
@@ -163,7 +163,7 @@ namespace CSF {
             if constexpr (compressionLevel == 2) {
                 try {
                     valueArray[i] = (T*)malloc(performanceVecSize * sizeof(T));
-                    countsArray[i] = (uint32_t*)malloc(performanceVecSize * sizeof(uint32_t));
+                    countsArray[i] = (indexT*)malloc(performanceVecSize * sizeof(indexT));
                 }
                 catch (std::bad_alloc& e) {
                     std::cout << "Error: " << e.what() << std::endl;

@@ -20,10 +20,10 @@ namespace CSF {
 
         bool firstIndex = true;
 
-        uint32_t* countsArray = nullptr;
-        uint32_t valueArraySize;
-        uint32_t count = 1;
-        uint8_t valueArrayCounter = 1;
+        indexT* countsArray = nullptr;
+        indexT valueArraySize;
+        indexT count = 1;
+        indexT valueArrayCounter = 1;
 
         //* Private Class Methods *//
 
