@@ -179,8 +179,14 @@ namespace CSF {
         memcpy(vals + (nnz - vec.nonZeros()), vec.getValues(), sizeof(T) * vec.nonZeros());
         memcpy(innerIdx + (nnz - vec.nonZeros()), vec.getInnerIndices(), sizeof(indexT) * vec.nonZeros());
 
-        // update the last outer pointer
+        // update the outer pointers
         outerPtr[outerDim] = nnz;
+
+        // check if the vector is empty
+        if (vec.nonZeros() == 0) {
+            outerPtr[outerDim - 1] = nnz;
+            return;
+        }
 
         calculateCompSize();
     }

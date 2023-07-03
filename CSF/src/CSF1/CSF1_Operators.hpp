@@ -79,6 +79,11 @@ namespace CSF {
             return false;
         }
 
+        // if both sizes equal zero return true
+        if (nnz == 0 && other.nnz == 0) {
+            return true;
+        }
+
         // check if the values are the same
         if (memcmp(vals, other.vals, nnz * sizeof(T)) != 0) {
             return false;

@@ -229,7 +229,16 @@ namespace CSF {
         {
             vals = nullptr;
             innerIdx = nullptr;
-            outerPtr = nullptr;
+            
+            // allocate outerPtr
+            try {
+                outerPtr = (indexT*)malloc((outerDim + 1) * sizeof(indexT));
+            } catch (std::bad_alloc &e) {
+                std::cerr << "Allocation failed: " << e.what() << '\n';
+            }
+
+            outerPtr[0] = 0;
+
             return;
         }
 
