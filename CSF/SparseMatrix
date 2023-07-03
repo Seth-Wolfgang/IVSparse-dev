@@ -1,13 +1,6 @@
-/**
- * @file SparseMatrix
- * @author Skyler Ruiter (ruitersk@mail.gvsu.edu) and Seth Wolfgang (wolfgans@mail.gvsu.edu)
- * @brief Include file for CSF Sparse Matrix Library.
- * @version 0.1
- * @date 2023-06-23
- */
+// Library: Compressed Sparse Fiber (CSF) Matrix
 
 #pragma once
-
 
 // Library Constants
 #define DELIM 0
@@ -20,6 +13,7 @@
 // Library Preprocessor Directives
 #define CSF_PARALLEL
 #define CSF_DEBUG
+#define EigenFunctions
 
 // Library Includes
 #include <omp.h>
@@ -30,30 +24,49 @@
 #include <algorithm>
 #include <type_traits>
 #include <iomanip>
+#include <type_traits>
 
-// Library Classes
+// Library Namespaces
 
-    // Main Header File
-    #include "src/CSF_SparseMatrix.hpp"
+// SparseMatrixBase Files
+#include "src/CSF_SparseMatrixBase.hpp"
+#include "src/CSF_Base_Methods.hpp"
 
-    // CSF1 Files
-    #include "src/CSF1/CSF1_SparseMatrix.hpp"
-    #include "src/CSF1/CSF1_Constructors.hpp"
-    #include "src/CSF1/CSF1_Iterator/CSF1_Iterator.hpp"
-    #include "src/CSF1/CSF1_Vector/CSF1_Vector.hpp"
-    #include "src/CSF1/CSF1_Methods.hpp"
+// SparseMatrix Level 3 Files
+#include "src/CSF3/CSF3_SparseMatrix.hpp"
+#include "src/CSF3/CSF3_Operators.hpp"
+#include "src/CSF3/CSF3_Private_Methods.hpp"
+#include "src/CSF3/CSF3_Methods.hpp"
+#include "src/CSF3/CSF3_Constructors.hpp"
+#include "src/CSF3/CSF3_BLAS.hpp"
+    // Vector and Iterator Files
+    #include "src/Vectors/CSF3_Vector.hpp"
+    #include "src/Vectors/CSF3_Vector_Methods.hpp"
+    #include "src/InnerIterators/CSF3_Iterator.hpp"
+    #include "src/InnerIterators/CSF3_Iterator_Methods.hpp"
 
-    // Main CSF Class Files
-    #include "src/CSF_Constructors.hpp"
-    #include "src/CSF_Private_Methods.hpp"
-    #include "src/CSF_Operators.hpp"
-    #include "src/CSF_Methods.hpp"
-    #include "src/CSF_BLAS.hpp"
+// SparseMatrix Level 2 Files
+#include "src/CSF2/CSF2_SparseMatrix.hpp"
+#include "src/CSF2/CSF2_Operators.hpp"
+#include "src/CSF2/CSF2_Private_Methods.hpp"
+#include "src/CSF2/CSF2_Methods.hpp"
+#include "src/CSF2/CSF2_Constructors.hpp"
+#include "src/CSF2/CSF2_BLAS.hpp"
+    // Vector and Iterator Files
+    #include "src/Vectors/CSF2_Vector.hpp"
+    #include "src/Vectors/CSF2_Vector_Methods.hpp"
+    #include "src/InnerIterators/CSF2_Iterator.hpp"
+    #include "src/InnerIterators/CSF2_Iterator_Methods.hpp"
 
-    // CSF Iterator Files
-    #include "src/Iterator/CSF_Iterator.hpp"
-    #include "src/Iterator/CSF_Iterator_Methods.hpp"
-
-    // CSF Vector Files
-    #include "src/Vector/CSF_Vector.hpp"
-    #include "src/Vector/CSF_Vector_Methods.hpp"
+// SparseMatrix Level 1 Files
+#include "src/CSF1/CSF1_SparseMatrix.hpp"
+#include "src/CSF1/CSF1_Operators.hpp"
+#include "src/CSF1/CSF1_Private_Methods.hpp"
+#include "src/CSF1/CSF1_Methods.hpp"
+#include "src/CSF1/CSF1_Constructors.hpp"
+#include "src/CSF1/CSF1_BLAS.hpp"
+    // Vector and Iterator Files
+    #include "src/Vectors/CSF1_Vector.hpp"
+    #include "src/Vectors/CSF1_Vector_Methods.hpp"
+    #include "src/InnerIterators/CSF1_Iterator.hpp"
+    #include "src/InnerIterators/CSF1_Iterator_Methods.hpp"

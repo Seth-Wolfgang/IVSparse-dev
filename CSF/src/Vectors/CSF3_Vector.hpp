@@ -1,0 +1,84 @@
+#pragma once
+
+namespace CSF
+{
+
+    // vector of the SparseMatrixBase class
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    class SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector {
+        private:
+
+        //* Private Class Variables *//
+
+        size_t size = 0;
+
+        void *data = nullptr;
+        void *endPtr = nullptr;
+
+        uint32_t length = 0;
+
+        uint8_t indexWidth = 1;
+
+        uint32_t nnz = 0;
+
+        //* Private Class Methods *//
+
+        void userChecks();
+
+        public:
+
+        //* Constructors & Destructor *//
+        Vector() {};
+
+        Vector(uint32_t length);
+
+        Vector(CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor> &mat, uint32_t vec);
+
+        Vector(CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector &vec);
+
+        ~Vector();
+
+        //* Operator Overloads *//
+
+        T operator[](uint32_t index);
+
+        operator bool() { return (char *)endPtr - indexWidth > data; };
+
+        typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector operator=(typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector &vec);
+
+        //* Getters *//
+
+        T coeff(uint32_t index);
+
+        void *begin();
+
+        void *end();
+
+        size_t byteSize();
+
+        uint32_t innerSize();
+
+        uint32_t outerSize();
+
+        uint32_t nonZeros();
+
+        uint32_t getLength();
+
+        //* Utility Methods *//
+
+        void print();
+
+        void operator*=(T scalar);
+
+        typename CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector operator*(T scalar);
+
+        double norm();
+
+        T sum();
+
+        double dot(Eigen::Vector<T, -1>& other);
+
+        double dot(Eigen::SparseVector<T, -1>& other);
+    };
+
+}
