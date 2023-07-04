@@ -31,7 +31,7 @@ namespace CSF {
 
         this->valsSize = matrix.getNumUniqueVals(vec);
         this->indexSize = matrix.getNumIndices(vec);
-        
+
         this->val = vals;
         this->index = indices[0];
 
@@ -39,8 +39,8 @@ namespace CSF {
     }
 
     template <typename T, typename indexT, bool columnMajor>
-    SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::InnerIterator(SparseMatrix<T, indexT, 2, columnMajor>::Vector& vector) {
-        
+    inline SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::InnerIterator(SparseMatrix<T, indexT, 2, columnMajor>::Vector& vector) {
+
     }
 
     // ------------------------------- InnerIterator Methods ----------------------------------- //
@@ -64,22 +64,22 @@ namespace CSF {
     }
 
     template <typename T, typename indexT, bool columnMajor>
-    bool SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::operator==(const InnerIterator& other) { 
+    bool SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::operator==(const InnerIterator& other) {
         return values == other.values;
     }
 
     template <typename T, typename indexT, bool columnMajor>
-    bool SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::operator!=(const InnerIterator& other) { 
+    bool SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::operator!=(const InnerIterator& other) {
         return values != other.values;
     }
 
     template <typename T, typename indexT, bool columnMajor>
-    bool SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::operator<(const InnerIterator& other) { 
+    bool SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::operator<(const InnerIterator& other) {
         return values < other.values;
     }
 
     template <typename T, typename indexT, bool columnMajor>
-    bool SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::operator>(const InnerIterator& other) { 
+    bool SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::operator>(const InnerIterator& other) {
         return values > other.values;
     }
 
@@ -108,8 +108,8 @@ namespace CSF {
     }
 
     template <typename T, typename indexT, bool columnMajor>
-    void SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::operator++() {
-        
+    inline void SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::operator++() {
+
         // decriment count
         count--;
 
@@ -118,7 +118,7 @@ namespace CSF {
 
             // Check if we are at the end of the values array
             countIndex++;
-            if (countIndex >= indexSize) {
+            if (countIndex >= indexSize) [[unlikely]] {
                 return;
             }
 
@@ -134,7 +134,8 @@ namespace CSF {
             // Get the new index
             indices++;
             index = *indices;
-        } else {
+        }
+        else {
             // Move to the next index
             countIndex++;
             indices++;

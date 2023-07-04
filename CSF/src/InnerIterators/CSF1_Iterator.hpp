@@ -14,7 +14,7 @@ namespace CSF {
 
         T *vals;
         indexT *indices;
-        T *endPtr;
+        indexT *endPtr;
 
     public:
         //* Constructors & Destructor *//

@@ -16,13 +16,13 @@ void getMat(Eigen::SparseMatrix<int>& myMatrix_e);
 
 int main() {
     int rows = 100;
-    int cols = 4000;
+    int cols = 100;
     int sparsity = 99;
     uint64_t seed = 522;
-    int maxVal = 10053353425;
+    int maxVal = 10053425;
 
-    Eigen::SparseMatrix<DATA_TYPE> eigen(rows, cols);
-    eigen = generateMatrix<DATA_TYPE>(rows, cols, sparsity, seed, maxVal);
+    // Eigen::SparseMatrix<DATA_TYPE> eigen(rows, cols);
+    // eigen = generateMatrix<DATA_TYPE>(rows, cols, sparsity, seed, maxVal);
     // std::cout << eigen << std::endl;
 
     // Eigen::MatrixXi mat(6, 6);
@@ -41,24 +41,47 @@ int main() {
     //             0, 
     //             0;
 
+    int rowData[] = {0, 1, 2, 3, 4, 5};
+    int colData[] = {0, 1, 2, 2, 4, 5};
+    DATA_TYPE valData[] = {1, 2, 3, 4, 5, 6};
+
+    std::vector<std::tuple<int, int, DATA_TYPE>> data;
+
+    for(int i = 0; i < 6; i++) {
+        data.push_back(std::make_tuple(rowData[i], colData[i], valData[i]));
+    }
+
+    CSF::SparseMatrix<DATA_TYPE, int, 1> csf(data, 6, 6, 6);
+
+    std::cout << csf << std::endl;
+
+    //create an eigen triplet from rowData, colData, and valData
+    Eigen::SparseMatrix<DATA_TYPE> mat(6, 6);
+    mat.reserve(Eigen::VectorXi::Constant(6, 6));
+    for (int i = 0; i < 6; i++) {
+        mat.insert(rowData[i], colData[i]) = valData[i];
+    }
+    mat.makeCompressed();
+    std::cout << std::endl; 
+    std::cout << mat << std::endl;
+
 
     // Eigen::SparseMatrix<DATA_TYPE> eigen = mat.sparseView();
     // Eigen::SparseVector<DATA_TYPE> eigenVector = eigenVec.sparseView();
 
     // CSF::SparseMatrix<DATA_TYPE, uint32_t, 1> csf(eigen);
-    CSF::SparseMatrix<DATA_TYPE, uint32_t, 3> csf3(eigen);
-    CSF::SparseMatrix<DATA_TYPE, uint32_t, 2> csf2(eigen);
-    uint64_t eigenSize = eigen.nonZeros() * sizeof(double) + eigen.nonZeros() * sizeof(uint32_t) + (eigen.outerSize() + 1) * sizeof(uint32_t);
+    // CSF::SparseMatrix<DATA_TYPE, uint32_t, 3> csf3(eigen);
+    // CSF::SparseMatrix<DATA_TYPE, uint32_t, 2> csf2(eigen);
+    // uint64_t eigenSize = eigen.nonZeros() * sizeof(double) + eigen.nonZeros() * sizeof(uint32_t) + (eigen.outerSize() + 1) * sizeof(uint32_t);
 
-    std::cout << "Eigen size: " << eigenSize << std::endl;
-    std::cout << "CSF2 size: " << csf2.byteSize() << std::endl;
-    std::cout << "CSF3 size: " << csf3.byteSize() << std::endl;
+    // std::cout << "Eigen size: " << eigenSize << std::endl;
+    // std::cout << "CSF2 size: " << csf2.byteSize() << std::endl;
+    // std::cout << "CSF3 size: " << csf3.byteSize() << std::endl;
 
-    std::cout << "Ratios -> CSF2: " << (double)csf2.byteSize() / eigenSize << " \tCSF3: " << (double)csf3.byteSize() / eigenSize << std::endl;
+    // std::cout << "Ratios -> CSF2: " << (double)csf2.byteSize() / eigenSize << " \tCSF3: " << (double)csf3.byteSize() / eigenSize << std::endl;
 
-    // typename CSF::SparseMatrix<DATA_TYPE, uint32_t, 3>::Vector vec = csf3[0];
-    // // std::cout << vec.dot(eigenVec) << std::endl;
-    // // std::cout << csf3<< std::endl;
+    // std::cout << csf2 << std::endl;
+    // std::cout << csf3 << std::endl;
 
 
 
@@ -81,14 +104,16 @@ int main() {
     // }
 
     // iteratorTest<int, int, 3>();
+    // iteratorTest<int, int, 2>();
+    // iteratorTest<int, int, 1>();
 
     return 1;
 }
 
 template<typename T, typename indexT>
 void sizeTest(int iterations) {
-    int rows = 10000;
-    int cols = 10000;
+    int rows = 100;
+    int cols = 100;
     int sparsity = 9;
     uint64_t seed = 1;
     int maxVal = 1000;

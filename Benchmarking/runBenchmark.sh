@@ -4,7 +4,7 @@
 
 # Compiling benchmark
 # g++ -g -w -O2 lib/benchmark.cpp -o benchmark -llapack
-g++ -w -ftree-vectorize -O2 lib/benchmark.cpp -o benchmark -llapack
+g++ -w -O2 lib/benchmark.cpp -o benchmark -llapack
 
 
 # Checking if compilation was successful
@@ -27,7 +27,7 @@ fi
 
 numMatrices=1000
 # Downloading matrices and running benchmark at the same time
-for x in $(seq 342 $numMatrices)
+for x in $(seq 1 $numMatrices)
 do
     # Download matrix
     echo "Downloading matrix $i"
@@ -54,9 +54,9 @@ do
     
     ./benchmark $MATRIX_PATH $id
     # valgrind -s --leak-check=full --track-origins=yes ./benchmark $MATRIX_PATH $id
-    # rm -r $MATRIX_PATH
+    rm -r $MATRIX_PATH
 done
 
 # Clean up
-# rm -rf matrices/
+rm -rf matrices/
 rm benchmark

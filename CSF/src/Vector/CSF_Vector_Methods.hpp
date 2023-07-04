@@ -134,9 +134,9 @@ namespace CSF {
         // set the nnz
         nnz = vec.nonZeros();
 
-#ifdef CSF_DEBUG
+        #ifdef CSF_DEBUG
         userChecks();
-#endif
+        #endif
     }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
@@ -309,7 +309,7 @@ namespace CSF {
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     void SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::setPerformanceVectors(bool on) {
-        
+
     }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
@@ -418,10 +418,10 @@ namespace CSF {
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     T SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::operator[](uint32_t index) {
 
-#ifdef CSF_DEBUG
+        #ifdef CSF_DEBUG
         // check if the index is out of bounds
         assert(index < length && "The index is out of bounds");
-#endif
+        #endif
 
         // make an iterator for the vector
         CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator it(*this);
