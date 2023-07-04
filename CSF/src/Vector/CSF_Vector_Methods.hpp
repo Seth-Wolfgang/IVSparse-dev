@@ -485,5 +485,3 @@ namespace CSF {
     uint32_t SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::getValueArraySize() {
         return valueArraySize;
     }
-
-}

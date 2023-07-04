@@ -4,12 +4,12 @@ namespace CSF {
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     class SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator {
-    private:
+        private:
         //* Private Class Variables *//
 
         indexT outer;
         indexT index;
-        T* val;
+        T* val = nullptr;
 
         indexT newIndex;
 
@@ -20,16 +20,11 @@ namespace CSF {
 
         bool firstIndex = true;
 
-        indexT* countsArray;
-        indexT valueArraySize;
-        indexT count = 1;
-        indexT valueArrayCounter = 1;
-
         //* Private Class Methods *//
 
         void __attribute__((hot)) decodeIndex();
 
-    public:
+        public:
         //* Constructors & Destructor *//
 
         InnerIterator();
@@ -51,11 +46,7 @@ namespace CSF {
         bool operator>(const InnerIterator& other);
 
         inline __attribute__((hot)) operator bool() {
-
-            if constexpr (compressionLevel == 3)
-                return (char*)endPtr - indexWidth > data;
-            else
-                return (char*)endPtr > data;
+            return ((char*)endPtr - indexWidth > data);
         }
 
 

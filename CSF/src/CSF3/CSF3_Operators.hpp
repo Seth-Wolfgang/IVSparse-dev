@@ -1,11 +1,3 @@
-/**
- * @file CSF_Operators.hpp
- * @author Skyler Ruiter and Seth Wolfgang
- * @brief The operator overloads for the CSF Sparse Matrix Library.
- * @version 0.1
- * @date 2023-06-21
- */
-
 #pragma once
 
 namespace CSF {
@@ -32,29 +24,6 @@ namespace CSF {
             // Free the metadata
             if (metadata != nullptr)
                 delete[] metadata;
-
-            // Free the performance vectors
-            if (valueArray != nullptr) {
-                for (uint32_t i = 0; i < outerDim; i++) {
-                    if (valueArray[i] != nullptr) {
-                        free(valueArray[i]);
-                    }
-                }
-                free(valueArray);
-            }
-
-            if (countsArray != nullptr) {
-                for (uint32_t i = 0; i < outerDim; i++) {
-                    if (countsArray[i] != nullptr) {
-                        free(countsArray[i]);
-                    }
-                }
-                free(countsArray);
-            }
-
-            if (valueArraySize != nullptr) {
-                free(valueArraySize);
-            }
 
             // Deep copy the matrix
 
@@ -86,8 +55,16 @@ namespace CSF {
 
             // copy the data
             for (uint32_t i = 0; i < outerDim; i++) {
+
+                // if the vector is empty, set the data pointer to nullptr
+                if (other.data[i] == nullptr) {
+                    data[i] = nullptr;
+                    endPointers[i] = nullptr;
+                    continue;
+                }
+
                 try {
-                    data[i] = malloc(other.getVectorSize(i) * 1.2);
+                    data[i] = malloc(other.getVectorSize(i));
                 }
                 catch (std::bad_alloc& e) {
                     std::cerr << "Error: Could not allocate memory for CSF matrix" << std::endl;
@@ -96,34 +73,6 @@ namespace CSF {
 
                 memcpy(data[i], other.data[i], other.getVectorSize(i));
                 endPointers[i] = (uint8_t*)data[i] + other.getVectorSize(i);
-            }
-
-            // if other's performance vectors are on turn on this matrix's
-            if (compressionLevel == 2) {
-
-                // allocate the memory
-                try {
-                    valueArray = (T**)malloc(other.outerDim * sizeof(T*));
-                    countsArray = (indexT**)malloc(other.outerDim * sizeof(indexT*));
-                    valueArraySize = (indexT*)malloc(other.outerDim * sizeof(indexT));
-                }
-                catch (std::bad_alloc& e) {
-                    std::cerr << "Error: Could not allocate memory for CSF matrix" << std::endl;
-                    exit(1);
-                }
-
-                memcpy(valueArraySize, other.valueArraySize, sizeof(indexT) * outerDim);
-
-                for (uint32_t i = 0; i < outerDim; i++) {
-                    valueArray[i] = (T*)malloc(sizeof(T*) * other.valueArraySize[i]);
-                    countsArray[i] = (indexT*)malloc(sizeof(indexT*) * other.valueArraySize[i]);
-                }
-
-                // copy the performance vectors
-                for (uint32_t i = 0; i < outerDim; i++) {
-                    memcpy(valueArray[i], other.valueArray[i], sizeof(T) * other.valueArraySize[i]);
-                    memcpy(countsArray[i], other.countsArray[i], sizeof(indexT) * other.valueArraySize[i]);
-                }
             }
         }
         return *this;
@@ -164,6 +113,10 @@ namespace CSF {
 
         uint32_t vector = columnMajor ? col : row;
         uint32_t index = columnMajor ? row : col;
+
+        // if the vector is empty return 0
+        if (data[vector] == nullptr)
+            return 0;
 
         // get an iterator for the desired vector
         for (typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator it(*this, vector); it; ++it) {
@@ -266,4 +219,5 @@ namespace CSF {
 
         return os;
     }
+
 }

@@ -2,11 +2,18 @@
 
 namespace CSF {
 
-
     // ---------------- InnerIterator Constructors ---------------- //
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     inline SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator::InnerIterator(CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>& matrix, uint32_t vec) {
+
+        // check if data is nullptr
+        if (matrix.vectorPointer(vec) == nullptr) {
+            // Trips bool operator
+            data = (void*)0xFFFFFFFFFFFFFFFF;
+            endPtr = (void*)0xFFFFFFFFFFFFFFFF;
+            return;
+        }
 
         // Sets the column
         this->outer = vec;
@@ -17,32 +24,15 @@ namespace CSF {
         // Sets the end pointer
         endPtr = (uint8_t*)data + matrix.getVectorSize(vec);
 
-        // If the column is all zeros, set the data to fail operator bool() 
-        if (data == nullptr) [[unlikely]] {
-            // Trips bool operator
-            // std::cout << "At vec: " << vec << std::endl;
-            data = (void*)0xFFFFFFFFFFFFFFFF;
-            return;
-            }
+        val = (T*)data;
+        data = (uint8_t*)data + sizeof(T);
 
-            if constexpr (compressionLevel == 3) {
-                val = (T*)data;
-                data = (uint8_t*)data + sizeof(T);
+        // Sets row width to the width of the first run
+        indexWidth = *(uint8_t*)data;
+        data = (uint8_t*)data + sizeof(uint8_t);
 
-                // Sets row width to the width of the first run
-                indexWidth = *(uint8_t*)data;
-                data = (uint8_t*)data + sizeof(uint8_t);
-                decodeIndex();
-                index = newIndex;
-            }
-            else {
-                val = matrix.valueArray[vec];
-                countsArray = matrix.countsArray[vec];
-                valueArraySize = matrix.valueArraySize[vec];
-                index = static_cast<indexT>(*static_cast<indexT*>(data));
-            }
-
-
+        decodeIndex();
+        index = newIndex;
     }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
@@ -66,14 +56,10 @@ namespace CSF {
         // set the end pointer
         endPtr = vector.end();
 
-        if constexpr (compressionLevel == 3) {
-            // Sets row width to the width of the first run
-            indexWidth = *(uint8_t*)data;
-            data = (uint8_t*)data + sizeof(uint8_t);
-        }
-        else {
-            indexWidth = sizeof(indexT);
-        }
+        // Sets row width to the width of the first run
+        indexWidth = *(uint8_t*)data;
+        data = (uint8_t*)data + sizeof(uint8_t);
+
 
         decodeIndex();
         index = newIndex;
@@ -138,65 +124,38 @@ namespace CSF {
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     void SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator::operator++() {
 
-        if constexpr (compressionLevel == 2) {
+        data = (uint8_t*)data + indexWidth;
 
-            data = (uint8_t*)data + sizeof(indexT);
-            index = static_cast<indexT>(*static_cast<indexT*>(data));
+        decodeIndex();
+        
+        // CSF 3
+        // If new_row is 0 and not the first row, then the row is a delimitor
+        if (newIndex == 0) {
 
-            if (countsArray[0] == count) {
-
-                // val will be moved forward to the next value since
-                // count is equal to the current value's number of occurences
-                val++;
-
-                // update the current row
-                // index = newIndex;
-                firstIndex = true;
-
-                // Reset count and iterate
-                count = 1;
-                countsArray++;
-                valueArrayCounter++;
-
+            if (data >= (uint8_t*)endPtr - indexWidth) [[unlikely]] {
                 return;
-            }
-            //else
-            count++;
-        }
-        else {
+                }
 
             data = (uint8_t*)data + indexWidth;
-            decodeIndex();
 
-            // CSF 3
-            // If new_row is 0 and not the first row, then the row is a delimitor
-            if (newIndex == 0) {
-
-                if (data >= (uint8_t*)endPtr - indexWidth) [[unlikely]] {
-                    return;
-                    }
-
-                data = (uint8_t*)data + indexWidth;
-
-                // val is the first row of the run
-                val = (T*)data;
-                data = (uint8_t*)data + sizeof(T);
+            // val is the first row of the run
+            val = (T*)data;
+            data = (uint8_t*)data + sizeof(T);
 
                 // Sets row width to the width of the first run
-                indexWidth = *(uint8_t*)data;
-                data = (uint8_t*)data + sizeof(uint8_t);
+            indexWidth = *(uint8_t*)data;
+            data = (uint8_t*)data + sizeof(uint8_t);
+            
 
+            // update currentCol to the next column
 
-                // update currentCol to the next column
-
-                // Make row 0 as it is a new run
-                decodeIndex();
-                index = newIndex;
-                firstIndex = true;
-                return;
-            }
-            index += newIndex;
+            // Make row 0 as it is a new run
+            decodeIndex();
+            index = newIndex;
+            firstIndex = true;
+            return;
         }
+        index += newIndex;
 
         firstIndex = false;
     }

@@ -3,61 +3,18 @@
 namespace CSF {
 
     template <typename T, typename indexT, bool columnMajor>
-    class SparseMatrix<T, indexT, 1, columnMajor>::InnerIterator
-    {
-    private:
-        //* Private Class Variables *//
-
-        T *val;
-        indexT index;
-        indexT outer;
-
-        T *vals;
-        indexT *indices;
-        T *endPtr;
-
-    public:
-        //* Constructors & Destructor *//
-
-        InnerIterator();
-
-        InnerIterator(SparseMatrix<T, indexT, 1, columnMajor> &mat, uint32_t vec);
-
-        InnerIterator(SparseMatrix<T, indexT, 1, columnMajor>::Vector &vec);
-
-        //* Operator Overloads *//
-
-        void __attribute__((hot)) operator++();
-
-        bool operator==(const InnerIterator &other);
-
-        bool operator!=(const InnerIterator &other);
-
-        bool operator<(const InnerIterator &other);
-
-        bool operator>(const InnerIterator &other);
-
-        T &operator*();
-
-        inline __attribute__((hot)) operator bool() { return indices < endPtr; };
-
-        //* Getters *//
-
-        indexT getIndex();
-
-        indexT outerDim();
-
-        indexT row();
-
-        indexT col();
-
-        T value();
-    };
-
-    template <typename T, typename indexT, bool columnMajor>
     SparseMatrix<T, indexT, 1, columnMajor>::InnerIterator::InnerIterator(SparseMatrix<T, indexT, 1, columnMajor> &mat, uint32_t vec)
     {
         this->outer = vec;
+
+        // check if the vector is empty
+        if (mat.getOuterPointers()[vec] == mat.getOuterPointers()[vec + 1])
+        {
+            vals = nullptr;
+            indices = nullptr;
+            endPtr = nullptr;
+            return;
+        }
 
         vals = &mat.vals[mat.outerPtr[vec]];
         indices = &mat.innerIdx[mat.outerPtr[vec]];
@@ -87,6 +44,12 @@ namespace CSF {
     {
         vals++;
         indices++;
+
+        // check if the iterator is at the end of the vector
+        if (indices == endPtr)
+        {
+            return;
+        }
 
         val = vals;
         index = *indices;
@@ -143,4 +106,5 @@ namespace CSF {
 
     template <typename T, typename indexT, bool columnMajor>
     T SparseMatrix<T, indexT, 1, columnMajor>::InnerIterator::value() { return *val; }
+    
 }

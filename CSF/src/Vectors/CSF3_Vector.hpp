@@ -3,16 +3,17 @@
 namespace CSF
 {
 
+    // vector of the SparseMatrixBase class
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    class SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector
-    {
-    private:
+    class SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector {
+        private:
+
         //* Private Class Variables *//
 
-        size_t size;
+        size_t size = 0;
 
-        void *data;
-        void *endPtr;
+        void *data = nullptr;
+        void *endPtr = nullptr;
 
         uint32_t length = 0;
 
@@ -20,28 +21,20 @@ namespace CSF
 
         uint32_t nnz = 0;
 
-        bool performanceVectors = false;
-        T *valueArray = nullptr;
-        uint32_t *countsArray = nullptr;
-        uint32_t valueArraySize = 0;
-
         //* Private Class Methods *//
 
         void userChecks();
 
-        void activatePerformanceVecs();
+        public:
 
-        void undoPerformanceVecs();
-
-    public:
         //* Constructors & Destructor *//
-        Vector();
+        Vector() {};
+
+        Vector(uint32_t length);
 
         Vector(CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor> &mat, uint32_t vec);
 
         Vector(CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector &vec);
-
-        Vector(std::unordered_map<T, std::vector<indexT>> &map, uint32_t vecSize);
 
         ~Vector();
 
@@ -71,21 +64,9 @@ namespace CSF
 
         uint32_t getLength();
 
-        T *getValues();
-
-        uint32_t *getCounts();
-
-        uint32_t getValueArraySize();
-
         //* Utility Methods *//
 
-        void write(const char *filename);
-
         void print();
-
-        bool performanceVectorsInitialized();
-
-        void setPerformanceVectors(bool on);
 
         void operator*=(T scalar);
 
