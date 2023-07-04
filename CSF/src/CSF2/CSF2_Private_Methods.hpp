@@ -1,7 +1,14 @@
+/**
+ * @file CSF2_Private_Methods.hpp
+ * @author Skyler Ruiter and Seth Wolfgang
+ * @brief Private Methods for CSF2 Sparse Matrices
+ * @version 0.1
+ * @date 2023-07-03
+ */
+
 #pragma once
 
-namespace CSF
-{
+namespace CSF {
 
     // Encodes the value type of the matrix in a uint32_t
     template <typename T, typename indexT, bool columnMajor>
@@ -65,8 +72,7 @@ namespace CSF
     // Compression Algorithm for going from CSC to CSF3
     template <typename T, typename indexT, bool columnMajor>
     template <typename T2, typename indexT2>
-    void SparseMatrix<T, indexT, 2, columnMajor>::compressCSC(T2 *vals, indexT2 *innerIndices, indexT2 *outerPointers)
-    {
+    void SparseMatrix<T, indexT, 2, columnMajor>::compressCSC(T2 *vals, indexT2 *innerIndices, indexT2 *outerPointers) {
         // ---- Stage 1: Setup the Matrix ---- //
 
         // set the value and index types of the matrix
@@ -75,8 +81,6 @@ namespace CSF
 
         // allocate space for metadata
         metadata = new uint32_t[NUM_META_DATA];
-
-        // setup the rest of the metadata
         metadata[0] = 2;
         metadata[1] = innerDim;
         metadata[2] = outerDim;
@@ -187,4 +191,4 @@ namespace CSF
 
     } // end compressCSC
 
-}
+} // end namespace CSF

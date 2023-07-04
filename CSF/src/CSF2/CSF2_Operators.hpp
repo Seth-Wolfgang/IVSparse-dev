@@ -1,3 +1,11 @@
+/**
+ * @file CSF2_Operators.hpp
+ * @author Skyler Ruiter and Seth Wolfgang
+ * @brief Operator Overloads for CSF2 Sparse Matrices
+ * @version 0.1
+ * @date 2023-07-03
+ */
+
 #pragma once
 
 namespace CSF {
@@ -6,6 +14,7 @@ namespace CSF {
     template <typename T, typename indexT, bool columnMajor>
     SparseMatrix<T, indexT, 2, columnMajor>& SparseMatrix<T, indexT, 2, columnMajor>::operator=(const CSF::SparseMatrix<T, indexT, 2, columnMajor>& other) {
 
+        // check if the matrices are the same
         if (this != &other) {
 
             // free the old data
@@ -16,7 +25,6 @@ namespace CSF {
                 }
                 free(values);
             }
-
             if (counts != nullptr) {
                 for (uint32_t i = 0; i < outerDim; i++) {
                     if (counts[i] != nullptr)
@@ -24,7 +32,6 @@ namespace CSF {
                 }
                 free(counts);
             }
-
             if (indices != nullptr) {
                 for (uint32_t i = 0; i < outerDim; i++) {
                     if (indices[i] != nullptr)
@@ -32,18 +39,10 @@ namespace CSF {
                 }
                 free(indices);
             }
-
-            if (valueSizes != nullptr)
-                free(valueSizes);
-            
-            if (indexSizes != nullptr)
-                free(indexSizes);
-            
-            if (metadata != nullptr)
-                delete[] metadata;
-            
-
-            // Deep copy the matrix
+            // free the metadata and size arrays
+            if (valueSizes != nullptr) { free(valueSizes); }
+            if (indexSizes != nullptr) { free(indexSizes); }
+            if (metadata != nullptr) { delete[] metadata; }
 
             // set the dimensions
             numRows = other.numRows;
@@ -88,6 +87,7 @@ namespace CSF {
                     exit(1);
                 }
 
+                // copy the data
                 memcpy(values[i], other.values[i], sizeof(T) * other.valueSizes[i]);
                 memcpy(counts[i], other.counts[i], sizeof(indexT) * other.valueSizes[i]);
                 memcpy(indices[i], other.indices[i], sizeof(indexT) * other.indexSizes[i]);
@@ -97,44 +97,34 @@ namespace CSF {
             }
         }
 
+        // return the new matrix
         return *this;
-    }
+    
+    } // end assignment operator
 
     // Equality Operator
     template <typename T, typename indexT, bool columnMajor>
     bool SparseMatrix<T, indexT, 2, columnMajor>::operator==(const SparseMatrix<T, indexT, 2, columnMajor>& other) {
-        // check if the two matrices are equal
 
         // first check the metadata using memcompare
-        if (memcmp(metadata, other.metadata, sizeof(uint32_t) * NUM_META_DATA) != 0)
-            return false;
+        if (memcmp(metadata, other.metadata, sizeof(uint32_t) * NUM_META_DATA) != 0) { return false; }
 
         // check the value array
-        for (uint32_t i = 0; i < outerDim; i++) {
-            if (memcmp(values[i], other.values[i], sizeof(T) * valueSizes[i]) != 0)
-                return false;
-        }
+        for (uint32_t i = 0; i < outerDim; i++) { if (memcmp(values[i], other.values[i], sizeof(T) * valueSizes[i]) != 0) { return false; } }
 
         // check the index array
-        for (uint32_t i = 0; i < outerDim; i++) {
-            if (memcmp(indices[i], other.indices[i], sizeof(indexT) * indexSizes[i]) != 0)
-                return false;
-        }
+        for (uint32_t i = 0; i < outerDim; i++) { if (memcmp(indices[i], other.indices[i], sizeof(indexT) * indexSizes[i]) != 0) { return false; } }
 
         // check the count array
-        for (uint32_t i = 0; i < outerDim; i++) {
-            if (memcmp(counts[i], other.counts[i], sizeof(indexT) * valueSizes[i]) != 0)
-                return false;
-        }
+        for (uint32_t i = 0; i < outerDim; i++) { if (memcmp(counts[i], other.counts[i], sizeof(indexT) * valueSizes[i]) != 0) { return false; } }
 
+        // if all of the above checks pass then the matrices are equal
         return true;
     }
 
     // Inequality Operator
     template <typename T, typename indexT, bool columnMajor>
-    bool SparseMatrix<T, indexT, 2, columnMajor>::operator!=(const SparseMatrix<T, indexT, 2, columnMajor>& other) {
-        return !(*this == other);
-    }
+    bool SparseMatrix<T, indexT, 2, columnMajor>::operator!=(const SparseMatrix<T, indexT, 2, columnMajor>& other) { return !(*this == other); }
 
     // Coefficent Access Operator
     template <typename T, typename indexT, bool columnMajor>
@@ -174,6 +164,45 @@ namespace CSF {
         return newVector;
     }
 
+    // Outstream Operator
+    template <typename T, typename indexT, bool columnMajor>
+    std::ostream& operator<<(std::ostream& os, CSF::SparseMatrix<T, indexT, 2, columnMajor>& mat) {
+        #ifndef CSF_DEBUG
+        if (mat.cols() > 110) {
+            std::cout << "CSF matrix is too large to print" << std::endl;
+            return os;
+        }
+        #endif
+
+        // create a matrix to store the full matrix representation of the CSF matrix
+        T** matrix = new T * [mat.rows()];
+        for (size_t i = 0; i < mat.rows(); i++) {
+            matrix[i] = (T*)calloc(mat.cols(), sizeof(T));
+        }
+
+        // Build the full matrix representation of the the CSF matrix
+        for (size_t i = 0; i < mat.cols(); i++) {
+            for (typename CSF::SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator it(mat, i); it; ++it) {
+                // std::cout << "it.row(): " << it.row() << " col: " << it.col() << " value: " << it.value() << std::endl;
+                matrix[it.row()][it.col()] = it.value();
+            }
+        }
+
+        // store all of matrix into the output stream
+        for (size_t i = 0; i < mat.rows(); i++) {
+            for (size_t j = 0; j < mat.cols(); j++) {
+                os << matrix[i][j] << " ";
+            }
+            os << std::endl;
+        }
+
+        for (int i = 0; i < mat.rows(); i++) { free(matrix[i]); }
+        delete [] matrix;
+
+        return os;
+
+    } // end outstream operator
+
     //* BLAS Operators *//
 
     // Scalar Multiplication
@@ -205,49 +234,5 @@ namespace CSF {
     Eigen::Matrix<T, -1, -1> SparseMatrix<T, indexT, 2, columnMajor>::operator*(Eigen::Matrix<T, -1, -1> mat) {
         return matrixMultiply(mat);
     }
-
-    // Outstream Operator
-    template <typename T, typename indexT, bool columnMajor>
-    std::ostream& operator<<(std::ostream& os, CSF::SparseMatrix<T, indexT, 2, columnMajor>& mat) {
-        #ifndef CSF_DEBUG
-        if (mat.cols() > 110) {
-            std::cout << "CSF matrix is too large to print" << std::endl;
-            return os;
-        }
-        #endif
-
-        // create a matrix to store the full matrix representation of the CSF matrix
-        T** matrix = new T * [mat.rows()];
-        for (size_t i = 0; i < mat.rows(); i++) {
-            matrix[i] = (T*)calloc(mat.cols(), sizeof(T));
-        }
-
-        // Build the full matrix representation of the the CSF matrix
-        for (size_t i = 0; i < mat.cols(); i++) {
-            for (typename CSF::SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator it(mat, i); it; ++it) {
-                // std::cout << "it.row(): " << it.row() << " col: " << it.col() << " value: " << it.value() << std::endl;
-                matrix[it.row()][it.col()] = it.value();
-            }
-        }
-
-
-        // std::cout << "rows: " << mat.rows() << std::endl;
-        // std::cout << "cols: " << mat.cols() << std::endl;
-
-        // store all of matrix into the output stream
-        for (size_t i = 0; i < mat.rows(); i++) {
-            for (size_t j = 0; j < mat.cols(); j++) {
-                os << matrix[i][j] << " ";
-            }
-            os << std::endl;
-        }
-
-        for (int i = 0; i < mat.rows(); i++) {
-            free(matrix[i]);
-        }
-        delete [] matrix;
-
-        return os;
-    }
     
-}
+} // end namespace CSF

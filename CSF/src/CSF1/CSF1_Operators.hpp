@@ -1,3 +1,11 @@
+/**
+ * @file CSF1_Operators.hpp
+ * @author Skyler Ruiter and Seth Wolfgang
+ * @brief Operator Overloads for CSF1 Sparse Matrices
+ * @version 0.1
+ * @date 2023-07-03
+ */
+
 #pragma once
 
 namespace CSF {
@@ -6,6 +14,7 @@ namespace CSF {
     template <typename T, typename indexT, bool columnMajor>
     SparseMatrix<T, indexT, 1, columnMajor>& SparseMatrix<T, indexT, 1, columnMajor>::operator=(const CSF::SparseMatrix<T, indexT, 1, columnMajor>& other) {
 
+        // check for self assignment
         if (this != &other) {
 
             // free the old data
@@ -24,16 +33,19 @@ namespace CSF {
             // Deep copy the matrix
 
             metadata = new uint32_t[NUM_META_DATA];
-
             memcpy(metadata, other.metadata, NUM_META_DATA * sizeof(uint32_t));
 
-            // set the dimensions
+            // set the dimensions of the matrix
             numRows = other.numRows;
             numCols = other.numCols;
             outerDim = other.outerDim;
             innerDim = other.innerDim;
             nnz = other.nnz;
             compSize = other.compSize;
+
+            // encode the value type and index type
+            encodeValueType();
+            index_t = sizeof(indexT);
 
             // check for an empty matrix
             if (nnz == 0) {
@@ -57,13 +69,10 @@ namespace CSF {
             memcpy(vals, other.vals, nnz * sizeof(T));
             memcpy(innerIdx, other.innerIdx, nnz * sizeof(indexT));
             memcpy(outerPtr, other.outerPtr, (outerDim + 1) * sizeof(indexT));
-
-            encodeValueType();
-            index_t = sizeof(indexT);
         }
 
+        // return the matrix
         return *this;
-
     }
 
     // Equality Operator
@@ -79,26 +88,12 @@ namespace CSF {
             return false;
         }
 
-        // if both sizes equal zero return true
-        if (nnz == 0 && other.nnz == 0) {
-            return true;
-        }
+        // check the matrix data against each other
+        if (memcmp(vals, other.vals, nnz * sizeof(T)) != 0) { return false; }
+        if (memcmp(innerIdx, other.innerIdx, nnz * sizeof(indexT)) != 0) { return false; }
+        if (memcmp(outerPtr, other.outerPtr, (outerDim + 1) * sizeof(indexT)) != 0) { return false; }
 
-        // check if the values are the same
-        if (memcmp(vals, other.vals, nnz * sizeof(T)) != 0) {
-            return false;
-        }
-
-        // check if the inner indices are the same
-        if (memcmp(innerIdx, other.innerIdx, nnz * sizeof(indexT)) != 0) {
-            return false;
-        }
-
-        // check if the outer pointers are the same
-        if (memcmp(outerPtr, other.outerPtr, (outerDim + 1) * sizeof(indexT)) != 0) {
-            return false;
-        }
-
+        // if all the data is the same return true
         return true;
     }
 
@@ -111,18 +106,21 @@ namespace CSF {
     // Coefficent Access Operator
     template <typename T, typename indexT, bool columnMajor>
     T SparseMatrix<T, indexT, 1, columnMajor>::operator()(uint32_t row, uint32_t col) {
+        
         // check if the row and column are in bounds
         if (row >= numRows || col >= numCols) {
             std::cerr << "Error: Index out of bounds" << std::endl;
             exit(1);
         }
 
+        // get the vector and index
         uint32_t vector = columnMajor ? col : row;
         uint32_t index = columnMajor ? row : col;
 
         // get an iterator for the desired vector
         for (typename SparseMatrix<T, indexT, 1, columnMajor>::InnerIterator it(*this, vector); it; ++it) {
             if (it.getIndex() == (indexT)index) {
+                // if the index is found return the value
                 return it.value();
             }
         }
@@ -142,7 +140,6 @@ namespace CSF {
 
         // return a CSF vector
         typename CSF::SparseMatrix<T, indexT, 1, columnMajor>::Vector newVector(*this, vec);
-
         return newVector;
     }
 

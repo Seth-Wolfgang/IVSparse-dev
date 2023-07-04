@@ -1,33 +1,37 @@
+/**
+ * @file CSF3_Constructors.hpp
+ * @author Skyler Ruiter and Seth Wolfgang
+ * @brief Constructors for CSF3 Sparse Matrices
+ * @version 0.1
+ * @date 2023-07-03
+ */
+
 #pragma once
 
-namespace CSF
-{
+namespace CSF {
+
     // Destructor
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     SparseMatrix<T, indexT, compressionLevel, columnMajor>::~SparseMatrix() {
         // delete the meta data
-        if (metadata != nullptr) {
-            delete [] metadata;
-        }
+        if (metadata != nullptr) { delete [] metadata; }
 
         // free data
         if (data != nullptr) {
             // free the data
-            for (size_t i = 0; i < outerDim; i++) {
-                if (data[i] != nullptr)
-                    free(data[i]);
-            }
+            for (size_t i = 0; i < outerDim; i++) { if (data[i] != nullptr) { free(data[i]); } }
             free(data);
         }
 
         // free the end pointers
-        if (endPointers != nullptr)
-            free(endPointers);
+        if (endPointers != nullptr) { free(endPointers); }
     }
 
+    // Row and Column Constructor
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(uint32_t num_rows, uint32_t num_cols) {
 
+        // set class variables
         if constexpr (columnMajor) {
             innerDim = num_cols;
             outerDim = num_rows;
@@ -35,13 +39,10 @@ namespace CSF
             innerDim = num_rows;
             outerDim = num_cols;
         }
-
         numRows = num_rows;
         numCols = num_cols;
-
         encodeValueType();
         index_t = sizeof(indexT);
-
         nnz = 0;
         
         // allocate memory for the data
@@ -59,9 +60,8 @@ namespace CSF
             endPointers[i] = nullptr;
         }
 
+        // set the metadata
         metadata = new uint32_t[NUM_META_DATA];
-
-        // Set the meta data
         metadata[0] = compressionLevel;
         metadata[1] = innerDim;
         metadata[2] = outerDim;
@@ -69,6 +69,7 @@ namespace CSF
         metadata[4] = val_t;
         metadata[5] = index_t;
 
+        // calculate the compression size
         calculateCompSize();
 
         // run the user checks
@@ -188,6 +189,7 @@ namespace CSF
             return;
         }
 
+        // set class variables
         if (columnMajor) {
             innerDim = num_rows;
             outerDim = num_cols;
@@ -199,7 +201,209 @@ namespace CSF
         numCols = num_cols;
         this->nnz = nnz;
 
+        // call the compression function
         compressCSC(vals, innerIndices, outerPtr);
+    }
+
+    // COO Constructor
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    template <typename T2, typename indexT2>
+    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(std::vector<std::tuple<indexT2, indexT2, T2>> entries, uint32_t num_rows, uint32_t num_cols, uint32_t nnz) {
+
+        // see if the matrix is empty
+        if (nnz == 0) [[unlikely]] {
+            *this = SparseMatrix<T, indexT, compressionLevel, columnMajor>(num_rows, num_cols);
+            return;
+        }
+
+        // set class variables
+        if (columnMajor) {
+            innerDim = num_rows;
+            outerDim = num_cols;
+        } else {
+            innerDim = num_cols;
+            outerDim = num_rows;
+        }
+
+        numRows = num_rows;
+        numCols = num_cols;
+        this->nnz = nnz;
+        encodeValueType();
+        index_t = sizeof(indexT);
+
+        metadata = new uint32_t[NUM_META_DATA];
+        metadata[0] = compressionLevel;
+        metadata[1] = innerDim;
+        metadata[2] = outerDim;
+        metadata[3] = nnz;
+        metadata[4] = val_t;
+        metadata[5] = index_t;
+
+        // allocate memory for the data
+        try {
+            data = (void **)malloc(outerDim * sizeof(void *));
+            endPointers = (void **)malloc(outerDim * sizeof(void *));
+        } catch (std::bad_alloc &e) {
+            std::cerr << "Error: Could not allocate memory for CSF matrix" << std::endl;
+            exit(1);
+        }
+
+        // set all data and endpointers to the nullptr
+        for (size_t i = 0; i < outerDim; i++) {
+            data[i] = nullptr;
+            endPointers[i] = nullptr;
+        }
+
+        // sort the tuples by first by column then by row
+        std::sort(entries.begin(), entries.end(), [](const std::tuple<indexT2, indexT2, T2> &a, const std::tuple<indexT2, indexT2, T2> &b) {
+            if (std::get<1>(a) == std::get<1>(b)) {
+                return std::get<0>(a) < std::get<0>(b);
+            } else {
+                return std::get<1>(a) < std::get<1>(b);
+            }
+        });
+
+        std::map<T2, std::vector<indexT2>> maps[outerDim];
+
+        // loop through the tuples
+        for (size_t i = 0; i < nnz; i++) {
+            // get the column
+            indexT2 row = std::get<0>(entries[i]);
+            indexT2 col = std::get<1>(entries[i]);
+            T2 val = std::get<2>(entries[i]);
+
+
+            // check if the value is already in the map
+            if (maps[col].find(val) != maps[col].end()) {
+                
+                // value found positive delta encode it
+                maps[col][val].push_back(row - maps[col][val][1]);
+
+                // update the last index
+                maps[col][val][1] = row;
+
+                // update the maximum delta
+                if (maps[col][val][maps[col][val].size() - 1] > maps[col][val][0])
+                    maps[col][val][0] = maps[col][val][maps[col][val].size() - 1];
+
+            } else {
+
+                // value not found
+                maps[col][val] = std::vector<indexT2> { row };
+
+                // add maximum delta and last index placeholders
+                maps[col][val].push_back(row);
+                maps[col][val].push_back(row);
+            }
+        } // end of loop through tuples
+
+
+        // loop through the maps
+        #ifdef CSF_PARALLEL
+        #pragma omp parallel for
+        #endif
+        for (uint32_t i = 0; i < outerDim; i++) {
+
+            size_t outerByteSize = 0;
+
+            for (auto& pair : maps[i]) {
+                // change first value to be byte width of the maximum delta
+                pair.second[0] = byteWidth(pair.second[0]);
+
+                // add the size of the run to the size of the column
+                //* value + index width + indices * index width + delimiter (index width)
+                outerByteSize += sizeof(T) + 1 + (pair.second[0] * (pair.second.size() - 2)) + pair.second[0];
+            }
+
+            // if column is empty set the data and endpointer to nullptr
+            if (outerByteSize == 0) {
+                data[i] = nullptr;
+                endPointers[i] = nullptr;
+                continue;
+            }
+
+            // allocate space for the column
+            try {
+                data[i] = malloc(outerByteSize);
+            }
+            catch (std::bad_alloc& e) {
+                std::cout << "Error: " << e.what() << std::endl;
+                exit(1);
+            }
+
+            // get a help pointer for moving through raw memory
+            void* helpPtr = data[i];
+
+            // loop through the dictionary and write to memory
+            for (auto& pair : maps[i]) {
+                // Write the value to memory
+                *(T*)helpPtr = (T)pair.first;
+                helpPtr = (T*)helpPtr + 1;
+
+                // also write the index width
+                *(uint8_t*)helpPtr = (uint8_t)pair.second[0];
+                helpPtr = (uint8_t*)helpPtr + 1;
+
+
+                // loop through the indices and write them to memory
+                for (size_t k = 0; k < pair.second.size(); k++) {
+
+                    // if compression level 3 skip the first two indices and cast the index
+                    if (k == 0 || k == 1) {
+                        continue;
+                    }
+
+                    // create a type of the correct width
+                    switch (pair.second[0]) {
+                    case 1:
+                        *(uint8_t*)helpPtr = (uint8_t)pair.second[k];
+                        helpPtr = (uint8_t*)helpPtr + 1;
+                        break;
+                    case 2:
+                        *(uint16_t*)helpPtr = (uint16_t)pair.second[k];
+                        helpPtr = (uint16_t*)helpPtr + 1;
+                        break;
+                    case 4:
+                        *(uint32_t*)helpPtr = (uint32_t)pair.second[k];
+                        helpPtr = (uint32_t*)helpPtr + 1;
+                        break;
+                    case 8:
+                        *(uint64_t*)helpPtr = (uint64_t)pair.second[k];
+                        helpPtr = (uint64_t*)helpPtr + 1;
+                        break;
+                    }
+
+                } // End of index loop
+
+                // write a delimiter of the correct width
+                switch (pair.second[0]) {
+                case 1:
+                    *(uint8_t*)helpPtr = (uint8_t)DELIM;
+                    helpPtr = (uint8_t*)helpPtr + 1;
+                    break;
+                case 2:
+                    *(uint16_t*)helpPtr = (uint16_t)DELIM;
+                    helpPtr = (uint16_t*)helpPtr + 1;
+                    break;
+                case 4:
+                    *(uint32_t*)helpPtr = (uint32_t)DELIM;
+                    helpPtr = (uint32_t*)helpPtr + 1;
+                    break;
+                case 8:
+                    *(uint64_t*)helpPtr = (uint64_t)DELIM;
+                    helpPtr = (uint64_t*)helpPtr + 1;
+                    break;
+                }
+                // Set a pointer to the end of the data
+                endPointers[i] = helpPtr;
+
+            } // End of dictionary loop
+
+        }
+
+        // calculate the compression size
+        calculateCompSize();
+
     }
 
     // CSF Vector Constructor
@@ -245,9 +449,8 @@ namespace CSF
         if (vec.begin() != vec.end())
             memcpy(data[0], vec.begin(), vec.byteSize());
 
+        // set the metadata
         metadata = new uint32_t[NUM_META_DATA];
-
-        // Set the meta data
         metadata[0] = compressionLevel;
         metadata[1] = innerDim;
         metadata[2] = outerDim;
@@ -255,6 +458,7 @@ namespace CSF
         metadata[4] = val_t;
         metadata[5] = index_t;
 
+        // run the user checks and calculate the compression size
         calculateCompSize();
         #ifdef CSF_DEBUG
         userChecks();
@@ -263,23 +467,20 @@ namespace CSF
 
     // Array of Vectors Constructor
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(std::vector<typename CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector> &vecs)
-    {
+    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(std::vector<typename CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector> &vecs) {
+        
         CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor> temp(vecs[0]);
 
-        for (size_t i = 1; i < vecs.size(); i++)
-        {
-            temp.append(vecs[i]);
-        }
+        for (size_t i = 1; i < vecs.size(); i++) { temp.append(vecs[i]); }
 
         *this = temp;
+
+        calculateCompSize();
 
         // run the user checks
         #ifdef CSF_DEBUG
         userChecks();
         #endif
-
-        calculateCompSize();
     }
 
     // File Constructor
@@ -301,14 +502,14 @@ namespace CSF
         val_t = metadata[4];
         index_t = metadata[5];
 
+        numRows = columnMajor ? innerDim : outerDim;
+        numCols = columnMajor ? outerDim : innerDim;
+
         // if the compression level of the file is different than the compression level of the class
         if (metadata[0] != compressionLevel) {
             // throw an error
             throw std::runtime_error("Error: Compression level of file does not match compression level of class");
         }
-
-        numRows = columnMajor ? innerDim : outerDim;
-        numCols = columnMajor ? outerDim : innerDim;
 
         // allocate the memory
         try {
@@ -336,15 +537,11 @@ namespace CSF
             try {
                 data[i] = malloc(size);
                 endPointers[i] = (char *)data[i] + size;
-            } catch (std::bad_alloc &e) {
-                throw std::bad_alloc();
-            }
+            } catch (std::bad_alloc &e) { throw std::bad_alloc(); }
         }
 
         // read the data
-        for (size_t i = 0; i < outerDim; i++) {
-            fread(data[i], 1, (uint8_t *)endPointers[i] - (uint8_t *)data[i], fp);
-        }
+        for (size_t i = 0; i < outerDim; i++) { fread(data[i], 1, (uint8_t *)endPointers[i] - (uint8_t *)data[i], fp); }
 
         // close the file
         fclose(fp);
@@ -356,7 +553,10 @@ namespace CSF
         #ifdef CSF_DEBUG
         userChecks();
         #endif
-    }
+    
+    } // end of file constructor
+
+    //* Private Constructors *//   
 
     // Private Tranpose Constructor
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
@@ -498,11 +698,14 @@ namespace CSF
         metadata[4] = val_t;
         metadata[5] = index_t;
 
+        // calculate the compression size
+        calculateCompSize();
+
         // run the user checks
         #ifdef CSF_DEBUG
         userChecks();
         #endif
-        calculateCompSize();
-    }
 
-}
+    } // end of private transpose constructor
+
+} // end of CSF namespace

@@ -1,7 +1,16 @@
+/**
+ * @file CSF3_Methods.hpp
+ * @author Skyler Ruiter and Seth Wolfgang
+ * @brief Methods for CSF3 Sparse Matrices
+ * @version 0.1
+ * @date 2023-07-03
+ */
+
 #pragma once
 
-namespace CSF
-{
+namespace CSF {
+
+    //* Getters *//
 
     // Gets the element stored at the given row and column
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
@@ -13,9 +22,7 @@ namespace CSF
 
     // Returns a pointer to the given vector
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    void *SparseMatrix<T, indexT, compressionLevel, columnMajor>::vectorPointer(uint32_t vec) { 
-        return data[vec]; 
-    }
+    void *SparseMatrix<T, indexT, compressionLevel, columnMajor>::vectorPointer(uint32_t vec) { return data[vec]; }
 
     // Gets a CSF vector copy of the given vector
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
@@ -27,6 +34,8 @@ namespace CSF
         if (data[vec] == endPointers[vec]) { return 0; }
         return (char *)endPointers[vec] - (char *)data[vec]; 
     }
+
+    //* Utility Methods *//
 
     // Writes the matrix to file
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
@@ -149,7 +158,6 @@ namespace CSF
             }
         }
 
-
         // return a CSF3 matrix from the CSC vectors
         CSF::SparseMatrix<T, indexT, 2, columnMajor> mat(values, indices, colPtrs, numRows, numCols, nnz);
 
@@ -161,7 +169,7 @@ namespace CSF
         return mat;
     }
 
-        // converts the csf matrix to an eigen one and returns it
+    // converts the csf matrix to an eigen one and returns it
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     Eigen::SparseMatrix<T, columnMajor ? Eigen::ColMajor : Eigen::RowMajor> SparseMatrix<T, indexT, compressionLevel, columnMajor>::toEigen() {
 
@@ -201,19 +209,14 @@ namespace CSF
     void SparseMatrix<T, indexT, compressionLevel, columnMajor>::append(typename CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector& vec) {
         // check if the matrix is empty
         if (compSize == 0) [[unlikely]] {
-            
             *this = CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>(vec);
         }
         else {
             // check if the vector is empty, if so change the implementation details
             if (vec.begin() == vec.end()) [[unlikely]] {
 
-                if (columnMajor) {
-                    numCols++;
-                }
-                else {
-                    numRows++;
-                }
+                if (columnMajor) { numCols++; }
+                else { numRows++; }
                 outerDim++;
 
                 // update metadata
@@ -223,10 +226,7 @@ namespace CSF
                 try {
                     data = (void**)realloc(data, outerDim * sizeof(void*));
                     endPointers = (void**)realloc(endPointers, outerDim * sizeof(void*));
-                }
-                catch (std::bad_alloc& e) {
-                    throw std::bad_alloc();
-                }
+                } catch (std::bad_alloc& e) { throw std::bad_alloc(); }
 
                 // set the new vector to nullptr 
                 data[outerDim - 1] = nullptr;
@@ -244,12 +244,8 @@ namespace CSF
 
                 outerDim++;
                 nnz += vec.nonZeros();
-                if (columnMajor) {
-                    numCols++;
-                }
-                else {
-                    numRows++;
-                }
+                if (columnMajor) { numCols++; }
+                else { numRows++; }
 
                 // update metadata
                 metadata[2] = outerDim;
@@ -259,19 +255,13 @@ namespace CSF
                 try {
                     data = (void**)realloc(data, outerDim * sizeof(void*));
                     endPointers = (void**)realloc(endPointers, outerDim * sizeof(void*));
-                }
-                catch (std::bad_alloc& e) {
-                    throw std::bad_alloc();
-                }
+                } catch (std::bad_alloc& e) {  throw std::bad_alloc(); }
 
                 // malloc the new vector
                 try {
                     data[outerDim - 1] = malloc(vec.byteSize());
                     endPointers[outerDim - 1] = (char*)data[outerDim - 1] + vec.byteSize();
-                }
-                catch (std::bad_alloc& e) {
-                    throw std::bad_alloc();
-                }
+                } catch (std::bad_alloc& e) { throw std::bad_alloc(); }
 
                 // copy the vector into the new space
                 memcpy(data[outerDim - 1], vec.begin(), vec.byteSize());
@@ -279,7 +269,8 @@ namespace CSF
                 calculateCompSize();
             }
         }
-    }
+
+    } // end append
 
     // tranposes the csf matrix
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
@@ -372,19 +363,16 @@ namespace CSF
 
     // slice method that returns a vector of CSF vectors
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    std::vector<typename CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector> SparseMatrix<T, indexT, compressionLevel, columnMajor>::slice(uint32_t start, uint32_t end)
-    {
+    std::vector<typename CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector> SparseMatrix<T, indexT, compressionLevel, columnMajor>::slice(uint32_t start, uint32_t end) {
+        
         #ifdef CSF_DEBUG
         assert(start < outerDim && end <= outerDim && start < end && "Invalid start and end values!");
         #endif
-
-
         // make a vector of CSF vectors
         std::vector<typename CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector> vecs(end - start);
 
         // grab the vectors and add them to vecs
-        for (uint32_t i = start; i < end; ++i)
-        {
+        for (uint32_t i = start; i < end; ++i)  {
             // make a temp vector
             CSF::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector temp(*this, i);
 
@@ -395,4 +383,5 @@ namespace CSF
         // return the vector
         return vecs;
     }
-}
+
+} // end namespace CSF

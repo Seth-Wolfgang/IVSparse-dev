@@ -1,7 +1,14 @@
+/**
+ * @file CSF3_BLAS.hpp
+ * @author Skyler Ruiter and Seth Wolfgang
+ * @brief BLAS Routines and Other Matrix Calculations for CSF3 Sparse Matrices
+ * @version 0.1
+ * @date 2023-07-03
+ */
+
 #pragma once
 
-namespace CSF
-{
+namespace CSF {
 
     //* BLAS Level 1 Routines *//
 
@@ -240,4 +247,4 @@ namespace CSF
 
     }
 
-}
+} // namespace CSF

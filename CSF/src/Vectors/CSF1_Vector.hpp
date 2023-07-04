@@ -1,3 +1,11 @@
+/**
+ * @file CSF1_Vector.hpp
+ * @author Skyler Ruiter and Seth Wolfgang
+ * @brief CSF1 Vector Class Declerations
+ * @version 0.1
+ * @date 2023-07-03
+ */
+
 #pragma once
 
 namespace CSF {
