@@ -361,6 +361,7 @@ namespace CSF {
         this->nnz = nnz;
 
         encodeValueType();
+        index_t = sizeof(indexT);
 
         try {
             vals = (T*)malloc(nnz * sizeof(T));
@@ -410,6 +411,10 @@ namespace CSF {
 
         outerPtr[OuterIndex + 1] = count;
 
+        // run the user checks
+        #ifdef CSF_DEBUG
+        userChecks();
+        #endif
 
         calculateCompSize();
     }
