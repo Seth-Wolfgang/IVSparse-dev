@@ -3,7 +3,7 @@
 #include "misc/matrix_creator.cpp"
 #include <chrono>
 // #define EIGEN_DONT_PARALLELIZE
-#define DATA_TYPE int
+#define DATA_TYPE double
 
 template<typename T, typename indexT>
 void sizeTest(int iterations);
@@ -15,62 +15,55 @@ void getMat(Eigen::SparseMatrix<int>& myMatrix_e);
 //  clear; rm a.out; g++ test.cpp; ./a.out
 
 int main() {
-    int rows = 10000;
-    int cols = 100;
-    int sparsity = 10;
-    uint64_t seed = 52352;
-    int maxVal = 10000;
+    int rows = 100;
+    int cols = 4000;
+    int sparsity = 99;
+    uint64_t seed = 522;
+    int maxVal = 10053353425;
 
-    // Eigen::SparseMatrix<DATA_TYPE> eigen(rows, cols);
-    // eigen = generateMatrix<DATA_TYPE>(rows, cols, sparsity, 1, maxVal);
+    Eigen::SparseMatrix<DATA_TYPE> eigen(rows, cols);
+    eigen = generateMatrix<DATA_TYPE>(rows, cols, sparsity, seed, maxVal);
     // std::cout << eigen << std::endl;
 
-    Eigen::MatrixXi mat(6, 6);
-    mat << 0, 6, 4,  1, -1, 4,
-           3, 9, 0,  0, -6, 4,
-           0, 0,-5,-10,  0, 1,
-           9, 8, 7,  6,  5, 4,
-           0, 0, 0,  0,  0, 4,
-           0, 0, 0,  0,  0,-1;
+    // Eigen::MatrixXi mat(6, 6);
+    // mat << 0, 6, 4,  1, -1, 4,
+    //        3, 9, 0,  0, -6, 4,
+    //        0, 0,-5,-10,  0, 1,
+    //        9, 8, 7,  6,  5, 4,
+    //        0, 0, 0,  0,  0, 4,
+    //        0, 0, 0,  0,  0,-1;
 
-    Eigen::Vector<DATA_TYPE, 6> eigenVec(6,1);
-    eigenVec << 0,
-                3,
-                0,
-                9,
-                0,
-                0;
+    // Eigen::Vector<DATA_TYPE, 6> eigenVec(6,1);
+    // eigenVec << 0,
+    //             3,
+    //             0,
+    //             9,
+    //             0, 
+    //             0;
 
 
-    Eigen::SparseMatrix<DATA_TYPE> eigen = mat.sparseView();
+    // Eigen::SparseMatrix<DATA_TYPE> eigen = mat.sparseView();
     // Eigen::SparseVector<DATA_TYPE> eigenVector = eigenVec.sparseView();
 
-    CSF::SparseMatrix<DATA_TYPE, uint32_t, 1> csf(eigen);
+    // CSF::SparseMatrix<DATA_TYPE, uint32_t, 1> csf(eigen);
     CSF::SparseMatrix<DATA_TYPE, uint32_t, 3> csf3(eigen);
     CSF::SparseMatrix<DATA_TYPE, uint32_t, 2> csf2(eigen);
+    uint64_t eigenSize = eigen.nonZeros() * sizeof(double) + eigen.nonZeros() * sizeof(uint32_t) + (eigen.outerSize() + 1) * sizeof(uint32_t);
+
+    std::cout << "Eigen size: " << eigenSize << std::endl;
+    std::cout << "CSF2 size: " << csf2.byteSize() << std::endl;
+    std::cout << "CSF3 size: " << csf3.byteSize() << std::endl;
+
+    std::cout << "Ratios -> CSF2: " << (double)csf2.byteSize() / eigenSize << " \tCSF3: " << (double)csf3.byteSize() / eigenSize << std::endl;
 
     // typename CSF::SparseMatrix<DATA_TYPE, uint32_t, 3>::Vector vec = csf3[0];
-    // std::cout << vec.dot(eigenVec) << std::endl;
-    // std::cout << csf3<< std::endl;
+    // // std::cout << vec.dot(eigenVec) << std::endl;
+    // // std::cout << csf3<< std::endl;
 
-    csf2 = csf2.transpose();
 
-    csf2 = csf2.transpose();
-    csf2 = csf2.transpose();
-
-    csf2 = csf2.transpose();
-    csf2 = csf2.transpose();
-
-    csf2 = csf2.transpose();
-    csf2 = csf2.transpose();
-
-    csf2 *= 2;
-    std::cout << csf2 << std::endl;
-    // csf2 = csf2.transpose();
-    
 
     // std::cout << csf2 << std::endl;
-    
+
     // for (int i = 0; i < csf2.cols(); i++) {
     //     for (typename CSF::SparseMatrix<DATA_TYPE, uint32_t, 2>::InnerIterator it(csf2, i); it; ++it) {
     //         std::cout << it.value() << " ";
@@ -86,6 +79,8 @@ int main() {
     //     }
     //     std::cout << std::endl;
     // }
+
+    // iteratorTest<int, int, 3>();
 
     return 1;
 }
@@ -103,7 +98,7 @@ void sizeTest(int iterations) {
     std::vector < uint64_t > csf2Sizes;
     std::vector < uint64_t > csfSizes;
 
-#pragma omp parallel for num_threads(15)
+    #pragma omp parallel for num_threads(15)
     for (int i = 0; i < iterations; i++) {
         // create an eigen sparse matrix
         Eigen::SparseMatrix<T> eigen(rows, cols);
@@ -140,7 +135,7 @@ void iteratorTest() {
 
     int numRows = 1000;//rand() % 1000 + 10;
     int numCols = 1000;//rand() % 1000 + 10;
-    int sparsity = 20;//rand() % 50 + 1;
+    int sparsity = 1;//rand() % 50 + 1;
     uint64_t seed = 1;//rand();
 
     // Initialize the random matrix
@@ -168,7 +163,7 @@ void iteratorTest() {
     std::vector<uint64_t> timesForOld;
     uint64_t ours = 0;
     uint64_t old = 0;
-    for (int i = 0; i < 10000; i++) {
+    for (int i = 0; i < 100; i++) {
 
         //Measure time for CSF matrix
         T sum = 0;
@@ -198,7 +193,7 @@ void iteratorTest() {
         timesForOld.push_back(std::chrono::duration_cast<std::chrono::microseconds>(end - start).count());
         old = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
         assert(sum2 == sum);
-        std::cout << "(CSF): " << ours << "(Eigen): " << old << std::endl;
+        // std::cout << "(CSF): " << ours << "(Eigen): " << old << std::endl;
 
         // std::cout << "Eigen:\n " << eigenDenseMatrix << std::endl;
     }

@@ -33,7 +33,7 @@ plot_data <- reshape2::melt(plot_data, id.vars = "redundancy")
 colnames(plot_data) <- c("redundancy", "format", "compression_ratio")
 
 library(ggplot2)
-ggplot(plot_data, aes(redundancy, compression_ratio, color = format)) + geom_point() + theme_classic() + theme(aspect.ratio = 1) + labs(x = "Matrix redundancy", y = "Compression Ratio vs. CSC Format", color = "Matrix Format")
+ggplot(plot_data, aes(redundancy, compression_ratio, color = format)) + geom_point() + theme_classic() + theme(aspect.ratio = 1) + labs(x = "Matrix redundancy", y = "Compression Ratio vs. CSC Format", color = "Matrix Format") + geom_abline(intercept = 1, slope=0)
 ```
 
 That's not as expected.

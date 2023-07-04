@@ -9,7 +9,7 @@ namespace CSF {
 
         indexT outer;
         indexT index;
-        T* val = nullptr;
+        T* val;
 
         indexT newIndex;
 
@@ -20,7 +20,7 @@ namespace CSF {
 
         bool firstIndex = true;
 
-        indexT* countsArray = nullptr;
+        indexT* countsArray;
         indexT valueArraySize;
         indexT count = 1;
         indexT valueArrayCounter = 1;

@@ -7,7 +7,7 @@ private:
     uint64_t state;
 
 public:
-    rng(uint64_t state): state(state) {}
+    rng(uint64_t state) : state(state) {}
 
     void advance_state() {
         state ^= state << 19;
@@ -129,17 +129,20 @@ template <typename T>
 Eigen::SparseMatrix<T> generateEigenMatrix(int numRows, int numCols, int sparsity, uint64_t seed) {
     // generate a random sparse matrix
     rng randMatrixGen = rng(seed);
+    
 
     Eigen::SparseMatrix<T> myMatrix(numRows, numCols);
-    myMatrix.reserve(Eigen::VectorXi::Constant(numRows, numCols));
+    myMatrix.reserve(Eigen::VectorXi::Constant(numCols, numRows));
 
     for (int i = 0; i < numRows; i++) {
         for (int j = 0; j < numCols; j++) {
             if (randMatrixGen.draw<int>(i, j, sparsity)) {
-                myMatrix.insert(i, j) = 10 * randMatrixGen.uniform<double>();
+                myMatrix.insert(i, j) = rand() % 100 + 1;
             }
         }
     }
+
+    myMatrix.makeCompressed();
     return myMatrix;
 }
 
@@ -281,15 +284,11 @@ CSF::SparseMatrix<T, T, 3> generateVector(int numRows, T* array) {
 template <typename T>
 T getLargeNumber() {
     T max = std::numeric_limits<T>::max();
-
-    if (max > 50000) {
-        return 50000;
-    }
-    else if (max > 10000) {
-        return 10000;
+    if constexpr (sizeof(T) >= 4) {
+        return 1000;
     }
     else {
-        return max;
+        return 100;
     }
 }
 

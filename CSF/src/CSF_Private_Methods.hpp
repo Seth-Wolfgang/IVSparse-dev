@@ -39,8 +39,8 @@ namespace CSF {
 
         // allocate space for the data
         try {
-            data = (void**)malloc(outerDim * sizeof(void*));
-            endPointers = (void**)malloc(outerDim * sizeof(void*));
+            data = (void**)calloc(outerDim, sizeof(void*));
+            endPointers = (void**)calloc(outerDim, sizeof(void*));
         }
         catch (std::bad_alloc& e) {
             std::cout << "Error: " << e.what() << std::endl;
@@ -144,7 +144,7 @@ namespace CSF {
             else {
                 // loop through the dictionary and calculate the size of the column
                 for (auto& pair : dict) {
-                    outerByteSize += (sizeof(indexT) * pair.second.size());
+                    outerByteSize += (sizeof(indexT) * pair.second.size() + 1);
 
                     performanceVecSize++;
                 }
@@ -350,21 +350,23 @@ namespace CSF {
 
         // add the size of the data itself
         for (uint32_t i = 0; i < outerDim; i++) {
-            compSize += *((uint8_t**)endPointers + i) - *((uint8_t**)data + i);
+            if (data[i] != nullptr && this->getVectorSize(i) != 0 && data[i] != NULL) {
+                compSize += *((uint8_t**)endPointers + i) - *((uint8_t**)data + i);
+            }
         }
 
         // if performance vectors are on add them to the compression size
         if constexpr (compressionLevel == 2) {
             compSize += (sizeof(T*) * outerDim);
-            compSize += (sizeof(uint32_t*) * outerDim);
+            compSize += (sizeof(indexT*) * outerDim);
 
-            compSize += (sizeof(uint32_t) * outerDim);
+            compSize += (sizeof(indexT) * outerDim);
 
             for (uint32_t i = 0; i < outerDim; i++) {
                 compSize += (sizeof(T) * valueArraySize[i]);
-                compSize += (sizeof(uint32_t) * valueArraySize[i]);
+                compSize += (sizeof(indexT) * valueArraySize[i]);
             }
-        } 
+        }
     }
 
 }

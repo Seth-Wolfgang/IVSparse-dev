@@ -486,8 +486,8 @@ namespace CSF {
 
         if constexpr (compressionLevel == 2) {
             valueArray = (T**)calloc(sizeof(T*), num_rows);
-            countsArray = (uint32_t**)calloc(sizeof(uint32_t*), num_rows);
-            valueArraySize = (uint32_t*)malloc(sizeof(uint32_t) * num_rows);
+            countsArray = (indexT**)calloc(sizeof(indexT*), num_rows);
+            valueArraySize = (indexT*)malloc(sizeof(indexT) * num_rows);
         }
         
 
@@ -542,7 +542,7 @@ namespace CSF {
             }
             else {
                 valueArray[i] = (T*)malloc(sizeof(T) * maps[i].size());                
-                countsArray[i] = (uint32_t*)malloc(sizeof(uint32_t) * maps[i].size());
+                countsArray[i] = (indexT*)malloc(sizeof(indexT) * maps[i].size());
                 valueArraySize[i] = 0;
                 // loop through the vectors of the map
                 for (auto& val : maps[i]) {

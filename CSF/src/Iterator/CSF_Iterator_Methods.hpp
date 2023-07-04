@@ -18,30 +18,31 @@ namespace CSF {
         endPtr = (uint8_t*)data + matrix.getVectorSize(vec);
 
         // If the column is all zeros, set the data to fail operator bool() 
-        if (data == nullptr || data == endPtr) [[unlikely]] {
+        if (data == nullptr) [[unlikely]] {
             // Trips bool operator
             // std::cout << "At vec: " << vec << std::endl;
             data = (void*)0xFFFFFFFFFFFFFFFF;
             return;
-        }
+            }
 
-        if constexpr (compressionLevel == 3) {
-            val = (T*)data;
-            data = (uint8_t*)data + sizeof(T);
+            if constexpr (compressionLevel == 3) {
+                val = (T*)data;
+                data = (uint8_t*)data + sizeof(T);
 
-            // Sets row width to the width of the first run
-            indexWidth = *(uint8_t*)data;
-            data = (uint8_t*)data + sizeof(uint8_t);
-        }
-        else {
-            val = matrix.valueArray[vec];
-            countsArray = matrix.countsArray[vec];
-            valueArraySize = matrix.valueArraySize[vec];
-            indexWidth = sizeof(indexT);
-        }
+                // Sets row width to the width of the first run
+                indexWidth = *(uint8_t*)data;
+                data = (uint8_t*)data + sizeof(uint8_t);
+                decodeIndex();
+                index = newIndex;
+            }
+            else {
+                val = matrix.valueArray[vec];
+                countsArray = matrix.countsArray[vec];
+                valueArraySize = matrix.valueArraySize[vec];
+                index = static_cast<indexT>(*static_cast<indexT*>(data));
+            }
 
-        decodeIndex();
-        index = newIndex;
+
     }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
@@ -137,24 +138,19 @@ namespace CSF {
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     void SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator::operator++() {
 
-        data = (uint8_t*)data + indexWidth;
-
-        decodeIndex();
-
         if constexpr (compressionLevel == 2) {
 
-            if (countsArray[0] == count) {
+            data = (uint8_t*)data + sizeof(indexT);
+            index = static_cast<indexT>(*static_cast<indexT*>(data));
 
-                if (valueArrayCounter == valueArraySize) [[unlikely]] {
-                    return;
-                }
+            if (countsArray[0] == count) {
 
                 // val will be moved forward to the next value since
                 // count is equal to the current value's number of occurences
                 val++;
 
                 // update the current row
-                index = newIndex;
+                // index = newIndex;
                 firstIndex = true;
 
                 // Reset count and iterate
@@ -166,11 +162,12 @@ namespace CSF {
             }
             //else
             count++;
-            index = newIndex;
         }
         else {
 
-        
+            data = (uint8_t*)data + indexWidth;
+            decodeIndex();
+
             // CSF 3
             // If new_row is 0 and not the first row, then the row is a delimitor
             if (newIndex == 0) {
@@ -185,10 +182,10 @@ namespace CSF {
                 val = (T*)data;
                 data = (uint8_t*)data + sizeof(T);
 
-                    // Sets row width to the width of the first run
+                // Sets row width to the width of the first run
                 indexWidth = *(uint8_t*)data;
                 data = (uint8_t*)data + sizeof(uint8_t);
-                
+
 
                 // update currentCol to the next column
 
