@@ -1,3 +1,11 @@
+/**
+ * @file CSF2_BLAS.hpp
+ * @author Skyler Ruiter and Seth Wolfgang
+ * @brief BLAS Routines and Other Matrix Calculations for CSF2 Sparse Matrices
+ * @version 0.1
+ * @date 2023-07-03
+ */
+
 #pragma once
 
 namespace CSF {
@@ -97,6 +105,7 @@ namespace CSF {
 
     //* Other Matrix Calculations *//
 
+    // Finds the Outer Sum of the Matrix
     template <typename T, typename indexT, bool columnMajor>
     inline std::vector<T> SparseMatrix<T, indexT, 2, columnMajor>::outerSum() {
         std::vector<T> outerSum = std::vector<T>(outerDim);
@@ -108,10 +117,9 @@ namespace CSF {
             }
         }
         return outerSum;
-
     }
 
-
+    // Finds the Inner Sum of the Matrix
     template <typename T, typename indexT, bool columnMajor>
     inline std::vector<T> SparseMatrix<T, indexT, 2, columnMajor>::innerSum() {
         std::vector<T> innerSum = std::vector<T>(innerDim);
@@ -125,7 +133,7 @@ namespace CSF {
         return innerSum;
     }
 
-    //! Make aware of storage order?
+    // Finds the maximum value in each column
     template <typename T, typename indexT, bool columnMajor>
     inline std::vector<T> SparseMatrix<T, indexT, 2, columnMajor>::maxColCoeff() {
         std::vector<T> maxCoeff = std::vector<T>(innerDim);
@@ -141,6 +149,7 @@ namespace CSF {
         return maxCoeff;
     }
 
+    // Finds the maximum value in each row
     template <typename T, typename indexT, bool columnMajor>
     inline std::vector<T>  SparseMatrix<T, indexT, 2, columnMajor>::maxRowCoeff() {
         std::vector<T> maxCoeff = std::vector<T>(innerDim);
@@ -156,6 +165,7 @@ namespace CSF {
         return maxCoeff;
     }
 
+    // Finds the minimum value in each column
     template <typename T, typename indexT, bool columnMajor>
     inline std::vector<T> SparseMatrix<T, indexT, 2, columnMajor>::minColCoeff() {
         std::vector<T> minCoeff = std::vector<T>(innerDim);
@@ -171,6 +181,7 @@ namespace CSF {
         return minCoeff;
     }
 
+    // Finds the minimum value in each row
     template <typename T, typename indexT, bool columnMajor>
     inline std::vector<T> SparseMatrix<T, indexT, 2, columnMajor>::minRowCoeff() {
         std::vector<T> minCoeff = std::vector<T>(innerDim);
@@ -186,6 +197,7 @@ namespace CSF {
         return minCoeff;
     }
 
+    // Calculates the trace of the matrix
     template <typename T, typename indexT, bool columnMajor>
     inline T SparseMatrix<T, indexT, 2, columnMajor>::trace() {
         assert(innerDim == outerDim && "Trace is only defined for square matrices!");
@@ -204,6 +216,7 @@ namespace CSF {
         return trace;
     }
 
+    // Calculates the sum of the matrix
     template <typename T, typename indexT, bool columnMajor>
     inline T SparseMatrix<T, indexT, 2, columnMajor>::sum() {
         T sum = 0;
@@ -217,6 +230,7 @@ namespace CSF {
         return sum;
     }
 
+    // Calculates the norm of the matrix
     template <typename T, typename indexT, bool columnMajor>
     inline double SparseMatrix<T, indexT, 2, columnMajor>::norm() {
         double norm = 0;
@@ -230,6 +244,7 @@ namespace CSF {
         return sqrt(norm);
     }
 
+    // Finds the length of a certain column
     template <typename T, typename indexT, bool columnMajor>
     inline double SparseMatrix<T, indexT, 2, columnMajor>::vectorLength(uint32_t col) {
         double norm = 0;
@@ -240,4 +255,5 @@ namespace CSF {
         }
         return sqrt(norm);
     }
-}
+
+} // namespace CSF

@@ -1,7 +1,14 @@
+/**
+ * @file CSF3_Private_Methods.hpp
+ * @author Skyler Ruiter and Seth Wolfgang
+ * @brief Private Methods for CSF3 Sparse Matrices
+ * @version 0.1
+ * @date 2023-07-03
+ */
+
 #pragma once
 
-namespace CSF
-{
+namespace CSF {
 
     // Encodes the value type of the matrix in a uint32_t
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
@@ -69,8 +76,6 @@ namespace CSF
 
         // allocate space for metadata
         metadata = new uint32_t[NUM_META_DATA];
-
-        // setup the rest of the metadata
         metadata[0] = compressionLevel;
         metadata[1] = innerDim;
         metadata[2] = outerDim;
@@ -239,6 +244,7 @@ namespace CSF
         } // end of column loop
 
         calculateCompSize();
-    }
+    
+    } // end of compressCSC
 
-}
+} // end of namespace CSF

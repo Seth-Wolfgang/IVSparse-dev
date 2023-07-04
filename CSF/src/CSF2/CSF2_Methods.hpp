@@ -1,7 +1,16 @@
+/**
+ * @file CSF2_Methods.hpp
+ * @author Skyler Ruiter and Seth Wolfgang
+ * @brief Methods for CSF2 Sparse Matrices
+ * @version 0.1
+ * @date 2023-07-03
+ */
+
 #pragma once
 
-namespace CSF
-{
+namespace CSF {
+
+    //* Getters *//
 
     // Gets the element stored at the given row and column
     template <typename T, typename indexT, bool columnMajor>
@@ -41,6 +50,8 @@ namespace CSF
     template <typename T, typename indexT, bool columnMajor>
     typename CSF::SparseMatrix<T, indexT, 2, columnMajor>::Vector SparseMatrix<T, indexT, 2, columnMajor>::getVector(uint32_t vec) { return (*this)[vec]; }
 
+    //* Utility Methods *//
+
     // Writes the matrix to file
     template <typename T, typename indexT, bool columnMajor>
     void SparseMatrix<T, indexT, 2, columnMajor>::write(const char* filename) {
@@ -51,28 +62,18 @@ namespace CSF
         fwrite(metadata, 1, NUM_META_DATA * sizeof(uint32_t), fp);
 
         // write the lengths of the vectors
-        for (uint32_t i = 0; i < outerDim; ++i) {
-            fwrite(&valueSizes[i], 1, sizeof(indexT), fp);
-        }
+        for (uint32_t i = 0; i < outerDim; ++i) { fwrite(&valueSizes[i], 1, sizeof(indexT), fp); }
 
-        for (uint32_t i = 0; i < outerDim; ++i) {
-            fwrite(&indexSizes[i], 1, sizeof(indexT), fp);
-        }
+        for (uint32_t i = 0; i < outerDim; ++i) { fwrite(&indexSizes[i], 1, sizeof(indexT), fp); }
 
         // write the values
-        for (uint32_t i = 0; i < outerDim; ++i) {
-            fwrite(values[i], 1, valueSizes[i] * sizeof(T), fp);
-        }
+        for (uint32_t i = 0; i < outerDim; ++i) { fwrite(values[i], 1, valueSizes[i] * sizeof(T), fp); }
 
         // write the counts
-        for (uint32_t i = 0; i < outerDim; ++i) {
-            fwrite(counts[i], 1, valueSizes[i] * sizeof(indexT), fp);
-        }
+        for (uint32_t i = 0; i < outerDim; ++i) { fwrite(counts[i], 1, valueSizes[i] * sizeof(indexT), fp); }
 
         // write the indices
-        for (uint32_t i = 0; i < outerDim; ++i) {
-            fwrite(indices[i], 1, indexSizes[i] * sizeof(indexT), fp);
-        }
+        for (uint32_t i = 0; i < outerDim; ++i) { fwrite(indices[i], 1, indexSizes[i] * sizeof(indexT), fp); }
 
         // close the file
         fclose(fp);
@@ -135,8 +136,6 @@ namespace CSF
     template <typename T, typename indexT, bool columnMajor>
     CSF::SparseMatrix<T, indexT, 3, columnMajor> SparseMatrix<T, indexT, 2, columnMajor>::toCSF3() {
 
-        //* compress the data
-
         // make a pointer for the CSC pointers
         T* values = (T*)malloc(nnz * sizeof(T));
         indexT* indices = (indexT*)malloc(nnz * sizeof(indexT));
@@ -155,10 +154,8 @@ namespace CSF
                 dict[i][it.getIndex()] = it.value();
                 count++;
             }
-
             colPtrs[i + 1] = colPtrs[i] + count;
         }
-
         size_t count = 0;
 
         // loop through the dictionary and populate values and indices
@@ -169,7 +166,6 @@ namespace CSF
                 count++;
             }
         }
-
 
         // return a CSF3 matrix from the CSC vectors
         CSF::SparseMatrix<T, indexT, 3, columnMajor> mat(values, indices, colPtrs, numRows, numCols, nnz);
@@ -220,14 +216,10 @@ namespace CSF
         }
         else {
             // check if the vector is empty, if so change the implementation details
-            if (vec.nonZeros() == 0) [[unlikely]] {
+            if (vec.nonZeros() == 0) {
 
-                if (columnMajor) {
-                    numCols++;
-                }
-                else {
-                    numRows++;
-                }
+                if (columnMajor) { numCols++; }
+                else { numRows++; }
                 outerDim++;
 
                 // update metadata
@@ -254,10 +246,9 @@ namespace CSF
                 indexSizes[outerDim - 1] = 0;
 
                 calculateCompSize();
-
                 return;
-            }
-            else {
+            
+            } else {
 
                 // check that the vector is the correct size
                 if ((vec.getLength() != innerDim))
@@ -265,12 +256,9 @@ namespace CSF
 
                 outerDim++;
                 nnz += vec.nonZeros();
-                if (columnMajor) {
-                    numCols++;
-                }
-                else {
-                    numRows++;
-                }
+
+                if (columnMajor) { numCols++; }
+                else { numRows++; }
 
                 // update metadata
                 metadata[2] = outerDim;
@@ -309,10 +297,12 @@ namespace CSF
                 memcpy(counts[outerDim - 1], vec.getCounts(), valueSizes[outerDim - 1] * sizeof(indexT));
                 memcpy(indices[outerDim - 1], vec.getIndices(), indexSizes[outerDim - 1] * sizeof(indexT));
 
+                // update the compressed size
                 calculateCompSize();
             }
         }
-    }
+
+    } // end append
 
     // tranposes the csf matrix
     template <typename T, typename indexT, bool columnMajor>
@@ -360,24 +350,22 @@ namespace CSF
             }
         }
 
+        // set this to the transposed matrix
         *this = CSF::SparseMatrix<T, indexT, 2, columnMajor>(mapsT, numRows, numCols);
     }
 
     // slice method that returns a vector of CSF vectors
     template <typename T, typename indexT, bool columnMajor>
-    std::vector<typename CSF::SparseMatrix<T, indexT, 2, columnMajor>::Vector> SparseMatrix<T, indexT, 2, columnMajor>::slice(uint32_t start, uint32_t end)
-    {
+    std::vector<typename CSF::SparseMatrix<T, indexT, 2, columnMajor>::Vector> SparseMatrix<T, indexT, 2, columnMajor>::slice(uint32_t start, uint32_t end) {
         #ifdef CSF_DEBUG
         assert(start < outerDim && end <= outerDim && start < end && "Invalid start and end values!");
         #endif
-
 
         // make a vector of CSF vectors
         std::vector<typename CSF::SparseMatrix<T, indexT, 2, columnMajor>::Vector> vecs(end - start);
 
         // grab the vectors and add them to vecs
-        for (uint32_t i = start; i < end; ++i)
-        {
+        for (uint32_t i = start; i < end; ++i) {
             // make a temp vector
             CSF::SparseMatrix<T, indexT, 2, columnMajor>::Vector temp(*this, i);
 
@@ -388,4 +376,5 @@ namespace CSF
         // return the vector
         return vecs;
     }
-}
+
+} // end namespace CSF

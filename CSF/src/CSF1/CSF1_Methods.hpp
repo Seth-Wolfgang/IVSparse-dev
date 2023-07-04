@@ -1,6 +1,16 @@
+/**
+ * @file CSF1_Methods.hpp
+ * @author Skyler Ruiter and Seth Wolfgang
+ * @brief Methods for CSF1 Sparse Matrices
+ * @version 0.1
+ * @date 2023-07-03
+ */
+
 #pragma once
 
 namespace CSF {
+
+    //* ------------------------------ Getters ------------------------------ *//
 
     // Gets the element stored at the given row and column
     template <typename T, typename indexT, bool columnMajor>
@@ -30,16 +40,18 @@ namespace CSF {
         assert((vec < outerDim && vec >= 0) && "Vector index out of bounds");
         #endif
 
-        // create a vector from the matrix
+        // create a vector from the matrix and return it
         typename SparseMatrix<T, indexT, 1, columnMajor>::Vector v(*this, vec);
-
         return v;
     }
+
+    //* ------------------------------ Utility Methods ------------------------------ *//
 
     // write the matrix to file
     template <typename T, typename indexT, bool columnMajor>
     void SparseMatrix<T, indexT, 1, columnMajor>::write(const char *filename) {
 
+        // open the file
         FILE* fp = fopen(filename, "wb");
 
         // write the metadata
@@ -54,6 +66,7 @@ namespace CSF {
         // write the outer pointers
         fwrite(outerPtr, sizeof(indexT), outerDim + 1, fp);
 
+        // close the file
         fclose(fp);
     }
 
@@ -72,7 +85,7 @@ namespace CSF {
                 }
                 std::cout << std::endl;
             }
-        } else if (numRows > 100 && numCols > 100) {
+        } else if (numRows >= 100 && numCols >= 100) {
             // print the first 100 rows and columns
             for (uint32_t i = 0; i < 100; i++) {
                 for (uint32_t j = 0; j < 100; j++) {
@@ -83,6 +96,7 @@ namespace CSF {
         }
     }
 
+    // Converts the CSF1 Matrix to a CSF2 Matrix
     template <typename T, typename indexT, bool columnMajor>
     CSF::SparseMatrix<T, indexT, 2, columnMajor> SparseMatrix<T, indexT, 1, columnMajor>::toCSF2() {
         // create a new CSF matrix
@@ -92,6 +106,7 @@ namespace CSF {
         return csfMat;
     }
 
+    // Converts the CSF1 Matrix to a CSF3 Matrix
     template <typename T, typename indexT, bool columnMajor>
     CSF::SparseMatrix<T, indexT, 3, columnMajor> SparseMatrix<T, indexT, 1, columnMajor>::toCSF3() {
         // create a new CSF matrix
@@ -101,6 +116,7 @@ namespace CSF {
         return csfMat;
     }
 
+    // Converts the CSF1 Matrix to an Eigen Sparse Matrix
     template <typename T, typename indexT, bool columnMajor>
     Eigen::SparseMatrix<T, columnMajor ? Eigen::ColMajor : Eigen::RowMajor> SparseMatrix<T, indexT, 1, columnMajor>::toEigen() {
         // create a new sparse matrix with the correct dimensions
@@ -113,7 +129,6 @@ namespace CSF {
 
         // add the values to the matrix
         for (uint32_t i = 0; i < outerDim; i++) {
-
             for (indexT j = outerPtr[i]; j < outerPtr[i + 1]; j++) {
                 eigenMat.insert(innerIdx[j], i) = vals[j];
             }
@@ -123,6 +138,9 @@ namespace CSF {
         return eigenMat;
     }
 
+    //* ------------------------------ Matrix Transformations ------------------------------ *//
+
+    // Transposes the CSF1 Matrix and Returns it
     template <typename T, typename indexT, bool columnMajor>
     CSF::SparseMatrix<T, indexT, 1, columnMajor> SparseMatrix<T, indexT, 1, columnMajor>::transpose() {
         // create an eigen matrix
@@ -138,7 +156,7 @@ namespace CSF {
         return csfMat;
     }
 
-    // in place transpose
+    // In Place Transpose 
     template <typename T, typename indexT, bool columnMajor>
     void SparseMatrix<T, indexT, 1, columnMajor>::inPlaceTranspose() {
         // create an eigen matrix
@@ -147,22 +165,20 @@ namespace CSF {
         // transpose the matrix
         eigenMat = eigenMat.transpose();
 
+        // set the matrix to the new matrix
         *this = CSF::SparseMatrix<T, indexT, 1, columnMajor>(eigenMat);
     }
 
+    // Appends a csf1 vector onto a csf1 matrix
     template <typename T, typename indexT, bool columnMajor>
     void SparseMatrix<T, indexT, 1, columnMajor>::append(SparseMatrix<T, indexT, 1, columnMajor>::Vector& vec) {
 
-        // update the dimensions
-        if (columnMajor) {
-            numCols++;
-        } else {
-            numRows++;
-        }
+        // update the dimensions and nnz
+        if (columnMajor) { numCols++; } 
+        else { numRows++; }
         outerDim++;
-        metadata[2] = outerDim;
-
         nnz += vec.nonZeros();
+        metadata[2] = outerDim;
         metadata[3] = nnz;
 
         // realloc the arrays
@@ -188,6 +204,7 @@ namespace CSF {
             return;
         }
 
+        // calculate the compressed size
         calculateCompSize();
     }
 
@@ -195,10 +212,10 @@ namespace CSF {
     template <typename T, typename indexT, bool columnMajor>
     std::vector<typename CSF::SparseMatrix<T, indexT, 1, columnMajor>::Vector> SparseMatrix<T, indexT, 1, columnMajor>::slice(uint32_t start, uint32_t end)
     {
+        // check if the start and end values are valid
         #ifdef CSF_DEBUG
         assert(start < outerDim && end <= outerDim && start < end && "Invalid start and end values!");
         #endif
-
 
         // make a vector of CSF vectors
         std::vector<typename CSF::SparseMatrix<T, indexT, 1, columnMajor>::Vector> vecs(end - start);
@@ -216,4 +233,5 @@ namespace CSF {
         // return the vector
         return vecs;
     }
-}
+    
+} // namespace CSF

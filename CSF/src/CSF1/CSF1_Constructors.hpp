@@ -1,3 +1,11 @@
+/**
+ * @file CSF1_Constructors.hpp
+ * @author Skyler Ruiter and Seth Wolfgang
+ * @brief Constructors for CSF1 Sparse Matrices
+ * @version 0.1
+ * @date 2023-07-03
+ */
+
 #pragma once
 
 namespace CSF {
@@ -6,40 +14,31 @@ namespace CSF {
     template <typename T, typename indexT, bool columnMajor>
     SparseMatrix<T, indexT, 1, columnMajor>::~SparseMatrix() {
 
-        // free the old data
-        if (vals != nullptr) {
-            free(vals);
-        }
-
-        if (innerIdx != nullptr) {
-            free(innerIdx);
-        }
-
-        if (outerPtr != nullptr) {
-            free(outerPtr);
-        }
-
-        if (metadata != nullptr)
-            delete[] metadata;
+        // free the data allocated for the CSF1 Matrix
+        if (vals != nullptr) { free(vals); }
+        if (innerIdx != nullptr) { free(innerIdx); }
+        if (outerPtr != nullptr) { free(outerPtr); }
+        if (metadata != nullptr) { delete[] metadata; }
     }
 
     // Eigen Constructor
     template <typename T, typename indexT, bool columnMajor>
     SparseMatrix<T, indexT, 1, columnMajor>::SparseMatrix(Eigen::SparseMatrix<T> &mat) {
 
+        // Make sure the matrix is compressed before reading it in
         mat.makeCompressed();
 
+        // set the dimensions and nnz
         innerDim = mat.innerSize();
         outerDim = mat.outerSize();
-
         numRows = mat.rows();
         numCols = mat.cols();
-
         nnz = mat.nonZeros();
 
         encodeValueType();
         index_t = sizeof(indexT);
 
+        // allocate the memory
         try {
             vals = (T*)malloc(nnz * sizeof(T));
             innerIdx = (indexT*)malloc(nnz * sizeof(indexT));
@@ -48,8 +47,8 @@ namespace CSF {
             std::cerr << "Allocation failed: " << e.what() << '\n';
         }
 
+        // set the metadata
         metadata = new uint32_t[NUM_META_DATA];
-
         metadata[0] = 1;
         metadata[1] = innerDim;
         metadata[2] = outerDim;
@@ -57,10 +56,12 @@ namespace CSF {
         metadata[4] = val_t;
         metadata[5] = index_t;
 
+        // copy the data
         memcpy(vals, mat.valuePtr(), sizeof(T) * nnz);
         memcpy(innerIdx, mat.innerIndexPtr(), sizeof(indexT) * nnz);
         memcpy(outerPtr, mat.outerIndexPtr(), sizeof(indexT) * (outerDim + 1));
 
+        // calculate the compressed size and run the user checks
         calculateCompSize();
 
         // run the user checks
@@ -71,21 +72,22 @@ namespace CSF {
 
     // eigen sparse matrix constructor (row major)
     template <typename T, typename indexT, bool columnMajor>
-    SparseMatrix<T, indexT, 1, columnMajor>::SparseMatrix(Eigen::SparseMatrix<T, Eigen::RowMajor> &other)
+    SparseMatrix<T, indexT, 1, columnMajor>::SparseMatrix(Eigen::SparseMatrix<T, Eigen::RowMajor> &mat)
     {
-        other.makeCompressed();
+        // Make sure the matrix is compressed before reading it in
+        mat.makeCompressed();
 
-        innerDim = other.innerSize();
-        outerDim = other.outerSize();
+        // set the dimensions and nnz
+        innerDim = mat.innerSize();
+        outerDim = mat.outerSize();
+        numRows = mat.rows();
+        numCols = mat.cols();
+        nnz = mat.nonZeros();
 
-        numRows = other.rows();
-        numCols = other.cols();
-
-        nnz = other.nonZeros();
-
-        val_t = encodeValueType();
+        encodeValueType();
         index_t = sizeof(indexT);
 
+        // allocate the memory
         try {
             vals = (T*)malloc(nnz * sizeof(T));
             innerIdx = (indexT*)malloc(nnz * sizeof(indexT));
@@ -94,8 +96,8 @@ namespace CSF {
             std::cerr << "Allocation failed: " << e.what() << '\n';
         }
 
+        // set the metadata
         metadata = new uint32_t[NUM_META_DATA];
-
         metadata[0] = 1;
         metadata[1] = innerDim;
         metadata[2] = outerDim;
@@ -103,10 +105,12 @@ namespace CSF {
         metadata[4] = val_t;
         metadata[5] = index_t;
 
-        memcpy(vals, other.valuePtr(), sizeof(T) * nnz);
-        memcpy(innerIdx, other.innerIndexPtr(), sizeof(indexT) * nnz);
-        memcpy(outerPtr, other.outerIndexPtr(), sizeof(indexT) * (outerDim + 1));
+        // copy the data
+        memcpy(vals, mat.valuePtr(), sizeof(T) * nnz);
+        memcpy(innerIdx, mat.innerIndexPtr(), sizeof(indexT) * nnz);
+        memcpy(outerPtr, mat.outerIndexPtr(), sizeof(indexT) * (outerDim + 1));
 
+        // calculate the compressed size and run the user checks
         calculateCompSize();
 
         // run the user checks
@@ -130,25 +134,31 @@ namespace CSF {
             return;
         }
 
+        // make a temporary csf1 matrix
         CSF::SparseMatrix<T, indexT, 1, columnMajor> temp;
 
+        // convert to csf1
         if constexpr(compressionLevel2 == 2) {
             temp = other.toCSF1();
         } else if constexpr (compressionLevel2 == 3) {
             temp = other.toCSF1();
         }
 
+        // copy the temporary matrix
         *this = temp;
 
+        // run the user checks
         #ifdef CSF_DEBUG
         userChecks();
         #endif
     }
 
+    // Raw CSC Constructor
     template <typename T, typename indexT, bool columnMajor>
     template <typename T2, typename indexT2>
     SparseMatrix<T, indexT, 1, columnMajor>::SparseMatrix(T2 *vals, indexT2 *innerIndices, indexT2 *outerPtr, uint32_t num_rows, uint32_t num_cols, uint32_t nnz) {
 
+        // set the dimensions and nnz
         if constexpr (columnMajor) {
             innerDim = num_rows;
             outerDim = num_cols;
@@ -164,6 +174,7 @@ namespace CSF {
         encodeValueType();
         index_t = sizeof(indexT);
 
+        // allocate the memory
         try {
             this->vals = (T*)malloc(nnz * sizeof(T));
             innerIdx = (indexT*)malloc(nnz * sizeof(indexT));
@@ -172,8 +183,8 @@ namespace CSF {
             std::cerr << "Allocation failed: " << e.what() << '\n';
         }
 
+        // set the metadata
         metadata = new uint32_t[NUM_META_DATA];
-
         metadata[0] = 1;
         metadata[1] = innerDim;
         metadata[2] = outerDim;
@@ -181,10 +192,12 @@ namespace CSF {
         metadata[4] = val_t;
         metadata[5] = index_t;
 
+        // copy the data
         memcpy(this->vals, vals, sizeof(T) * nnz);
         memcpy(innerIdx, innerIndices, sizeof(indexT) * nnz);
         memcpy(this->outerPtr, outerPtr, sizeof(indexT) * (outerDim + 1));
 
+        // calculate the compressed size and run the user checks
         calculateCompSize();
 
         // run the user checks
@@ -197,6 +210,7 @@ namespace CSF {
     template <typename T, typename indexT, bool columnMajor>
     SparseMatrix<T, indexT, 1, columnMajor>::SparseMatrix(typename CSF::SparseMatrix<T, indexT, 1, columnMajor>::Vector &vec){
 
+        // set the dimensions and nnz
         if constexpr (columnMajor) {
             innerDim = vec.getLength();
             outerDim = 1;
@@ -214,9 +228,8 @@ namespace CSF {
         encodeValueType();
         index_t = sizeof(indexT);
 
-        
+        // set the metadata
         metadata = new uint32_t[NUM_META_DATA];
-
         metadata[0] = 1;
         metadata[1] = innerDim;
         metadata[2] = outerDim;
@@ -225,8 +238,8 @@ namespace CSF {
         metadata[5] = index_t;
 
         // if the vector is empty, return
-        if (vec.byteSize() == 0)
-        {
+        if (vec.byteSize() == 0) {
+
             vals = nullptr;
             innerIdx = nullptr;
             
@@ -238,10 +251,10 @@ namespace CSF {
             }
 
             outerPtr[0] = 0;
-
             return;
         }
 
+        // allocate the memory
         try {
             vals = (T*)malloc(nnz * sizeof(T));
             innerIdx = (indexT*)malloc(nnz * sizeof(indexT));
@@ -250,51 +263,59 @@ namespace CSF {
             std::cerr << "Allocation failed: " << e.what() << '\n';
         }
 
+        // copy the data and set the outerPtr
         memcpy(vals, vec.getValues(), sizeof(T) * nnz);
         memcpy(innerIdx, vec.getInnerIndices(), sizeof(indexT) * nnz);
         outerPtr[0] = 0;
         outerPtr[1] = nnz;
 
+        // calculate the compressed size and run the user checks
         calculateCompSize();
+
+        #ifdef CSF_DEBUG
+        userChecks();
+        #endif
     }
 
     // Array of Vectors Constructor
     template <typename T, typename indexT, bool columnMajor>
     SparseMatrix<T, indexT, 1, columnMajor>::SparseMatrix(std::vector<typename CSF::SparseMatrix<T, indexT, 1, columnMajor>::Vector> &vecs) {
 
+        // Make a temporary CSF1 matrix
         CSF::SparseMatrix<T, indexT, 1, columnMajor> temp(vecs[0]);
 
+        // append on each vector in the array
         for (size_t i = 1; i < vecs.size(); i++) {
             temp.append(vecs[i]);
         }
 
+        // copy the temporary matrix
         *this = temp;
 
-        // run the user checks
+        // run the user checks and calculate the compressed size
+        calculateCompSize();
+
         #ifdef CSF_DEBUG
         userChecks();
         #endif
-
-        calculateCompSize();
     }
 
     // File Constructor
     template <typename T, typename indexT, bool columnMajor>
     SparseMatrix<T, indexT, 1, columnMajor>::SparseMatrix(const char *filename) {
 
+        // open the file
         FILE *fp = fopen(filename, "rb");
 
+        // make sure the file exists
         if (fp == NULL) {
             std::cerr << "Error: Could not open file " << filename << std::endl;
             exit(1);
         }
 
+        // read the metadata and set the dimensions/nnz
         metadata = new uint32_t[NUM_META_DATA];
-
-        // read the metadata
         fread(metadata, sizeof(uint32_t), NUM_META_DATA, fp);
-
-        // set the dimensions
         innerDim = metadata[1];
         outerDim = metadata[2];
         nnz = metadata[3];
@@ -324,9 +345,10 @@ namespace CSF {
         fread(innerIdx, sizeof(indexT), nnz, fp);
         fread(outerPtr, sizeof(indexT), outerDim + 1, fp);
 
+        // close the file
         fclose(fp);
 
-        // run the user checks
+        // run the user checks and calculate the compressed size
         #ifdef CSF_DEBUG
         userChecks();
         #endif

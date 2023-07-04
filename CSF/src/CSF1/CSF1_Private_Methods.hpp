@@ -1,3 +1,11 @@
+/**
+ * @file CSF1_Private_Methods.hpp
+ * @author Skyler Ruiter and Seth Wolfgang
+ * @brief Private Methods for CSF1 Sparse Matrices
+ * @version 0.1
+ * @date 2023-07-03
+ */
+
 #pragma once
 
 namespace CSF {
@@ -33,7 +41,8 @@ namespace CSF {
         assert(std::is_floating_point<indexT>::value == false && "The index type must be a non-floating point type");
         assert((std::is_arithmetic<T>::value && std::is_arithmetic<indexT>::value) && "The value and index types must be numeric types");
         assert((std::is_same<indexT, bool>::value == false) && "The index type must not be bool");
-        assert((innerDim < std::numeric_limits<indexT>::max() && outerDim < std::numeric_limits<indexT>::max()) && "The number of rows and columns must be less than the maximum value of the index type");
+        assert((innerDim < std::numeric_limits<indexT>::max() && outerDim < std::numeric_limits<indexT>::max()) 
+        && "The number of rows and columns must be less than the maximum value of the index type");
         checkValueType();
     }
 
@@ -52,4 +61,4 @@ namespace CSF {
         compSize += sizeof(indexT) * (outerDim + 1); // outerPtr
     }
     
-}
+} // namespace CSF
