@@ -14,7 +14,7 @@ namespace CSF {
 
     // CSF1 Matrix Constructor
     template <typename T, typename indexT, bool columnMajor>
-    SparseMatrix<T, indexT, 1, columnMajor>::InnerIterator::InnerIterator(SparseMatrix<T, indexT, 1, columnMajor>& mat, uint32_t vec) {
+    inline SparseMatrix<T, indexT, 1, columnMajor>::InnerIterator::InnerIterator(SparseMatrix<T, indexT, 1, columnMajor>& mat, uint32_t vec) {
         this->outer = vec;
 
         // check if the vector is empty
@@ -54,7 +54,7 @@ namespace CSF {
 
     // Increment Operator
     template <typename T, typename indexT, bool columnMajor>
-    void SparseMatrix<T, indexT, 1, columnMajor>::InnerIterator::operator++() {
+    inline void SparseMatrix<T, indexT, 1, columnMajor>::InnerIterator::operator++() {
         vals++;
         indices++;
 

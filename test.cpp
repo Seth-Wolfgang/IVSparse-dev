@@ -41,29 +41,29 @@ int main() {
     //             0, 
     //             0;
 
-    int rowData[] = {0, 1, 2, 3, 4, 5};
-    int colData[] = {0, 1, 2, 2, 4, 5};
-    DATA_TYPE valData[] = {1, 2, 3, 4, 5, 6};
+    // int rowData[] = {0, 1, 2, 3, 4, 5};
+    // int colData[] = {0, 1, 2, 2, 4, 5};
+    // DATA_TYPE valData[] = {1, 2, 3, 4, 5, 6};
 
-    std::vector<std::tuple<int, int, DATA_TYPE>> data;
+    // std::vector<std::tuple<int, int, DATA_TYPE>> data;
 
-    for(int i = 0; i < 6; i++) {
-        data.push_back(std::make_tuple(rowData[i], colData[i], valData[i]));
-    }
+    // for(int i = 0; i < 6; i++) {
+    //     data.push_back(std::make_tuple(rowData[i], colData[i], valData[i]));
+    // }
 
-    CSF::SparseMatrix<DATA_TYPE, int, 1> csf(data, 6, 6, 6);
+    // CSF::SparseMatrix<DATA_TYPE, int, 1> csf(data, 6, 6, 6);
 
-    std::cout << csf << std::endl;
+    // std::cout << csf << std::endl;
 
-    //create an eigen triplet from rowData, colData, and valData
-    Eigen::SparseMatrix<DATA_TYPE> mat(6, 6);
-    mat.reserve(Eigen::VectorXi::Constant(6, 6));
-    for (int i = 0; i < 6; i++) {
-        mat.insert(rowData[i], colData[i]) = valData[i];
-    }
-    mat.makeCompressed();
-    std::cout << std::endl; 
-    std::cout << mat << std::endl;
+    // //create an eigen triplet from rowData, colData, and valData
+    // Eigen::SparseMatrix<DATA_TYPE> mat(6, 6);
+    // mat.reserve(Eigen::VectorXi::Constant(6, 6));
+    // for (int i = 0; i < 6; i++) {
+    //     mat.insert(rowData[i], colData[i]) = valData[i];
+    // }
+    // mat.makeCompressed();
+    // std::cout << std::endl; 
+    // std::cout << mat << std::endl;
 
 
     // Eigen::SparseMatrix<DATA_TYPE> eigen = mat.sparseView();
@@ -103,9 +103,9 @@ int main() {
     //     std::cout << std::endl;
     // }
 
-    // iteratorTest<int, int, 3>();
-    // iteratorTest<int, int, 2>();
-    // iteratorTest<int, int, 1>();
+    iteratorTest<int, int, 3>();
+    iteratorTest<int, int, 2>();
+    iteratorTest<int, int, 1>();
 
     return 1;
 }
@@ -160,7 +160,7 @@ void iteratorTest() {
 
     int numRows = 1000;//rand() % 1000 + 10;
     int numCols = 1000;//rand() % 1000 + 10;
-    int sparsity = 1;//rand() % 50 + 1;
+    int sparsity = 10;//rand() % 50 + 1;
     uint64_t seed = 1;//rand();
 
     // Initialize the random matrix
@@ -170,25 +170,25 @@ void iteratorTest() {
     eigen.makeCompressed();
 
     //Create random matrix and vector to multiply with
-    Eigen::Matrix<T, -1, -1> randMatrix = Eigen::Matrix<T, -1, -1>::Random(numCols, numRows);
+    // Eigen::Matrix<T, -1, -1> randMatrix = Eigen::Matrix<T, -1, -1>::Random(numCols, numRows);
     // Eigen::Matrix<T, -1, 1> randVector = Eigen::Matrix<T, -1, 1>::Random(numCols);
 
-    Eigen::VectorXd randVector = Eigen::VectorXd::Random(numCols);
+    // Eigen::VectorXd randVector = Eigen::VectorXd::Random(numCols);
 
     //Create CSF matrix and an eigen dense matrix
     CSF::SparseMatrix<T, indexT, compressionLevel> csfMatrix(eigen);
 
     //Create a dense matrix to store the result of the multiplication
     std::chrono::time_point<std::chrono::system_clock> start, end;
-    Eigen::Matrix<T, -1, -1>  csfDenseMatrix;
-    Eigen::Matrix<T, -1, -1> eigenDenseMatrix;
+    // Eigen::Matrix<T, -1, -1>  csfDenseMatrix;
+    // Eigen::Matrix<T, -1, -1> eigenDenseMatrix;
 
     //Vectors to store times for averages
     std::vector<uint64_t> timesForNew;
     std::vector<uint64_t> timesForOld;
     uint64_t ours = 0;
     uint64_t old = 0;
-    for (int i = 0; i < 100; i++) {
+    for (int i = 0; i < 1; i++) {
 
         //Measure time for CSF matrix
         T sum = 0;
@@ -238,8 +238,8 @@ void iteratorTest() {
     // Eigen::MatrixXd controlMatrix = eigen * randMatrix;
 
     // T sum_e = denseMatrix.sum();
-    T sumCSF = csfDenseMatrix.sum();
-    T sumEigen = eigenDenseMatrix.sum();
+    // T sumCSF = csfDenseMatrix.sum();
+    // T sumEigen = eigenDenseMatrix.sum();
 
     // std::cout << "Eigen: " << sumEigen << " CSF: " << sumCSF << std::endl;
 

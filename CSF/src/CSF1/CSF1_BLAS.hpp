@@ -8,8 +8,7 @@
 
 #pragma once
 
-namespace CSF
-{
+namespace CSF {
 
     //* BLAS Level 1 Routines *//
 
@@ -36,13 +35,10 @@ namespace CSF
     inline void SparseMatrix<T, indexT, 1, columnMajor>::inPlaceScalarMultiply(T scalar) {
         // else use the iterator
         #pragma omp parallel for schedule(dynamic)
-        for (uint32_t i = 0; i < outerDim; ++i) {
-            for (typename SparseMatrix<T, indexT, 1, columnMajor>::InnerIterator it(*this, i); it; ++it) {
-                if (it.isNewRun()) {
-                    it.coeff(it.value() * scalar);
-                }
-            }
+        for (int i = 0; i < nnz; i++) {
+            vals[i] *= scalar;
         }
+            
     }
 
     //* BLAS Level 2 Routines *//

@@ -87,11 +87,11 @@ namespace CSF {
         other.makeCompressed();
 
         // set the dimensions and nnz
-        innerDim = mat.innerSize();
-        outerDim = mat.outerSize();
-        numRows = mat.rows();
-        numCols = mat.cols();
-        nnz = mat.nonZeros();
+        innerDim = other.innerSize();
+        outerDim = other.outerSize();
+        numRows = other.rows();
+        numCols = other.cols();
+        nnz = other.nonZeros();
 
         encodeValueType();
         index_t = sizeof(indexT);
@@ -116,9 +116,9 @@ namespace CSF {
         metadata[5] = index_t;
 
         // copy the data
-        memcpy(vals, mat.valuePtr(), sizeof(T) * nnz);
-        memcpy(innerIdx, mat.innerIndexPtr(), sizeof(indexT) * nnz);
-        memcpy(outerPtr, mat.outerIndexPtr(), sizeof(indexT) * (outerDim + 1));
+        memcpy(vals, other.valuePtr(), sizeof(T) * nnz);
+        memcpy(innerIdx, other.innerIndexPtr(), sizeof(indexT) * nnz);
+        memcpy(outerPtr, other.outerIndexPtr(), sizeof(indexT) * (outerDim + 1));
 
         // calculate the compressed size and run the user checks
         calculateCompSize();
@@ -410,7 +410,6 @@ namespace CSF {
         metadata[4] = val_t;
         metadata[5] = index_t;
 
-        std::cout << "OuterDim: " << outerDim << std::endl;
         // sort the tuples by first by column then by row
         std::sort(entries.begin(), entries.end(), [](const std::tuple<indexT2, indexT2, T2>& a, const std::tuple<indexT2, indexT2, T2>& b) {
             if (std::get<1>(a) == std::get<1>(b)) {
