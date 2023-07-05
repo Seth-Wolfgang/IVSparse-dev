@@ -136,7 +136,13 @@ namespace CSF {
         template <typename T2, typename indexT2>
         SparseMatrix(T2 *vals, indexT2 *innerIndices, indexT2 *outerPtr, uint32_t num_rows, uint32_t num_cols, uint32_t nnz);
 
-        // COO Constructor
+        /**
+         * COO Tuples Constructor \n \n
+         * This constructor takes in a list of tuples in COO format which can be unsorted but without duplicates.
+         * The tuples are sorted and then converted to a CSF matrix.
+         *
+         * @note COO is (row, col, value) format.
+         */
         template <typename T2, typename indexT2>
         SparseMatrix(std::vector<std::tuple<indexT2, indexT2, T2>> entries, uint32_t num_rows, uint32_t num_cols, uint32_t nnz);
 

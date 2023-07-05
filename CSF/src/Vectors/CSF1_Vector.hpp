@@ -10,6 +10,12 @@
 
 namespace CSF {
 
+    /**
+     * CSF1 Vector Class \n \n
+     * The CSF1 Vector class is a vector class that is used to work with
+     * CSF1 matrices. It works with the same logic as the corresponding
+     * matrix compression level and is useful when working with these matrices.
+    */
     template <typename T, typename indexT, bool columnMajor>
     class SparseMatrix<T, indexT, 1, columnMajor>::Vector {
 
@@ -17,64 +23,130 @@ namespace CSF {
 
         //* Private Class Variables *//
 
+        size_t size = 0; // size of the vector in bytes
 
-        size_t size = 0;
+        T *vals = nullptr; // values of the vector
+        indexT *innerIdx = nullptr; // inner indices of the vector
 
-        T *vals = nullptr;
-        indexT *innerIdx = nullptr;
-
-        uint32_t length = 0;
-        uint32_t nnz = 0;
+        uint32_t length = 0; // length of the vector
+        uint32_t nnz = 0; // number of non-zero elements in the vector
 
         //* Private Class Methods *//
 
+        // User checks to confirm a valid vector
         void userChecks();
 
+        // Calculates the size of the vector in bytes
         void calculateCompSize();
+
 
         public:
 
         //* Constructors & Destructor *//
+        /** @name Constructors
+         */
+        ///@{
+
+        /**
+         * Default Vector Constructor \n \n
+         * Creates an empty vector with everything set to null/zero.
+        */
         Vector() {};
 
+        /**
+         * CSF Matrix to Vector Constructor \n \n
+         * Creates a vector from a CSF1 Matrix at the given vector index.
+         * 
+         * @note Can only get a vector from a matrix in the storage order of the matrix.
+         */
         Vector(CSF::SparseMatrix<T, indexT, 1, columnMajor> &mat, uint32_t vec);
 
+        /**
+         * Deep Copy Vector Constructor \n \n
+         * Creates a deep copy of the given vector.
+         */
         Vector(CSF::SparseMatrix<T, indexT, 1, columnMajor>::Vector &vec);
 
+        /**
+         * Destroys the vector.
+         */
         ~Vector();
+
+        ///@}
+
+        //* Getters *//
+        /** @name Getters
+         */
+        ///@{
+
+        /**
+         * @returns The coefficient at the given index.
+         */
+        T coeff(uint32_t index);
+
+        /**
+         * @returns The size of the vector in bytes.
+         */
+        size_t byteSize();
+
+        /**
+         * @returns The inner size of the vector.
+         */
+        uint32_t innerSize();
+
+        /**
+         * @returns The outer size of the vector.
+         */
+        uint32_t outerSize();
+
+        /**
+         * @returns The number of non-zero elements in the vector.
+         */
+        uint32_t nonZeros();
+
+        /**
+         * @returns The length of the vector.
+         */
+        uint32_t getLength();
+
+        /**
+         * @returns A pointer to the values of the vector.
+         */
+        T *getValues() const;
+
+        /**
+         * @returns A pointer to the inner indices of the vector.
+         */
+        indexT *getInnerIndices() const;
+
+        ///@}
+
+        //* Utility Methods *//
+        /** @name Utility Methods
+         */
+        ///@{
+
+        /**
+         * Prints the vector dense to the console.
+         */
+        void print();
+
+        ///@}
 
         //* Operator Overloads *//
 
+        // Coefficient Access Operator
         T operator[](uint32_t index);
 
+        // Assignment Operator
         typename SparseMatrix<T, indexT, 1, columnMajor>::Vector operator=(typename SparseMatrix<T, indexT, 1, columnMajor>::Vector &vec);
 
-        // equality operator
+        // Equality Operator
         bool operator==(typename SparseMatrix<T, indexT, 1, columnMajor>::Vector &vec);
 
+        // Inequality Operator
         bool operator!=(typename SparseMatrix<T, indexT, 1, columnMajor>::Vector &vec);
-
-        //* Getters *//
-
-        T coeff(uint32_t index);
-
-        size_t byteSize();
-
-        uint32_t innerSize();
-
-        uint32_t outerSize();
-
-        uint32_t nonZeros();
-
-        uint32_t getLength();
-
-        T *getValues() const;
-
-        indexT *getInnerIndices() const;
-
-        //* Utility Methods *//
-
-        void print();
-    };
     
-}
+    }; // class Vector
+    
+} // namespace CSF
