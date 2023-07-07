@@ -3,7 +3,7 @@
 #include "misc/matrix_creator.cpp"
 #include <chrono>
 // #define EIGEN_DONT_PARALLELIZE
-#define DATA_TYPE double
+#define DATA_TYPE int
 
 template<typename T, typename indexT>
 void sizeTest(int iterations);
@@ -11,18 +11,26 @@ void sizeTest(int iterations);
 template <typename T, typename indexT, int compressionLevel> void iteratorTest();
 void getMat(Eigen::SparseMatrix<int>& myMatrix_e);
 
+template <typename T>
+void generateAllUniqueElements(Eigen::SparseMatrix<T>& eigen);
+
+template <typename T>
+void generateAllRedundantElements(Eigen::SparseMatrix<T>& eigen);
 // For my convenience
 //  clear; rm a.out; g++ test.cpp; ./a.out
 
 int main() {
-    int rows = 100;
-    int cols = 100;
-    int sparsity = 99;
+    int rows = 1;
+    int cols = 1000;
+    int sparsity = 1;
     uint64_t seed = 522;
-    int maxVal = 10053425;
+    int maxVal = 1;
+    const bool isColMajor = false;
 
-    // Eigen::SparseMatrix<DATA_TYPE> eigen(rows, cols);
+    Eigen::SparseMatrix<DATA_TYPE> eigen(rows, cols);
     // eigen = generateMatrix<DATA_TYPE>(rows, cols, sparsity, seed, maxVal);
+    // generateAllUniqueElements<DATA_TYPE>(eigen);
+    generateAllRedundantElements<DATA_TYPE>(eigen);
     // std::cout << eigen << std::endl;
 
     // Eigen::MatrixXi mat(6, 6);
@@ -38,52 +46,22 @@ int main() {
     //             3,
     //             0,
     //             9,
-    //             0, 
-    //             0;
-
-    // int rowData[] = {0, 1, 2, 3, 4, 5};
-    // int colData[] = {0, 1, 2, 2, 4, 5};
-    // DATA_TYPE valData[] = {1, 2, 3, 4, 5, 6};
-
-    // std::vector<std::tuple<int, int, DATA_TYPE>> data;
-
-    // for(int i = 0; i < 6; i++) {
-    //     data.push_back(std::make_tuple(rowData[i], colData[i], valData[i]));
-    // }
-
-    // CSF::SparseMatrix<DATA_TYPE, int, 1> csf(data, 6, 6, 6);
-
-    // std::cout << csf << std::endl;
-
-    // //create an eigen triplet from rowData, colData, and valData
-    // Eigen::SparseMatrix<DATA_TYPE> mat(6, 6);
-    // mat.reserve(Eigen::VectorXi::Constant(6, 6));
-    // for (int i = 0; i < 6; i++) {
-    //     mat.insert(rowData[i], colData[i]) = valData[i];
-    // }
-    // mat.makeCompressed();
-    // std::cout << std::endl; 
-    // std::cout << mat << std::endl;
-
-
-    // Eigen::SparseMatrix<DATA_TYPE> eigen = mat.sparseView();
-    // Eigen::SparseVector<DATA_TYPE> eigenVector = eigenVec.sparseView();
+    //             0,
+    //             0; 
 
     // CSF::SparseMatrix<DATA_TYPE, uint32_t, 1> csf(eigen);
-    // CSF::SparseMatrix<DATA_TYPE, uint32_t, 3> csf3(eigen);
-    // CSF::SparseMatrix<DATA_TYPE, uint32_t, 2> csf2(eigen);
-    // uint64_t eigenSize = eigen.nonZeros() * sizeof(double) + eigen.nonZeros() * sizeof(uint32_t) + (eigen.outerSize() + 1) * sizeof(uint32_t);
+    CSF::SparseMatrix<DATA_TYPE, uint32_t, 3, isColMajor> csf3(eigen);
+    CSF::SparseMatrix<DATA_TYPE, uint32_t, 2, isColMajor> csf2(eigen);
+    uint64_t eigenSize = eigen.nonZeros() * sizeof(double) + eigen.nonZeros() * sizeof(uint32_t) + (eigen.outerSize() + 1) * sizeof(uint32_t);
 
-    // std::cout << "Eigen size: " << eigenSize << std::endl;
-    // std::cout << "CSF2 size: " << csf2.byteSize() << std::endl;
-    // std::cout << "CSF3 size: " << csf3.byteSize() << std::endl;
+    std::cout << "Eigen size: " << eigenSize << std::endl;
+    std::cout << "CSF2 size: " << csf2.byteSize() << std::endl;
+    std::cout << "CSF3 size: " << csf3.byteSize() << std::endl;
 
-    // std::cout << "Ratios -> CSF2: " << (double)csf2.byteSize() / eigenSize << " \tCSF3: " << (double)csf3.byteSize() / eigenSize << std::endl;
-
-    // std::cout << csf2 << std::endl;
-    // std::cout << csf3 << std::endl;
-
-
+    std::cout << "Ratios -> CSF2: " << (double)csf2.byteSize() / eigenSize << " \tCSF3: " << (double)csf3.byteSize() / eigenSize << std::endl;
+    
+    csf2.print();
+    csf3.print(); 
 
     // std::cout << csf2 << std::endl;
 
@@ -103,9 +81,9 @@ int main() {
     //     std::cout << std::endl;
     // }
 
-    iteratorTest<int, int, 3>();
-    iteratorTest<int, int, 2>();
-    iteratorTest<int, int, 1>();
+    // iteratorTest<int, int, 3>();
+    // iteratorTest<int, int, 2>();
+    // iteratorTest<int, int, 1>();
 
     return 1;
 }
@@ -158,15 +136,15 @@ void sizeTest(int iterations) {
 template <typename T, typename indexT, int compressionLevel>
 void iteratorTest() {
 
-    int numRows = 1000;//rand() % 1000 + 10;
-    int numCols = 1000;//rand() % 1000 + 10;
-    int sparsity = 10;//rand() % 50 + 1;
+    int numRows = 10000;//rand() % 1000 + 10;
+    int numCols = 10000;//rand() % 1000 + 10;
+    int sparsity = 1;//rand() % 50 + 1;
     uint64_t seed = 1;//rand();
 
     // Initialize the random matrix
     Eigen::SparseMatrix<T> eigen(numRows, numCols);
     eigen.reserve(Eigen::VectorXi::Constant(numCols, numRows));
-    eigen = generateMatrix<T>(numRows, numCols, sparsity, rand(), 10);
+    eigen = generateMatrix<T>(numRows, numCols, sparsity, rand(), 1);
     eigen.makeCompressed();
 
     //Create random matrix and vector to multiply with
@@ -324,3 +302,28 @@ void getMat(Eigen::SparseMatrix<int>& myMatrix_e) {
 
 }
 
+template <typename T>
+void generateAllUniqueElements(Eigen::SparseMatrix<T>& eigen) {
+    T count = 1;
+    std::cout << "Cols: " << eigen.cols() << " Rows: " << eigen.rows() << std::endl;
+    std::cout << "Total values: " << eigen.cols() * eigen.rows() << std::endl;
+    for(int i = 0; i < eigen.cols(); i++) {
+        for(int j = 0; j < eigen.rows(); j++) {
+            // std::cout << "Inserting: " << count << std::endl;
+            eigen.insert(j, i) = (T)(count++);        
+        }   
+    }
+}
+
+template <typename T>
+void generateAllRedundantElements(Eigen::SparseMatrix<T>& eigen) {
+    T count = 1;
+    std::cout << "Cols: " << eigen.cols() << " Rows: " << eigen.rows() << std::endl;
+    std::cout << "Total values: " << eigen.cols() * eigen.rows() << std::endl;
+    for(int i = 0; i < eigen.cols(); i++) {
+        for(int j = 0; j < eigen.rows(); j++) {
+            // std::cout << "Inserting: " << count << std::endl;
+            eigen.insert(j, i) = count;        
+        }   
+    }
+}

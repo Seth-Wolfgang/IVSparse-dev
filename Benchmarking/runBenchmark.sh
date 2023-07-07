@@ -4,7 +4,7 @@
 
 # Compiling benchmark
 # g++ -g -w -O2 lib/benchmark.cpp -o benchmark -llapack
-g++ -w -O2 lib/benchmark.cpp -o benchmark -llapack
+g++ -w -O2 -I ~/eigen lib/benchmark.cpp -o benchmark -llapack
 
 
 # Checking if compilation was successful
