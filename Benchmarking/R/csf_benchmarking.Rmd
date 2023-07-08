@@ -92,8 +92,10 @@ Here we want a plot of the iterator runtime of Eigen vs. CSF2 vs. CSF3 for redun
 library(ggplot2)
 library(reshape2)
 
-df <- data.frame("csf2" = data$Avg.CSF2.InnerIterator.Time / data$Avg.Eigen.InnerIterator.Time,
-                 "csf3" = data$Avg.CSF3.InnerIterator.Time / data$Avg.Eigen.InnerIterator.Time)
+df <- data.frame("csf1" = data$Avg.CSF1.InnerIterator.Time / data$Avg.Eigen.InnerIterator.Time,
+                 "csf2" = data$Avg.CSF2.InnerIterator.Time / data$Avg.Eigen.InnerIterator.Time,
+                 "csf3" = data$Avg.CSF3.InnerIterator.Time / data$Avg.Eigen.InnerIterator.Time,
+                 "Armadillo" = data$Avg.Armadillo.InnerIterator.Time / data$Avg.Eigen.InnerIterator.Time)
 df <- reshape2::melt(df)
 colnames(df) <- c("format", "time")
 
@@ -104,16 +106,18 @@ ggplot(df, aes(format, time)) +
   geom_hline(yintercept = 1, linetype = "dashed", color = "blue") +
   labs(x = "format", y = "Iterator speed vs. Eigen CSC Iterator") +
   theme_classic() +
-  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+  scale_y_continuous(expand = c(0, 0), limits = c(0, 10)) +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) 
+  
 
-df <- reshape2::melt(df, id.vars = c("nnzpercol" = data$Matrix.Nonzeros))
-colnames(df) <- c("nnzpercol", "format", "time")
-df$time <- df$time / df$nnzpercol
+#df <- reshape2::melt(df, id.vars = c("nnzpercol" = data$Matrix.Nonzeros / data$Matrix.Cols))
+#colnames(df) <- c("nnzpercol", "format", "time")
+#df$time <- df$time / df$nnzpercol
 
-ggplot(df, aes(format, time)) +
-  geom_boxplot() +
-  theme_classic() +
-  scale_y_continuous(trans = "log10")
+#ggplot(df, aes(format, time)) +
+#  geom_boxplot() +
+#  theme_classic() +
+#  scale_y_continuous(trans = "log10")
 
 
 ```
@@ -121,7 +125,8 @@ ggplot(df, aes(format, time)) +
 ## Scalar multiplication time
 
 ```{R}
-df <- data.frame("csf2" = data$Avg.CSF2.Scalar.Multiplication.Time / data$Avg.Eigen.Scalar.Multiplication.Time, 
+df <- data.frame("CSF1" =  data$Avg.CSF1.Scalar.Multiplication.Time / data$Avg.Eigen.Scalar.Multiplication.Time, 
+                 "csf2" = data$Avg.CSF2.Scalar.Multiplication.Time / data$Avg.Eigen.Scalar.Multiplication.Time, 
                  "csf3" = data$Avg.CSF3.Scalar.Multiplication.Time / data$Avg.Eigen.Scalar.Multiplication.Time,
                  "lapack" = data$Avg.Armadillo.Scalar.Multiplication.Time / data$Avg.Eigen.Scalar.Multiplication.Time)
 df <- reshape2::melt(df)
@@ -130,11 +135,24 @@ ggplot(df, aes(format, time)) +  theme_classic() + scale_y_continuous(expand = c
 
 ggsave("plot.png", width = 2, height = 4, units = "in", dpi = 300)
 ```
+```{R}
+# This is to create a data frame to look at data for yourself
+df <- data.frame("ID" = data$Matrix.Number,
+                 "redundancy" = data$Matrix.Redundancy,
+                 "rows" = data$Matrix.Rows,
+                 "cols" = data$Matrix.Cols,
+                 "csf1" =  data$Avg.CSF1.Vector.Multiplication.Time / data$Avg.Eigen.Vector.Multiplication.Time, 
+                 "csf2" = data$Avg.CSF2.Vector.Multiplication.Time / data$Avg.Eigen.Vector.Multiplication.Time, 
+                 "csf3" = data$Avg.CSF3.Vector.Multiplication.Time / data$Avg.Eigen.Vector.Multiplication.Time,
+                 "lapack" = data$Avg.Armadillo.Vector.Multiplication.Time / data$Avg.Eigen.Vector.Multiplication.Time)
+```
+
 
 ```{R}
-df <- data.frame("csf2" = data$Avg.CSF2.Vector.Multiplication.Time / data$Avg.Eigen.Vector.Multiplication.Time, 
+df <- data.frame("csf2" =  data$Avg.CSF1.Vector.Multiplication.Time / data$Avg.Eigen.Vector.Multiplication.Time, 
+                 "csf2" = data$Avg.CSF2.Vector.Multiplication.Time / data$Avg.Eigen.Vector.Multiplication.Time, 
                  "csf3" = data$Avg.CSF3.Vector.Multiplication.Time / data$Avg.Eigen.Vector.Multiplication.Time,
-                "lapack" = data$Avg.Armadillo.Scalar.Multiplication.Time / data$Avg.Eigen.Scalar.Multiplication.Time)
+                 "lapack" = data$Avg.Armadillo.Scalar.Multiplication.Time / data$Avg.Eigen.Vector.Multiplication.Time)
 
 df <- reshape2::melt(df)
 colnames(df) <- c("format", "time")
@@ -142,15 +160,71 @@ ggplot(df, aes(format, time)) +  theme_classic() + scale_y_continuous(expand = c
 
 ggsave("plot.png", width = 2, height = 4, units = "in", dpi = 300)
 ```
+```{R}
+# This is to create a data frame to look at data for yourself
+df <- data.frame("ID" = data$Matrix.Number,
+                 "redundancy" = data$Matrix.Redundancy,
+                 "rows" = data$Matrix.Rows,
+                 "cols" = data$Matrix.Cols,
+                 "csf1" =  data$Avg.CSF1.Matrix.Multiplication.Time / data$Avg.Eigen.Matrix.Multiplication.Time, 
+                 "csf2" = data$Avg.CSF2.Matrix.Multiplication.Time / data$Avg.Eigen.Matrix.Multiplication.Time, 
+                 "csf3" = data$Avg.CSF3.Matrix.Multiplication.Time / data$Avg.Eigen.Matrix.Multiplication.Time,
+                 "lapack" = data$Avg.Armadillo.Matrix.Multiplication.Time / data$Avg.Eigen.Matrix.Multiplication.Time)
+```
+
 
 ```{R}
-df <- data.frame("csf2" = data$Avg.CSF2.Constructor.Time, 
+df <- data.frame("csf1" =  data$Avg.CSF1.Matrix.Multiplication.Time / data$Avg.Eigen.Matrix.Multiplication.Time, 
+                 "csf2" = data$Avg.CSF2.Matrix.Multiplication.Time / data$Avg.Eigen.Matrix.Multiplication.Time, 
+                 "csf3" = data$Avg.CSF3.Matrix.Multiplication.Time / data$Avg.Eigen.Matrix.Multiplication.Time,
+                 "lapack" = data$Avg.Armadillo.Matrix.Multiplication.Time / data$Avg.Eigen.Matrix.Multiplication.Time)
+
+df <- reshape2::melt(df)
+colnames(df) <- c("format", "time")
+ggplot(df, aes(format, time)) +  theme_classic() + scale_y_continuous(expand = c(0, 0), limits = c(0, 5)) + geom_jitter(width = 0.1, size = 0.5, color = "#a0a0a0") + geom_boxplot(outlier.size = 0) + geom_hline(yintercept = 1, linetype = "dashed", color = "blue") + labs(x = "format", y = "Matrix multiplication time vs. Eigen") + theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+ggsave("plot.png", width = 2, height = 4, units = "in", dpi = 300)
+```
+
+
+```{R}
+df <- data.frame("csf1" = data$Avg.CSF1.Constructor.Time, 
+                 "csf2" = data$Avg.CSF2.Constructor.Time, 
                  "csf3" = data$Avg.CSF3.Constructor.Time,
                   "Eigen" = data$Avg.Eigen.Constructor.Time,
                   "nonzeros" = data$Matrix.Nonzeros)
-ggplot(df, aes(Eigen / 1e9, csf2 / 1e9, color = nonzeros)) + geom_point() + scale_y_continuous(trans = "log10") + scale_x_continuous(trans = "log10") + theme_classic() + coord_fixed() + scale_color_viridis_c(option = "B", end = 0.9, trans = "log10") + labs(x = "Eigen (sec)", y = "CSF2 (sec)", title = "Time to construct matrix") + geom_abline(slope = 1, linetype = "dashed", color = "blue") + theme(plot.title = element_text(hjust = 0.5))
+
+library(ggplot2)
+
+ggplot(df, aes(Eigen / 1e9, csf2 / 1e9, color = nonzeros)) +
+  geom_point() +
+  scale_y_continuous(trans = "log10", expand = c(0, 0), limits = c(1e-6, 1)) +
+  scale_x_continuous(trans = "log10", expand = c(0, 0), limits = c(1e-6, 1)) +
+  theme_classic() +
+  coord_equal() +
+  scale_color_viridis_c(option = "B", end = 0.9, trans = "log10") +
+  labs(x = "Eigen (sec)", y = "CSF2 (sec)", title = "Time to construct matrix") +
+  geom_abline(slope = 1, linetype = "dashed", color = "blue") +
+  theme(plot.title = element_text(hjust = 0.5),
+        aspect.ratio = 1)
+
+ggplot(df, aes(Eigen / 1e9, csf2 / 1e9, color = nonzeros)) +
+  geom_point() +
+  scale_y_continuous(trans = "log10", expand = c(0, 0), limits = c(1e-6, 1)) +
+  scale_x_continuous(trans = "log10", expand = c(0, 0), limits = c(1e-6, 1)) +
+  theme_classic() +
+  coord_equal() +
+  scale_color_viridis_c(option = "B", end = 0.9, trans = "log10") +
+  labs(x = "Eigen (sec)", y = "CSF2 (sec)", title = "Time to construct matrix") +
+  geom_abline(slope = 1, linetype = "dashed", color = "blue") +
+  theme(plot.title = element_text(hjust = 0.5),
+        aspect.ratio = 1)
+
+
 
 ggsave("plot.png", width = 4, height = 4, units = "in", dpi = 300)
 
 ggplot(df, aes(csf2 / Eigen, csf3 / Eigen, color = nonzeros)) + geom_point()  + theme_classic() + scale_color_viridis_c(option = "B", end = 0.9, trans = "log10") + labs(x = "CSF2 (sec)", y = "CSF3 (sec)", title = "Time to construct matrix") + geom_abline(slope = 1, linetype = "dashed", color = "blue") + theme(plot.title = element_text(hjust = 0.5))
+
+ggplot(df, aes(csf1 / 1e9, Eigen / 1e9, color = nonzeros)) + geom_point()  + theme_classic() + scale_color_viridis_c(option = "B", end = 0.9, trans = "log10") + labs(x = "CSF1 (sec)", y = "Eigen (sec)", title = "Time to construct matrix") + geom_abline(slope = 1, linetype = "dashed", color = "blue") + theme(plot.title = element_text(hjust = 0.5))
 ```
