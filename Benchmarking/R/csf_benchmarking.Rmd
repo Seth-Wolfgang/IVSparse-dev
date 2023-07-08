@@ -12,14 +12,65 @@ This Rmarkdown shows how to do basic ggploting given some CSF benchmarking data 
 
 ```{R}
 #setwd("~/vscode/research/SRLE/Benchmarking")
-
+library(ggplot2)
 setwd("C:/Users/wolfg/Downloads") # YOU WILL NEED TO CHANGE THIS, JUST COMMENT IT OUT AND PASTE YOUR OWN PATH TO timeDataFinal.csv
 
 data <- read.csv("timeDataFinal.csv") # or whatever you saved it as
+rawData <- read.csv("rawTimeDataFinal.csv")
 #move annoying offset from reading in matrix number as rownames
 #colnames(data) <- c(colnames(data)[-1], "")
 # delete useless column
 data <- data[,-ncol(data)]
+# Create a new column with grouped intervals
+# Create a new column with grouped intervals, excluding NA values
+
+# Filter out matrices with Matrix.Nonzeros < 10000
+filteredData <- rawData[rawData$Matrix.Nonzeros >= 1, ]
+
+# Create a new column with grouped intervals, including 0 in the first group
+filteredData$Redundancy_Group <- cut(filteredData$Matrix.Redundancy, breaks = c(0, seq(0.1, max(filteredData$Matrix.Redundancy), by = 0.1)), include.lowest = TRUE, na.rm = TRUE)
+
+# Plotting the box plots
+ggplot(filteredData, aes(x = Redundancy_Group, y = CSF2.Matrix.Multiplication.Time / Eigen.Matrix.Multiplication.Time)) +
+  geom_boxplot() +
+  stat_summary(fun = "median", geom = "line", aes(group = 1), color = "blue") +
+  geom_jitter(width = 0.1, size = 0.5, color = "#a0a0a0") +
+  labs(x = "Redundancy Group", y = "CSF2.InnerIterator.Time") +
+  ggtitle("Box Plots of CSF2.InnerIterator.Time by Redundancy Group")
+
+
+# Calculate the ratio of Matrix.Nonzeros to Matrix.Cols
+rawData$Nonzeros_Per_Col <- rawData$Matrix.Nonzeros / rawData$Matrix.Cols
+
+# Create a new column with grouped intervals
+rawData$Group <- cut(rawData$Nonzeros_Per_Col, breaks = seq(0, max(rawData$Nonzeros_Per_Col) + 5, by = 5), include.lowest = TRUE)
+
+# Plotting the box plots
+ggplot(rawData, aes(x = Group, y = CSF2.InnerIterator.Time / Eigen.InnerIterator.Time)) +
+  stat_summary(fun.y = max, geom = "line", aes(group = 1)) +
+  geom_jitter(width = 0.1, size = 0.5, color = "#a0a0a0") +
+  labs(x = "Nonzeros per Column", y = "Time per nonzero (ns) Ratio ") +
+  ggtitle("Max CSF2 to Eigen InnerIterator Time Grouped by Nonzeros per Col")
+
+
+
+# Calculate the ratio of Matrix.Nonzeros to Matrix.Cols
+data$Nonzeros_Per_Col <- data$Matrix.Nonzeros / data$Matrix.Cols
+
+# Create a new column with grouped intervals
+data$memory.ratio <- data$Avg.CSF3.Memory.Usage / data$Avg.Eigen.Memory.Usage
+data$Group <- cut(data$memory.ratio, breaks = seq(0, max(data$memory.ratio) + 0.1, by = 0.1), include.lowest = TRUE)
+data$ratio <- data$Avg.CSF3.Matrix.Multiplication.Time / data$Avg.Eigen.Matrix.Multiplication.Time
+
+# Plotting the box plots
+ggplot(data, aes(x = Group, y = data$ratio)) +
+  stat_summary(fun.y = max, geom = "line", aes(group = 1)) +
+  geom_jitter(width = 0.1, size = 0.5, color = "#a0a0a0") +
+  labs(x = "Memory Usage Ratio", y = "Time (ns) Ratio ") +
+  ggtitle("Max CSF3 to Eigen SpMV (Averaged) Time Grouped by Memory Ratio")
+
+
+
 ```
 
 ## Memory usage
@@ -35,9 +86,10 @@ plot_data <- data.frame("ID" = data$Matrix.Number,
                         "CSF2_ratio" = data$Avg.CSF2.Memory.Usage / data$Avg.Eigen.Memory.Usage, 
                         "CSF3_ratio" = data$Avg.CSF3.Memory.Usage / data$Avg.Eigen.Memory.Usage)
 ```
+
 We need to show how CSF compresses matrices as a function of redundancy compared to Eigen.
 ```{R}
-library(ggplot2)
+
 
 #CSF 2
 plot_data <- data.frame("redundancy" = data$Matrix.Redundancy, 
