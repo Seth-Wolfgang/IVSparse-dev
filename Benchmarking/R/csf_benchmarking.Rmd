@@ -11,21 +11,49 @@ knitr::opts_chunk$set(echo = TRUE)
 This Rmarkdown shows how to do basic ggploting given some CSF benchmarking data in Seth and Skyler's favorite format:
 
 ```{R}
-setwd("~/vscode/research/SRLE/Benchmarking")
-data <- read.csv("timeData.csv") # or whatever you saved it as
+#setwd("~/vscode/research/SRLE/Benchmarking")
+setwd("C:/Users/wolfg/Downloads")
+data <- read.csv("timeDataFinal.csv") # or whatever you saved it as
 #move annoying offset from reading in matrix number as rownames
-colnames(data) <- c(colnames(data)[-1], "")
+#colnames(data) <- c(colnames(data)[-1], "")
 # delete useless column
 data <- data[,-ncol(data)]
 ```
 
 ## Memory usage
 
-We need to show how CSF compresses matrices as a function of redundancy compared to Eigen.
 
 ```{R}
+plot_data <- data.frame("ID" = data$Matrix.Number,
+                        "redundancy" = data$Matrix.Redundancy,
+                        "rows" = data$Matrix.Rows,
+                        "cols" = data$Matrix.Cols,
+                        "nonzeros" = data$Matrix.Nonzeros,
+                        "CSF1_ratio" = data$Avg.CSF1.Memory.Usage / data$Avg.Eigen.Memory.Usage, 
+                        "CSF2_ratio" = data$Avg.CSF2.Memory.Usage / data$Avg.Eigen.Memory.Usage, 
+                        "CSF3_ratio" = data$Avg.CSF3.Memory.Usage / data$Avg.Eigen.Memory.Usage)
+
+
+
+library(ggplot2)
+ggplot(plot_data, aes(redundancy, compression_ratio, color = format)) + geom_point() + theme_classic() + theme(aspect.ratio = 1) + labs(x = "Matrix redundancy", y = "Compression Ratio vs. CSC Format", color = "Matrix Format") + geom_abline(intercept = 1, slope=0)
+```
+We need to show how CSF compresses matrices as a function of redundancy compared to Eigen.
+```{R}
+
+#CSF 2
 plot_data <- data.frame("redundancy" = data$Matrix.Redundancy, 
-                        "CSF2" = data$Avg.CSF2.Memory.Usage / data$Avg.Eigen.Memory.Usage, 
+                        "CSF2" = data$Avg.CSF2.Memory.Usage / data$Avg.Eigen.Memory.Usage) 
+
+plot_data <- reshape2::melt(plot_data, id.vars = "redundancy")
+
+colnames(plot_data) <- c("redundancy", "format", "compression_ratio")
+
+library(ggplot2)
+ggplot(plot_data, aes(redundancy, compression_ratio)) + geom_point() + theme_classic() + theme(aspect.ratio = 1) + labs(x = "Matrix redundancy", y = "Compression Ratio vs. CSC Format", color = "Matrix Format") + geom_abline(intercept = 1, slope=0)
+
+# CSF 3
+plot_data <- data.frame("redundancy" = data$Matrix.Redundancy, 
                         "CSF3" = data$Avg.CSF3.Memory.Usage / data$Avg.Eigen.Memory.Usage)
 
 plot_data <- reshape2::melt(plot_data, id.vars = "redundancy")
@@ -33,7 +61,7 @@ plot_data <- reshape2::melt(plot_data, id.vars = "redundancy")
 colnames(plot_data) <- c("redundancy", "format", "compression_ratio")
 
 library(ggplot2)
-ggplot(plot_data, aes(redundancy, compression_ratio, color = format)) + geom_point() + theme_classic() + theme(aspect.ratio = 1) + labs(x = "Matrix redundancy", y = "Compression Ratio vs. CSC Format", color = "Matrix Format") + geom_abline(intercept = 1, slope=0)
+ggplot(plot_data, aes(redundancy, compression_ratio)) + geom_point() + theme_classic() + theme(aspect.ratio = 1) + labs(x = "Matrix redundancy", y = "Compression Ratio vs. CSC Format", color = "Matrix Format") + geom_abline(intercept = 1, slope=0)
 ```
 
 That's not as expected.

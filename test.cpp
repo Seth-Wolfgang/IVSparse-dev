@@ -4,6 +4,7 @@
 #include <chrono>
 // #define EIGEN_DONT_PARALLELIZE
 #define DATA_TYPE int
+#define INDEX_TYPE int
 
 template<typename T, typename indexT>
 void sizeTest(int iterations);
@@ -21,16 +22,16 @@ void generateAllRedundantElements(Eigen::SparseMatrix<T>& eigen);
 
 int main() {
     int rows = 1;
-    int cols = 1000;
+    int cols = 10000;
     int sparsity = 1;
     uint64_t seed = 522;
     int maxVal = 1;
-    const bool isColMajor = false;
+    const bool isColMajor = true;
 
     Eigen::SparseMatrix<DATA_TYPE> eigen(rows, cols);
     // eigen = generateMatrix<DATA_TYPE>(rows, cols, sparsity, seed, maxVal);
-    // generateAllUniqueElements<DATA_TYPE>(eigen);
-    generateAllRedundantElements<DATA_TYPE>(eigen);
+    generateAllUniqueElements<DATA_TYPE>(eigen);
+    // generateAllRedundantElements<DATA_TYPE>(eigen);
     // std::cout << eigen << std::endl;
 
     // Eigen::MatrixXi mat(6, 6);
@@ -48,11 +49,21 @@ int main() {
     //             9,
     //             0,
     //             0; 
+    
+
+    //insert 6 1's into every row of eigen
+    // for(int i = 0; i < eigen.cols(); i++){
+    //     for(int j = 0; j < 2; j++){
+    //         eigen.insert(i, j) = 1;
+    //     }
+    // }
+
 
     // CSF::SparseMatrix<DATA_TYPE, uint32_t, 1> csf(eigen);
-    CSF::SparseMatrix<DATA_TYPE, uint32_t, 3, isColMajor> csf3(eigen);
-    CSF::SparseMatrix<DATA_TYPE, uint32_t, 2, isColMajor> csf2(eigen);
-    uint64_t eigenSize = eigen.nonZeros() * sizeof(double) + eigen.nonZeros() * sizeof(uint32_t) + (eigen.outerSize() + 1) * sizeof(uint32_t);
+    CSF::SparseMatrix<DATA_TYPE, INDEX_TYPE, 3, isColMajor> csf3(eigen);
+    CSF::SparseMatrix<DATA_TYPE, INDEX_TYPE, 2, isColMajor> csf2(eigen);
+    CSF::SparseMatrix<DATA_TYPE, INDEX_TYPE, 1, isColMajor> csf1(eigen);
+    uint64_t eigenSize = eigen.nonZeros() * sizeof(DATA_TYPE) + eigen.nonZeros() * sizeof(INDEX_TYPE) + (eigen.outerSize() + 1) * sizeof(INDEX_TYPE);
 
     std::cout << "Eigen size: " << eigenSize << std::endl;
     std::cout << "CSF2 size: " << csf2.byteSize() << std::endl;
@@ -60,26 +71,13 @@ int main() {
 
     std::cout << "Ratios -> CSF2: " << (double)csf2.byteSize() / eigenSize << " \tCSF3: " << (double)csf3.byteSize() / eigenSize << std::endl;
     
-    csf2.print();
-    csf3.print(); 
+    assert(csf2.sum() == csf3.sum());
+    assert(csf2.sum() == csf1.sum());
+    assert(csf3.sum() == csf1.sum());
+    assert(eigen.sum() == csf1.sum());
+    assert(eigen.sum() == csf2.sum());
+    assert(eigen.sum() == csf3.sum());
 
-    // std::cout << csf2 << std::endl;
-
-    // for (int i = 0; i < csf2.cols(); i++) {
-    //     for (typename CSF::SparseMatrix<DATA_TYPE, uint32_t, 2>::InnerIterator it(csf2, i); it; ++it) {
-    //         std::cout << it.value() << " ";
-    //     }
-    //     std::cout << std::endl;
-    // }
-    //     std::cout << std::endl;
-    //     std::cout << std::endl;
-
-    // for (int i = 0; i < csf3.cols(); i++) {
-    //     for (typename CSF::SparseMatrix<DATA_TYPE, uint32_t, 3>::InnerIterator it(csf3, i); it; ++it) {
-    //         std::cout << it.value() << " ";
-    //     }
-    //     std::cout << std::endl;
-    // }
 
     // iteratorTest<int, int, 3>();
     // iteratorTest<int, int, 2>();
