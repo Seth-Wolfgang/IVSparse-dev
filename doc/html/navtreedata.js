@@ -26,7 +26,27 @@ var NAVTREE =
 [
   [ "CSF Matrix", "index.html", [
     [ "Overview", "index.html", null ],
-    [ "Getting Started", "getting_started.html", null ],
+    [ "Getting Started", "getting_started.html", [
+      [ "Getting CSF", "getting_started.html#getting_csf", [
+        [ "Installing CSF", "getting_started.html#install_csf", null ],
+        [ "Programming with CSF", "getting_started.html#program_csf", null ],
+        [ "Compiling CSF", "getting_started.html#compiling_csf", null ]
+      ] ],
+      [ "Matrices, Vectors, and Iterators", "getting_started.html#mats_vecs_iters", [
+        [ "Matrices", "getting_started.html#matrices", [
+          [ "Template Parameters", "getting_started.html#templates", null ],
+          [ "CSF Compression Levels", "getting_started.html#levels", null ]
+        ] ],
+        [ "Vectors", "getting_started.html#vectors", null ],
+        [ "Iterators", "getting_started.html#iterators", null ]
+      ] ],
+      [ "Next Steps", "getting_started.html#next", [
+        [ "Examples", "getting_started.html#examples", null ],
+        [ "Reference Guide", "getting_started.html#ref", null ],
+        [ "FAQ", "getting_started.html#faq", null ],
+        [ "Contact", "getting_started.html#contact", null ]
+      ] ]
+    ] ],
     [ "License", "_license.html", null ],
     [ "Classes", "annotated.html", [
       [ "Class List", "annotated.html", "annotated_dup" ],

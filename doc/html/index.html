@@ -98,7 +98,7 @@ $(document).ready(function(){initNavTree('index.html',''); initResizable(); });
 <div class="title">Overview </div>  </div>
 </div><!--header-->
 <div class="contents">
-<div class="textblock"><h2>Compressed Spares Fiber (CSF) Matrix Package</h2>
+<div class="textblock"><h2>Compressed Sparse Fiber (CSF) Matrix Package</h2>
 <p><a href="https://github.com/Seth-Wolfgang/CSF-Matrix">Github Repo</a></p>
 <p>Large amounts of data take time and money to store, process, and compress. As data grows exponentially, we need better, cheaper tools to store and process it.</p>
 <p>The Compressed Sparse Fiber (CSF) format is a way to take advantage of naturally redundant data and store it in a usable way. CSF works very well with redundant data, so much so that preliminary testing shows that it can beat common alternative formats in memory footprint by as much as 50%. This implementation of CSF also has variable compression levels that give the user options to lower this footprint even further at a small performance cost.</p>
@@ -109,15 +109,15 @@ $(document).ready(function(){initNavTree('index.html',''); initResizable(); });
 <p>[Put a picture of CSF here plz skyler]</p>
 <hr  />
 <h3>How does CSF Compress?</h3>
-<p>There are a few different ways in which CSF compresses data. The first is redundancy, with fibers alone being able to compress redudnant data up to 50% compared to CSC. The second is Positive Delta Encoding, which is a process which we apply to the indices of a fiber which encodes the distance between each index. The third way is through bytepacking, which is when we cast each fibers indices to the smallest data type that doesn't lose precision.</p>
+<p>There are a few different ways in which CSF compresses data. The first is redundancy, with fibers alone being able to compress redudnant data up to 50% compared to CSC. The second is Positive Delta Encoding, which is a process which we apply to the indices of a fiber which encodes the distance between each index. The third way is through bytepacking, which is when we cast each fiber's indices to the smallest data type that doesn't lose precision.</p>
 <h4>Redundancy</h4>
 <p>It's easy to see how redundancy can be taken advantage of when looking at CSC format. In this format each value and index must be listed once no matter the data, with a set of column pointers being used to delimit columns. However in CSF if a column has only a single value, it's only stored once and then all of the indices that value is located. This means that in the simplest case of a column 50 long of all ones, CSC needs to store 100 values where as CSF needs only to store 51, the 1 and all the indices.</p>
-<p>Therefor in datasets that are highly redundant CSF mananges to not explicitly store a lot of values resulting in good compression ratios for this data. It is worth being said however that data that is almost completely unique however will cause this pendulum to swing in the other direction, causing worse compression in the worst case scenario since CSF has more overhead to organize the data than CSC.</p>
+<p>Therefore in datasets that are highly redundant CSF mananges to not explicitly store a lot of values resulting in good compression ratios for this data. It is worth being said however that data that is almost completely unique however will cause this pendulum to swing in the other direction, causing worse compression in the worst case scenario since CSF has more overhead to organize the data than CSC.</p>
 <h4>Positive Delta Endoding</h4>
 <p>We use this to take the indices inside of a fiber and encode the distance between them. While this doesn't cause us to store any less values, it can take larger values and make them smaller. Such as for a 10,000 x 10,000 matrix near the end of a column the indices could be [..., 9,973, 9,979, 9,981, 9,991], each of these values requires a 16 byte data type to store whereas if we positive delta encode them into [..., 3, 6, 2, 10] the values get much smaller and could potentially fit into a smaller data type.</p>
 <p>It should also be noted that this does make the data harder to traverse making it a tradeoff that isn't always worth it and will make data traversal slower, espeically if the data doesn't lend itself to the advantages of positive delta encoding.</p>
 <h4>Bytepacking</h4>
-<p>This is a process that takes all of the indices of a single fiber, finds the maximum value after positive delta encoding, and casts the indices to the smallest data type that doesn't lose precision. Such as if a user has a CSF matrix with indices stored in uint64_t yet no number exceedes 255. In this situation each fiber's indices would most likely be cast to a uint8_t saving 7 bytes per index. This is great for isolating outlier data from enforcing a large data type and in combination with positive delta encoding can result in even very large matrices being heavily conmpressed with very little wasted space in the indices.</p>
+<p>This is a process that takes all of the indices of a single fiber, finds the maximum value after positive delta encoding, and casts the indices to the smallest data type that doesn't lose precision. Such as if a user has a CSF matrix with indices stored in unsigned long long int yet no number exceedes 255. In this situation each fiber's indices would most likely be cast to a unsigned short int saving 7 bytes per index. This is great for isolating outlier data from enforcing a large data type and in combination with positive delta encoding can result in even very large matrices being heavily conmpressed with very little wasted space in the indices.</p>
 <p>As a side note, this as well makes the data somewhat more difficult to work with causing some degree of complication and slowdowns for data traversal but is often very much worth the savings.</p>
 <hr  />
 <h3>CSF Compression Levels Explained</h3>
@@ -134,7 +134,7 @@ $(document).ready(function(){initNavTree('index.html',''); initResizable(); });
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Wed Jul 5 2023 11:12:22 for CSF Matrix by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
+    <li class="footer">Generated on Wed Jul 5 2023 13:33:38 for CSF Matrix by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
   </ul>
 </div>
 </body>

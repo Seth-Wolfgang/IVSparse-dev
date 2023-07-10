@@ -1,6 +1,6 @@
 @mainpage Overview
 
-## Compressed Spares Fiber (CSF) Matrix Package
+## Compressed Sparse Fiber (CSF) Matrix Package
 
 [Github Repo](https://github.com/Seth-Wolfgang/CSF-Matrix)
 
@@ -24,13 +24,13 @@ ___
 
 ### How does CSF Compress?
 
-There are a few different ways in which CSF compresses data. The first is redundancy, with fibers alone being able to compress redudnant data up to 50% compared to CSC. The second is Positive Delta Encoding, which is a process which we apply to the indices of a fiber which encodes the distance between each index. The third way is through bytepacking, which is when we cast each fibers indices to the smallest data type that doesn't lose precision.
+There are a few different ways in which CSF compresses data. The first is redundancy, with fibers alone being able to compress redudnant data up to 50% compared to CSC. The second is Positive Delta Encoding, which is a process which we apply to the indices of a fiber which encodes the distance between each index. The third way is through bytepacking, which is when we cast each fiber's indices to the smallest data type that doesn't lose precision.
 
 #### Redundancy
 
 It's easy to see how redundancy can be taken advantage of when looking at CSC format. In this format each value and index must be listed once no matter the data, with a set of column pointers being used to delimit columns. However in CSF if a column has only a single value, it's only stored once and then all of the indices that value is located. This means that in the simplest case of a column 50 long of all ones, CSC needs to store 100 values where as CSF needs only to store 51, the 1 and all the indices. 
 
-Therefor in datasets that are highly redundant CSF mananges to not explicitly store a lot of values resulting in good compression ratios for this data. It is worth being said however that data that is almost completely unique however will cause this pendulum to swing in the other direction, causing worse compression in the worst case scenario since CSF has more overhead to organize the data than CSC. 
+Therefore in datasets that are highly redundant CSF mananges to not explicitly store a lot of values resulting in good compression ratios for this data. It is worth being said however that data that is almost completely unique however will cause this pendulum to swing in the other direction, causing worse compression in the worst case scenario since CSF has more overhead to organize the data than CSC. 
 
 #### Positive Delta Endoding
 
@@ -40,7 +40,7 @@ It should also be noted that this does make the data harder to traverse making i
 
 #### Bytepacking
 
-This is a process that takes all of the indices of a single fiber, finds the maximum value after positive delta encoding, and casts the indices to the smallest data type that doesn't lose precision. Such as if a user has a CSF matrix with indices stored in uint64_t yet no number exceedes 255. In this situation each fiber's indices would most likely be cast to a uint8_t saving 7 bytes per index. This is great for isolating outlier data from enforcing a large data type and in combination with positive delta encoding can result in even very large matrices being heavily conmpressed with very little wasted space in the indices. 
+This is a process that takes all of the indices of a single fiber, finds the maximum value after positive delta encoding, and casts the indices to the smallest data type that doesn't lose precision. Such as if a user has a CSF matrix with indices stored in unsigned long long int yet no number exceedes 255. In this situation each fiber's indices would most likely be cast to a unsigned short int saving 7 bytes per index. This is great for isolating outlier data from enforcing a large data type and in combination with positive delta encoding can result in even very large matrices being heavily conmpressed with very little wasted space in the indices. 
 
 As a side note, this as well makes the data somewhat more difficult to work with causing some degree of complication and slowdowns for data traversal but is often very much worth the savings. 
 
