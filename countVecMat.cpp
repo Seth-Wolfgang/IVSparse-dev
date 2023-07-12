@@ -56,14 +56,14 @@ int main() {
     file.close();
 
     // create sparse matrix
-    CSF::SparseMatrix<uint32_t, uint32_t> X(vals, indices, colPointers, rows, cols, nnz);
-    CSF::SparseMatrix<uint32_t, uint32_t, 2> X2(X);
-    CSF::SparseMatrix<uint32_t, uint32_t, 1> X3(X);
+    CSF::SparseMatrix<uint32_t, uint32_t, 1> X1(vals, indices, colPointers, rows, cols, nnz);
+    CSF::SparseMatrix<uint32_t, uint32_t, 2> X2(vals, indices, colPointers, rows, cols, nnz);
+    CSF::SparseMatrix<uint32_t, uint32_t, 3> X3(vals, indices, colPointers, rows, cols, nnz);
 
     // print the sparse matrix byte size
-    cout << "CSF1 Size: " << X3.byteSize() << endl;
+    cout << "CSF1 Size: " << X1.byteSize() << endl;
     cout << "CSF2 Size: " << X2.byteSize() << endl;
-    cout << "CSF3 Size: " << X.byteSize() << endl;
+    cout << "CSF3 Size: " << X3.byteSize() << endl;
 
 
     // free

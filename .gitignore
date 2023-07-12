@@ -19,3 +19,8 @@ CMAKE
 *workspace
 /matrices
 /MM
+Benchmarking/datasets
+/Benchmarking/denseMatrices
+/Benchmarking/sparseMatrices
+/Benchmarking/matrices
+*.mtx

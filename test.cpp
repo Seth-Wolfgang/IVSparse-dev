@@ -21,7 +21,7 @@ void generateAllRedundantElements(Eigen::SparseMatrix<T>& eigen);
 //  clear; rm a.out; g++ test.cpp; ./a.out
 
 int main() {
-    int rows = 1;
+    int rows = 100000;
     int cols = 10000;
     int sparsity = 1;
     uint64_t seed = 522;
@@ -29,8 +29,8 @@ int main() {
     const bool isColMajor = true;
 
     Eigen::SparseMatrix<DATA_TYPE> eigen(rows, cols);
-    // eigen = generateMatrix<DATA_TYPE>(rows, cols, sparsity, seed, maxVal);
-    generateAllUniqueElements<DATA_TYPE>(eigen);
+    eigen = generateMatrix<DATA_TYPE>(rows, cols, sparsity, seed, maxVal);
+    // generateAllUniqueElements<DATA_TYPE>(eigen);
     // generateAllRedundantElements<DATA_TYPE>(eigen);
     // std::cout << eigen << std::endl;
 

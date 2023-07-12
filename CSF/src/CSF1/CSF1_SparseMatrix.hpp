@@ -113,7 +113,7 @@ namespace CSF {
          * One could also take this information and convert to an Eigen Sparse Matrix and then to a CSF1 matrix.
          */
         template <typename T2, typename indexT2>
-        SparseMatrix(std::vector<std::tuple<indexT2, indexT2, T2>> entries, uint32_t num_rows, uint32_t num_cols, uint32_t nnz);
+        SparseMatrix(std::vector<std::tuple<indexT2, indexT2, T2>>& entries, uint32_t num_rows, uint32_t num_cols, uint32_t nnz);
 
         SparseMatrix(typename CSF::SparseMatrix<T, indexT, 1, columnMajor>::Vector& vec);
 

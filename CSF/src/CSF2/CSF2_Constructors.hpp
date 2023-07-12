@@ -153,7 +153,7 @@ namespace CSF {
     // COO Constructor
     template <typename T, typename indexT, bool columnMajor>
     template <typename T2, typename indexT2>
-    SparseMatrix<T, indexT, 2, columnMajor>::SparseMatrix(std::vector<std::tuple<indexT2, indexT2, T2>> entries, uint32_t num_rows, uint32_t num_cols, uint32_t nnz) {
+    SparseMatrix<T, indexT, 2, columnMajor>::SparseMatrix(std::vector<std::tuple<indexT2, indexT2, T2>>& entries, uint32_t num_rows, uint32_t num_cols, uint32_t nnz) {
 
         // see if the matrix is empty
         if (nnz == 0) {
