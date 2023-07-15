@@ -12,9 +12,10 @@ void loadMatrix(std::vector<std::tuple<uint, uint, double>>& data, std::function
 double returnDouble(std::string val, std::unordered_map<std::string, double>& myMap);
 double classifyDouble(std::string val, std::unordered_map<std::string, double>& myMap);
 void load_mm_matrix(std::vector<std::tuple<uint, uint, double>>& data, char* filename);
+void generateMatrix(std::vector<std::tuple<uint, uint, double>>& data, int numRows, int numCols, int sparsity, uint64_t seed, uint64_t maxValue);
+template<typename T, typename indexType, int compressionLevel> uint64_t buildMatrix(std::vector<std::tuple<uint, uint, double>>& data, uint rows, uint cols, uint nnz, uint64_t size);
 
-template <typename T, typename indexType, int compressionLevel>
-void averageRedundancy(CSF::SparseMatrix<T, indexType, compressionLevel>& matrix);
+template<typename T, typename indexType, int compressionLevel> void averageRedundancy(CSF::SparseMatrix<T, indexType, compressionLevel>& matrix);
 
 #define ITERATIONS 10
 
@@ -56,6 +57,7 @@ void loadMatrix(std::vector<std::tuple<uint, uint, double>>& data, std::function
 }
 
 double returnDouble(std::string val, std::unordered_map<std::string, double>& myMap) {
+
     return atof(val.c_str());
 }
 
@@ -72,7 +74,11 @@ double classifyDouble(std::string val, std::unordered_map<std::string, double>& 
 void benchmark(char* filepath, std::function<double(std::string, std::unordered_map<std::string, double>&)> func) {
     std::vector<std::tuple<uint, uint, double>> data;
 
-    load_mm_matrix(data, filepath);
+    // loadMatrix(data, func, filepath);
+    // load_mm_matrix(data, filepath);
+    generateMatrix(data, 300000, 1000000, 99, 1, 1);
+    std::cout << "Done loading matrix" << std::endl;
+    data.resize(data.size());
 
     uint cols = (uint)[&data] {
         int max = 0;
@@ -105,17 +111,20 @@ void benchmark(char* filepath, std::function<double(std::string, std::unordered_
             // }
 
             std::cout << "//////////////////////////////////////////////////////////// In: " << filepath << " ////////////////////////////////////////////////////////////" << std::endl;
-            uint64_t csf1Size = CSF::SparseMatrix<double, uint, 1>(data, rows, cols, size).byteSize();
-            std::cout << "CSF1 Size: " << csf1Size << std::endl;
-            uint64_t csf2Size = CSF::SparseMatrix<double, uint, 2>(data, rows, cols, size).byteSize();
-            std::cout << "CSF2 Size: " << csf2Size << std::endl;
-            CSF::SparseMatrix<double, uint, 3> csf3(data, rows, cols, size);
-            std::cout << "CSF3 Size: " << csf3.byteSize() << std::endl;
+            uint64_t csf1Size = buildMatrix<double, uint, 1>(data, rows, cols, size, 0);
+            uint64_t csf2Size = buildMatrix<double, uint, 2>(data, rows, cols, size, csf1Size);
+            uint64_t csf3Size = buildMatrix<double, uint, 3>(data, rows, cols, size, csf1Size);
 
-            averageRedundancy<double, uint, 3>(csf3);
-            std::cout << "\nRatios: " << std::endl;
-            std::cout << "CSF2: " << (double)((double)csf2Size / csf1Size) << std::endl;
-            std::cout << "CSF3: " << (double)((double)csf3.byteSize() / csf1Size) << std::endl;
+            std::cout << "CSF1: " << csf1Size << std::endl;
+            std::cout << "CSF2: " << csf2Size << std::endl;
+            std::cout << "CSF3: " << csf3Size << std::endl;
+
+            std::cout << std::endl;
+            std::cout << "Ratios:" << std::endl;
+
+            std::cout << "CSF1: " << (double)csf1Size / (rows * cols * sizeof(double)) << std::endl;
+            std::cout << "CSF2: " << (double)csf2Size / (rows * cols * sizeof(double)) << std::endl;
+            std::cout << "CSF3: " << (double)csf3Size / (rows * cols * sizeof(double)) << std::endl;
 }
 
 template <typename T, typename indexType, int compressionLevel>
@@ -127,18 +136,22 @@ void averageRedundancy(CSF::SparseMatrix<T, indexType, compressionLevel>& matrix
 
     for (int j = 0; j < numCols; ++j) {
         double totalValues = 0;
+        double redundancy = 0;
         std::unordered_map<double, double> uniqueValues;
 
         for (typename CSF::SparseMatrix<T, indexType, compressionLevel>::InnerIterator it(matrix, j); it; ++it) {
             uniqueValues.insert(std::pair<double, int>(it.value(), 0));
             totalValues++;
         }
-        if (totalValues == 0 || uniqueValues.size() == 0) {
+
+        if (totalValues == 0 || uniqueValues.size() == 0)
             continue;
-        }
-        colsWithValues++;
-        double redundancy = (uniqueValues.size() / totalValues);
+        else if (uniqueValues.size() == 1)
+            redundancy = 1;
+        else
+            redundancy = 1 - (uniqueValues.size() / totalValues);
         totalRedundancy += redundancy;
+        colsWithValues++;
     }
 
     std::cout << "Avg Redundancy: " << totalRedundancy / static_cast<double>(colsWithValues) << std::endl;
@@ -194,5 +207,29 @@ void load_mm_matrix(std::vector<std::tuple<uint, uint, double>>& data, char* fil
     free(val);
 
     std::cout << "Loaded: " << filename << std::endl;
+}
+
+void generateMatrix(std::vector<std::tuple<uint, uint, double>>& data, int numRows, int numCols, int sparsity, uint64_t seed, uint64_t maxValue) {
+    // generate a random sparse matrix
+    rng randMatrixGen = rng(seed);
+    data.reserve(numRows * 2);
+
+    #pragma openmp parallel for threadNum(4)
+    for (int i = 0; i < numRows; i++) {
+        for (int j = 0; j < numCols; j++) {
+            if (randMatrixGen.draw<int>(i, j, sparsity)) {
+                data.push_back(std::make_tuple(i, j, rand() % maxValue + 1));
+            }
+        }
+    }
+}
+
+template<typename T, typename indexType, int compressionLevel>
+uint64_t buildMatrix(std::vector<std::tuple<uint, uint, double>>& data, uint rows, uint cols, uint nnz, uint64_t size) {
+
+    CSF::SparseMatrix<T, indexType, compressionLevel> matrix(data, rows, cols, nnz);
+    if constexpr (compressionLevel == 3) averageRedundancy<double, uint, 3>(matrix);
+
+    return matrix.byteSize();
 }
 

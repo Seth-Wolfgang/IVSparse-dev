@@ -17,7 +17,7 @@ library(ggplot2)
 
 #data <- read.csv("timeDataFinal.csv") # or whatever you saved it as
 #rawData <- read.csv("rawTimeDataFinal.csv")
-sizeData <- read.csv("sizeData.csv")
+sizeData <- read.csv("sizeData100x100.csv")
 #move annoying offset from reading in matrix number as rownames
 #colnames(data) <- c(colnames(data)[-1], "")
 # delete useless column
@@ -25,11 +25,14 @@ sizeData <- read.csv("sizeData.csv")
 # Create a new column with grouped intervals
 # Create a new column with grouped intervals, excluding NA values
 
+library(plotly)
 
-# Calculate ratios
-sizeData$Ratio <- sizeData$CSF2.Size / sizeData$CSF1.Size
-sizeData$InverseRedundancy <- 1 / sizeData$Redundancy
-sizeData$InverseSparsity <- ifelse(sizeData$Sparsity == 0, 1, 1 / sizeData$Sparsity)
+sizeData$Ratio <- sizeData$CSF3.Size / sizeData$CSF1.Size
+sizeData$InverseRedundancy <- (1 / sizeData$Redundancy)
+sizeData$InverseSparsity <- ifelse(sizeData$Sparsity == 0, 1, (1 / sizeData$Sparsity))
+gridSize <- 100
+xGrid <- seq(min(sizeData$InverseRedundancy), max(sizeData$InverseRedundancy), length.out = gridSize)
+yGrid <- seq(min(sizeData$InverseSparsity), max(sizeData$InverseSparsity), length.out = gridSize)
 gridData <- data.frame(InverseRedundancy = rep(xGrid, gridSize),
                        InverseSparsity = rep(yGrid, each = gridSize))
 
@@ -41,22 +44,27 @@ interpResult <- interp(sizeData$InverseRedundancy, sizeData$InverseSparsity, siz
 # Extract interpolated values
 interpValues <- interpResult$z
 
-# Create a custom color scale with a steeper gradient
-colorScale <- colorRampPalette(c("#FF0000", "#FF3333", "#FF6666", "#FF9999",
-                                 "#FFCCCC", "#FFFFCC", "#FFFF99", "#FFFF66",
-                                 "#FFFF33", "#FFFF00", "#00FF00"))(100)
+# Create a plotly surface plot using interpolated values
+surfacePlot <- plot_ly(x = interpResult$x, y = interpResult$y, z = interpValues,
+                       type = "surface", colorscale = "Viridis")
 
-# Create a plotly surface plot using interpolated values and custom color scale
-plot_ly(x = interpResult$x, y = interpResult$y, z = interpResult$z,
-        type = "surface", colorscale = colorScale) %>%
+realSizeData <- read.csv("realSizeData.csv")
+realSizeData$Ratio <- realSizeData$CSF3.Size / realSizeData$CSF1.Size
+
+# Add markers from another dataset
+surfacePlot <- surfacePlot %>%
+  add_markers(data = realSizeData, x = ~Redundancy, y = ~Sparsity, z = ~Ratio)
+
+# Configure the layout for the 3D plot
+surfacePlot <- surfacePlot %>%
   layout(scene = list(xaxis = list(title = "Redundancy"),
                       yaxis = list(title = "Sparsity"),
-                      zaxis = list(title = "CSF2.Size / CSF1.Size")),
-         colorbar = list(
-           tickmode = "array",
-           tickvals = seq(min(sizeData$Ratio), max(sizeData$Ratio), by = 0.1),
-           ticktext = seq(min(sizeData$Ratio), max(sizeData$Ratio), by = 0.1)
-         ))
+                      zaxis = list(title = "CSF3.Size / CSF1.Size")))
+
+# Display the updated 3D plot with surface and markers
+surfacePlot
+
+
 ```
 
 ```{R}
