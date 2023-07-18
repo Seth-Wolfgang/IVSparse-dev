@@ -10,6 +10,17 @@
 
 namespace CSF {
 
+    //* Constructors and Destructor *//
+
+    // Destructor
+    template <typename T, typename indexT, bool columnMajor>
+    SparseMatrix<T, indexT, 2, columnMajor>::Vector::~Vector() {
+        if (values != nullptr) { free(values); }
+        if (counts != nullptr) { free(counts); }
+        if (indices != nullptr) { free(indices); }
+    }
+
+    // CSF Matrix Constructor
     template <typename T, typename indexT, bool columnMajor>
     SparseMatrix<T, indexT, 2, columnMajor>::Vector::Vector(CSF::SparseMatrix<T, indexT, 2, columnMajor>& mat, uint32_t vec) {
 
@@ -39,6 +50,7 @@ namespace CSF {
         length = mat.innerSize();
         valuesSize = mat.getNumUniqueVals(vec);
         indexSize = mat.getNumIndices(vec);
+        nnz = mat.getNumIndices(vec);
 
         try {
             values = (T*)malloc(valuesSize * sizeof(T));
@@ -54,11 +66,7 @@ namespace CSF {
         memcpy(counts, mat.getCounts(vec), valuesSize * sizeof(indexT));
         memcpy(indices, mat.getIndices(vec), indexSize * sizeof(indexT));
 
-        // set the nnz
-        nnz = mat.getNumIndices(vec);
-
         calculateCompSize();
-
     }
 
     // Deep copy constructor
@@ -103,30 +111,17 @@ namespace CSF {
 
     }
 
-    template <typename T, typename indexT, bool columnMajor>
-    SparseMatrix<T, indexT, 2, columnMajor>::Vector::~Vector() {
-        if (values != nullptr) {
-            free(values);
-        }
+    //* Private Class Methods *//
 
-        if (counts != nullptr) {
-            free(counts);
-        }
-
-        if (indices != nullptr) {
-            free(indices);
-        }
-    }
-
+    // User checks to confirm a valid vector
     template <typename T, typename indexT, bool columnMajor>
     void SparseMatrix<T, indexT, 2, columnMajor>::Vector::userChecks() {
         assert(std::is_floating_point<indexT>::value == false && "The index type must be a non-floating point type");
-
         assert((std::is_arithmetic<T>::value && std::is_arithmetic<indexT>::value) && "The value and index types must be numeric types");
-
         assert((std::is_same<indexT, bool>::value == false) && "The index type must not be bool");
     }
 
+    // Calculates the size of the vector in bytes
     template <typename T, typename indexT, bool columnMajor>
     void SparseMatrix<T, indexT, 2, columnMajor>::Vector::calculateCompSize() {
         size = 0;
@@ -137,43 +132,132 @@ namespace CSF {
         size += sizeof(indexT) * indexSize;
     }
 
+    //* Getters *//
+
+    // Get the inner size of the vector
     template <typename T, typename indexT, bool columnMajor>
     uint32_t SparseMatrix<T, indexT, 2, columnMajor>::Vector::innerSize() { return length; }
 
+    // Get the outer size of the vector
     template <typename T, typename indexT, bool columnMajor>
     uint32_t SparseMatrix<T, indexT, 2, columnMajor>::Vector::outerSize() { return 1; }
 
+    // Get the number of non-zero elements in the vector
     template <typename T, typename indexT, bool columnMajor>
     uint32_t SparseMatrix<T, indexT, 2, columnMajor>::Vector::nonZeros() { return nnz; }
 
+    // Get the byte size of the vector
     template <typename T, typename indexT, bool columnMajor>
     size_t SparseMatrix<T, indexT, 2, columnMajor>::Vector::byteSize() { return size; }
 
+    // Get the value at the given index
     template <typename T, typename indexT, bool columnMajor>
     T SparseMatrix<T, indexT, 2, columnMajor>::Vector::coeff(uint32_t index) { return (*this)[index]; }
 
+    // Get the length of the vector
     template <typename T, typename indexT, bool columnMajor>
     uint32_t SparseMatrix<T, indexT, 2, columnMajor>::Vector::getLength() { return length; }
+
+    // Get a pointer to the values of the vector
+    template <typename T, typename indexT, bool columnMajor>
+    T* SparseMatrix<T, indexT, 2, columnMajor>::Vector::getValues() { return values; }
+
+    // Get a pointer to the counts of the vector
+    template <typename T, typename indexT, bool columnMajor>
+    indexT* SparseMatrix<T, indexT, 2, columnMajor>::Vector::getCounts() { return counts; }
+
+    // Get a pointer to the indices of the vector
+    template <typename T, typename indexT, bool columnMajor>
+    indexT* SparseMatrix<T, indexT, 2, columnMajor>::Vector::getIndices() { return indices; }
+
+    // Get the number of unique values in the vector
+    template <typename T, typename indexT, bool columnMajor>
+    indexT SparseMatrix<T, indexT, 2, columnMajor>::Vector::uniqueVals() { return valuesSize; }
+
+    //* Utility Methods *//
+
+    // Print the vector to console
+    template <typename T, typename indexT, bool columnMajor>
+    void SparseMatrix<T, indexT, 2, columnMajor>::Vector::print() {
+
+        // if length is larger than 100 then print then don't print
+        if (length > 100) {
+            std::cout << "Vector is too large to print" << std::endl;
+            return;
+        }
+
+        std::cout << "Vector: ";
+        std::cout << std::endl;
+
+        // print a dense vector
+        for (uint32_t i = 0; i < length; i++) {
+            std::cout << (*this)[i] << " ";
+        }
+
+        std::cout << std::endl;
+    }
+
+    //* Calculation Methods *//
+
+    // Calculate the norm of the vector
+    template <typename T, typename indexT, bool columnMajor>
+    inline double SparseMatrix<T, indexT, 2, columnMajor>::Vector::norm() {
+        double norm = 0;
+        #pragma omp parallel for schedule(dynamic)
+        for (int i = 0; i < valueSizes; i++) {
+            norm += values[i] * values[i] * counts[i];
+        }
+        return sqrt(norm);
+    }
+
+    // Calculate the sum of the vector
+    template <typename T, typename indexT, bool columnMajor>
+    inline T SparseMatrix<T, indexT, 2, columnMajor>::Vector::sum() {
+        double sum = 0;
+        #pragma omp parallel for schedule(dynamic)
+        for (int i = 0; i < valueSizes; i++) {
+            sum += values[i] * counts[i];
+        }
+        return sum;
+    }
+
+    // Calculate the dot product with an Eigen dense vector
+    template <typename T, typename indexT, bool columnMajor>
+    double SparseMatrix<T, indexT, 2, columnMajor>::Vector::dot(Eigen::Vector<T, -1>& other) {
+        
+        double dot = 0;
+
+        for (typename SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator it(*this); it; ++it) {
+            dot += it.value() * other.coeff(it.row());
+        }
+
+        return dot;
+    }
+
+    // Calculate the dot product with an Eigen sparse vector
+    template <typename T, typename indexT, bool columnMajor>
+    double SparseMatrix<T, indexT, 2, columnMajor>::Vector::dot(Eigen::SparseVector<T, -1>& other) {
+        
+        double dot = 0;
+
+        for (typename SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator it(*this); it; ++it) {
+            dot += it.value() * other.coeff(it.row());
+        }
+
+        return dot;
+    }
+
+    //* Operator Overloads *//
 
     template <typename T, typename indexT, bool columnMajor>
     typename SparseMatrix<T, indexT, 2, columnMajor>::Vector SparseMatrix<T, indexT, 2, columnMajor>::Vector::operator=(typename SparseMatrix<T, indexT, 2, columnMajor>::Vector& other) {
         // check if the vector is the same
-        if (this == &other) {
-            return *this;
-        }
+        if (this == &other) { return *this; }
 
         // free the old data if not null
-        if (values != nullptr) {
-            delete[] values;
-        }
-
-        if (counts != nullptr) {
-            delete[] counts;
-        }
-
-        if (indices != nullptr) {
-            delete[] indices;
-        }
+        if (values != nullptr) { delete[] values; }
+        if (counts != nullptr) { delete[] counts; }
+        if (indices != nullptr) { delete[] indices; }
 
         // set the variables
         length = other.length;
@@ -220,35 +304,19 @@ namespace CSF {
     bool SparseMatrix<T, indexT, 2, columnMajor>::Vector::operator==(typename SparseMatrix<T, indexT, 2, columnMajor>::Vector& other) {
 
         // check if the lengths are the same
-        if (length != other.length) {
-            return false;
-        }
+        if (length != other.length) { return false; }
 
         // check if the nnz are the same
-        if (nnz != other.nnz) {
-            return false;
-        }
+        if (nnz != other.nnz) { return false; }
 
         // check if the values are the same
-        for (uint32_t i = 0; i < valuesSize; i++) {
-            if (values[i] != other.values[i]) {
-                return false;
-            }
-        }
+        for (uint32_t i = 0; i < valuesSize; i++) { if (values[i] != other.values[i]) { return false; } }
 
         // check if the counts are the same
-        for (uint32_t i = 0; i < valuesSize; i++) {
-            if (counts[i] != other.counts[i]) {
-                return false;
-            }
-        }
+        for (uint32_t i = 0; i < valuesSize; i++) { if (counts[i] != other.counts[i]) { return false; } }
 
         // check if the indices are the same
-        for (uint32_t i = 0; i < indexSize; i++) {
-            if (indices[i] != other.indices[i]) {
-                return false;
-            }
-        }
+        for (uint32_t i = 0; i < indexSize; i++) { if (indices[i] != other.indices[i]) { return false; } }
 
         // return true if all checks pass
         return true;
@@ -260,6 +328,7 @@ namespace CSF {
         return !(*this == other);
     }
 
+    // coefficient access operator
     template <typename T, typename indexT, bool columnMajor>
     T SparseMatrix<T, indexT, 2, columnMajor>::Vector::operator[](uint32_t index) {
 
@@ -283,67 +352,7 @@ namespace CSF {
         return 0;
     }
 
-    template <typename T, typename indexT, bool columnMajor>
-    void SparseMatrix<T, indexT, 2, columnMajor>::Vector::print() {
-
-        // if length is larger than 100 then print then don't print
-        if (length > 100) {
-            std::cout << "Vector is too large to print" << std::endl;
-            return;
-        }
-
-        std::cout << "Vector: ";
-        std::cout << std::endl;
-
-        // print a dense vector
-        for (uint32_t i = 0; i < length; i++) {
-            std::cout << (*this)[i] << " ";
-        }
-
-        std::cout << std::endl;
-    }
-
-    // get values method
-    template <typename T, typename indexT, bool columnMajor>
-    T* SparseMatrix<T, indexT, 2, columnMajor>::Vector::getValues() {
-        return values;
-    }
-
-    template <typename T, typename indexT, bool columnMajor>
-    indexT* SparseMatrix<T, indexT, 2, columnMajor>::Vector::getCounts() {
-        return counts;
-    }
-
-    template <typename T, typename indexT, bool columnMajor>
-    indexT* SparseMatrix<T, indexT, 2, columnMajor>::Vector::getIndices() {
-        return indices;
-    }
-
-    template <typename T, typename indexT, bool columnMajor>
-    indexT SparseMatrix<T, indexT, 2, columnMajor>::Vector::uniqueVals() {
-        return valuesSize;
-    }
-
-    template <typename T, typename indexT, bool columnMajor>
-    inline double SparseMatrix<T, indexT, 2, columnMajor>::Vector::norm() {
-        double norm = 0;
-        #pragma omp parallel for schedule(dynamic)
-        for (int i = 0; i < valueSizes; i++) {
-            norm += values[i] * values[i] * counts[i];
-        }
-        return sqrt(norm);
-    }
-
-    template <typename T, typename indexT, bool columnMajor>
-    inline T SparseMatrix<T, indexT, 2, columnMajor>::Vector::sum() {
-        double sum = 0;
-        #pragma omp parallel for schedule(dynamic)
-        for (int i = 0; i < valueSizes; i++) {
-            sum += values[i] * counts[i];
-        }
-        return sum;
-    }
-
+    // Scalar multiplication operator
     template <typename T, typename indexT, bool columnMajor>
     void SparseMatrix<T, indexT, 2, columnMajor>::Vector::operator*=(T scalar) {
         #pragma omp parallel for schedule(dynamic)
@@ -352,36 +361,20 @@ namespace CSF {
         }
     }
 
+    // Scalar multiplication operator (returns a new vector)
     template <typename T, typename indexT, bool columnMajor>
     typename CSF::SparseMatrix<T, indexT, 2, columnMajor>::Vector SparseMatrix<T, indexT, 2, columnMajor>::Vector::operator*(T scalar) {
+        
         typename CSF::SparseMatrix<T, indexT, 2, columnMajor>::Vector newVector(*this);
+
         #pragma omp parallel for schedule(dynamic)
         for (int i = 0; i < outerDim; i++) {
             for (int j = 0; j < valueSizes; j++) {
                 newVector.values[i][j] *= scalar;
             }
         }
+
         return newVector;
     }
 
-    template <typename T, typename indexT, bool columnMajor>
-    double SparseMatrix<T, indexT, 2, columnMajor>::Vector::dot(Eigen::Vector<T, -1>& other) {
-        double dot = 0;
-
-        for (typename SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator it(*this); it; ++it) {
-            dot += it.value() * other.coeff(it.row());
-        }
-
-        return dot;
-    }
-
-    template <typename T, typename indexT, bool columnMajor>
-    double SparseMatrix<T, indexT, 2, columnMajor>::Vector::dot(Eigen::SparseVector<T, -1>& other) {
-        double dot = 0;
-
-        for (typename SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator it(*this); it; ++it) {
-            dot += it.value() * other.coeff(it.row());
-        }
-        return dot;
-    }
-}
+} // end CSF namespace

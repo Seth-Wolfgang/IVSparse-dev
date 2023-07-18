@@ -123,5 +123,9 @@ namespace CSF {
     // Get the current value of the iterator
     template <typename T, typename indexT, bool columnMajor>
     T SparseMatrix<T, indexT, 1, columnMajor>::InnerIterator::value() { return *val; }
-
-}
+  
+    // coefficent access method
+    template <typename T, typename indexT, bool columnMajor>
+    void SparseMatrix<T, indexT, 1, columnMajor>::InnerIterator::coeff(T value) { *val = value; }
+    
+} // namespace CSF

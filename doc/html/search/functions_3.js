@@ -1,4 +1,4 @@
 var searchData=
 [
-  ['end_52',['end',['../class_c_s_f_1_1_sparse_matrix_1_1_vector.html#a434e2c5b551989943b9587bd769a8915',1,'CSF::SparseMatrix::Vector']]]
+  ['dot_135',['dot',['../class_c_s_f_1_1_sparse_matrix_3_01_t_00_01index_t_00_012_00_01column_major_01_4_1_1_vector.html#acc802211fb386b749937e96b6a3c2e7a',1,'CSF::SparseMatrix&lt; T, indexT, 2, columnMajor &gt;::Vector::dot(Eigen::Vector&lt; T, -1 &gt; &amp;other)'],['../class_c_s_f_1_1_sparse_matrix_3_01_t_00_01index_t_00_012_00_01column_major_01_4_1_1_vector.html#a63f85f076ebd6a94c1f2f4561788b849',1,'CSF::SparseMatrix&lt; T, indexT, 2, columnMajor &gt;::Vector::dot(Eigen::SparseVector&lt; T, -1 &gt; &amp;other)'],['../class_c_s_f_1_1_sparse_matrix_1_1_vector.html#acc802211fb386b749937e96b6a3c2e7a',1,'CSF::SparseMatrix::Vector::dot(Eigen::Vector&lt; T, -1 &gt; &amp;other)'],['../class_c_s_f_1_1_sparse_matrix_1_1_vector.html#a63f85f076ebd6a94c1f2f4561788b849',1,'CSF::SparseMatrix::Vector::dot(Eigen::SparseVector&lt; T, -1 &gt; &amp;other)']]]
 ];
