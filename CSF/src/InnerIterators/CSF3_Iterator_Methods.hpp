@@ -168,14 +168,14 @@ namespace CSF {
         data = (uint8_t*)data + indexWidth;
 
         decodeIndex();
-        
+
         // CSF 3
         // If new_row is 0 and not the first row, then the row is a delimitor
         if (newIndex == 0) {
 
             if (data >= (uint8_t*)endPtr - indexWidth) [[unlikely]] {
                 return;
-                }
+            }
 
             data = (uint8_t*)data + indexWidth;
 
@@ -183,12 +183,9 @@ namespace CSF {
             val = (T*)data;
             data = (uint8_t*)data + sizeof(T);
 
-                // Sets row width to the width of the first run
+            // Sets row width to the width of the first run
             indexWidth = *(uint8_t*)data;
             data = (uint8_t*)data + sizeof(uint8_t);
-            
-
-            // update currentCol to the next column
 
             // Make row 0 as it is a new run
             decodeIndex();

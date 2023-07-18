@@ -4,6 +4,7 @@
 #include <chrono>
 // #define EIGEN_DONT_PARALLELIZE
 #define DATA_TYPE int
+#define INDEX_TYPE int
 
 template<typename T, typename indexT>
 void sizeTest(int iterations);
@@ -11,148 +12,84 @@ void sizeTest(int iterations);
 template <typename T, typename indexT, int compressionLevel> void iteratorTest();
 void getMat(Eigen::SparseMatrix<int>& myMatrix_e);
 
+template <typename T>
+void generateAllUniqueElements(Eigen::SparseMatrix<T>& eigen);
+
+template <typename T>
+void generateAllRedundantElements(Eigen::SparseMatrix<T>& eigen);
+// For my convenience
+//  clear; rm a.out; g++ test.cpp; ./a.out
+
 int main() {
-    int rows = 10;
-    int cols = 10;
-    int sparsity = 10;
-    uint64_t seed = 1;
+    int rows = 100000;
+    int cols = 10000;
+    int sparsity = 1;
+    uint64_t seed = 522;
     int maxVal = 1;
+    const bool isColMajor = true;
 
-    // create an eigen sparse matrix
-    // Eigen::SparseMatrix<DATA_TYPE> eigen(rows, cols);
-    // getMat(eigen);
-    // eigen = generateMatrix<DATA_TYPE>(rows, cols, 1, 1, 9);
+    Eigen::SparseMatrix<DATA_TYPE> eigen(rows, cols);
+    eigen = generateMatrix<DATA_TYPE>(rows, cols, sparsity, seed, maxVal);
+    // generateAllUniqueElements<DATA_TYPE>(eigen);
+    // generateAllRedundantElements<DATA_TYPE>(eigen);
     // std::cout << eigen << std::endl;
 
-    Eigen::MatrixXi mat(6, 6);
-    mat << 0, 3, 4, 1,-1, 4,
-           3, 9, 0, 0,-6, 0,
-           0, 0,-5,-10, 0, 1,
-           9, 8, 7, 6, 5, 4,
-           0, 0, 0, 0, 0, 0,
-           0, 0, 0, 0, 0,-1;
+    // Eigen::MatrixXi mat(6, 6);
+    // mat << 0, 6, 4,  1, -1, 4,
+    //        3, 9, 0,  0, -6, 4,
+    //        0, 0,-5,-10,  0, 1,
+    //        9, 8, 7,  6,  5, 4,
+    //        0, 0, 0,  0,  0, 4,
+    //        0, 0, 0,  0,  0,-1;
 
-    Eigen::SparseMatrix<DATA_TYPE> eigen = mat.sparseView();
+    // Eigen::Vector<DATA_TYPE, 6> eigenVec(6,1);
+    // eigenVec << 0,
+    //             3,
+    //             0,
+    //             9,
+    //             0,
+    //             0; 
+    
 
-    // create a CSF sparse matrix
-    CSF::SparseMatrix<DATA_TYPE, int, 3> csf(eigen);
-    CSF::SparseMatrix<DATA_TYPE, int, 2> csf2(eigen);
-    csf2.setPerformanceVecs(true);
-
-    std::cout << "Sum: " << csf.sum() << std::endl;
-    std::cout << "Sum2: " << csf2.sum() << std::endl;
-
-    int* maxes = csf2.maxColCoeff();
-
-    for(int i = 0; i < csf2.outerSize(); i++) {
-        std::cout << maxes[i] << " ";
-    }
-    free(maxes);
-
-
-    // DATA_TYPE* outerSum = new DATA_TYPE[csf.outerSize()];
-    // DATA_TYPE* innerSum = new DATA_TYPE[csf.innerSize()];
-
-    // memcpy(outerSum, csf.outerSum(), sizeof(DATA_TYPE) * csf.outerSize());
-    // memcpy(innerSum, csf.innerSum(), sizeof(DATA_TYPE) * csf.innerSize());
-
-    // std::cout << "Outer Sum: " << std::endl;
-    // for (int i = 0; i < csf.outerSize(); i++) {
-    //     std::cout << outerSum[i] << " ";
-    // }
-    // std::cout << std::endl;
-
-    // std::cout << std::endl << "Inner Sum: " << std::endl;
-    // for (int i = 0; i < csf.innerSize(); i++) {
-    //     std::cout << innerSum[i] << " ";
-    // }
-    // std::cout << std::endl;
-
-    // std::cout << "Min Col coeff: " << std::endl;
-    // for (int i = 0; i < csf.outerSize(); i++) {
-    //     std::cout << csf.minColCoeff()[i] << " ";
-    // }
-    // std::cout << std::endl;
-
-    // std::cout << "Max Col coeff: " << std::endl;
-    // for (int i = 0; i < csf.outerSize(); i++) {
-    //     std::cout << csf.maxColCoeff()[i] << " ";
-    // }
-    // std::cout << std::endl;
-
-    // std::cout << "Min Row coeff: " <<  std::endl;
-    // for (int i = 0; i < csf.innerSize(); i++) {
-    //     std::cout << csf.minRowCoeff()[i] << " ";
-    // }
-    // std::cout << std::endl;
-
-    // std::cout << "Max Row coeff: " <<  std::endl;
-    // for (int i = 0; i < csf.innerSize(); i++) {
-    //     std::cout << csf.maxRowCoeff()[i] << " ";
-    // }
-    // std::cout << std::endl;
-
-    // transpose the CSF matrix
-    // CSF::SparseMatrix<DATA_TYPE, int, 3> csfT = csf.transpose();
-    // std::cout << csfT << std::endl;
-
-    // turn the CSF matrix into an eigen matrix
-    // Eigen::SparseMatrix<DATA_TYPE> eigen_e = csfT.toEigen();
-
-    // print the eigen matrix
-    // std::cout << eigen_e << std::endl;
-    // std::cout << eigen.transpose() << std::endl;
-
-
-
-    // make a vector of the CSF matrix
-    // CSF::SparseMatrix<int, int, 3>::Vector skyVec(csf, 0);
-
-    // multiply the CSF by 3
-    // csf *= 3;
-
-    // std::cout << "CSF: " << csf.compressionSize() << std::endl;
-    // std::cout << "CSF2: " << csf2.compressionSize() << std::endl;
-    // uint64_t eigenSize = eigen.nonZeros() * sizeof(double) + eigen.nonZeros() * sizeof(uint32_t) + (eigen.outerSize() + 1) * sizeof(uint32_t);
-    // std::cout << "eigen size: " << eigenSize << std::endl;
-
-    // Eigen::IOFormat clean(Eigen::StreamPrecision, Eigen::DontAlignCols, " ", "\n", "", "", "", "");
-
-    // std::cout << Eigen::MatrixXd(eigen).format(clean) << std::endl << std::endl;
-
-    // std::cout << csf << std::endl;
-
-
-
-    //rows * columns * (end pointers + start pointers) + values * data type + metadata 
-
-    //rows * columns (2 * pointers) * outersize + (sizeof(valueType) + sizeof(delimitor)) * outersize 
-
-
-    // std::cout << csf << std::endl;
-    // std::cout << eigen << std::endl;
-
-
-    // * CSF Iterator Testing * //
-    // #pragma omp parallel for num_threads(15)
-    // for (int i = 0; i < 1; i++) {
-    //     iteratorTest<double, uint64_t, 3>();
-    //     std::cout << "Test " << i << " passed" << std::endl;
+    //insert 6 1's into every row of eigen
+    // for(int i = 0; i < eigen.cols(); i++){
+    //     for(int j = 0; j < 2; j++){
+    //         eigen.insert(i, j) = 1;
+    //     }
     // }
 
-    // for(int i = 0; i < 1; i++) {
-    //     std::cout << "i: " << i << std::endl;
-    //     sizeTest<int, uint64_t>(10);
-    // }
 
+    // CSF::SparseMatrix<DATA_TYPE, uint32_t, 1> csf(eigen);
+    CSF::SparseMatrix<DATA_TYPE, INDEX_TYPE, 3, isColMajor> csf3(eigen);
+    CSF::SparseMatrix<DATA_TYPE, INDEX_TYPE, 2, isColMajor> csf2(eigen);
+    CSF::SparseMatrix<DATA_TYPE, INDEX_TYPE, 1, isColMajor> csf1(eigen);
+    uint64_t eigenSize = eigen.nonZeros() * sizeof(DATA_TYPE) + eigen.nonZeros() * sizeof(INDEX_TYPE) + (eigen.outerSize() + 1) * sizeof(INDEX_TYPE);
+
+    std::cout << "Eigen size: " << eigenSize << std::endl;
+    std::cout << "CSF2 size: " << csf2.byteSize() << std::endl;
+    std::cout << "CSF3 size: " << csf3.byteSize() << std::endl;
+
+    std::cout << "Ratios -> CSF2: " << (double)csf2.byteSize() / eigenSize << " \tCSF3: " << (double)csf3.byteSize() / eigenSize << std::endl;
+    
+    assert(csf2.sum() == csf3.sum());
+    assert(csf2.sum() == csf1.sum());
+    assert(csf3.sum() == csf1.sum());
+    assert(eigen.sum() == csf1.sum());
+    assert(eigen.sum() == csf2.sum());
+    assert(eigen.sum() == csf3.sum());
+
+
+    // iteratorTest<int, int, 3>();
+    // iteratorTest<int, int, 2>();
+    // iteratorTest<int, int, 1>();
 
     return 1;
 }
 
 template<typename T, typename indexT>
 void sizeTest(int iterations) {
-    int rows = 10000;
-    int cols = 10000;
+    int rows = 100;
+    int cols = 100;
     int sparsity = 9;
     uint64_t seed = 1;
     int maxVal = 1000;
@@ -162,7 +99,7 @@ void sizeTest(int iterations) {
     std::vector < uint64_t > csf2Sizes;
     std::vector < uint64_t > csfSizes;
 
-#pragma omp parallel for num_threads(15)
+    #pragma omp parallel for num_threads(15)
     for (int i = 0; i < iterations; i++) {
         // create an eigen sparse matrix
         Eigen::SparseMatrix<T> eigen(rows, cols);
@@ -197,37 +134,37 @@ void sizeTest(int iterations) {
 template <typename T, typename indexT, int compressionLevel>
 void iteratorTest() {
 
-    int numRows = 1000;//rand() % 1000 + 10;
-    int numCols = 1000;//rand() % 1000 + 10;
-    int sparsity = 20;//rand() % 50 + 1;
+    int numRows = 10000;//rand() % 1000 + 10;
+    int numCols = 10000;//rand() % 1000 + 10;
+    int sparsity = 1;//rand() % 50 + 1;
     uint64_t seed = 1;//rand();
 
     // Initialize the random matrix
     Eigen::SparseMatrix<T> eigen(numRows, numCols);
     eigen.reserve(Eigen::VectorXi::Constant(numCols, numRows));
-    eigen = generateMatrix<T>(numRows, numCols, sparsity, rand(), 10);
+    eigen = generateMatrix<T>(numRows, numCols, sparsity, rand(), 1);
     eigen.makeCompressed();
 
     //Create random matrix and vector to multiply with
-    Eigen::Matrix<T, -1, -1> randMatrix = Eigen::Matrix<T, -1, -1>::Random(numCols, numRows);
+    // Eigen::Matrix<T, -1, -1> randMatrix = Eigen::Matrix<T, -1, -1>::Random(numCols, numRows);
     // Eigen::Matrix<T, -1, 1> randVector = Eigen::Matrix<T, -1, 1>::Random(numCols);
 
-    Eigen::VectorXd randVector = Eigen::VectorXd::Random(numCols);
+    // Eigen::VectorXd randVector = Eigen::VectorXd::Random(numCols);
 
     //Create CSF matrix and an eigen dense matrix
     CSF::SparseMatrix<T, indexT, compressionLevel> csfMatrix(eigen);
 
     //Create a dense matrix to store the result of the multiplication
     std::chrono::time_point<std::chrono::system_clock> start, end;
-    Eigen::Matrix<T, -1, -1>  csfDenseMatrix;
-    Eigen::Matrix<T, -1, -1> eigenDenseMatrix;
+    // Eigen::Matrix<T, -1, -1>  csfDenseMatrix;
+    // Eigen::Matrix<T, -1, -1> eigenDenseMatrix;
 
     //Vectors to store times for averages
     std::vector<uint64_t> timesForNew;
     std::vector<uint64_t> timesForOld;
     uint64_t ours = 0;
     uint64_t old = 0;
-    for (int i = 0; i < 10000; i++) {
+    for (int i = 0; i < 1; i++) {
 
         //Measure time for CSF matrix
         T sum = 0;
@@ -257,7 +194,7 @@ void iteratorTest() {
         timesForOld.push_back(std::chrono::duration_cast<std::chrono::microseconds>(end - start).count());
         old = std::chrono::duration_cast<std::chrono::microseconds>(end - start).count();
         assert(sum2 == sum);
-        std::cout << "(CSF): " << ours << "(Eigen): " << old << std::endl;
+        // std::cout << "(CSF): " << ours << "(Eigen): " << old << std::endl;
 
         // std::cout << "Eigen:\n " << eigenDenseMatrix << std::endl;
     }
@@ -277,8 +214,8 @@ void iteratorTest() {
     // Eigen::MatrixXd controlMatrix = eigen * randMatrix;
 
     // T sum_e = denseMatrix.sum();
-    T sumCSF = csfDenseMatrix.sum();
-    T sumEigen = eigenDenseMatrix.sum();
+    // T sumCSF = csfDenseMatrix.sum();
+    // T sumEigen = eigenDenseMatrix.sum();
 
     // std::cout << "Eigen: " << sumEigen << " CSF: " << sumCSF << std::endl;
 
@@ -363,3 +300,28 @@ void getMat(Eigen::SparseMatrix<int>& myMatrix_e) {
 
 }
 
+template <typename T>
+void generateAllUniqueElements(Eigen::SparseMatrix<T>& eigen) {
+    T count = 1;
+    std::cout << "Cols: " << eigen.cols() << " Rows: " << eigen.rows() << std::endl;
+    std::cout << "Total values: " << eigen.cols() * eigen.rows() << std::endl;
+    for(int i = 0; i < eigen.cols(); i++) {
+        for(int j = 0; j < eigen.rows(); j++) {
+            // std::cout << "Inserting: " << count << std::endl;
+            eigen.insert(j, i) = (T)(count++);        
+        }   
+    }
+}
+
+template <typename T>
+void generateAllRedundantElements(Eigen::SparseMatrix<T>& eigen) {
+    T count = 1;
+    std::cout << "Cols: " << eigen.cols() << " Rows: " << eigen.rows() << std::endl;
+    std::cout << "Total values: " << eigen.cols() * eigen.rows() << std::endl;
+    for(int i = 0; i < eigen.cols(); i++) {
+        for(int j = 0; j < eigen.rows(); j++) {
+            // std::cout << "Inserting: " << count << std::endl;
+            eigen.insert(j, i) = count;        
+        }   
+    }
+}

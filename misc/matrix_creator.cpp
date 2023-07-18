@@ -112,7 +112,7 @@ public:
 };
 
 template <typename T>
-Eigen::SparseMatrix<T> generateMatrix(int numRows, int numCols, int sparsity, uint64_t seed, int maxValue) {
+Eigen::SparseMatrix<T> generateMatrix(int numRows, int numCols, int sparsity, uint64_t seed, uint64_t maxValue) {
     // generate a random sparse matrix
     rng randMatrixGen = rng(seed);
 
@@ -126,6 +126,7 @@ Eigen::SparseMatrix<T> generateMatrix(int numRows, int numCols, int sparsity, ui
             }
         }
     }
+
     myMatrix.makeCompressed();
     return myMatrix;
 }

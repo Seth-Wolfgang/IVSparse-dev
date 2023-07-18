@@ -14,13 +14,11 @@ namespace CSF {
 
     // CSF1 Matrix Constructor
     template <typename T, typename indexT, bool columnMajor>
-    SparseMatrix<T, indexT, 1, columnMajor>::InnerIterator::InnerIterator(SparseMatrix<T, indexT, 1, columnMajor> &mat, uint32_t vec) {
-        
+    inline SparseMatrix<T, indexT, 1, columnMajor>::InnerIterator::InnerIterator(SparseMatrix<T, indexT, 1, columnMajor>& mat, uint32_t vec) {
         this->outer = vec;
 
         // check if the vector is empty
-        if (mat.getOuterPointers()[vec] == mat.getOuterPointers()[vec + 1])
-        {
+        if (mat.getOuterPointers()[vec] == mat.getOuterPointers()[vec + 1]) {
             vals = nullptr;
             indices = nullptr;
             endPtr = nullptr;
@@ -39,8 +37,7 @@ namespace CSF {
 
     // CSF1 Vector Constructor
     template <typename T, typename indexT, bool columnMajor>
-    SparseMatrix<T, indexT, 1, columnMajor>::InnerIterator::InnerIterator(SparseMatrix<T, indexT, 1, columnMajor>::Vector &vec) {
-    
+    SparseMatrix<T, indexT, 1, columnMajor>::InnerIterator::InnerIterator(SparseMatrix<T, indexT, 1, columnMajor>::Vector& vec) {
         this->outer = 0;
 
         // set the pointers to the correct locations
@@ -57,14 +54,14 @@ namespace CSF {
 
     // Increment Operator
     template <typename T, typename indexT, bool columnMajor>
-    void SparseMatrix<T, indexT, 1, columnMajor>::InnerIterator::operator++() {
-        
-        // increment the pointers
+    inline void SparseMatrix<T, indexT, 1, columnMajor>::InnerIterator::operator++() {
         vals++;
         indices++;
 
         // check if the iterator is at the end of the vector
-        if (indices == endPtr) { return; }
+        if (indices == endPtr) {
+            return;
+        }
 
         // set the values of the iterator
         val = vals;
@@ -73,23 +70,23 @@ namespace CSF {
 
     // Equality Operator
     template <typename T, typename indexT, bool columnMajor>
-    bool SparseMatrix<T, indexT, 1, columnMajor>::InnerIterator::operator==(const InnerIterator &other) { return (vals == other.vals && indices == other.index); }
+    bool SparseMatrix<T, indexT, 1, columnMajor>::InnerIterator::operator==(const InnerIterator& other) { return (vals == other.vals && indices == other.index); }
 
     // Inequality Operator
     template <typename T, typename indexT, bool columnMajor>
-    bool SparseMatrix<T, indexT, 1, columnMajor>::InnerIterator::operator!=(const InnerIterator &other) { return (vals != other.vals || indices != other.index); }
+    bool SparseMatrix<T, indexT, 1, columnMajor>::InnerIterator::operator!=(const InnerIterator& other) { return (vals != other.vals || indices != other.index); }
 
     // Less Than Operator
     template <typename T, typename indexT, bool columnMajor>
-    bool SparseMatrix<T, indexT, 1, columnMajor>::InnerIterator::operator<(const InnerIterator &other) { return (vals < other.vals && indices < other.index); }
+    bool SparseMatrix<T, indexT, 1, columnMajor>::InnerIterator::operator<(const InnerIterator& other) { return (vals < other.vals && indices < other.index); }
 
     // Greater Than Operator
     template <typename T, typename indexT, bool columnMajor>
-    bool SparseMatrix<T, indexT, 1, columnMajor>::InnerIterator::operator>(const InnerIterator &other) { return (vals > other.vals && indices > other.index); }
+    bool SparseMatrix<T, indexT, 1, columnMajor>::InnerIterator::operator>(const InnerIterator& other) { return (vals > other.vals && indices > other.index); }
 
     // Dereference Operator
     template <typename T, typename indexT, bool columnMajor>
-    T &SparseMatrix<T, indexT, 1, columnMajor>::InnerIterator::operator*() { return val; }
+    T& SparseMatrix<T, indexT, 1, columnMajor>::InnerIterator::operator*() { return val; }
 
     //* Getters & Setters *//
 
@@ -104,21 +101,29 @@ namespace CSF {
     // Get the current row of the iterator
     template <typename T, typename indexT, bool columnMajor>
     indexT SparseMatrix<T, indexT, 1, columnMajor>::InnerIterator::row() {
-        if (columnMajor) { return index; }
-        else { return outer; }
+        if (columnMajor) {
+            return index;
+        }
+        else {
+            return outer;
+        }
     }
 
     // Get the current column of the iterator
     template <typename T, typename indexT, bool columnMajor>
     indexT SparseMatrix<T, indexT, 1, columnMajor>::InnerIterator::col() {
-        if (columnMajor) { return outer; }
-        else { return index; }
+        if (columnMajor) {
+            return outer;
+        }
+        else {
+            return index;
+        }
     }
 
     // Get the current value of the iterator
     template <typename T, typename indexT, bool columnMajor>
     T SparseMatrix<T, indexT, 1, columnMajor>::InnerIterator::value() { return *val; }
-
+  
     // coefficent access method
     template <typename T, typename indexT, bool columnMajor>
     void SparseMatrix<T, indexT, 1, columnMajor>::InnerIterator::coeff(T value) { *val = value; }

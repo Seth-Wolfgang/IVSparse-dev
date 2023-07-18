@@ -3,8 +3,8 @@
 # echo "Running benchmark with $numCols columns, $numRows rows, $numNonzeros nonzeros, $numMatrices matrices, and \"$problemKind\" problem kind"
 
 # Compiling benchmark
-# g++ -g -w -O2 benchmark.cpp -o benchmark -llapack
-g++ -w -ftree-vectorize -O2 benchmark.cpp -o benchmark -llapack
+# g++ -g -w -O2 lib/benchmark.cpp -o benchmark -llapack
+g++ -w -O2 -I ~/eigen lib/benchmark.cpp -o benchmark -llapack
 
 
 # Checking if compilation was successful
@@ -25,7 +25,7 @@ if [ $# -ge 1 ]; then
     touch matrices.txt
 fi
 
-numMatrices=4000
+numMatrices=1000
 # Downloading matrices and running benchmark at the same time
 for x in $(seq 1 $numMatrices)
 do
@@ -52,11 +52,11 @@ do
     echo "Running C++ benchmark for matrix ID: \033[0;32m$id\033[0m"
 
     
-    # valgrind -s --leak-check=full ./benchmark $MATRIX_PATH $id
     ./benchmark $MATRIX_PATH $id
-    # rm -r $MATRIX_PATH
+    # valgrind -s --leak-check=full --track-origins=yes ./benchmark $MATRIX_PATH $id
+    rm -r $MATRIX_PATH
 done
 
 # Clean up
-rm -r matrices/
-
+rm -rf matrices/
+rm benchmark

@@ -12,20 +12,26 @@ namespace CSF {
 
     // Assignment Operator
     template <typename T, typename indexT, bool columnMajor>
-    SparseMatrix<T, indexT, 1, columnMajor> &SparseMatrix<T, indexT, 1, columnMajor>::operator=(const CSF::SparseMatrix<T, indexT, 1, columnMajor> &other) {
+    SparseMatrix<T, indexT, 1, columnMajor>& SparseMatrix<T, indexT, 1, columnMajor>::operator=(const CSF::SparseMatrix<T, indexT, 1, columnMajor>& other) {
 
         // check for self assignment
         if (this != &other) {
-            
+
             // free the old data
-            if (vals != nullptr) { free(vals); }
-            if (innerIdx != nullptr) { free(innerIdx); }
-            if (outerPtr != nullptr) { free(outerPtr); }
-            if (metadata != nullptr) { delete[] metadata; }
-            
+            if (vals != nullptr)
+                free(vals);
+
+            if (innerIdx != nullptr)
+                free(innerIdx);
+
+            if (outerPtr != nullptr)
+                free(outerPtr);
+
+            if (metadata != nullptr)
+                delete [] metadata;
+
             // Deep copy the matrix
-            
-            // copy the metadata
+
             metadata = new uint32_t[NUM_META_DATA];
             memcpy(metadata, other.metadata, NUM_META_DATA * sizeof(uint32_t));
 
@@ -54,7 +60,7 @@ namespace CSF {
                 innerIdx = (indexT*)malloc(nnz * sizeof(indexT));
                 outerPtr = (indexT*)malloc((outerDim + 1) * sizeof(indexT));
             }
-            catch (std::bad_alloc &e) {
+            catch (std::bad_alloc& e) {
                 std::cerr << "Error: Failed to allocate memory for the matrix" << std::endl;
                 exit(1);
             }
@@ -71,12 +77,16 @@ namespace CSF {
 
     // Equality Operator
     template <typename T, typename indexT, bool columnMajor>
-    bool SparseMatrix<T, indexT, 1, columnMajor>::operator==(const SparseMatrix<T, indexT, 1, columnMajor> &other) {
-        
-        // Check the dimensions and nnz of the matrices
-        if (numRows != other.numRows || numCols != other.numCols) { return false; }
-        if (nnz != other.nnz) { return false; }
-        if (nnz == 0 && other.nnz == 0) { return true; }
+    bool SparseMatrix<T, indexT, 1, columnMajor>::operator==(const SparseMatrix<T, indexT, 1, columnMajor>& other) {
+        // check if the dimensions are the same
+        if (numRows != other.numRows || numCols != other.numCols) {
+            return false;
+        }
+
+        // check if the number of nonzeros are the same
+        if (nnz != other.nnz) {
+            return false;
+        }
 
         // check the matrix data against each other
         if (memcmp(vals, other.vals, nnz * sizeof(T)) != 0) { return false; }
@@ -89,7 +99,9 @@ namespace CSF {
 
     // Inequality Operator
     template <typename T, typename indexT, bool columnMajor>
-    bool SparseMatrix<T, indexT, 1, columnMajor>::operator!=(const SparseMatrix<T, indexT, 1, columnMajor> &other) { return !(*this == other); }
+    bool SparseMatrix<T, indexT, 1, columnMajor>::operator!=(const SparseMatrix<T, indexT, 1, columnMajor>& other) {
+        return !(*this == other);
+    }
 
     // Coefficent Access Operator
     template <typename T, typename indexT, bool columnMajor>
@@ -130,5 +142,36 @@ namespace CSF {
         typename CSF::SparseMatrix<T, indexT, 1, columnMajor>::Vector newVector(*this, vec);
         return newVector;
     }
-    
-} // namespace CSF
+
+    //* BLAS Operators *//
+
+ // Scalar Multiplication
+    template <typename T, typename indexT, bool columnMajor>
+    CSF::SparseMatrix<T, indexT, 1, columnMajor> SparseMatrix<T, indexT, 1, columnMajor>::operator*(T scalar) {
+        return scalarMultiply(scalar);
+    }
+
+    // In place scalar multiplication
+    template <typename T, typename indexT, bool columnMajor>
+    void SparseMatrix<T, indexT, 1, columnMajor>::operator*=(T scalar) {
+        return inPlaceScalarMultiply(scalar);
+    }
+
+    // CSF Matrix * CSF Vector Multiplication
+    template <typename T, typename indexT, bool columnMajor>
+    Eigen::VectorXd SparseMatrix<T, indexT, 1, columnMajor>::operator*(SparseMatrix<T, indexT, 1, columnMajor>::Vector& vec) {
+        return vectorMultiply(vec);
+    }
+
+    // Matrix Vector Multiplication (CSF Eigen -> Eigen)
+    template <typename T, typename indexT, bool columnMajor>
+    Eigen::VectorXd SparseMatrix<T, indexT, 1, columnMajor>::operator*(Eigen::VectorXd& vec) {
+        return vectorMultiply(vec);
+    }
+
+    // Matrix Matrix Multiplication (CSF Eigen -> Eigen)
+    template <typename T, typename indexT, bool columnMajor>
+    Eigen::Matrix<T, -1, -1> SparseMatrix<T, indexT, 1, columnMajor>::operator*(Eigen::Matrix<T, -1, -1> mat) {
+        return matrixMultiply(mat);
+    }
+}

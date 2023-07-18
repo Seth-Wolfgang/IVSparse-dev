@@ -72,7 +72,7 @@ namespace CSF {
 
         Eigen::Matrix<T, -1, 1> newVector = Eigen::Matrix<T, -1, 1>::Zero(innerDim, 1);
 
-        //#pragma omp parallel for schedule(dynamic)
+        // #pragma omp parallel for schedule(dynamic)
         for (typename SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator vecIter(vec); vecIter; ++vecIter) {
             for (typename SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator matIter(*this, vecIter.row()); matIter; ++matIter) {
                 newVector.coeffRef(matIter.row()) += matIter.value() * vecIter.value();
@@ -92,7 +92,7 @@ namespace CSF {
 
         Eigen::Matrix<T, -1, -1> newMatrix = Eigen::Matrix<T, -1, -1>::Zero(innerDim, mat.cols());
 
-        //pragma omp parallel for schedule(dynamic)
+        #pragma omp parallel for schedule(dynamic)
         for (int col = 0; col < mat.cols(); col++) {
             for (int row = 0; row < mat.rows(); row++) {
                 for (typename SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator matIter(*this, row); matIter; ++matIter) {

@@ -40,7 +40,7 @@ namespace CSF {
 
         this->valsSize = matrix.getNumUniqueVals(vec);
         this->indexSize = matrix.getNumIndices(vec);
-        
+
         // set the values of the iterator
         this->val = vals;
         this->index = indices[0];
@@ -58,6 +58,7 @@ namespace CSF {
             this->val = nullptr;
             this->index = 0;
             this->count = 0;
+
 
             countIndex = 0;
             indexSize = 0;
@@ -79,14 +80,10 @@ namespace CSF {
         this->val = vals;
         this->index = indices[0];
         this->count = counts[0];
-
+        
     }
 
     //* Getters *//
-
-    // If the iterator is at the beginning of a run
-    template <typename T, typename indexT, bool columnMajor>
-    inline bool SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::isNewRun() { return firstIndex; }
 
     // Get the outer dimension
     template <typename T, typename indexT, bool columnMajor>
@@ -146,8 +143,8 @@ namespace CSF {
 
     // Increment Operator
     template <typename T, typename indexT, bool columnMajor>
-    void SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::operator++() {
-        
+    inline void SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::operator++() {
+
         // decriment count
         count--;
 
@@ -156,6 +153,7 @@ namespace CSF {
 
             // Check if we are at the end of the values array
             countIndex++;
+            
             if (countIndex >= indexSize) { return; }
 
             firstIndex = true;
@@ -170,7 +168,8 @@ namespace CSF {
             // Get the new index
             indices++;
             index = *indices;
-        } else {
+        }
+        else {
             // Move to the next index
             countIndex++;
             indices++;

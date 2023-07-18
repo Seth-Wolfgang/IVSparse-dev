@@ -27,10 +27,10 @@ namespace CSF {
         indexT index; // Current index
         indexT outer; // Outer dimension
 
-        T *vals; // Pointer to values
-        indexT *indices; // Pointer to indices
-        T *endPtr; // Pointer to end of values
-
+        T *vals;
+        indexT *indices;
+        indexT *endPtr;
+        
         public:
         
         //* Constructors & Destructor *//

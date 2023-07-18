@@ -48,6 +48,10 @@ namespace CSF {
     // Calculates the current byte size of the matrix in memory
     template <typename T, typename indexT, bool columnMajor>
     void SparseMatrix<T, indexT, 2, columnMajor>::calculateCompSize() {
+        uint64_t TotalvalueSizes = 0;
+        uint64_t TotalindexSizes = 0;
+        uint64_t TotalcountSizes = 0;
+
         // set compSize to zero
         compSize = 0;
 
@@ -61,7 +65,6 @@ namespace CSF {
 
         compSize += (sizeof(indexT) * outerDim); // valueSizes
         compSize += (sizeof(indexT) * outerDim); // indexSizes
-
         for (uint32_t i = 0; i < outerDim; i++) {
             compSize += (sizeof(T) * valueSizes[i]); // values
             compSize += (sizeof(indexT) * valueSizes[i]); // counts
@@ -129,14 +132,12 @@ namespace CSF {
 
             // create a variable to hold the size of the column
             size_t numIndices = 0;
-            size_t performanceVecSize = 0;
 
             // loop through each value in the column and add it to dict
             for (indexT2 j = outerPointers[i]; j < outerPointers[i + 1]; j++) {
 
                 // check if the value is already in the dictionary or not
                 if (dict.find(vals[j]) != dict.end()) {
-
                     // add the index
                     dict[vals[j]].push_back(innerIndices[j]);
 
@@ -148,7 +149,6 @@ namespace CSF {
                     // create a new vector for the indices
                     dict[vals[j]] = std::vector<indexT2>{ innerIndices[j] };
 
-                    performanceVecSize++;
                     numIndices++;
                 }
 
@@ -157,8 +157,8 @@ namespace CSF {
             // ---- Stage 3: Allocate Size of Column Data ---- //
 
             try {
-                values[i] = (T *)malloc(sizeof(T) * performanceVecSize);
-                counts[i] = (indexT *)malloc(sizeof(indexT) * performanceVecSize);
+                values[i] = (T *)malloc(sizeof(T) * dict.size());
+                counts[i] = (indexT *)malloc(sizeof(indexT) * dict.size());
                 indices[i] = (indexT *)malloc(sizeof(indexT) * numIndices);
             } catch (std::bad_alloc &e) {
                 std::cerr << "Error: Could not allocate memory for the matrix" << std::endl;
@@ -166,10 +166,9 @@ namespace CSF {
             }
 
             // set the size of the column
-            valueSizes[i] = performanceVecSize;
+            valueSizes[i] = dict.size();
             indexSizes[i] = numIndices;
-
-            performanceVecSize = 0;
+            size_t performanceVecSize = 0;
             size_t indexSize = 0;
 
             // ---- Stage 4: Populate the Column Data ---- //

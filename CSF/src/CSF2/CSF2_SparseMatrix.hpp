@@ -144,7 +144,7 @@ namespace CSF {
          * @note COO is (row, col, value) format.
          */
         template <typename T2, typename indexT2>
-        SparseMatrix(std::vector<std::tuple<indexT2, indexT2, T2>> entries, uint32_t num_rows, uint32_t num_cols, uint32_t nnz);
+        SparseMatrix(std::vector<std::tuple<indexT2, indexT2, T2>>& entries, uint32_t num_rows, uint32_t num_cols, uint32_t nnz);
 
         /**
          * @param vec The vector to construct the matrix from

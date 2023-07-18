@@ -1,8 +1,8 @@
 {
     "files.associations": {
+        "*.asm": "asm",
         "*.erb": "erb",
         "*.rmd": "markdown",
-        "*.asm": "asm",
         "array": "cpp",
         "string": "cpp",
         "string_view": "cpp",
@@ -86,7 +86,8 @@
         "stop_token": "cpp",
         "sparseqr": "cpp",
         "iterativelinearsolvers": "cpp",
-        "sparsematrix": "cpp"
+        "sparsematrix": "cpp",
+        "__nullptr": "cpp"
     },
     "cmake.configureOnOpen": false
 }

@@ -46,10 +46,10 @@
 #include "src/CSF3/CSF3_Constructors.hpp"
 #include "src/CSF3/CSF3_BLAS.hpp"
     // Vector and Iterator Files
-    #include "src/Vectors/CSF3_Vector.hpp"
-    #include "src/Vectors/CSF3_Vector_Methods.hpp"
-    #include "src/InnerIterators/CSF3_Iterator.hpp"
-    #include "src/InnerIterators/CSF3_Iterator_Methods.hpp"
+#include "src/Vectors/CSF3_Vector.hpp"
+#include "src/Vectors/CSF3_Vector_Methods.hpp"
+#include "src/InnerIterators/CSF3_Iterator.hpp"
+#include "src/InnerIterators/CSF3_Iterator_Methods.hpp"
 
 // SparseMatrix Level 2 Files
 #include "src/CSF2/CSF2_SparseMatrix.hpp"
@@ -59,10 +59,10 @@
 #include "src/CSF2/CSF2_Constructors.hpp"
 #include "src/CSF2/CSF2_BLAS.hpp"
     // Vector and Iterator Files
-    #include "src/Vectors/CSF2_Vector.hpp"
-    #include "src/Vectors/CSF2_Vector_Methods.hpp"
-    #include "src/InnerIterators/CSF2_Iterator.hpp"
-    #include "src/InnerIterators/CSF2_Iterator_Methods.hpp"
+#include "src/Vectors/CSF2_Vector.hpp"
+#include "src/Vectors/CSF2_Vector_Methods.hpp"
+#include "src/InnerIterators/CSF2_Iterator.hpp"
+#include "src/InnerIterators/CSF2_Iterator_Methods.hpp"
 
 // SparseMatrix Level 1 Files
 #include "src/CSF1/CSF1_SparseMatrix.hpp"
@@ -72,7 +72,7 @@
 #include "src/CSF1/CSF1_Constructors.hpp"
 #include "src/CSF1/CSF1_BLAS.hpp"
     // Vector and Iterator Files
-    #include "src/Vectors/CSF1_Vector.hpp"
-    #include "src/Vectors/CSF1_Vector_Methods.hpp"
-    #include "src/InnerIterators/CSF1_Iterator.hpp"
-    #include "src/InnerIterators/CSF1_Iterator_Methods.hpp"
+#include "src/Vectors/CSF1_Vector.hpp"
+#include "src/Vectors/CSF1_Vector_Methods.hpp"
+#include "src/InnerIterators/CSF1_Iterator.hpp"
+#include "src/InnerIterators/CSF1_Iterator_Methods.hpp"

@@ -208,7 +208,7 @@ namespace CSF {
     // COO Constructor
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     template <typename T2, typename indexT2>
-    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(std::vector<std::tuple<indexT2, indexT2, T2>> entries, uint32_t num_rows, uint32_t num_cols, uint32_t nnz) {
+    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(std::vector<std::tuple<indexT2, indexT2, T2>>& entries, uint32_t num_rows, uint32_t num_cols, uint32_t nnz) {
 
         // see if the matrix is empty
         if (nnz == 0) [[unlikely]] {
@@ -241,7 +241,7 @@ namespace CSF {
 
         // allocate memory for the data
         try {
-            data = (void **)malloc(outerDim * sizeof(void *));
+            data = (void**)malloc(outerDim * sizeof(void*));
             endPointers = (void **)malloc(outerDim * sizeof(void *));
         } catch (std::bad_alloc &e) {
             std::cerr << "Error: Could not allocate memory for CSF matrix" << std::endl;

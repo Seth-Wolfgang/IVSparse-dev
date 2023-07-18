@@ -23,13 +23,12 @@ namespace CSF {
     template <typename T, typename indexT, bool columnMajor>
     class SparseMatrix<T, indexT, 1, columnMajor> : public SparseMatrixBase {
 
-        private:
+    private:
 
         //* The Matrix Data *//
-
-        T *vals = nullptr; // The values of the matrix
-        indexT *innerIdx = nullptr; // The inner indices of the matrix
-        indexT *outerPtr = nullptr; // The outer pointers of the matrix
+        T* vals = nullptr; // The values of the matrix
+        indexT* innerIdx = nullptr; // The inner indices of the matrix
+        indexT* outerPtr = nullptr; // The outer pointers of the matrix
 
         //* Private Methods *//
 
@@ -45,8 +44,24 @@ namespace CSF {
         // Calculates the current byte size of the matrix in memory
         void calculateCompSize();
 
+        // Scalar Multiplication
+        inline CSF::SparseMatrix<T, indexT, 1, columnMajor> scalarMultiply(T scalar);
 
-        public:
+        // In Place Scalar Multiplication
+        inline void inPlaceScalarMultiply(T scalar);
+
+        // Matrix Vector Multiplication
+        inline Eigen::VectorXd vectorMultiply(Eigen::VectorXd& vec);
+
+        // Matrix Vector Multiplication 2 (with CSF Vector)
+        inline Eigen::VectorXd vectorMultiply(typename SparseMatrix<T, indexT, 1, columnMajor>::Vector& vec);
+
+        // Matrix Matrix Multiplication
+        inline Eigen::Matrix<T, -1, -1> matrixMultiply(Eigen::Matrix<T, -1, -1>& mat);
+
+
+
+    public:
 
         //* Nested Subclasses *//
 
@@ -71,21 +86,9 @@ namespace CSF {
          */
         SparseMatrix() {};
 
-        /**
-         * @param mat The Eigen Sparse Matrix to be compressed
-         *
-         * Eigen Sparse Matrix Constructor \n \n
-         * This constructor takes an Eigen Sparse Matrix and compresses it into a CSF1 matrix.
-         */
-        SparseMatrix(Eigen::SparseMatrix<T> &mat);
+        SparseMatrix(Eigen::SparseMatrix<T>& mat);
 
-        /**
-         * @param mat The Eigen Sparse Matrix to be compressed
-         *
-         * Eigen Sparse Matrix Constructor (Row Major) \n \n
-         * Same as previous constructor but for Row Major Eigen Sparse Matrices.
-         */
-        SparseMatrix(Eigen::SparseMatrix<T, Eigen::RowMajor> &mat);
+        SparseMatrix(Eigen::SparseMatrix<T, Eigen::RowMajor>& mat);
 
         /**
          * @tparam compressionLevel2 The compression level of the CSF matrix to convert
@@ -97,15 +100,12 @@ namespace CSF {
          * go through the CSC format.
          */
         template <uint8_t compressionLevel2>
-        SparseMatrix(CSF::SparseMatrix<T, indexT, compressionLevel2, columnMajor> &other);
+        SparseMatrix(CSF::SparseMatrix<T, indexT, compressionLevel2, columnMajor>& other);
 
-        /**
-         * @param other The CSF1 matrix to be copied
-         *
-         * Deep Copy Constructor \n \n
-         * This constructor takes in a CSF1 matrix and creates a deep copy of it.
-         */
-        SparseMatrix(const CSF::SparseMatrix<T, indexT, 1, columnMajor> &other);
+        SparseMatrix(const CSF::SparseMatrix<T, indexT, 1, columnMajor>& other);
+
+        template <typename T2, typename indexT2>
+        SparseMatrix(T2* vals, indexT2* innerIndices, indexT2* outerPtr, uint32_t num_rows, uint32_t num_cols, uint32_t nnz);
 
         /**
          * Raw CSC Constructor \n \n
@@ -113,31 +113,13 @@ namespace CSF {
          * One could also take this information and convert to an Eigen Sparse Matrix and then to a CSF1 matrix.
          */
         template <typename T2, typename indexT2>
-        SparseMatrix(T2 *vals, indexT2 *innerIndices, indexT2 *outerPtr, uint32_t num_rows, uint32_t num_cols, uint32_t nnz);
+        SparseMatrix(std::vector<std::tuple<indexT2, indexT2, T2>>& entries, uint32_t num_rows, uint32_t num_cols, uint32_t nnz);
 
-        /**
-         * @param vec The vector to construct the matrix from
-         *
-         * CSF Vector Constructor \n \n
-         * This constructor takes in a single CSF1 vector and creates a one column/row CSF1 matrix.
-         */
-        SparseMatrix(typename CSF::SparseMatrix<T, indexT, 1, columnMajor>::Vector &vec);
+        SparseMatrix(typename CSF::SparseMatrix<T, indexT, 1, columnMajor>::Vector& vec);
 
-        /**
-         * @param vecs The vector of CSF1 vectors to construct from.
-         *
-         * Vector of CSF1 Vectors Constructor \n \n
-         * This constructor takes in an vector of CSF1 vectors and creates a CSF1 matrix from them.
-         */
-        SparseMatrix(std::vector<typename CSF::SparseMatrix<T, indexT, 1, columnMajor>::Vector> &vecs);
+        SparseMatrix(std::vector<typename CSF::SparseMatrix<T, indexT, 1, columnMajor>::Vector>& vecs);
 
-        /**
-         * @param filename The filepath of the matrix to be read in
-         *
-         * File Constructor \n \n
-         * Given a filepath to a CSF1 matrix written to file this constructor will read in the matrix and construct it.
-         */
-        SparseMatrix(const char *filename);
+        SparseMatrix(const char* filename);
 
         /**
          * @brief Destroy the Sparse Matrix object
@@ -169,28 +151,11 @@ namespace CSF {
          */
         bool isColumnMajor() const;
 
-        /**
-         * @param vec The vector to get the values from
-         * @return T* A pointer to the values of the vector
-         * 
-         * Returns a const pointer to the CSC values of the CSF1 Matrix.
-         */
-        T *getValues(uint32_t vec) const;
+        T* getValues(uint32_t vec) const;
 
-        /**
-         * @param vec The vector to get the inner indices from
-         * @return indexT* A pointer to the inner indices of the vector
-         * 
-         * Returns a const pointer to the CSC inner indices of the CSF1 Matrix.
-         */
-        indexT *getInnerIndices(uint32_t vec) const;
+        indexT* getInnerIndices(uint32_t vec) const;
 
-        /**
-         * @return indexT* A pointer to the outer pointers of the matrix
-         * 
-         * Returns a const pointer to the CSC outer pointers of the CSF1 Matrix.
-         */
-        indexT *getOuterPointers() const;
+        indexT* getOuterPointers() const;
 
         /**
          * @param vec The vector to get a copy of
@@ -202,24 +167,7 @@ namespace CSF {
          */
         typename CSF::SparseMatrix<T, indexT, 1, columnMajor>::Vector getVector(uint32_t vec);
 
-        ///@}
-
-        //* Utility Methods *//
-        /**
-         * @name Utility Methods
-         */
-        ///@{
-
-        /**
-         * @param filename The filename of the matrix to write to
-         *
-         * This method writes the CSF matrix to a file in binary format.
-         * This can then be read in later using the file constructor.
-         * Currently .csf is the perfered file extension.
-         *
-         * @note Useful to split a matrix up and then write each part separately.
-         */
-        void write(const char *filename);
+        void write(const char* filename);
 
         /**
          * Prints "CSF Matrix:" followed by the dense representation of the matrix to the console.
@@ -261,37 +209,55 @@ namespace CSF {
          */
         void inPlaceTranspose();
 
-        /**
-         * @param vec The vector to append to the matrix in the correct storage order.
-         *
-         * Appends a CSF vector to the current matrix in the storage order of the matrix.
-         */
-        void append(typename SparseMatrix<T, indexT, 1, columnMajor>::Vector &vec);
+        void append(typename SparseMatrix<T, indexT, 1, columnMajor>::Vector& vec);
 
         /**
          * @returns A vector of CSF vectors that represent a slice of the CSF matrix.
          */
         std::vector<typename CSF::SparseMatrix<T, indexT, 1, columnMajor>::Vector> slice(uint32_t start, uint32_t end);
 
-        ///@}
+        CSF::SparseMatrix<T, indexT, 1, columnMajor>& operator=(const CSF::SparseMatrix<T, indexT, 1, columnMajor>& other);
 
-        //* Operator Overloads *//
+        bool operator==(const SparseMatrix<T, indexT, 1, columnMajor>& other);
 
-        // Assignment Operator
-        CSF::SparseMatrix<T, indexT, 1, columnMajor> &operator=(const CSF::SparseMatrix<T, indexT, 1, columnMajor> &other);
-
-        // Equality Operator
-        bool operator==(const SparseMatrix<T, indexT, 1, columnMajor> &other);
-
-        // Inequality Operator
-        bool operator!=(const SparseMatrix<T, indexT, 1, columnMajor> &other);
+        bool operator!=(const SparseMatrix<T, indexT, 1, columnMajor>& other);
 
         // Coefficient Access Operator
         T operator()(uint32_t row, uint32_t col);
 
         // Vector Access Operator
         typename CSF::SparseMatrix<T, indexT, 1, columnMajor>::Vector operator[](uint32_t vec);
-    
-    }; // End of CSF1 Sparse Matrix Class
 
-} // End of CSF Namespace
+        CSF::SparseMatrix<T, indexT, 1, columnMajor> operator*(T scalar);
+
+        void operator*=(T scalar);
+
+        Eigen::VectorXd operator*(Eigen::VectorXd& vec);
+
+        Eigen::VectorXd operator*(typename SparseMatrix<T, indexT, 1, columnMajor>::Vector& vec);
+
+        Eigen::Matrix<T, -1, -1> operator*(Eigen::Matrix<T, -1, -1> mat);
+
+        inline double vectorLength(uint32_t col);
+
+        inline double norm();
+
+        inline T sum();
+
+        inline T trace();
+
+        inline std::vector<T> maxColCoeff();
+
+        inline std::vector<T> minRowCoeff();
+
+        inline std::vector<T> maxRowCoeff();
+
+        inline std::vector<T> minColCoeff();
+
+        inline std::vector<T> outerSum();
+
+        inline std::vector<T> innerSum();
+
+    };
+
+}
