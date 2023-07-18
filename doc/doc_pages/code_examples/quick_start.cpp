@@ -1,8 +1,9 @@
 #include <Eigen/Sparse>
-#include <CSF/SparseMatrix>
+#include <IVSparse/SparseMatrix>
 #include <iostream>
 
-int main() {
+int main()
+{
 
     int rows = 4;
     int cols = 4;
@@ -12,8 +13,7 @@ int main() {
     int rowIndices[4] = {0, 1, 2, 3};
     int outerPointers[5] = {0, 1, 2, 3, 4};
 
-    CSF::SparseMatrix<int> matrix(values, rowIndices, outerPointers, rows, cols, nnz);
+    IVSparseSparseMatrix<int> matrix(values, rowIndices, outerPointers, rows, cols, nnz);
 
     matrix.print();
-
 }

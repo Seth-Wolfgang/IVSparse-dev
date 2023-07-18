@@ -1,13 +1,14 @@
 #include <iostream>
-#include "CSF/SparseMatrix"
+#include "IVSparse/SparseMatrix"
 #include <fstream>
 
 using namespace std;
 
 template <typename T, typename indexType, int compressionLevel>
-void averageRedundancy(CSF::SparseMatrix<T, indexType, compressionLevel>& matrix);
+void averageRedundancy(IVSparse::SparseMatrix<T, indexType, compressionLevel> &matrix);
 
-int main() {
+int main()
+{
 
     int rows = 46985;
     int cols = 124836;
@@ -23,7 +24,8 @@ int main() {
 
     int count = 0;
 
-    for (string line; getline(file, line);) {
+    for (string line; getline(file, line);)
+    {
 
         int value = stoi(line);
         vals[count] = value;
@@ -36,7 +38,8 @@ int main() {
 
     count = 0;
 
-    for (string line; getline(file, line);) {
+    for (string line; getline(file, line);)
+    {
 
         int value = stoi(line);
         indices[count] = value;
@@ -49,7 +52,8 @@ int main() {
 
     count = 0;
 
-    for (string line; getline(file, line);) {
+    for (string line; getline(file, line);)
+    {
 
         int value = stoi(line);
         colPointers[count] = value;
@@ -59,18 +63,18 @@ int main() {
     file.close();
 
     // create sparse matrix
-    CSF::SparseMatrix<uint32_t, uint32_t, 1> X1(vals, indices, colPointers, rows, cols, nnz);
-    CSF::SparseMatrix<uint32_t, uint32_t, 2> X2(vals, indices, colPointers, rows, cols, nnz);
-    CSF::SparseMatrix<uint32_t, uint32_t, 3> X3(vals, indices, colPointers, rows, cols, nnz);
+    IVSparse::SparseMatrix<uint32_t, uint32_t, 1> X1(vals, indices, colPointers, rows, cols, nnz);
+    IVSparse::SparseMatrix<uint32_t, uint32_t, 2> X2(vals, indices, colPointers, rows, cols, nnz);
+    IVSparse::SparseMatrix<uint32_t, uint32_t, 3> X3(vals, indices, colPointers, rows, cols, nnz);
 
     // print the sparse matrix byte size
-    cout << "CSF1 Size: " << X1.byteSize() << endl;
-    cout << "CSF2 Size: " << X2.byteSize() << endl;
-    cout << "CSF3 Size: " << X3.byteSize() << endl;
+    cout << "CSC Size: " << X1.byteSize() << endl;
+    cout << "VCSC Size: " << X2.byteSize() << endl;
+    cout << "IVCSC Size: " << X3.byteSize() << endl;
 
     std::cout << "Ratios: " << std::endl;
-    std::cout << "CSF2: " << (double)((double)X2.byteSize() / X1.byteSize()) << std::endl;
-    std::cout << "CSF3: " << (double)((double)X3.byteSize() / X1.byteSize()) << std::endl;
+    std::cout << "VCSC: " << (double)((double)X2.byteSize() / X1.byteSize()) << std::endl;
+    std::cout << "IVCSC: " << (double)((double)X3.byteSize() / X1.byteSize()) << std::endl;
 
     std::cout << "rows: " << rows << std::endl;
     std::cout << "cols: " << cols << std::endl;
@@ -85,25 +89,28 @@ int main() {
     delete[] colPointers;
 
     return 0;
-
 }
 
 template <typename T, typename indexType, int compressionLevel>
-void averageRedundancy(CSF::SparseMatrix<T, indexType, compressionLevel>& matrix) {
+void averageRedundancy(IVSparse::SparseMatrix<T, indexType, compressionLevel> &matrix)
+{
     const int numRows = matrix.rows();
     const int numCols = matrix.cols();
     int colsWithValues = 0;
     double totalRedundancy = 0.0;
 
-    for (int j = 0; j < numCols; ++j) {
+    for (int j = 0; j < numCols; ++j)
+    {
         double totalValues = 0;
         std::unordered_map<double, double> uniqueValues;
 
-        for (typename CSF::SparseMatrix<T, indexType, compressionLevel>::InnerIterator it(matrix, j); it; ++it) {
+        for (typename IVSparse::SparseMatrix<T, indexType, compressionLevel>::InnerIterator it(matrix, j); it; ++it)
+        {
             uniqueValues.insert(std::pair<double, int>(it.value(), 0));
             totalValues++;
         }
-        if (totalValues == 0 || uniqueValues.size() == 0) {
+        if (totalValues == 0 || uniqueValues.size() == 0)
+        {
             continue;
         }
         colsWithValues++;
@@ -113,4 +120,3 @@ void averageRedundancy(CSF::SparseMatrix<T, indexType, compressionLevel>& matrix
 
     std::cout << "Avg Redundancy: " << totalRedundancy / static_cast<double>(colsWithValues) << std::endl;
 }
-
