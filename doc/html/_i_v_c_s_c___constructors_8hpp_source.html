@@ -249,8 +249,8 @@ $(document).ready(function(){initNavTree('_i_v_c_s_c___constructors_8hpp_source.
 <div class="line"><a name="l00156"></a><span class="lineno">  156</span>&#160;        <a class="code" href="class_i_v_sparse_1_1_sparse_matrix.html">IVSparse::SparseMatrix&lt;T, indexT, compressionLevel, columnMajor&gt;</a> temp;</div>
 <div class="line"><a name="l00157"></a><span class="lineno">  157</span>&#160; </div>
 <div class="line"><a name="l00158"></a><span class="lineno">  158</span>&#160;        <span class="comment">// convert other to the right compression level</span></div>
-<div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160;        <span class="keywordflow">if</span> constexpr (otherCompressionLevel == 1) { temp = other.toCSF3(); }</div>
-<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160;        <span class="keywordflow">else</span> <span class="keywordflow">if</span> constexpr (otherCompressionLevel == 2) { temp = other.toCSF3(); }</div>
+<div class="line"><a name="l00159"></a><span class="lineno">  159</span>&#160;        <span class="keywordflow">if</span> constexpr (otherCompressionLevel == 1) { temp = other.toIVCSC(); }</div>
+<div class="line"><a name="l00160"></a><span class="lineno">  160</span>&#160;        <span class="keywordflow">else</span> <span class="keywordflow">if</span> constexpr (otherCompressionLevel == 2) { temp = other.toIVCSC(); }</div>
 <div class="line"><a name="l00161"></a><span class="lineno">  161</span>&#160; </div>
 <div class="line"><a name="l00162"></a><span class="lineno">  162</span>&#160;        <span class="comment">// other should be the same compression level as this now</span></div>
 <div class="line"><a name="l00163"></a><span class="lineno">  163</span>&#160;        *<span class="keyword">this</span> = temp;</div>
@@ -800,7 +800,7 @@ $(document).ready(function(){initNavTree('_i_v_c_s_c___constructors_8hpp_source.
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><a class="el" href="dir_b9fceb7325eae05f08ed99fa225d81fb.html">IVSparse</a></li><li class="navelem"><a class="el" href="dir_d1408036e91a828b9523b0150756eb44.html">src</a></li><li class="navelem"><a class="el" href="dir_ce54e2a6eaffffdcd789781cfb4d54d5.html">IVCSC</a></li><li class="navelem"><b>IVCSC_Constructors.hpp</b></li>
-    <li class="footer">Generated on Thu Jul 20 2023 15:05:38 for IVSparse by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
+    <li class="footer">Generated on Thu Jul 20 2023 15:15:27 for IVSparse by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
   </ul>
 </div>
 </body>

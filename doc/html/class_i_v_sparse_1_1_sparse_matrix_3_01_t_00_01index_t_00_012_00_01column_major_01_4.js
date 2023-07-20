@@ -33,7 +33,7 @@ var class_i_v_sparse_1_1_sparse_matrix_3_01_t_00_01index_t_00_012_00_01column_ma
     [ "write", "class_i_v_sparse_1_1_sparse_matrix_3_01_t_00_01index_t_00_012_00_01column_major_01_4.html#a321f3f9887e0158c367d366f6d6f6052", null ],
     [ "print", "class_i_v_sparse_1_1_sparse_matrix_3_01_t_00_01index_t_00_012_00_01column_major_01_4.html#a388f572c62279f839ee138a9afbdeeb5", null ],
     [ "toCSC", "class_i_v_sparse_1_1_sparse_matrix_3_01_t_00_01index_t_00_012_00_01column_major_01_4.html#a07da14d810f29bbc4f27b629dfeccb1d", null ],
-    [ "toCSF3", "class_i_v_sparse_1_1_sparse_matrix_3_01_t_00_01index_t_00_012_00_01column_major_01_4.html#a3584c049ab8c4effd2fc6fb71c9d4505", null ],
+    [ "toIVCSC", "class_i_v_sparse_1_1_sparse_matrix_3_01_t_00_01index_t_00_012_00_01column_major_01_4.html#a6541e8182a11cab7cc0a24b95b972acb", null ],
     [ "toEigen", "class_i_v_sparse_1_1_sparse_matrix_3_01_t_00_01index_t_00_012_00_01column_major_01_4.html#a5a57392e2567e2d75193ae2b9de64bd4", null ],
     [ "transpose", "class_i_v_sparse_1_1_sparse_matrix_3_01_t_00_01index_t_00_012_00_01column_major_01_4.html#acf098f209e52fea7fbfbf5dde53d031e", null ],
     [ "inPlaceTranspose", "class_i_v_sparse_1_1_sparse_matrix_3_01_t_00_01index_t_00_012_00_01column_major_01_4.html#ab0fe40ceed52652d6aa6afc84cef0f2a", null ],

@@ -32,7 +32,7 @@ var class_i_v_sparse_1_1_sparse_matrix =
     [ "write", "class_i_v_sparse_1_1_sparse_matrix.html#a321f3f9887e0158c367d366f6d6f6052", null ],
     [ "print", "class_i_v_sparse_1_1_sparse_matrix.html#a388f572c62279f839ee138a9afbdeeb5", null ],
     [ "toCSC", "class_i_v_sparse_1_1_sparse_matrix.html#a07da14d810f29bbc4f27b629dfeccb1d", null ],
-    [ "toCSF2", "class_i_v_sparse_1_1_sparse_matrix.html#afa0b3e876ad3142396ff18137f1314e8", null ],
+    [ "toVCSC", "class_i_v_sparse_1_1_sparse_matrix.html#a016f6461099f5c4228339eeefd79b48b", null ],
     [ "toEigen", "class_i_v_sparse_1_1_sparse_matrix.html#a5a57392e2567e2d75193ae2b9de64bd4", null ],
     [ "transpose", "class_i_v_sparse_1_1_sparse_matrix.html#a04ce8b597d7074b34110eb3d9469ed6c", null ],
     [ "inPlaceTranspose", "class_i_v_sparse_1_1_sparse_matrix.html#ab0fe40ceed52652d6aa6afc84cef0f2a", null ],

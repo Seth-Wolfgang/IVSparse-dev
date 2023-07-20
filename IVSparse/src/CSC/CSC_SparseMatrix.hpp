@@ -304,12 +304,12 @@ namespace IVSparse {
         /**
          * @returns The current matrix as a VCSC Matrix.
          */
-        IVSparse::SparseMatrix<T, indexT, 2, columnMajor> toCSF2();
+        IVSparse::SparseMatrix<T, indexT, 2, columnMajor> toVCSC();
 
         /**
          * @returns The current matrix as a IVCSC Matrix.
          */
-        IVSparse::SparseMatrix<T, indexT, 3, columnMajor> toCSF3();
+        IVSparse::SparseMatrix<T, indexT, 3, columnMajor> toIVCSC();
 
         /**
          * @returns An Eigen Sparse Matrix constructed from the IVSparse matrix data.

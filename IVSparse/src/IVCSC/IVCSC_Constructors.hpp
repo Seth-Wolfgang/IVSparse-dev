@@ -156,8 +156,8 @@ namespace IVSparse {
         IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor> temp;
 
         // convert other to the right compression level
-        if constexpr (otherCompressionLevel == 1) { temp = other.toCSF3(); }
-        else if constexpr (otherCompressionLevel == 2) { temp = other.toCSF3(); }
+        if constexpr (otherCompressionLevel == 1) { temp = other.toIVCSC(); }
+        else if constexpr (otherCompressionLevel == 2) { temp = other.toIVCSC(); }
 
         // other should be the same compression level as this now
         *this = temp;

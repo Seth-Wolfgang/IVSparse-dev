@@ -147,7 +147,7 @@ namespace IVSparse
 
     // Convert a IVCSC matrix to a VCSC matrix
     template <typename T, typename indexT, bool columnMajor>
-    IVSparse::SparseMatrix<T, indexT, 3, columnMajor> SparseMatrix<T, indexT, 2, columnMajor>::toCSF3()
+    IVSparse::SparseMatrix<T, indexT, 3, columnMajor> SparseMatrix<T, indexT, 2, columnMajor>::toIVCSC()
     {
 
         // make a pointer for the CSC pointers

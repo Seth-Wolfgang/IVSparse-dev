@@ -21,7 +21,7 @@ namespace IVSparse
     class SparseMatrix<T, indexT, 2, columnMajor> : public SparseMatrixBase
     {
 
-        private:
+    private:
         //* The Matrix Data *//
 
         T **values = nullptr;       // The values of the matrix
@@ -67,7 +67,7 @@ namespace IVSparse
         // Matrix Matrix Multiplication
         inline Eigen::Matrix<T, -1, -1> matrixMultiply(Eigen::Matrix<T, -1, -1> &mat);
 
-        public:
+    public:
         //* Nested Subclasses *//
 
         // The Vector Class for VCSC Matrices
@@ -335,7 +335,7 @@ namespace IVSparse
         /**
          * @returns The current matrix as a IVCSC Matrix.
          */
-        IVSparse::SparseMatrix<T, indexT, 3, columnMajor> toCSF3();
+        IVSparse::SparseMatrix<T, indexT, 3, columnMajor> toIVCSC();
 
         /**
          * @returns An Eigen Sparse Matrix constructed from the VCSC matrix data.

@@ -13,26 +13,57 @@ namespace IVSparse
 
     // Destructor
     template <typename T, typename indexT, bool columnMajor>
-    SparseMatrix<T, indexT, 2, columnMajor>::~SparseMatrix() {
+    SparseMatrix<T, indexT, 2, columnMajor>::~SparseMatrix()
+    {
         // delete the meta data
-        if (metadata != nullptr) { delete[] metadata; }
+        if (metadata != nullptr)
+        {
+            delete[] metadata;
+        }
 
         // delete the values
-        if (values != nullptr) {
-            for (size_t i = 0; i < outerDim; i++) { if (values[i] != nullptr) { free(values[i]); } }
+        if (values != nullptr)
+        {
+            for (size_t i = 0; i < outerDim; i++)
+            {
+                if (values[i] != nullptr)
+                {
+                    free(values[i]);
+                }
+            }
             free(values);
         }
-        if (counts != nullptr) {
-            for (size_t i = 0; i < outerDim; i++) { if (counts[i] != nullptr) { free(counts[i]); } }
+        if (counts != nullptr)
+        {
+            for (size_t i = 0; i < outerDim; i++)
+            {
+                if (counts[i] != nullptr)
+                {
+                    free(counts[i]);
+                }
+            }
             free(counts);
         }
-        if (indices != nullptr) {
-            for (size_t i = 0; i < outerDim; i++) { if (indices[i] != nullptr) { free(indices[i]); } }
+        if (indices != nullptr)
+        {
+            for (size_t i = 0; i < outerDim; i++)
+            {
+                if (indices[i] != nullptr)
+                {
+                    free(indices[i]);
+                }
+            }
             free(indices);
         }
 
-        if (valueSizes != nullptr) { free(valueSizes); }
-        if (indexSizes != nullptr) { free(indexSizes); }
+        if (valueSizes != nullptr)
+        {
+            free(valueSizes);
+        }
+        if (indexSizes != nullptr)
+        {
+            free(indexSizes);
+        }
     }
 
     // Eigen Constructor
@@ -87,7 +118,8 @@ namespace IVSparse
     SparseMatrix<T, indexT, 2, columnMajor>::SparseMatrix(IVSparse::SparseMatrix<T, indexT, otherCompressionLevel, columnMajor> &other)
     {
         // if already the right compression level
-        if constexpr (otherCompressionLevel == 2) {
+        if constexpr (otherCompressionLevel == 2)
+        {
             *this = other;
             return;
         }
@@ -96,8 +128,14 @@ namespace IVSparse
         IVSparse::SparseMatrix<T, indexT, 2, columnMajor> temp;
 
         // convert other to the right compression level
-        if constexpr (otherCompressionLevel == 1) { temp = other.toCSF2(); }
-        else if constexpr (otherCompressionLevel == 3) { temp = other.toCSF2(); }
+        if constexpr (otherCompressionLevel == 1)
+        {
+            temp = other.toVCSC();
+        }
+        else if constexpr (otherCompressionLevel == 3)
+        {
+            temp = other.toVCSC();
+        }
 
         // other should be the same compression level as this now
         *this = temp;
@@ -105,9 +143,9 @@ namespace IVSparse
         // run the user checks and calculate the compression size
         calculateCompSize();
 
-        #ifdef CSF_DEBUG
+#ifdef CSF_DEBUG
         userChecks();
-        #endif
+#endif
     }
 
     // Raw CSC Constructor
@@ -117,10 +155,13 @@ namespace IVSparse
     {
 
         // set the dimensions
-        if (columnMajor) {
+        if (columnMajor)
+        {
             innerDim = num_rows;
             outerDim = num_cols;
-        } else {
+        }
+        else
+        {
             innerDim = num_cols;
             outerDim = num_rows;
         }
@@ -139,13 +180,19 @@ namespace IVSparse
     {
 
         // see if the matrix is empty
-        if (nnz == 0) { *this = SparseMatrix<T, indexT, 2, columnMajor>(); }
+        if (nnz == 0)
+        {
+            *this = SparseMatrix<T, indexT, 2, columnMajor>();
+        }
 
         // set the dimensions
-        if (columnMajor) {
+        if (columnMajor)
+        {
             innerDim = num_rows;
             outerDim = num_cols;
-        } else {
+        }
+        else
+        {
             innerDim = num_cols;
             outerDim = num_rows;
         }
@@ -213,10 +260,10 @@ namespace IVSparse
 
         } // end of loop through tuples
 
-        // loop through the array
-        #ifdef CSF_PARALLEL
-        #pragma omp parallel for
-        #endif
+// loop through the array
+#ifdef CSF_PARALLEL
+#pragma omp parallel for
+#endif
         for (size_t i = 0; i < outerDim; i++)
         {
 
@@ -279,9 +326,9 @@ namespace IVSparse
         // run the user checks and calculate the compression size
         calculateCompSize();
 
-        #ifdef CSF_DEBUG
+#ifdef CSF_DEBUG
         userChecks();
-        #endif
+#endif
     }
 
     // IVSparse Vector Constructor
@@ -366,9 +413,9 @@ namespace IVSparse
 
         // run the user checks and calculate the compression size
         calculateCompSize();
-        #ifdef CSF_DEBUG
+#ifdef CSF_DEBUG
         userChecks();
-        #endif
+#endif
     } // end of IVSparse Vector Constructor
 
     // Array of Vectors Constructor
@@ -391,9 +438,9 @@ namespace IVSparse
         // run the user checks and calculate the compression size
         calculateCompSize();
 
-        #ifdef CSF_DEBUG
+#ifdef CSF_DEBUG
         userChecks();
-        #endif
+#endif
     }
 
     // File Constructor
@@ -508,10 +555,10 @@ namespace IVSparse
         // calculate the compresssion size
         calculateCompSize();
 
-        // run the user checks
-        #ifdef CSF_DEBUG
+// run the user checks
+#ifdef CSF_DEBUG
         userChecks();
-        #endif
+#endif
     } // end of File Constructor
 
     //* Private Constructors *//
@@ -552,10 +599,10 @@ namespace IVSparse
             throw std::runtime_error("Error: Could not allocate memory");
         }
 
-        // loop through the array
-        #ifdef CSF_PARALLEL
-        #pragma omp parallel for
-        #endif
+// loop through the array
+#ifdef CSF_PARALLEL
+#pragma omp parallel for
+#endif
         for (size_t i = 0; i < outerDim; i++)
         {
 
@@ -630,9 +677,9 @@ namespace IVSparse
         // run the user checks and calculate the compression size
         calculateCompSize();
 
-        #ifdef CSF_DEBUG
+#ifdef CSF_DEBUG
         userChecks();
-        #endif
+#endif
     } // end of Private Tranpose Constructor
 
 } // end of IVSparse namespace

@@ -94,7 +94,7 @@ namespace IVSparse {
 
     // Converts the CSC Matrix to a VCSC Matrix
     template <typename T, typename indexT, bool columnMajor>
-    IVSparse::SparseMatrix<T, indexT, 2, columnMajor> SparseMatrix<T, indexT, 1, columnMajor>::toCSF2() {
+    IVSparse::SparseMatrix<T, indexT, 2, columnMajor> SparseMatrix<T, indexT, 1, columnMajor>::toVCSC() {
         // create a new IVSparse matrix
         IVSparse::SparseMatrix<T, indexT, 2, columnMajor> csfMat(vals, innerIdx, outerPtr, numRows, numCols, nnz);
 
@@ -104,7 +104,7 @@ namespace IVSparse {
 
     // Converts the CSC Matrix to a IVCSC Matrix
     template <typename T, typename indexT, bool columnMajor>
-    IVSparse::SparseMatrix<T, indexT, 3, columnMajor> SparseMatrix<T, indexT, 1, columnMajor>::toCSF3() {
+    IVSparse::SparseMatrix<T, indexT, 3, columnMajor> SparseMatrix<T, indexT, 1, columnMajor>::toIVCSC() {
         // create a new IVSparse matrix
         IVSparse::SparseMatrix<T, indexT, 3, columnMajor> csfMat(vals, innerIdx, outerPtr, numRows, numCols, nnz);
 

@@ -113,7 +113,7 @@ namespace IVSparse {
 
     // Convert a IVCSC matrix to a VCSC matrix
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    IVSparse::SparseMatrix<T, indexT, 2, columnMajor> SparseMatrix<T, indexT, compressionLevel, columnMajor>::toCSF2() {
+    IVSparse::SparseMatrix<T, indexT, 2, columnMajor> SparseMatrix<T, indexT, compressionLevel, columnMajor>::toVCSC() {
 
         // if already VCSC return a copy
         if (compressionLevel == 2) { return *this; }
