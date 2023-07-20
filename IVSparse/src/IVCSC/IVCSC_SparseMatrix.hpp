@@ -149,6 +149,8 @@ namespace IVSparse {
          * The tuples are sorted and then converted to a IVSparse matrix.
          *
          * @note COO is (row, col, value) format.
+         * 
+         * @warning This constructor does not allow for duplicates but will sort the tuples.
          */
         template <typename T2, typename indexT2>
         SparseMatrix(std::vector<std::tuple<indexT2, indexT2, T2>> &entries, uint32_t num_rows, uint32_t num_cols, uint32_t nnz);
