@@ -87,7 +87,8 @@
         "sparseqr": "cpp",
         "iterativelinearsolvers": "cpp",
         "sparsematrix": "cpp",
-        "__nullptr": "cpp"
+        "__nullptr": "cpp",
+        "dense": "cpp"
     },
     "cmake.configureOnOpen": false
 }

@@ -17,19 +17,19 @@ library(ggplot2)
 
 #data <- read.csv("timeDataFinal.csv") # or whatever you saved it as
 #rawData <- read.csv("rawTimeDataFinal.csv")
-sizeData <- read.csv("sizeData100x100.csv")
+sizeData <- read.csv("sizeData.csv")
 #move annoying offset from reading in matrix number as rownames
 #colnames(data) <- c(colnames(data)[-1], "")
 # delete useless column
 #data <- data[,-ncol(data)]
 # Create a new column with grouped intervals
 # Create a new column with grouped intervals, excluding NA values
-
 library(plotly)
+library(akima)
 
-sizeData$Ratio <- sizeData$CSF3.Size / sizeData$CSF1.Size
-sizeData$InverseRedundancy <- (1 / sizeData$Redundancy)
-sizeData$InverseSparsity <- ifelse(sizeData$Sparsity == 0, 1, (1 / sizeData$Sparsity))
+sizeData$Ratio <- sizeData$CSF2.Size / sizeData$CSF1.Size
+sizeData$InverseRedundancy <- sqrt(1 / sizeData$Redundancy)
+sizeData$InverseSparsity <- ifelse(sizeData$Sparsity == 0, 1, sqrt(1 / sizeData$Sparsity))
 gridSize <- 100
 xGrid <- seq(min(sizeData$InverseRedundancy), max(sizeData$InverseRedundancy), length.out = gridSize)
 yGrid <- seq(min(sizeData$InverseSparsity), max(sizeData$InverseSparsity), length.out = gridSize)
@@ -49,21 +49,26 @@ surfacePlot <- plot_ly(x = interpResult$x, y = interpResult$y, z = interpValues,
                        type = "surface", colorscale = "Viridis")
 
 realSizeData <- read.csv("realSizeData.csv")
-realSizeData$Ratio <- realSizeData$CSF3.Size / realSizeData$CSF1.Size
+realSizeData$Ratio <- realSizeData$CSF2.Size / realSizeData$CSF1.Size
 
 # Add markers from another dataset
 surfacePlot <- surfacePlot %>%
-  add_markers(data = realSizeData, x = ~Redundancy, y = ~Sparsity, z = ~Ratio)
+  add_markers(data = realSizeData, x = ~sqrt(Redundancy), y = ~sqrt(Sparsity), z = ~Ratio)
+
+# Add text labels to the markers
+surfacePlot <- surfacePlot %>%
+  
+  add_text(data = realSizeData, x = ~Redundancy, y = ~Sparsity, z = ~Ratio,
+           text = ~Matrix.Number, textposition = "middle center", textfont = list(size = 8))
 
 # Configure the layout for the 3D plot
 surfacePlot <- surfacePlot %>%
   layout(scene = list(xaxis = list(title = "Redundancy"),
                       yaxis = list(title = "Sparsity"),
-                      zaxis = list(title = "CSF3.Size / CSF1.Size")))
+                      zaxis = list(title = "CSF2.Size / CSF1.Size")))
 
-# Display the updated 3D plot with surface and markers
+# Display the updated 3D plot with surface, markers, and labels
 surfacePlot
-
 
 ```
 

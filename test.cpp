@@ -17,7 +17,10 @@ template <typename T>
 void generateAllUniqueElements(Eigen::SparseMatrix<T> &eigen);
 
 template <typename T>
-void generateAllRedundantElements(Eigen::SparseMatrix<T> &eigen);
+void generateAllRedundantElements(Eigen::SparseMatrix<T>& eigen);
+
+template <typename T>
+std::vector<std::tuple<int, int, int>> generateCOO(int rows, int cols, int max);
 // For my convenience
 //  clear; rm a.out; g++ test.cpp; ./a.out
 
@@ -82,7 +85,7 @@ int main()
     // iteratorTest<int, int, 2>();
     // iteratorTest<int, int, 1>();
 
-    return 1;
+    return 0;
 }
 
 template <typename T, typename indexT>
@@ -336,4 +339,15 @@ void generateAllRedundantElements(Eigen::SparseMatrix<T> &eigen)
             eigen.insert(j, i) = count;
         }
     }
+}
+
+template <typename T>
+std::vector<std::tuple<int, int, int>> generateCOO(int rows, int cols, int max) {
+    std::vector<std::tuple<int, int, int>> coo;
+    for(int i = 0; i < rows; i++) {
+        for(int j = 0; j < cols; j++) {
+            coo.push_back(std::make_tuple(i, j, rand() % max));
+        }
+    }
+    return coo;
 }

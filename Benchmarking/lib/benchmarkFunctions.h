@@ -11,7 +11,7 @@
 #include <iostream>
 #include <string>
 
-#define VALUE_TYPE double
+#define VALUE_TYPE int
 #define INDEX_TYPE int
 #define NUM_OF_BENCHMARKS 50
 

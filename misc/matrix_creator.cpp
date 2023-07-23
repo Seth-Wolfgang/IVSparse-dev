@@ -1,11 +1,12 @@
 #include <Eigen/Sparse>
 
+
 class rng {
 private:
     uint64_t state;
 
 public:
-    rng(uint64_t state): state(state) {}
+    rng(uint64_t state) : state(state) {}
 
     void advance_state() {
         state ^= state << 19;
@@ -73,7 +74,11 @@ public:
 
     template <typename T>
     T sample(uint64_t i, uint64_t j, T max_value) {
-        return rand(i, j) % max_value;
+
+        if constexpr (std::is_floating_point<T>::value)
+            return fmod((double)rand(i, j), max_value);
+        else
+            return rand(i, j) % max_value;
     }
 
     template <typename T>
@@ -88,8 +93,10 @@ public:
 
     template <typename T>
     bool draw(uint64_t i, uint64_t j, T probability) {
-        sample(i, j, probability);
-        return sample(i, j, probability) == 0;
+        if constexpr (std::is_floating_point<T>::value)
+            return sample(i, j, probability) <= 0.003;
+        else
+            return sample(i, j, probability) == 0;
     }
 
     template <typename T>
