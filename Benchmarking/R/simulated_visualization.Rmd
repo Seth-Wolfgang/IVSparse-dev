@@ -1,0 +1,311 @@
+---
+title: "new_benchmarking"
+output:
+  pdf_document: default
+  html_document: default
+date: "2023-07-21"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{R}
+library(ggplot2)
+library(dplyr)
+
+eigenResults10 = read.csv("~/results_010_density/EigenResults.csv")
+VCSCResults10 = read.csv("~/results_010_density/VCSCResults.csv")
+IVCSCResults10 = read.csv("~/results_010_density/IVCSCResults.csv")
+
+eigenResults5 = read.csv("~/results_005_density/EigenResults.csv")
+VCSCResults5 = read.csv("~/results_005_density/VCSCResults.csv")
+IVCSCResults5 = read.csv("~/results_005_density/IVCSCResults.csv")
+
+# 
+# # Function to plot the ratio of dataset over Eigen
+# plot_ratio_over_eigen <- function(dataset_results, dataset_name, y_axis_variable, eigenResults) {
+#   # Select the first data point for each ID in eigenResults and dataset_results
+# 
+#   eigen_first_data <- eigenResults %>%
+#     group_by(ID) %>%
+#     summarise_at(vars(redundancy, y_axis_variable), ~mean(., na.rm = TRUE))
+#   
+#   
+#   dataset_first_data <- dataset_results %>%
+#     group_by(ID) %>%
+#     summarise_at(vars(redundancy, y_axis_variable), ~mean(., na.rm = TRUE))
+#   
+#   
+#   # Calculate the ratio by dividing y_axis_variable in dataset_results by the corresponding values in eigen_first_data
+#   ratio <- dataset_first_data[[y_axis_variable]] / eigen_first_data[[y_axis_variable]]
+#   
+#   # Create a new data frame with redundancy and ratio
+#   combined_data <- data.frame(redundancy = eigen_first_data$redundancy, ratio = ratio)
+#   
+#   # Get the indices of the minimum and maximum ratio values
+#   min_index <- which.min(ratio)
+#   max_index <- which.max(ratio)
+#   
+#   # Create the scatter plot for the dataset ratio over Eigen
+#   p <- ggplot(combined_data, aes(x = redundancy, y = ratio)) +
+#     geom_point() +
+#     geom_text(data = combined_data[c(min_index, max_index), ],
+#               aes(label = round(ratio, 2),
+#                   vjust = ifelse(ratio[min_index] < ratio[max_index], 1.5, -0.5),
+#                   color = "blue",  # Set the text color to blue
+#                   fontface = "bold",  # Make the text bold
+#                   size = 4),  # Set the text size slightly bigger
+#               show.legend = FALSE) +
+#     labs(title = paste0(toupper(dataset_name), " Ratio of ", toupper(y_axis_variable), " over Eigen"),
+#          x = "Redundancy",
+#          y = paste0(toupper(dataset_name), " / Eigen Ratio")) +
+#     theme_minimal()
+#   
+#   # Count the number of markers (data points)
+#   num_markers <- nrow(combined_data)
+#   p <- p + geom_hline(yintercept = 1, linetype = "dashed")
+# 
+#   print(p)
+# }
+# 
+# 
+# 
+# plot_ratio_over_eigen(VCSCResults, "VCSC", "constructor_time")
+# plot_ratio_over_eigen(IVCSCResults, "IVCSC", "constructor_time")
+# plot_ratio_over_eigen(VCSCResults, "VCSC", "scalar_time")
+# plot_ratio_over_eigen(IVCSCResults, "IVCSC", "scalar_time")
+# plot_ratio_over_eigen(VCSCResults, "VCSC", "spmv_time")
+# plot_ratio_over_eigen(IVCSCResults, "IVCSC", "spmv_time")
+# plot_ratio_over_eigen(VCSCResults, "VCSC", "spmm_time")
+# plot_ratio_over_eigen(IVCSCResults, "IVCSC", "spmm_time")
+
+```
+
+
+## **Averages of Data at 5% Density**
+
+
+```{R}
+# Load the necessary libraries
+# Load the necessary libraries
+library(ggplot2)
+
+# Read the data from CSV files (if not already loaded)
+# eigenResults = read.csv("~/results/EigenResults.csv")
+# VCSCResults = read.csv("~/results/VCSCResults.csv")
+# IVCSCResults = read.csv("~/results/IVCSCResults.csv")
+
+# Load required library
+library(ggplot2)
+library(dplyr)
+library(stringr)
+
+
+
+# Create the function with data averaging
+create_scatter_plot <- function(data, dataset_name, y_col) {
+  # Group data by IDs and calculate the average values for the specified columns
+  averaged_data <- data %>%
+    group_by(ID) %>%
+    summarise_at(vars(redundancy, y_col), ~mean(., na.rm = TRUE))
+  
+  # Create the scatter plot using the averaged data
+  ggplot(averaged_data, aes_string(x = "redundancy", y = y_col)) +
+    geom_point(color = "blue") +
+    labs(title = paste(dataset_name, "-", y_col), x = "Redundancy", y = y_col) +
+    theme_minimal()
+}
+# Example usage:
+# Assuming you have data frames 'eigenResults', 'VCSCResults', 'IVCSCResults' with columns 'ID', 'redundancy', and 'spmm_time'
+
+scatter_eigenResults <- create_scatter_plot(eigenResults5, "Eigen" , "size" )
+scatter_VCSCResults <- create_scatter_plot(VCSCResults5, "VCSC", "size")
+scatter_IVCSCResults <- create_scatter_plot(IVCSCResults5, "IVCSC","size")
+print(scatter_eigenResults)
+print(scatter_VCSCResults)
+print(scatter_IVCSCResults)
+
+scatter_eigenResults <- create_scatter_plot(eigenResults5, "Eigen" , "constructor_time" )
+scatter_VCSCResults <- create_scatter_plot(VCSCResults5, "VCSC", "constructor_time")
+scatter_IVCSCResults <- create_scatter_plot(IVCSCResults5, "IVCSC","constructor_time")
+print(scatter_eigenResults)
+print(scatter_VCSCResults)
+print(scatter_IVCSCResults)
+
+scatter_eigenResults <- create_scatter_plot(eigenResults5, "Eigen" , "scalar_time" )
+scatter_VCSCResults <- create_scatter_plot(VCSCResults5, "VCSC", "scalar_time")
+scatter_IVCSCResults <- create_scatter_plot(IVCSCResults5, "IVCSC","scalar_time")
+print(scatter_eigenResults)
+print(scatter_VCSCResults)
+print(scatter_IVCSCResults)
+
+
+scatter_eigenResults <- create_scatter_plot(eigenResults5, "Eigen" , "spmv_time" )
+scatter_VCSCResults <- create_scatter_plot(VCSCResults5, "VCSC", "spmv_time")
+scatter_IVCSCResults <- create_scatter_plot(IVCSCResults5, "IVCSC","spmv_time")
+print(scatter_eigenResults)
+print(scatter_VCSCResults)
+print(scatter_IVCSCResults)
+
+scatter_eigenResults <- create_scatter_plot(eigenResults5, "Eigen" , "spmm_time" )
+scatter_VCSCResults <- create_scatter_plot(VCSCResults5, "VCSC", "spmm_time")
+scatter_IVCSCResults <- create_scatter_plot(IVCSCResults5, "IVCSC","spmm_time")
+print(scatter_eigenResults)
+print(scatter_VCSCResults)
+print(scatter_IVCSCResults)
+
+```
+## **Averages of Data at 10% Density**
+
+```{R}
+
+scatter_eigenResults <- create_scatter_plot(eigenResults10, "Eigen" , "spmm_time" )
+scatter_VCSCResults <- create_scatter_plot(VCSCResults10, "VCSC", "spmm_time")
+scatter_IVCSCResults <- create_scatter_plot(IVCSCResults10, "IVCSC","spmm_time")
+print(scatter_eigenResults)
+print(scatter_VCSCResults)
+print(scatter_IVCSCResults)
+
+scatter_eigenResults <- create_scatter_plot(eigenResults10, "Eigen" , "spmv_time" )
+scatter_VCSCResults <- create_scatter_plot(VCSCResults10, "VCSC", "spmv_time")
+scatter_IVCSCResults <- create_scatter_plot(IVCSCResults10, "IVCSC","spmv_time")
+print(scatter_eigenResults)
+print(scatter_VCSCResults)
+print(scatter_IVCSCResults)
+
+scatter_eigenResults <- create_scatter_plot(eigenResults10, "Eigen" , "scalar_time" )
+scatter_VCSCResults <- create_scatter_plot(VCSCResults10, "VCSC", "scalar_time")
+scatter_IVCSCResults <- create_scatter_plot(IVCSCResults10, "IVCSC","scalar_time")
+print(scatter_eigenResults)
+print(scatter_VCSCResults)
+print(scatter_IVCSCResults)
+
+scatter_eigenResults <- create_scatter_plot(eigenResults10, "Eigen" , "constructor_time" )
+scatter_VCSCResults <- create_scatter_plot(VCSCResults10, "VCSC", "constructor_time")
+scatter_IVCSCResults <- create_scatter_plot(IVCSCResults10, "IVCSC","constructor_time")
+print(scatter_eigenResults)
+print(scatter_VCSCResults)
+print(scatter_IVCSCResults)
+
+scatter_eigenResults <- create_scatter_plot(eigenResults10, "Eigen" , "size" )
+scatter_VCSCResults <- create_scatter_plot(VCSCResults10, "VCSC", "size")
+scatter_IVCSCResults <- create_scatter_plot(IVCSCResults10, "IVCSC","size")
+print(scatter_eigenResults)
+print(scatter_VCSCResults)
+print(scatter_IVCSCResults)
+
+
+```
+
+
+## **Dual Plots Between 5% and 10% Density as a Ratio Over Eigen**
+
+
+```{R}
+
+
+
+# Function to plot the ratio of two datasets over Eigen
+# Function to plot the ratio of two datasets over two different eigenResults
+# Function to plot the ratio of two datasets over two different eigenResults
+dual_plot_ratio_over_eigen <- function(dataset1_results, dataset1_name, dataset2_results, dataset2_name, eigenResults5, eigenResults10, y_axis_variable) {
+  # Select the first data point for each ID in eigenResults5 and eigenResults10
+  eigen_first_data_5 <- eigenResults5 %>%
+    group_by(ID) %>%
+    summarise_at(vars(redundancy, y_axis_variable), ~mean(., na.rm = TRUE))
+  
+  eigen_first_data_10 <- eigenResults10 %>%
+    group_by(ID) %>%
+    summarise_at(vars(redundancy, y_axis_variable), ~mean(., na.rm = TRUE))
+  
+  dataset1_first_data <- dataset1_results %>%
+    group_by(ID) %>%
+    summarise_at(vars(redundancy, y_axis_variable), ~mean(., na.rm = TRUE))
+  
+  dataset2_first_data <- dataset2_results %>%
+    group_by(ID) %>%
+    summarise_at(vars(redundancy, y_axis_variable), ~mean(., na.rm = TRUE))
+  
+  # Calculate the ratio by dividing y_axis_variable in dataset1_results by the corresponding values in eigen_first_data_5
+  ratio1 <- dataset1_first_data[[y_axis_variable]] / eigen_first_data_5[[y_axis_variable]]
+  
+  # Calculate the ratio by dividing y_axis_variable in dataset2_results by the corresponding values in eigen_first_data_10
+  ratio2 <- dataset2_first_data[[y_axis_variable]] / eigen_first_data_10[[y_axis_variable]]
+  
+  # Create new data frames with redundancy and ratio for both datasets and eigenResults
+  combined_data1 <- data.frame(redundancy = eigen_first_data_5$redundancy, ratio = ratio1, dataset = dataset1_name, eigenResult = "eigenResults5")
+  combined_data2 <- data.frame(redundancy = eigen_first_data_10$redundancy, ratio = ratio2, dataset = dataset2_name, eigenResult = "eigenResults10")
+  combined_data <- rbind(combined_data1, combined_data2)
+  
+  # Get the indices of the minimum and maximum ratio values for both datasets and eigenResults
+
+  
+  # Create the scatter plot for the dataset ratio over Eigen
+  p <- ggplot(combined_data, aes(x = redundancy, y = ratio, color = dataset)) +
+    geom_point() +
+    labs(title = paste0("Comparison of Ratios of ", toupper(y_axis_variable), " over Eigen"),
+         x = "Redundancy",
+         y = paste0("Ratio of ", toupper(y_axis_variable), " over Eigen")) +
+    theme_minimal()
+  
+  # Count the number of markers (data points)
+  num_markers <- nrow(combined_data)
+  p <- p + geom_hline(yintercept = 1, linetype = "dashed")
+
+  print(p)
+}
+
+# Assuming dataset1_results and dataset2_results are the data frames for the two datasets you want to compare,
+# and eigenResults5 and eigenResults10 are the corresponding eigenResults data frames
+
+dual_plot_ratio_over_eigen(VCSCResults5, "VCSC 5% Dense", VCSCResults10, "VCSC 5% Dense", eigenResults5, eigenResults10, "size")
+dual_plot_ratio_over_eigen(VCSCResults5, "VCSC 5% Dense", VCSCResults10, "VCSC 5% Dense", eigenResults5, eigenResults10, "constructor_time")
+dual_plot_ratio_over_eigen(VCSCResults5, "VCSC 5% Dense", VCSCResults10, "VCSC 5% Dense", eigenResults5, eigenResults10, "scalar_time")
+dual_plot_ratio_over_eigen(VCSCResults5, "VCSC 5% Dense", VCSCResults10, "VCSC 5% Dense", eigenResults5, eigenResults10, "spmv_time")
+dual_plot_ratio_over_eigen(VCSCResults5, "VCSC 5% Dense", VCSCResults10, "VCSC 5% Dense", eigenResults5, eigenResults10, "spmm_time")
+
+dual_plot_ratio_over_eigen(IVCSCResults5, "IVCSC 5% Dense", IVCSCResults10, "IVCSC 10% Dense", eigenResults5, eigenResults10, "size")
+dual_plot_ratio_over_eigen(IVCSCResults5, "IVCSC 5% Dense", IVCSCResults10, "IVCSC 10% Dense", eigenResults5, eigenResults10, "constructor_time")
+dual_plot_ratio_over_eigen(IVCSCResults5, "IVCSC 5% Dense", IVCSCResults10, "IVCSC 10% Dense", eigenResults5, eigenResults10, "scalar_time")
+dual_plot_ratio_over_eigen(IVCSCResults5, "IVCSC 5% Dense", IVCSCResults10, "IVCSC 10% Dense", eigenResults5, eigenResults10, "spmv_time")
+dual_plot_ratio_over_eigen(IVCSCResults5, "IVCSC 5% Dense", IVCSCResults10, "IVCSC 10% Dense", eigenResults5, eigenResults10, "spmm_time")
+
+
+
+
+#eigenResults5
+#VCSCResults5 
+#IVCSCResults5 
+
+
+
+
+
+```
+
+
+
+## **Comparisons of IVCSC and VCSC Density as a Ratio Over Eigen**
+## **5% Dense**
+
+```{R}
+
+dual_plot_ratio_over_eigen(IVCSCResults5, "IVCSCResults 5%", VCSCResults5, "VCSC 5% Dense", eigenResults5, eigenResults5, "size")
+dual_plot_ratio_over_eigen(IVCSCResults5, "IVCSCResults 5%", VCSCResults5, "VCSC 5% Dense", eigenResults5, eigenResults5, "constructor_time")
+dual_plot_ratio_over_eigen(IVCSCResults5, "IVCSCResults 5%", VCSCResults5, "VCSC 5% Dense", eigenResults5, eigenResults5, "scalar_time")
+dual_plot_ratio_over_eigen(IVCSCResults5, "IVCSCResults 5%", VCSCResults5, "VCSC 5% Dense", eigenResults5, eigenResults5, "spmv_time")
+dual_plot_ratio_over_eigen(IVCSCResults5, "IVCSCResults 5%", VCSCResults5, "VCSC 5% Dense", eigenResults5, eigenResults5, "spmm_time")
+
+```
+
+## **10% Dense**
+
+```{R}
+dual_plot_ratio_over_eigen(IVCSCResults10, "IVCSC 10% Dense", VCSCResults10, "VCSC 10% Dense", eigenResults10, eigenResults10, "size")
+dual_plot_ratio_over_eigen(IVCSCResults10, "IVCSC 10% Dense", VCSCResults10, "VCSC 10% Dense", eigenResults10, eigenResults10, "constructor_time")
+dual_plot_ratio_over_eigen(IVCSCResults10, "IVCSC 10% Dense", VCSCResults10, "VCSC 10% Dense", eigenResults10, eigenResults10, "scalar_time")
+dual_plot_ratio_over_eigen(IVCSCResults10, "IVCSC 10% Dense", VCSCResults10, "VCSC 10% Dense", eigenResults10, eigenResults10, "spmv_time")
+dual_plot_ratio_over_eigen(IVCSCResults10, "IVCSC 10% Dense", VCSCResults10, "VCSC 10% Dense", eigenResults10, eigenResults10, "spmm_time")
+
+```

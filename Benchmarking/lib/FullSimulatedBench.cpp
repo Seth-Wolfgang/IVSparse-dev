@@ -406,7 +406,7 @@ void   VCSC_scalarBenchmark(IVSparse::SparseMatrix<VALUE_TYPE, int, 2> matrix, s
 
     for (int i = 0; i < NUM_ITERATIONS; i++) {
         start = std::chrono::high_resolution_clock::now();
-        matrix * 2;
+        matrix *= 2;
         end = std::chrono::high_resolution_clock::now();
         resultData.at(i).at(1) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
     }
@@ -506,7 +506,7 @@ void   IVCSC_scalarBenchmark(IVSparse::SparseMatrix<VALUE_TYPE, int, 3> matrix, 
 
     for (int i = 0; i < NUM_ITERATIONS; i++) {
         start = std::chrono::high_resolution_clock::now();
-        matrix * 2;
+        matrix *= 2;
         end = std::chrono::high_resolution_clock::now();
         resultData.at(i).at(1) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
     }
@@ -610,12 +610,12 @@ void   eigen_scalarBenchmark(Eigen::SparseMatrix<VALUE_TYPE> matrix, std::vector
 
     //cold start
     for (int i = 0; i < 1; i++) {
-        result = matrix * 2;
+        matrix *= 2;
     }
 
     for (int i = 0; i < NUM_ITERATIONS; i++) {
         start = std::chrono::high_resolution_clock::now();
-        result = matrix * 2;
+        matrix *= 2;
         end = std::chrono::high_resolution_clock::now();
         // std::cout << result.sum() << std::endl;
         resultData.at(i).at(1) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
@@ -630,7 +630,7 @@ void   eigen_scalarBenchmark(Eigen::SparseMatrix<VALUE_TYPE> matrix, std::vector
  * @param numRows
  */
 
-void   eigen_spmvBenchmark(Eigen::SparseMatrix<VALUE_TYPE>& matrix, std::vector<std::vector<uint64_t>>& resultData, int numCols) {
+void  eigen_spmvBenchmark(Eigen::SparseMatrix<VALUE_TYPE>& matrix, std::vector<std::vector<uint64_t>>& resultData, int numCols) {
     Eigen::Matrix<VALUE_TYPE, -1, 1> eigenVector = Eigen::Matrix<VALUE_TYPE, -1, 1>::Random(numCols);
     Eigen::Matrix<VALUE_TYPE, -1, 1> result;
     std::chrono::time_point<std::chrono::system_clock> start, end;
