@@ -47,22 +47,26 @@ int main() {
         std::stringstream os2;
 
         Eigen::MatrixXi dense = Eigen::MatrixXi::Random(rows, cols);
-        Eigen::SparseMatrix<DATA_TYPE> eigenDense = dense.sparseView().transpose();
-        IVSparse::SparseMatrix<DATA_TYPE, INDEX_TYPE, 3, isColMajor> csf3(eigenDense);
+        Eigen::SparseMatrix<DATA_TYPE> eigenDense = dense.sparseView();
+        IVSparse::SparseMatrix<DATA_TYPE, INDEX_TYPE, 2, isColMajor> csf3(eigenDense);
+        Eigen::VectorXi eigenVec = Eigen::VectorXi::Random(cols);
 
+        std::cout << "rows in vec:" << eigenVec.rows() << std::endl;
+        std::cout << "Rows and cols in dense: " << dense.rows() << " " << dense.cols() << std::endl;
+        std::cout << "Rows and cols in csf3: " << csf3.rows() << " " << csf3.cols() << std::endl;
         start = std::chrono::system_clock::now();
-        int ourSum = (csf3 * dense).sum();
+        int ourSum = (csf3 * eigenVec).sum();
         end = std::chrono::system_clock::now();
         uint64_t us = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
 
         start = std::chrono::system_clock::now();
-        int theirSum = (eigenDense * dense).sum();
+        int theirSum = (eigenDense * eigenVec).sum();
         end = std::chrono::system_clock::now();
         uint64_t them = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
 
         
-        os1 << (csf3 * dense);
-        os2 << (eigenDense * dense);
+        os1 << (csf3 * eigenVec);
+        os2 << (eigenDense * eigenVec);
 
         // std::cout << "Our sum: " << ourSum << " Their sum: " << theirSum << std::endl;
         assert(ourSum == theirSum);

@@ -49,18 +49,19 @@ namespace IVSparse {
     inline Eigen::Matrix<T, -1, 1> SparseMatrix<T, indexT, 2, columnMajor>::vectorMultiply(Eigen::Matrix<T, -1, 1>& vec) {
         // check that the vector is the correct size
         assert(vec.rows() == outerDim && "The vector must be the same size as the number of columns in the matrix!");
-
         Eigen::Matrix<T, -1, 1> eigenTemp = Eigen::Matrix<T, -1, 1>::Zero(innerDim, 1);
 
         // iterate over the vector and multiply the corresponding row of the matrix by the vecIter value
         #pragma omp parallel for schedule(dynamic)
-        for (int i = 0; i < vec.rows(); ++i) {
+        for (int i = 0; i < outerDim; i++) {
             for (typename SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator matIter(*this, i); matIter; ++matIter) {
-                eigenTemp(i) += vec(i) * matIter.value();
+                eigenTemp(matIter.row()) += vec(matIter.col()) * matIter.value();
             }
         }
         return eigenTemp;
     }
+
+
 
     // Matrix Vector Multiplication (IVSparse::SparseMatrix::Vector * IVSparse::SparseMatrix)
     template <typename T, typename indexT, bool columnMajor>

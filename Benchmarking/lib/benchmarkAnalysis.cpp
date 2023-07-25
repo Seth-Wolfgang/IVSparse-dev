@@ -10,11 +10,9 @@
 #include <stdlib.h>
 #include <inttypes.h>
 
-class BenchAnalysis
-{
-private:
-    typedef struct matrixInfo
-    {
+class BenchAnalysis {
+    private:
+    typedef struct matrixInfo {
         double matrixNum;
         double matrixRows;
         double matrixCols;
@@ -23,7 +21,7 @@ private:
         double matrixDensity;
     } matrix;
 
-    matrix *myMatrix;
+    matrix* myMatrix;
 
     // Constructor
     std::vector<uint64_t> EigenConstructorTimes;
@@ -95,11 +93,10 @@ private:
     std::vector<uint64_t> CSF3NormTimes;
     std::vector<uint64_t> ArmadilloNormTimes;
 
-public:
+    public:
     // Constructor
-    BenchAnalysis(std::vector<double> matrixData)
-    {
-        myMatrix = (matrix *)malloc(sizeof(matrix));
+    BenchAnalysis(std::vector<double> matrixData) {
+        myMatrix = (matrix*)malloc(sizeof(matrix));
         // matrixData -> ID, rows, cols, nonzeos, redundancy, matrix density
         //  Assigning the matrix data to the struct
         myMatrix->matrixNum = matrixData[0];
@@ -111,17 +108,15 @@ public:
 
         // Checking to see if the files we're writing to exist in the directory
         // if not, we write the headers at the top of the file.
-        FILE *file;
-        if (access("timeData.csv", F_OK) != 0)
-        {
+        FILE* file;
+        if (access("timeData.csv", F_OK) != 0) {
             std::cout << "Creating timeData.csv" << std::endl;
             file = fopen("timeData.csv", "a");
             fprintf(file, "%s\n", "Matrix Number,Matrix Rows,Matrix Cols,Matrix Nonzeros,Matrix Redundancy,Matrix Density,Avg Eigen Constructor Time,Avg CSC Constructor Time,Avg CSF2 Constructor Time,Avg CSF3 Constructor Time,Avg Armadillo Constructor Time,Avg Eigen InnerIterator Time,Avg CSC InnerIterator Time,Avg CSF2 InnerIterator Time,Avg CSF3 InnerIterator Time,Avg Armadillo InnerIterator Time,Avg Eigen Scalar Multiplication Time,Avg CSC Scalar Multiplication Time,Avg CSF2 Scalar Multiplication Time,Avg CSF3 Scalar Multiplication Time,Avg Armadillo Scalar Multiplication Time,Avg Eigen Vector Multiplication Time,Avg CSC Vector Multiplication Time,Avg CSF2 Vector Multiplication Time,Avg CSF3 Vector Multiplication Time,Avg Armadillo Vector Multiplication Time,Avg Eigen Memory Usage,Avg CSC Memory Usage,Avg CSF2 Memory Usage,Avg CSF3 Memory Usage,Avg Armadillo Memory Usage,Avg Eigen Transpose Time,Avg CSCTranspose Time,Avg CSF2 Transpose Time,Avg CSF3 Transpose Time,Avg Armadillo Transpose Time,Avg Eigen Matrix Multiplication Time,Avg CSCMatrix Multiplication Time,Avg CSF2 Matrix Multiplication Time,Avg CSF3 Matrix Multiplication Time,Avg Armadillo Matrix Multiplication Time,Avg Eigen Outer Sum Time,Avg CSC Outer Sum Time,Avg CSF2 Outer Sum Time,Avg CSF3 Outer Sum Time,Avg Armadillo Outer Sum Time,Avg Eigen Sum Time,Avg CSC Sum Time,Avg CSF2 Sum Time,Avg CSF3 Sum Time,Avg Armadillo Sum Time,Avg Eigen Norm Time,Avg CSC Norm Time,Avg CSF2 Norm Time,Avg CSF3 Norm Time,Avg Armadillo Norm Time");
             fclose(file);
         }
 
-        if (access("rawTimeData.csv", F_OK) != 0)
-        {
+        if (access("rawTimeData.csv", F_OK) != 0) {
             std::cout << "Creating rawTimeData.csv" << std::endl;
             file = fopen("rawTimeData.csv", "a");
             fprintf(file, "%s\n", "Matrix Number,Matrix Rows,Matrix Cols,Matrix Nonzeros,Matrix Redundancy,Matrix Density,Eigen Constructor Time,CSC Constructor Time,CSF2 Constructor Time,CSF3 Constructor Time,Armadillo Constructor Time,Eigen InnerIterator Time,CSC InnerIterator Time,CSF2 InnerIterator Time,CSF3 InnerIterator Time,Armadillo InnerIterator Time,Eigen Scalar Multiplication Time,CSC Scalar Multiplication Time,CSF2 Scalar Multiplication Time,CSF3 Scalar Multiplication Time,Armadillo Scalar Multiplication Time,Eigen Vector Multiplication Time,CSC Vector Multiplication Time,CSF2 Vector Multiplication Time,CSF3 Vector Multiplication Time,Armadillo Vector Multiplication Time,Eigen Memory Usage,CSC Memory Usage,CSF2 Memory Usage,CSF3 Memory Usage,Armadillo Memory Usage,Eigen Transpose Time,CSC Transpose Time,CSF2 Transpose Time,CSF3 Transpose Time,Armadillo Transpose Time,Eigen Matrix Multiplication Time,CSC Matrix Multiplication Time,CSF2 Matrix Multiplication Time,CSF3 Matrix Multiplication Time,Armadillo Matrix Multiplication Time,Eigen Outer Sum Time,CSC Outer Sum Time,CSF2 Outer Sum Time,CSF3 Outer Sum Time,Armadillo Outer Sum Time,Eigen Sum Time,CSC Sum Time,CSF2 Sum Time,CSF3 Sum Time,Armadillo Sum Time,Eigen Norm Time,CSC Norm Time,CSF2 Norm Time,CSF3 Norm Time,Armadillo Norm Time,");
@@ -130,14 +125,12 @@ public:
     }
 
     // Destructor
-    ~BenchAnalysis()
-    {
+    ~BenchAnalysis() {
         if (myMatrix != NULL)
             free(myMatrix);
     }
 
-    void pushData(std::vector<uint64_t> &data)
-    {
+    void pushData(std::vector<uint64_t>& data) {
 
         // Constructor times
         EigenConstructorTimes.push_back(data.at(0));
@@ -209,7 +202,7 @@ public:
         CSF3NormTimes.push_back(data.at(48));
         ArmadilloNormTimes.push_back(data.at(49));
 
-        FILE *file = fopen("rawTimeData.csv", "a");
+        FILE* file = fopen("rawTimeData.csv", "a");
         fprintf(file, "%f, %f, %f, %f, %f, %f,",
                 myMatrix->matrixNum,
                 myMatrix->matrixRows,
@@ -218,8 +211,7 @@ public:
                 myMatrix->matrixRedundancy,
                 myMatrix->matrixDensity);
         // Finally, print the data to the file
-        for (uint32_t i = 0; i < data.size(); ++i)
-        {
+        for (uint32_t i = 0; i < data.size(); ++i) {
             fprintf(file, "%" PRIu64 ",", data.at(i));
         }
         fprintf(file, "\n");
@@ -233,11 +225,9 @@ public:
      * @param times
      */
 
-    uint64_t average(std::vector<uint64_t> &times)
-    {
+    uint64_t average(std::vector<uint64_t>& times) {
         uint64_t sum = 0;
-        for (uint32_t i = 0; i < times.size(); i++)
-        {
+        for (uint32_t i = 0; i < times.size(); i++) {
             sum += times.at(i);
         }
         return sum / times.size();
@@ -250,59 +240,47 @@ public:
      * @param times
      */
 
-    uint64_t max(std::vector<uint64_t> times)
-    {
+    uint64_t max(std::vector<uint64_t> times) {
         uint64_t max = times.at(0);
-        for (uint32_t i = 1; i < times.size(); i++)
-        {
-            if (times.at(i) > max)
-            {
+        for (uint32_t i = 1; i < times.size(); i++) {
+            if (times.at(i) > max) {
                 max = times.at(i);
             }
         }
         return max;
     }
 
-    uint64_t min(std::vector<uint64_t> times)
-    {
+    uint64_t min(std::vector<uint64_t> times) {
         uint64_t min = times.at(0);
-        for (uint32_t i = 1; i < times.size(); i++)
-        {
-            if (times.at(i) < min)
-            {
+        for (uint32_t i = 1; i < times.size(); i++) {
+            if (times.at(i) < min) {
                 min = times.at(i);
             }
         }
         return min;
     }
 
-    uint64_t median(std::vector<uint64_t> times)
-    {
+    uint64_t median(std::vector<uint64_t> times) {
         std::sort(times.begin(), times.end());
-        if (times.size() % 2 == 0)
-        {
+        if (times.size() % 2 == 0) {
             return (times.at(times.size() / 2 - 1) + times.at(times.size() / 2)) / 2;
         }
-        else
-        {
+        else {
             return times.at(times.size() / 2);
         }
     }
 
-    uint64_t quarter1Percentile(std::vector<uint64_t> times)
-    {
+    uint64_t quarter1Percentile(std::vector<uint64_t> times) {
         std::sort(times.begin(), times.end());
         return times.at(times.size() / 4);
     }
 
-    uint64_t quarter3Percentile(std::vector<uint64_t> times)
-    {
+    uint64_t quarter3Percentile(std::vector<uint64_t> times) {
         std::sort(times.begin(), times.end());
         return times.at(times.size() * 3 / 4);
     }
 
-    void printTimesToCSV()
-    {
+    void printTimesToCSV() {
         std::vector<uint64_t> data;
 
         // Average times
@@ -694,7 +672,7 @@ public:
             ID | Rows | Cols | Nonzeros | Redundancy, Density || Constructor | Iterator | scalar multiplcation | vector multiplication | matrix multiplication ||  Constructor | Iterator | scalar multiplcation | vector multiplication | matrix multiplication |
         */
 
-        FILE *file = fopen("timeData.csv", "a");
+        FILE* file = fopen("timeData.csv", "a");
         fprintf(file, "%f, %f, %f, %f, %f, %f,",
                 myMatrix->matrixNum,
                 myMatrix->matrixRows,
@@ -703,8 +681,7 @@ public:
                 myMatrix->matrixRedundancy,
                 myMatrix->matrixDensity);
         // Finally, print the data to the file
-        for (uint32_t i = 0; i < data.size(); ++i)
-        {
+        for (uint32_t i = 0; i < data.size(); ++i) {
             fprintf(file, "%" PRIu64 ",", data.at(i));
         }
         fprintf(file, "\n");
@@ -716,369 +693,369 @@ public:
  * This is for future referance if we need to edit headers
  */
 
-/**
- *        "Matrix Number,
-            Matrix Rows,
-            Matrix Cols,
-            Matrix Nonzeros,
-            Matrix Redundancy,
-            Matrix Density,
-            Avg Eigen Constructor Time,
-            Avg CSC Constructor Time,
-            Avg CSF2 Constructor Time,
-            Avg CSF3 Constructor Time,
-            Avg Armadillo Constructor Time,
-            Avg Eigen InnerIterator Time,
-            Avg CSC InnerIterator Time,
-            Avg CSF2 InnerIterator Time,
-            Avg CSF3 InnerIterator Time,
-            Avg Armadillo InnerIterator Time,
-            Avg Eigen Scalar Multiplication Time,
-            Avg CSC Scalar Multiplication Time,
-            Avg CSF2 Scalar Multiplication Time,
-            Avg CSF3 Scalar Multiplication Time,
-            Avg Armadillo Scalar Multiplication Time,
-            Avg Eigen Vector Multiplication Time,
-            Avg CSC Vector Multiplication Time,
-            Avg CSF2 Vector Multiplication Time,
-            Avg CSF3 Vector Multiplication Time,
-            Avg Armadillo Vector Multiplication Time,
-            Avg Eigen Memory Usage,
-            Avg CSC Memory Usage,
-            Avg CSF2 Memory Usage,
-            Avg CSF3 Memory Usage,
-            Avg Armadillo Memory Usage,
-            Avg Eigen Transpose Time,
-            Avg CSC Transpose Time,
-            Avg CSF2 Transpose Time,
-            Avg CSF3 Transpose Time,
-            Avg Armadillo Transpose Time,
-            Avg Eigen Matrix Multiplication Time,
-            Avg CSC Matrix Multiplication Time,
-            Avg CSF2 Matrix Multiplication Time,
-            Avg CSF3 Matrix Multiplication Time,
-            Avg Armadillo Matrix Multiplication Time,
-            Avg Eigen Outer Sum Time,
-            Avg CSC Outer Sum Time,
-            Avg CSF2 Outer Sum Time,
-            Avg CSF3 Outer Sum Time,
-            Avg Armadillo Outer Sum Time,
-            Avg Eigen Sum Time,
-            Avg CSC Sum Time,
-            Avg CSF2 Sum Time,
-            Avg CSF3 Sum Time,
-            Avg Armadillo Sum Time,
-            Avg Eigen Norm Time,
-            Avg CSC Norm Time,
-            Avg CSF2 Norm Time,
-            Avg CSF3 Norm Time,
-            Avg Armadillo Norm Time"
+ /**
+  *        "Matrix Number,
+             Matrix Rows,
+             Matrix Cols,
+             Matrix Nonzeros,
+             Matrix Redundancy,
+             Matrix Density,
+             Avg Eigen Constructor Time,
+             Avg CSC Constructor Time,
+             Avg CSF2 Constructor Time,
+             Avg CSF3 Constructor Time,
+             Avg Armadillo Constructor Time,
+             Avg Eigen InnerIterator Time,
+             Avg CSC InnerIterator Time,
+             Avg CSF2 InnerIterator Time,
+             Avg CSF3 InnerIterator Time,
+             Avg Armadillo InnerIterator Time,
+             Avg Eigen Scalar Multiplication Time,
+             Avg CSC Scalar Multiplication Time,
+             Avg CSF2 Scalar Multiplication Time,
+             Avg CSF3 Scalar Multiplication Time,
+             Avg Armadillo Scalar Multiplication Time,
+             Avg Eigen Vector Multiplication Time,
+             Avg CSC Vector Multiplication Time,
+             Avg CSF2 Vector Multiplication Time,
+             Avg CSF3 Vector Multiplication Time,
+             Avg Armadillo Vector Multiplication Time,
+             Avg Eigen Memory Usage,
+             Avg CSC Memory Usage,
+             Avg CSF2 Memory Usage,
+             Avg CSF3 Memory Usage,
+             Avg Armadillo Memory Usage,
+             Avg Eigen Transpose Time,
+             Avg CSC Transpose Time,
+             Avg CSF2 Transpose Time,
+             Avg CSF3 Transpose Time,
+             Avg Armadillo Transpose Time,
+             Avg Eigen Matrix Multiplication Time,
+             Avg CSC Matrix Multiplication Time,
+             Avg CSF2 Matrix Multiplication Time,
+             Avg CSF3 Matrix Multiplication Time,
+             Avg Armadillo Matrix Multiplication Time,
+             Avg Eigen Outer Sum Time,
+             Avg CSC Outer Sum Time,
+             Avg CSF2 Outer Sum Time,
+             Avg CSF3 Outer Sum Time,
+             Avg Armadillo Outer Sum Time,
+             Avg Eigen Sum Time,
+             Avg CSC Sum Time,
+             Avg CSF2 Sum Time,
+             Avg CSF3 Sum Time,
+             Avg Armadillo Sum Time,
+             Avg Eigen Norm Time,
+             Avg CSC Norm Time,
+             Avg CSF2 Norm Time,
+             Avg CSF3 Norm Time,
+             Avg Armadillo Norm Time"
 
 
 
-"Matrix Number,
-    Matrix Rows,
-    Matrix Cols,
-    Matrix Nonzeros,
-    Matrix Redundancy,
-    Matrix Density,
-    Eigen Constructor Time,
-    CSC Constructor Time,
-    CSF2 Constructor Time,
-    CSF3 Constructor Time,
-    Armadillo Constructor Time,
-    Eigen InnerIterator Time,
-    CSC InnerIterator Time,
-    CSF2 InnerIterator Time,
-    CSF3 InnerIterator Time,
-    Armadillo InnerIterator Time,
-    Eigen Scalar Multiplication Time,
-    CSC Scalar Multiplication Time,
-    CSF2 Scalar Multiplication Time,
-    CSF3 Scalar Multiplication Time,
-    Armadillo Scalar Multiplication Time,
-    Eigen Vector Multiplication Time,
-    CSC Vector Multiplication Time,
-    CSF2 Vector Multiplication Time,
-    CSF3 Vector Multiplication Time,
-    Armadillo Vector Multiplication Time,
-    Eigen Memory Usage,
-    CSC Memory Usage,
-    CSF2 Memory Usage,
-    CSF3 Memory Usage,
-    Armadillo Memory Usage,
-    Eigen Transpose Time,
-    CSC Transpose Time,
-    CSF2 Transpose Time,
-    CSF3 Transpose Time,
-    Armadillo Transpose Time,
-    Eigen Matrix Multiplication Time,
-    CSC Matrix Multiplication Time,
-    CSF2 Matrix Multiplication Time,
-    CSF3 Matrix Multiplication Time,
-    Armadillo Matrix Multiplication Time,
-    Eigen Outer Sum Time,
-    CSC Outer Sum Time,
-    CSF2 Outer Sum Time,
-    CSF3 Outer Sum Time,
-    Armadillo Outer Sum Time,
-    Eigen Sum Time,
-    CSC Sum Time,
-    CSF2 Sum Time,
-    CSF3 Sum Time,
-    Armadillo Sum Time,
-    Eigen Norm Time,
-    CSC Norm Time,
-    CSF2 Norm Time,
-    CSF3 Norm Time,
-    Armadillo Norm Time,"
-*/
+ "Matrix Number,
+     Matrix Rows,
+     Matrix Cols,
+     Matrix Nonzeros,
+     Matrix Redundancy,
+     Matrix Density,
+     Eigen Constructor Time,
+     CSC Constructor Time,
+     CSF2 Constructor Time,
+     CSF3 Constructor Time,
+     Armadillo Constructor Time,
+     Eigen InnerIterator Time,
+     CSC InnerIterator Time,
+     CSF2 InnerIterator Time,
+     CSF3 InnerIterator Time,
+     Armadillo InnerIterator Time,
+     Eigen Scalar Multiplication Time,
+     CSC Scalar Multiplication Time,
+     CSF2 Scalar Multiplication Time,
+     CSF3 Scalar Multiplication Time,
+     Armadillo Scalar Multiplication Time,
+     Eigen Vector Multiplication Time,
+     CSC Vector Multiplication Time,
+     CSF2 Vector Multiplication Time,
+     CSF3 Vector Multiplication Time,
+     Armadillo Vector Multiplication Time,
+     Eigen Memory Usage,
+     CSC Memory Usage,
+     CSF2 Memory Usage,
+     CSF3 Memory Usage,
+     Armadillo Memory Usage,
+     Eigen Transpose Time,
+     CSC Transpose Time,
+     CSF2 Transpose Time,
+     CSF3 Transpose Time,
+     Armadillo Transpose Time,
+     Eigen Matrix Multiplication Time,
+     CSC Matrix Multiplication Time,
+     CSF2 Matrix Multiplication Time,
+     CSF3 Matrix Multiplication Time,
+     Armadillo Matrix Multiplication Time,
+     Eigen Outer Sum Time,
+     CSC Outer Sum Time,
+     CSF2 Outer Sum Time,
+     CSF3 Outer Sum Time,
+     Armadillo Outer Sum Time,
+     Eigen Sum Time,
+     CSC Sum Time,
+     CSF2 Sum Time,
+     CSF3 Sum Time,
+     Armadillo Sum Time,
+     Eigen Norm Time,
+     CSC Norm Time,
+     CSF2 Norm Time,
+     CSF3 Norm Time,
+     Armadillo Norm Time,"
+ */
 
-/*
-           "Matrix Number,
-            Matrix Rows,
-            Matrix Cols,
-            Matrix Nonzeros,
-            Matrix Redundancy,
-            Matrix Density,
-            Avg Eigen Constructor Time,
-            Avg CSF2 Constructor Time,
-            Avg CSF3 Constructor Time,
-            Avg Armadillo Constructor Time,
-            Avg Eigen InnerIterator Time,
-            Avg CSF2 InnerIterator Time,
-            Avg CSF3 InnerIterator Time,
-            Avg Armadillo InnerIterator Time,
-            Avg Eigen Scalar Multiplication Time,
-            Avg CSF2 Scalar Multiplication Time,
-            Avg CSF3 Scalar Multiplication Time,
-            Avg Armadillo Scalar Multiplication Time,
-            Avg Eigen Vector Multiplication Time,
-            Avg CSF2 Vector Multiplication Time,
-            Avg CSF3 Vector Multiplication Time,
-            Avg Armadillo Vector Multiplication Time,
-            Avg Eigen Memory Usage,
-            Avg CSF2 Memory Usage,
-            Avg CSF3 Memory Usage,
-            Avg Armadillo Memory Usage,
-            Avg Eigen Transpose Time,
-            Avg CSF2 Transpose Time,
-            Avg CSF3 Transpose Time,
-            Avg Armadillo Transpose Time,
-            Avg Eigen Matrix Multiplication Time,
-            Avg CSF2 Matrix Multiplication Time,
-            Avg CSF3 Matrix Multiplication Time,
-            Avg Armadillo Matrix Multiplication Time,
-            Avg Eigen Outer Sum Time,
-            Avg CSF2 Outer Sum Time,
-            Avg CSF3 Outer Sum Time,
-            Avg Armadillo Outer Sum Time,
-            Avg Eigen Sum Time,
-            Avg CSF2 Sum Time,
-            Avg CSF3 Sum Time,
-            Avg Armadillo Sum Time,
-            Avg Eigen Norm Time,
-            Avg CSF2 Norm Time,
-            Avg CSF3 Norm Time,
-            Avg Armadillo Norm Time,
-            Min Eigen Constructor Time,
-            Min CSF2 Constructor Time,
-            Min CSF3 Constructor Time,
-            Min Armadillo Constructor Time,
-            Min Eigen InnerIterator Time,
-            Min CSF2 InnerIterator Time,
-            Min CSF3 InnerIterator Time,
-            Min Armadillo InnerIterator Time,
-            Min Eigen Scalar Multiplication Time,
-            Min CSF2 Scalar Multiplication Time,
-            Min CSF3 Scalar Multiplication Time,
-            Min Armadillo Scalar Multiplication Time,
-            Min Eigen Vector Multiplication Time,
-            Min CSF2 Vector Multiplication Time,
-            Min CSF3 Vector Multiplication Time,
-            Min Armadillo Vector Multiplication Time,
-            Min Eigen Memory Usage,
-            Min CSF2 Memory Usage,
-            Min CSF3 Memory Usage,
-            Min Armadillo Memory Usage,
-            Min Eigen Transpose Time,
-            Min CSF2 Transpose Time,
-            Min CSF3 Transpose Time,
-            Min Armadillo Transpose Time,
-            Min Eigen Matrix Multiplication Time,
-            Min CSF2 Matrix Multiplication Time,
-            Min CSF3 Matrix Multiplication Time,
-            Min Armadillo Matrix Multiplication Time,
-            Min Eigen Outer Sum Time,
-            Min CSF2 Outer Sum Time,
-            Min CSF3 Outer Sum Time,
-            Min Armadillo Outer Sum Time,
-            Min Eigen Sum Time,
-            Min CSF2 Sum Time,
-            Min CSF3 Sum Time,
-            Min Armadillo Sum Time,
-            Min Eigen Norm Time,
-            Min CSF2 Norm Time,
-            Min CSF3 Norm Time,
-            Min Armadillo Norm Time,
-            Q1 Eigen Constructor Time,
-            Q1 CSF2 Constructor Time,
-            Q1 CSF3 Constructor Time,
-            Q1 Armadillo Constructor Time,
-            Q1 Eigen InnerIterator Time,
-            Q1 CSF2 InnerIterator Time,
-            Q1 CSF3 InnerIterator Time,
-            Q1 Armadillo InnerIterator Time,
-            Q1 Eigen Scalar Multiplication Time,
-            Q1 CSF2 Scalar Multiplication Time,
-            Q1 CSF3 Scalar Multiplication Time,
-            Q1 Armadillo Scalar Multiplication Time,
-            Q1 Eigen Vector Multiplication Time,
-            Q1 CSF2 Vector Multiplication Time,
-            Q1 CSF3 Vector Multiplication Time,
-            Q1 Armadillo Vector Multiplication Time,
-            Q1 Eigen Memory Usage,
-            Q1 CSF2 Memory Usage,
-            Q1 CSF3 Memory Usage,
-            Q1 Armadillo Memory Usage,
-            Q1 Eigen Transpose Time,
-            Q1 CSF2 Transpose Time,
-            Q1 CSF3 Transpose Time,
-            Q1 Armadillo Transpose Time,
-            Q1 Eigen Matrix Multiplication Time,
-            Q1 CSF2 Matrix Multiplication Time,
-            Q1 CSF3 Matrix Multiplication Time,
-            Q1 Armadillo Matrix Multiplication Time,
-            Q1 Eigen Outer Sum Time,
-            Q1 CSF2 Outer Sum Time,
-            Q1 CSF3 Outer Sum Time,
-            Q1 Armadillo Outer Sum Time,
-            Q1 Eigen Sum Time,
-            Q1 CSF2 Sum Time,
-            Q1 CSF3 Sum Time,
-            Q1 Armadillo Sum Time,
-            Q1 Eigen Norm Time,
-            Q1 CSF2 Norm Time,
-            Q1 CSF3 Norm Time,
-            Q1 Armadillo Norm Time,
-            Median Eigen Constructor Time,
-            Median CSF2 Constructor Time,
-            Median CSF3 Constructor Time,
-            Median Armadillo Constructor Time,
-            Median Eigen InnerIterator Time,
-            Median CSF2 InnerIterator Time,
-            Median CSF3 InnerIterator Time,
-            Median Armadillo InnerIterator Time,
-            Median Eigen Scalar Multiplication Time,
-            Median CSF2 Scalar Multiplication Time,
-            Median CSF3 Scalar Multiplication Time,
-            Median Armadillo Scalar Multiplication Time,
-            Median Eigen Vector Multiplication Time,
-            Median CSF2 Vector Multiplication Time,
-            Median CSF3 Vector Multiplication Time,
-            Median Armadillo Vector Multiplication Time,
-            Median Eigen Memory Usage,
-            Median CSF2 Memory Usage,
-            Median CSF3 Memory Usage,
-            Median Armadillo Memory Usage,
-            Median Eigen Transpose Time,
-            Median CSF2 Transpose Time,
-            Median CSF3 Transpose Time,
-            Median Armadillo Transpose Time,
-            Median Eigen Matrix Multiplication Time,
-            Median CSF2 Matrix Multiplication Time,
-            Median CSF3 Matrix Multiplication Time,
-            Median Armadillo Matrix Multiplication Time,
-            Median Eigen Outer Sum Time,
-            Median CSF2 Outer Sum Time,
-            Median CSF3 Outer Sum Time,
-            Median Armadillo Outer Sum Time,
-            Median Eigen Sum Time,
-            Median CSF2 Sum Time,
-            Median CSF3 Sum Time,
-            Median Armadillo Sum Time,
-            Median Eigen Norm Time,
-            Median CSF2 Norm Time,
-            Median CSF3 Norm Time,
-            Median Armadillo Norm Time,
-            Q3 Eigen Constructor Time,
-            Q3 CSF2 Constructor Time,
-            Q3 CSF3 Constructor Time,
-            Q3 Armadillo Constructor Time,
-            Q3 Eigen InnerIterator Time,
-            Q3 CSF2 InnerIterator Time,
-            Q3 CSF3 InnerIterator Time,
-            Q3 Armadillo InnerIterator Time,
-            Q3 Eigen Scalar Multiplication,
-            Q3 CSF2 Scalar Multiplication Time,
-            Q3 CSF3 Scalar Multiplication Time,
-            Q3 Armadillo Scalar Multiplication Time,
-            Q3 Eigen Vector Multiplication Time,
-            Q3 CSF2 Vector Multiplication Time,
-            Q3 CSF3 Vector Multiplication Time,
-            Q3 Armadillo Vector Multiplication Time,
-            Q3 Eigen Memory Usage,
-            Q3 CSF2 Memory Usage,
-            Q3 CSF3 Memory Usage,
-            Q3 Armadillo Memory Usage,
-            Q3 Eigen Transpose Time,
-            Q3 CSF2 Transpose Time,
-            Q3 CSF3 Transpose Time,
-            Q3 Armadillo Transpose Time,
-            Q3 Eigen Matrix Multiplication Time,
-            Q3 CSF2 Matrix Multiplication Time,
-            Q3 CSF3 Matrix Multiplication Time,
-            Q3 Armadillo Matrix Multiplication Time,
-            Q3 Eigen Outer Sum Time,
-            Q3 CSF2 Outer Sum Time,
-            Q3 CSF3 Outer Sum Time,
-            Q3 Armadillo Outer Sum Time,
-            Q3 Eigen Sum Time,
-            Q3 CSF2 Sum Time,
-            Q3 CSF3 Sum Time,
-            Q3 Armadillo Sum Time,
-            Q3 Eigen Norm Time,
-            Q3 CSF2 Norm Time,
-            Q3 CSF3 Norm Time,
-            Q3 Armadillo Norm Time,
-            Max Eigen Constructor Time,
-            Max CSF2 Constructor Time,
-            Max CSF3 Constructor Time,
-            Max Armadillo Constructor Time,
-            Max Eigen InnerIterator Time,
-            Max CSF2 InnerIterator Time,
-            Max CSF3 InnerIterator Time,
-            Max Armadillo InnerIterator Time,
-            Max Eigen Scalar Multiplication Time,
-            Max CSF2 Scalar Multiplication Time,
-            Max CSF3 Scalar Multiplication Time,
-            Max Armadillo Scalar Multiplication Time,
-            Max Eigen Vector Multiplication Time,
-            Max CSF2 Vector Multiplication Time,
-            Max CSF3 Vector Multiplication Time,
-            Max Armadillo Vector Multiplication Time,
-            Max Eigen Memory Usage,
-            Max CSF2 Memory Usage,
-            Max CSF3 Memory Usage,
-            Max Armadillo Memory Usage,
-            Max Eigen Transpose Time,
-            Max CSF2 Transpose Time,
-            Max CSF3 Transpose Time,
-            Max Armadillo Transpose Time,
-            Max Eigen Matrix Multiplication Time,
-            Max CSF2 Matrix Multiplication Time,
-            Max CSF3 Matrix Multiplication Time
-            Max Armadillo Matrix Multiplication Time.
-            Max Eigen Outer Sum Time,
-            Max CSF2 Outer Sum Time,
-            Max CSF3 Outer Sum Time,
-            Max Armadillo Outer Sum Time,
-            Max Eigen Sum Time,
-            Max CSF2 Sum Time,
-            Max CSF3 Sum Time,
-            Max Armadillo Sum Time,
-            Max Eigen Norm Time,
-            Max CSF2 Norm Time,
-            Max CSF3 Norm Time,
-            Max Armadillo Norm Time"
-*/
+ /*
+            "Matrix Number,
+             Matrix Rows,
+             Matrix Cols,
+             Matrix Nonzeros,
+             Matrix Redundancy,
+             Matrix Density,
+             Avg Eigen Constructor Time,
+             Avg CSF2 Constructor Time,
+             Avg CSF3 Constructor Time,
+             Avg Armadillo Constructor Time,
+             Avg Eigen InnerIterator Time,
+             Avg CSF2 InnerIterator Time,
+             Avg CSF3 InnerIterator Time,
+             Avg Armadillo InnerIterator Time,
+             Avg Eigen Scalar Multiplication Time,
+             Avg CSF2 Scalar Multiplication Time,
+             Avg CSF3 Scalar Multiplication Time,
+             Avg Armadillo Scalar Multiplication Time,
+             Avg Eigen Vector Multiplication Time,
+             Avg CSF2 Vector Multiplication Time,
+             Avg CSF3 Vector Multiplication Time,
+             Avg Armadillo Vector Multiplication Time,
+             Avg Eigen Memory Usage,
+             Avg CSF2 Memory Usage,
+             Avg CSF3 Memory Usage,
+             Avg Armadillo Memory Usage,
+             Avg Eigen Transpose Time,
+             Avg CSF2 Transpose Time,
+             Avg CSF3 Transpose Time,
+             Avg Armadillo Transpose Time,
+             Avg Eigen Matrix Multiplication Time,
+             Avg CSF2 Matrix Multiplication Time,
+             Avg CSF3 Matrix Multiplication Time,
+             Avg Armadillo Matrix Multiplication Time,
+             Avg Eigen Outer Sum Time,
+             Avg CSF2 Outer Sum Time,
+             Avg CSF3 Outer Sum Time,
+             Avg Armadillo Outer Sum Time,
+             Avg Eigen Sum Time,
+             Avg CSF2 Sum Time,
+             Avg CSF3 Sum Time,
+             Avg Armadillo Sum Time,
+             Avg Eigen Norm Time,
+             Avg CSF2 Norm Time,
+             Avg CSF3 Norm Time,
+             Avg Armadillo Norm Time,
+             Min Eigen Constructor Time,
+             Min CSF2 Constructor Time,
+             Min CSF3 Constructor Time,
+             Min Armadillo Constructor Time,
+             Min Eigen InnerIterator Time,
+             Min CSF2 InnerIterator Time,
+             Min CSF3 InnerIterator Time,
+             Min Armadillo InnerIterator Time,
+             Min Eigen Scalar Multiplication Time,
+             Min CSF2 Scalar Multiplication Time,
+             Min CSF3 Scalar Multiplication Time,
+             Min Armadillo Scalar Multiplication Time,
+             Min Eigen Vector Multiplication Time,
+             Min CSF2 Vector Multiplication Time,
+             Min CSF3 Vector Multiplication Time,
+             Min Armadillo Vector Multiplication Time,
+             Min Eigen Memory Usage,
+             Min CSF2 Memory Usage,
+             Min CSF3 Memory Usage,
+             Min Armadillo Memory Usage,
+             Min Eigen Transpose Time,
+             Min CSF2 Transpose Time,
+             Min CSF3 Transpose Time,
+             Min Armadillo Transpose Time,
+             Min Eigen Matrix Multiplication Time,
+             Min CSF2 Matrix Multiplication Time,
+             Min CSF3 Matrix Multiplication Time,
+             Min Armadillo Matrix Multiplication Time,
+             Min Eigen Outer Sum Time,
+             Min CSF2 Outer Sum Time,
+             Min CSF3 Outer Sum Time,
+             Min Armadillo Outer Sum Time,
+             Min Eigen Sum Time,
+             Min CSF2 Sum Time,
+             Min CSF3 Sum Time,
+             Min Armadillo Sum Time,
+             Min Eigen Norm Time,
+             Min CSF2 Norm Time,
+             Min CSF3 Norm Time,
+             Min Armadillo Norm Time,
+             Q1 Eigen Constructor Time,
+             Q1 CSF2 Constructor Time,
+             Q1 CSF3 Constructor Time,
+             Q1 Armadillo Constructor Time,
+             Q1 Eigen InnerIterator Time,
+             Q1 CSF2 InnerIterator Time,
+             Q1 CSF3 InnerIterator Time,
+             Q1 Armadillo InnerIterator Time,
+             Q1 Eigen Scalar Multiplication Time,
+             Q1 CSF2 Scalar Multiplication Time,
+             Q1 CSF3 Scalar Multiplication Time,
+             Q1 Armadillo Scalar Multiplication Time,
+             Q1 Eigen Vector Multiplication Time,
+             Q1 CSF2 Vector Multiplication Time,
+             Q1 CSF3 Vector Multiplication Time,
+             Q1 Armadillo Vector Multiplication Time,
+             Q1 Eigen Memory Usage,
+             Q1 CSF2 Memory Usage,
+             Q1 CSF3 Memory Usage,
+             Q1 Armadillo Memory Usage,
+             Q1 Eigen Transpose Time,
+             Q1 CSF2 Transpose Time,
+             Q1 CSF3 Transpose Time,
+             Q1 Armadillo Transpose Time,
+             Q1 Eigen Matrix Multiplication Time,
+             Q1 CSF2 Matrix Multiplication Time,
+             Q1 CSF3 Matrix Multiplication Time,
+             Q1 Armadillo Matrix Multiplication Time,
+             Q1 Eigen Outer Sum Time,
+             Q1 CSF2 Outer Sum Time,
+             Q1 CSF3 Outer Sum Time,
+             Q1 Armadillo Outer Sum Time,
+             Q1 Eigen Sum Time,
+             Q1 CSF2 Sum Time,
+             Q1 CSF3 Sum Time,
+             Q1 Armadillo Sum Time,
+             Q1 Eigen Norm Time,
+             Q1 CSF2 Norm Time,
+             Q1 CSF3 Norm Time,
+             Q1 Armadillo Norm Time,
+             Median Eigen Constructor Time,
+             Median CSF2 Constructor Time,
+             Median CSF3 Constructor Time,
+             Median Armadillo Constructor Time,
+             Median Eigen InnerIterator Time,
+             Median CSF2 InnerIterator Time,
+             Median CSF3 InnerIterator Time,
+             Median Armadillo InnerIterator Time,
+             Median Eigen Scalar Multiplication Time,
+             Median CSF2 Scalar Multiplication Time,
+             Median CSF3 Scalar Multiplication Time,
+             Median Armadillo Scalar Multiplication Time,
+             Median Eigen Vector Multiplication Time,
+             Median CSF2 Vector Multiplication Time,
+             Median CSF3 Vector Multiplication Time,
+             Median Armadillo Vector Multiplication Time,
+             Median Eigen Memory Usage,
+             Median CSF2 Memory Usage,
+             Median CSF3 Memory Usage,
+             Median Armadillo Memory Usage,
+             Median Eigen Transpose Time,
+             Median CSF2 Transpose Time,
+             Median CSF3 Transpose Time,
+             Median Armadillo Transpose Time,
+             Median Eigen Matrix Multiplication Time,
+             Median CSF2 Matrix Multiplication Time,
+             Median CSF3 Matrix Multiplication Time,
+             Median Armadillo Matrix Multiplication Time,
+             Median Eigen Outer Sum Time,
+             Median CSF2 Outer Sum Time,
+             Median CSF3 Outer Sum Time,
+             Median Armadillo Outer Sum Time,
+             Median Eigen Sum Time,
+             Median CSF2 Sum Time,
+             Median CSF3 Sum Time,
+             Median Armadillo Sum Time,
+             Median Eigen Norm Time,
+             Median CSF2 Norm Time,
+             Median CSF3 Norm Time,
+             Median Armadillo Norm Time,
+             Q3 Eigen Constructor Time,
+             Q3 CSF2 Constructor Time,
+             Q3 CSF3 Constructor Time,
+             Q3 Armadillo Constructor Time,
+             Q3 Eigen InnerIterator Time,
+             Q3 CSF2 InnerIterator Time,
+             Q3 CSF3 InnerIterator Time,
+             Q3 Armadillo InnerIterator Time,
+             Q3 Eigen Scalar Multiplication,
+             Q3 CSF2 Scalar Multiplication Time,
+             Q3 CSF3 Scalar Multiplication Time,
+             Q3 Armadillo Scalar Multiplication Time,
+             Q3 Eigen Vector Multiplication Time,
+             Q3 CSF2 Vector Multiplication Time,
+             Q3 CSF3 Vector Multiplication Time,
+             Q3 Armadillo Vector Multiplication Time,
+             Q3 Eigen Memory Usage,
+             Q3 CSF2 Memory Usage,
+             Q3 CSF3 Memory Usage,
+             Q3 Armadillo Memory Usage,
+             Q3 Eigen Transpose Time,
+             Q3 CSF2 Transpose Time,
+             Q3 CSF3 Transpose Time,
+             Q3 Armadillo Transpose Time,
+             Q3 Eigen Matrix Multiplication Time,
+             Q3 CSF2 Matrix Multiplication Time,
+             Q3 CSF3 Matrix Multiplication Time,
+             Q3 Armadillo Matrix Multiplication Time,
+             Q3 Eigen Outer Sum Time,
+             Q3 CSF2 Outer Sum Time,
+             Q3 CSF3 Outer Sum Time,
+             Q3 Armadillo Outer Sum Time,
+             Q3 Eigen Sum Time,
+             Q3 CSF2 Sum Time,
+             Q3 CSF3 Sum Time,
+             Q3 Armadillo Sum Time,
+             Q3 Eigen Norm Time,
+             Q3 CSF2 Norm Time,
+             Q3 CSF3 Norm Time,
+             Q3 Armadillo Norm Time,
+             Max Eigen Constructor Time,
+             Max CSF2 Constructor Time,
+             Max CSF3 Constructor Time,
+             Max Armadillo Constructor Time,
+             Max Eigen InnerIterator Time,
+             Max CSF2 InnerIterator Time,
+             Max CSF3 InnerIterator Time,
+             Max Armadillo InnerIterator Time,
+             Max Eigen Scalar Multiplication Time,
+             Max CSF2 Scalar Multiplication Time,
+             Max CSF3 Scalar Multiplication Time,
+             Max Armadillo Scalar Multiplication Time,
+             Max Eigen Vector Multiplication Time,
+             Max CSF2 Vector Multiplication Time,
+             Max CSF3 Vector Multiplication Time,
+             Max Armadillo Vector Multiplication Time,
+             Max Eigen Memory Usage,
+             Max CSF2 Memory Usage,
+             Max CSF3 Memory Usage,
+             Max Armadillo Memory Usage,
+             Max Eigen Transpose Time,
+             Max CSF2 Transpose Time,
+             Max CSF3 Transpose Time,
+             Max Armadillo Transpose Time,
+             Max Eigen Matrix Multiplication Time,
+             Max CSF2 Matrix Multiplication Time,
+             Max CSF3 Matrix Multiplication Time
+             Max Armadillo Matrix Multiplication Time.
+             Max Eigen Outer Sum Time,
+             Max CSF2 Outer Sum Time,
+             Max CSF3 Outer Sum Time,
+             Max Armadillo Outer Sum Time,
+             Max Eigen Sum Time,
+             Max CSF2 Sum Time,
+             Max CSF3 Sum Time,
+             Max Armadillo Sum Time,
+             Max Eigen Norm Time,
+             Max CSF2 Norm Time,
+             Max CSF3 Norm Time,
+             Max Armadillo Norm Time"
+ */

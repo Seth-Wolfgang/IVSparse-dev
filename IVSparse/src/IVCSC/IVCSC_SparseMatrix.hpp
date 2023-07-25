@@ -19,7 +19,7 @@ namespace IVSparse {
      * A class to represent a sparse matrix compressed in the Compressed Sparse Fiber format (IVSparse). \n \n
      * IVSparse Sparse Matrix is a read-only matrix class optimized for sparse-dense computation in cases where values
      * are highly redundant. For such cases, sparse fiber storage can reduce memory footprint by up to 50% compared to
-     * standard sparse compression. IVSparse also increases the ability to further compress index arrays within each fiber.
+     * standard sparse compression. IVSparse also increases the ability to further compress index arrays within each run.
      * This default templated version is for compression3 specifically. For compression level 1 and 2 there
      * are template specializations.
      */

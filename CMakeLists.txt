@@ -11,8 +11,8 @@ set(CMAKE_CXX_FLAGS_RELEASE "${CMAKE_CXX_FLAGS_RELEASE} -O2")
 
 
 
-project(CSF)
-# add_executable(main ${CMAKE_SOURCE_DIR}/tests/testCSF.cpp)
+project(IVCSC)
+# add_executable(main ${CMAKE_SOURCE_DIR}/tests/testIVCSC.cpp)
 enable_testing()
 
 # Required for googletest

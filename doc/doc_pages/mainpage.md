@@ -2,7 +2,7 @@
 
 ## IVSparse (Index and Value Sparse) Library
 
-[Github Repo](https://github.com/Seth-Wolfgang/CSF-Matrix)
+[Github Repo](https://github.com/Seth-Wolfgang/IVSparse)
 
 [New Abstract Here Later Skyler]
 

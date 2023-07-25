@@ -22,7 +22,7 @@
 template <typename T, typename indexType, int compressionLevel> double averageRedundancy(IVSparse::SparseMatrix<T, indexType, compressionLevel>& matrix);
 template <typename T, typename indexType, int compressionLevel> double averageRedundancy(Eigen::SparseMatrix<T>& matrix);
 template <int index> int __attribute__((optimize("Ofast"))) getMax(std::vector<std::tuple<int, int, VALUE_TYPE>>& data);
-void printDataToFile(std::vector<uint64_t>& data, std::vector<std::vector<uint64_t>>& timeData, char* filename);
+void printDataToFile(std::vector<uint64_t>& data, std::vector<std::vector<uint64_t>>& timeData, const char* filename);
 void generateMatrix(std::vector<std::tuple<int, int, VALUE_TYPE>>& data, int numRows, int numCols, uint64_t seed);
 inline void adjustValues(std::vector<std::tuple<int, int, VALUE_TYPE>>& data, int maxValue, int seed);
 void loadMatrix(std::vector<std::tuple<int, int, VALUE_TYPE>>& data, char* filename);
@@ -147,7 +147,7 @@ int __attribute__((optimize("Ofast"))) getMax(std::vector<std::tuple<int, int, V
  * @param filename
  */
 
-void printDataToFile(std::vector<double>& data, std::vector<std::vector<uint64_t>>& timeData, char* filename) {
+void printDataToFile(std::vector<double>& data, std::vector<std::vector<uint64_t>>& timeData, const char* filename) {
     FILE* file;
 
     //check if file exists
@@ -260,7 +260,9 @@ void  VCSC_Benchmark(std::vector<std::tuple<int, int, VALUE_TYPE>>& data, int nu
         VCSC_spmmBenchmark(matrix, timeData, numRows, numCols);
         std::cout << i << "/" << MATRICES << ": VCSC spmm done\n" << std::endl;
 
-        printDataToFile(matrixData, timeData, "../results/VCSCResults.csv");
+        std::stringstream path;
+        path << "../results/VCSCResults_" << DENSITY << ".csv";
+        printDataToFile(matrixData, timeData, path.str().c_str());
         adjustValues(data, static_cast<int>(((double)numRows / (double)MATRICES) * (i + 1)), i);
     }
 }
@@ -305,7 +307,9 @@ void   IVCSC_Benchmark(std::vector<std::tuple<int, int, VALUE_TYPE>>& data, int 
         IVCSC_spmmBenchmark(matrix, timeData, numRows, numCols);
         std::cout << i << "/" << MATRICES << ": IVCSC spmm done\n" << std::endl;
 
-        printDataToFile(matrixData, timeData, "../results/IVCSCResults.csv");
+        std::stringstream path;
+        path << "../results/IVCSCResults_" << DENSITY << ".csv";
+        printDataToFile(matrixData, timeData, path.str().c_str());
         adjustValues(data, static_cast<int>(((double)numRows / (double)MATRICES) * (i + 1)), i);
     }
 }
@@ -356,8 +360,10 @@ void eigen_Benchmark(std::vector<std::tuple<int, int, VALUE_TYPE>>& data, int nu
         std::cout << i << "/" << MATRICES << ": Eigen spmv done" << std::endl;
         eigen_spmmBenchmark(matrix, timeData, numRows, numCols);
         std::cout << i << "/" << MATRICES << ": Eigen spmm done" << std::endl;
-
-        printDataToFile(matrixData, timeData, "../results/EigenResults.csv");
+        
+        std::stringstream path;
+        path << "../results/EigenResults_" << DENSITY << ".csv";
+        printDataToFile(matrixData, timeData, path.str().c_str());
         adjustValues(data, static_cast<int>(((double)numRows / (double)MATRICES) * (i + 1)), i);
     }
 }

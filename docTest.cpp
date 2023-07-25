@@ -20,11 +20,11 @@ int main()
     // std::cout << mat << std::endl;
 
     // Create a IVSparse::SparseMatrix from the Eigen::SparseMatrix
-    IVSparse::SparseMatrix<int> csfSparseMatrix(eigenSparseMatrix);
+    IVSparse::SparseMatrix<int> IVCSC_SparseMatrix(eigenSparseMatrix);
 
     // Print the IVSparse::SparseMatrix
     // std::cout << "Construction: " << std::endl;
-    // std::cout << csfSparseMatrix << std::endl;
+    // std::cout << IVCSC_SparseMatrix << std::endl;
 
     /**
      * Scalar multiplication
@@ -36,11 +36,11 @@ int main()
      * In place operations are also supported.
      *
      */
-    //csfSparseMatrix = csfSparseMatrix * 2;
+    //IVCSC_SparseMatrix = IVCSC_SparseMatrix * 2;
 
     // Print the IVSparse::SparseMatrix
     // std::cout << "\nScalar Multiplication" << std::endl;
-    // std::cout << csfSparseMatrix << std::endl;
+    // std::cout << IVCSC_SparseMatrix << std::endl;
 
     /**
      * Vector multiplication
@@ -56,7 +56,7 @@ int main()
 
     std::cout << eigenVector << std::endl;
 
-    IVSparse::SparseMatrix<int>::Vector vec(csfSparseMatrix, 0);
+    IVSparse::SparseMatrix<int>::Vector vec(IVCSC_SparseMatrix, 0);
 
     vec.print();
 
@@ -72,7 +72,7 @@ int main()
     std::cout << std::endl;
     std::cout << std::endl;
 
-    // Eigen::VectorXi eigenResult = csfSparseMatrix * eigenVector;
+    // Eigen::VectorXi eigenResult = IVCSC_SparseMatrix * eigenVector;
 
     // // Print the Eigen::VectorXd
     // std::cout << "\nSpM * V Multiplication" << std::endl;
@@ -87,7 +87,7 @@ int main()
      * This algorithm is O(n^3).
      *
      */
-    // Eigen::MatrixXi eigenMatrixResult = csfSparseMatrix * mat; // Multiply the IVSparse::SparseMatrix by the Eigen::Matrix
+    // Eigen::MatrixXi eigenMatrixResult = IVCSC_SparseMatrix * mat; // Multiply the IVSparse::SparseMatrix by the Eigen::Matrix
 
     /**
      * Matrix Transpose
@@ -97,7 +97,7 @@ int main()
      *
      * This algorithm is in O(n^2)
      */
-    // IVSparse::SparseMatrix<int> csfSparseMatrixT = csfSparseMatrix.transpose();
+    // IVSparse::SparseMatrix<int> IVCSC_SparseMatrix_T = IVCSC_SparseMatrix.transpose();
 
     // // Print the Eigen::MatrixXd
     // std::cout << "\nSpM * M Multiplication" << std::endl;
@@ -112,11 +112,11 @@ int main()
      * This algorithm is in O(n^2)
      */
 
-    std::vector<int> columnSums = csfSparseMatrix.outerSum();
+    std::vector<int> columnSums = IVCSC_SparseMatrix.outerSum();
 
     // Print the column sums
     std::cout << "\nOuter Sums" << std::endl;
-    for (int i = 0; i < csfSparseMatrix.cols(); i++)
+    for (int i = 0; i < IVCSC_SparseMatrix.cols(); i++)
     {
         std::cout << columnSums[i] << std::endl;
     }
@@ -131,11 +131,11 @@ int main()
      * This algorithm is in O(n^2)
      */
 
-    std::vector<int> rowSums = csfSparseMatrix.innerSum();
+    std::vector<int> rowSums = IVCSC_SparseMatrix.innerSum();
 
     // Print the row sums
     std::cout << "\nInner Sums" << std::endl;
-    for (int i = 0; i < csfSparseMatrix.rows(); i++)
+    for (int i = 0; i < IVCSC_SparseMatrix.rows(); i++)
     {
         std::cout << rowSums[i] << std::endl;
     }
@@ -149,24 +149,24 @@ int main()
      * This algorithm is in O(n^2)
      */
 
-    std::vector<int> maxOuterCoefficients = csfSparseMatrix.maxColCoeff();
-    std::vector<int> minOuterCoefficientstest = csfSparseMatrix.minColCoeff();
+    std::vector<int> maxOuterCoefficients = IVCSC_SparseMatrix.maxColCoeff();
+    std::vector<int> minOuterCoefficientstest = IVCSC_SparseMatrix.minColCoeff();
 
-    std::vector<int> ranges(csfSparseMatrix.cols());
-    for (int i = 0; i < csfSparseMatrix.cols(); i++)
+    std::vector<int> ranges(IVCSC_SparseMatrix.cols());
+    for (int i = 0; i < IVCSC_SparseMatrix.cols(); i++)
     {
         ranges[i] = maxOuterCoefficients[i] - minOuterCoefficientstest[i];
     }
 
     std::cout << "Ranges: " << std::endl;
-    for (int i = 0; i < csfSparseMatrix.cols(); i++)
+    for (int i = 0; i < IVCSC_SparseMatrix.cols(); i++)
     {
         std::cout << ranges[i] << std::endl;
     }
 
     // Print the max outer coefficients
     std::cout << "\nMax Outer Coefficients" << std::endl;
-    for (int i = 0; i < csfSparseMatrix.cols(); i++)
+    for (int i = 0; i < IVCSC_SparseMatrix.cols(); i++)
     {
         std::cout << maxOuterCoefficients[i] << std::endl;
     }
@@ -181,11 +181,11 @@ int main()
      * This algorithm is in O(n^2)
      */
 
-    std::vector<int> maxInnerCoefficients = csfSparseMatrix.maxRowCoeff();
+    std::vector<int> maxInnerCoefficients = IVCSC_SparseMatrix.maxRowCoeff();
 
     // Print the max inner coefficients
     std::cout << "\nMax Inner Coefficients" << std::endl;
-    for (int i = 0; i < csfSparseMatrix.rows(); i++)
+    for (int i = 0; i < IVCSC_SparseMatrix.rows(); i++)
     {
         std::cout << maxInnerCoefficients[i] << std::endl;
     }
@@ -199,11 +199,11 @@ int main()
      * This algorithm is in O(n^2)
      */
 
-    std::vector<int> minOuterCoefficients = csfSparseMatrix.minColCoeff();
+    std::vector<int> minOuterCoefficients = IVCSC_SparseMatrix.minColCoeff();
 
     // Print the min outer coefficients
     std::cout << "\nMin Outer Coefficients" << std::endl;
-    for (int i = 0; i < csfSparseMatrix.cols(); i++)
+    for (int i = 0; i < IVCSC_SparseMatrix.cols(); i++)
     {
         std::cout << minOuterCoefficients[i] << std::endl;
     }
@@ -218,11 +218,11 @@ int main()
      * This algorithm is in O(n^2)
      */
 
-    std::vector<int> minInnerCoefficients = csfSparseMatrix.minRowCoeff();
+    std::vector<int> minInnerCoefficients = IVCSC_SparseMatrix.minRowCoeff();
 
     // Print the min inner coefficients
     std::cout << "\nMin Inner Coefficients" << std::endl;
-    for (int i = 0; i < csfSparseMatrix.rows(); i++)
+    for (int i = 0; i < IVCSC_SparseMatrix.rows(); i++)
     {
         std::cout << minInnerCoefficients[i] << std::endl;
     }
@@ -236,7 +236,7 @@ int main()
      * This algorithm is in O(n^2)
      */
 
-    int trace = csfSparseMatrix.trace();
+    int trace = IVCSC_SparseMatrix.trace();
 
     // Print the trace
     std::cout << "\nTrace: " << trace << std::endl;
@@ -251,7 +251,7 @@ int main()
      * This algorithm is in O(n^2)
      */
 
-    int sum = csfSparseMatrix.sum();
+    int sum = IVCSC_SparseMatrix.sum();
 
     // Print the sum
     std::cout << "Sum of Coefficients: " << sum << std::endl;
@@ -266,7 +266,7 @@ int main()
      * This algorithm is in O(n^2)
      */
 
-    double frobeniusNorm = csfSparseMatrix.norm();
+    double frobeniusNorm = IVCSC_SparseMatrix.norm();
 
     // Print the Frobenius norm
     std::cout << "Frobenius Norm: " << frobeniusNorm << std::endl;
@@ -281,7 +281,7 @@ int main()
      * This algorithm is in O(n)
      */
 
-    double vectorLength = csfSparseMatrix.vectorLength(0); // This is the length of the first vector
+    double vectorLength = IVCSC_SparseMatrix.vectorLength(0); // This is the length of the first vector
 
     // Print the vector length
     std::cout << "Length of first vector: " << vectorLength << std::endl;
