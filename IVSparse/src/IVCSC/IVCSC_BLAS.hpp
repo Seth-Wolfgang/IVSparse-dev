@@ -20,12 +20,9 @@ namespace IVSparse {
 
         // else use the iterator
         #pragma omp parallel for schedule(dynamic)
-        for (uint32_t i = 0; i < this->outerDim; ++i)
-        {
-            for (typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator it(newMatrix, i); it; ++it)
-            {
-                if (it.isNewRun())
-                {
+        for (uint32_t i = 0; i < this->outerDim; ++i) {
+            for (typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator it(newMatrix, i); it; ++it) {
+                if (it.isNewRun()) {
                     it.coeff(it.value() * scalar);
                 }
             }
@@ -38,12 +35,9 @@ namespace IVSparse {
     inline void SparseMatrix<T, indexT, compressionLevel, columnMajor>::inPlaceScalarMultiply(T scalar) {
         // else use the iterator
         #pragma omp parallel for schedule(dynamic)
-        for (uint32_t i = 0; i < outerDim; ++i)
-        {
-            for (typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator it(*this, i); it; ++it)
-            {
-                if (it.isNewRun())
-                {
+        for (uint32_t i = 0; i < outerDim; ++i) {
+            for (typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator it(*this, i); it; ++it) {
+                if (it.isNewRun()) {
                     it.coeff(it.value() * scalar);
                 }
             }
@@ -54,7 +48,7 @@ namespace IVSparse {
 
     // Matrix Vector Multiplication (Eigen::VectorXd * IVSparse::SparseMatrix)
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    inline Eigen::VectorXd SparseMatrix<T, indexT, compressionLevel, columnMajor>::vectorMultiply(Eigen::VectorXd &vec) {
+    inline Eigen::VectorXd SparseMatrix<T, indexT, compressionLevel, columnMajor>::vectorMultiply(Eigen::VectorXd& vec) {
         // check that the vector is the correct size
         assert(vec.rows() == outerDim && "The vector must be the same size as the number of columns in the matrix!");
 
@@ -75,26 +69,26 @@ namespace IVSparse {
 
     // Matrix Vector Multiplication (IVSparse::SparseMatrix::Vector * IVSparse::SparseMatrix)
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    inline Eigen::VectorXd SparseMatrix<T, indexT, compressionLevel, columnMajor>::vectorMultiply(typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector &vec) {
+    inline Eigen::VectorXd SparseMatrix<T, indexT, compressionLevel, columnMajor>::vectorMultiply(typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector& vec) {
         if (vec.length() != outerDim)
             throw std::invalid_argument("The vector must be the same size as the number of columns in the matrix!");
 
-        Eigen::Matrix<T, -1, 1> newVector = Eigen::Matrix<T, -1, 1>::Zero(innerDim, 1);
+        Eigen::Matrix<T, -1, 1> eigenTemp = Eigen::Matrix<T, -1, 1>::Zero(innerDim, 1);
 
         // #pragma omp parallel for schedule(dynamic)
         for (typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator vecIter(vec); vecIter; ++vecIter) {
             for (typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator matIter(*this, vecIter.row()); matIter; ++matIter) {
-                newVector.coeffRef(matIter.row()) += matIter.value() * vecIter.value();
+                eigenTemp.coeffRef(matIter.row()) += matIter.value() * vecIter.value();
             }
         }
-        return newVector;
+        return eigenTemp;
     }
 
     //* BLAS Level 3 Routines *//
 
     // Matrix Vector Multiplication (IVSparse::SparseMatrix * Eigen::Matrix)
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    inline Eigen::Matrix<T, -1, -1> SparseMatrix<T, indexT, compressionLevel, columnMajor>::matrixMultiply(Eigen::Matrix<T, -1, -1> &mat) {
+    inline Eigen::Matrix<T, -1, -1> SparseMatrix<T, indexT, compressionLevel, columnMajor>::matrixMultiply(Eigen::Matrix<T, -1, -1>& mat) {
         // check that the matrix is the correct size
         if (mat.rows() != outerDim)
             throw std::invalid_argument("The left matrix must be the same size as the number of columns in the right matrix!");
@@ -102,10 +96,10 @@ namespace IVSparse {
         Eigen::Matrix<T, -1, -1> newMatrix = Eigen::Matrix<T, -1, -1>::Zero(innerDim, mat.cols());
 
         #pragma omp parallel for schedule(dynamic)
-        for (int col = 0; col < mat.cols(); col++) {
-            for (int row = 0; row < mat.rows(); row++) {
-                for (typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator matIter(*this, row); matIter; ++matIter) {
-                    newMatrix.coeffRef(matIter.row(), col) += matIter.value() * mat(row, col);
+        for (int row = 0; row < outerDim; row++) {
+            for (typename SparseMatrix<T, indexT, 3, columnMajor>::InnerIterator matIter(*this, row); matIter; ++matIter) {
+                for (int col = 0; col < innerDim; col++) {
+                    newMatrix(col, matIter.row()) += mat.coeff(matIter.col(), col) * matIter.value();
                 }
             }
         }

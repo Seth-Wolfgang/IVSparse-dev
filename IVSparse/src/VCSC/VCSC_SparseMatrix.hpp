@@ -59,10 +59,10 @@ namespace IVSparse
         inline void inPlaceScalarMultiply(T scalar);
 
         // Matrix Vector Multiplication
-        inline Eigen::VectorXd vectorMultiply(Eigen::VectorXd &vec);
+        inline Eigen::Matrix<T, -1, 1> vectorMultiply(Eigen::Matrix<T, -1, 1> &vec);
 
         // Matrix Vector Multiplication 2 (with IVSparse Vector)
-        inline Eigen::VectorXd vectorMultiply(typename SparseMatrix<T, indexT, 2, columnMajor>::Vector &vec);
+        inline Eigen::Matrix<T, -1, 1> vectorMultiply(typename SparseMatrix<T, indexT, 2, columnMajor>::Vector &vec);
 
         // Matrix Matrix Multiplication
         inline Eigen::Matrix<T, -1, -1> matrixMultiply(Eigen::Matrix<T, -1, -1> &mat);

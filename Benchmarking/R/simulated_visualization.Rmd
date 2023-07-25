@@ -259,11 +259,11 @@ dual_plot_ratio_over_eigen <- function(dataset1_results, dataset1_name, dataset2
 # Assuming dataset1_results and dataset2_results are the data frames for the two datasets you want to compare,
 # and eigenResults5 and eigenResults10 are the corresponding eigenResults data frames
 
-dual_plot_ratio_over_eigen(VCSCResults5, "VCSC 5% Dense", VCSCResults10, "VCSC 5% Dense", eigenResults5, eigenResults10, "size")
-dual_plot_ratio_over_eigen(VCSCResults5, "VCSC 5% Dense", VCSCResults10, "VCSC 5% Dense", eigenResults5, eigenResults10, "constructor_time")
-dual_plot_ratio_over_eigen(VCSCResults5, "VCSC 5% Dense", VCSCResults10, "VCSC 5% Dense", eigenResults5, eigenResults10, "scalar_time")
-dual_plot_ratio_over_eigen(VCSCResults5, "VCSC 5% Dense", VCSCResults10, "VCSC 5% Dense", eigenResults5, eigenResults10, "spmv_time")
-dual_plot_ratio_over_eigen(VCSCResults5, "VCSC 5% Dense", VCSCResults10, "VCSC 5% Dense", eigenResults5, eigenResults10, "spmm_time")
+dual_plot_ratio_over_eigen(VCSCResults5, "VCSC 5% Dense", VCSCResults10, "VCSC 10% Dense", eigenResults5, eigenResults10, "size")
+dual_plot_ratio_over_eigen(VCSCResults5, "VCSC 5% Dense", VCSCResults10, "VCSC 10% Dense", eigenResults5, eigenResults10, "constructor_time")
+dual_plot_ratio_over_eigen(VCSCResults5, "VCSC 5% Dense", VCSCResults10, "VCSC 10% Dense", eigenResults5, eigenResults10, "scalar_time")
+dual_plot_ratio_over_eigen(VCSCResults5, "VCSC 5% Dense", VCSCResults10, "VCSC 10% Dense", eigenResults5, eigenResults10, "spmv_time")
+dual_plot_ratio_over_eigen(VCSCResults5, "VCSC 5% Dense", VCSCResults10, "VCSC 10% Dense", eigenResults5, eigenResults10, "spmm_time")
 
 dual_plot_ratio_over_eigen(IVCSCResults5, "IVCSC 5% Dense", IVCSCResults10, "IVCSC 10% Dense", eigenResults5, eigenResults10, "size")
 dual_plot_ratio_over_eigen(IVCSCResults5, "IVCSC 5% Dense", IVCSCResults10, "IVCSC 10% Dense", eigenResults5, eigenResults10, "constructor_time")
@@ -302,6 +302,7 @@ dual_plot_ratio_over_eigen(IVCSCResults5, "IVCSCResults 5%", VCSCResults5, "VCSC
 ## **10% Dense**
 
 ```{R}
+
 dual_plot_ratio_over_eigen(IVCSCResults10, "IVCSC 10% Dense", VCSCResults10, "VCSC 10% Dense", eigenResults10, eigenResults10, "size")
 dual_plot_ratio_over_eigen(IVCSCResults10, "IVCSC 10% Dense", VCSCResults10, "VCSC 10% Dense", eigenResults10, eigenResults10, "constructor_time")
 dual_plot_ratio_over_eigen(IVCSCResults10, "IVCSC 10% Dense", VCSCResults10, "VCSC 10% Dense", eigenResults10, eigenResults10, "scalar_time")

@@ -18,7 +18,7 @@
 
 // Library Preprocessor Directives
 #define CSF_PARALLEL
-#define CSF_DEBUG
+// #define CSF_DEBUG
 #define EigenFunctions
 
 // Library Includes
