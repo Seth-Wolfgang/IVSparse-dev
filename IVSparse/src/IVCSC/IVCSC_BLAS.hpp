@@ -48,20 +48,17 @@ namespace IVSparse {
 
     // Matrix Vector Multiplication (Eigen::VectorXd * IVSparse::SparseMatrix)
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    inline Eigen::VectorXd SparseMatrix<T, indexT, compressionLevel, columnMajor>::vectorMultiply(Eigen::VectorXd& vec) {
+    inline Eigen::Matrix<T, -1, 1> SparseMatrix<T, indexT, compressionLevel, columnMajor>::vectorMultiply(Eigen::Matrix<T, -1, 1> vec) {
         // check that the vector is the correct size
         assert(vec.rows() == outerDim && "The vector must be the same size as the number of columns in the matrix!");
 
-        Eigen::Matrix<T, -1, 1> eigenTemp(innerDim, 1);
-        eigenTemp.setZero();
+        Eigen::Matrix<T, -1, 1> eigenTemp = Eigen::Matrix<T, -1, 1>::Zero(innerDim);
 
         // iterate over the vector and multiply the corresponding row of the matrix by the vecIter value
         #pragma omp parallel for schedule(dynamic)
-        for (int i = 0; i < vec.rows(); ++i) {
-            if (vec(i) == 0)
-                continue;
+        for (int i = 0; i < innerDim; ++i) {
             for (typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator matIter(*this, i); matIter; ++matIter) {
-                eigenTemp.coeffRef(matIter.row()) += matIter.value() * vec(i);
+                eigenTemp(matIter.row()) += vec(i) * matIter.value();
             }
         }
         return eigenTemp;
@@ -69,7 +66,7 @@ namespace IVSparse {
 
     // Matrix Vector Multiplication (IVSparse::SparseMatrix::Vector * IVSparse::SparseMatrix)
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    inline Eigen::VectorXd SparseMatrix<T, indexT, compressionLevel, columnMajor>::vectorMultiply(typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector& vec) {
+    inline Eigen::Matrix<T, -1, 1> SparseMatrix<T, indexT, compressionLevel, columnMajor>::vectorMultiply(typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector& vec) {
         if (vec.length() != outerDim)
             throw std::invalid_argument("The vector must be the same size as the number of columns in the matrix!");
 

@@ -19,7 +19,8 @@ void generateAllUniqueElements(Eigen::SparseMatrix<T>& eigen);
 template <typename T>
 void generateAllRedundantElements(Eigen::SparseMatrix<T>& eigen);
 
-bool compareOstreams(std::stringstream& os1, std::stringstream& os2);
+template <typename T>
+bool compareMatrices(Eigen::Matrix<T, -1, -1> mat1, Eigen::Matrix<T, -1, -1> mat2, Eigen::Matrix<T, -1, -1> mat3);
 
 template <typename T>
 std::vector<std::tuple<int, int, int>> generateCOO(int rows, int cols, int max);
@@ -37,14 +38,16 @@ int main() {
 
 
 
-    // Eigen::MatrixXi testDense = Eigen::MatrixXi::Random(rows, cols);
-    // Eigen::MatrixXi testDense2 = Eigen::MatrixXi::Random(cols, rows - 1);
+    // Eigen::MatrixXi testDense = Eigen::MatrixXi::Random(rows-1, cols);
+    // Eigen::MatrixXi testDense2 = Eigen::MatrixXi::Random(cols, rows + 3);
     // Eigen::SparseMatrix<DATA_TYPE> testEigenDense = testDense.sparseView();
     // IVSparse::SparseMatrix<DATA_TYPE, INDEX_TYPE, 3, isColMajor> csf3(testEigenDense);
     // IVSparse::SparseMatrix<DATA_TYPE, INDEX_TYPE, 2, isColMajor> csf2(testEigenDense);
-    // Eigen::VectorXi eigenVec = Eigen::VectorXi::Random(cols);
+    // // Eigen::VectorXi eigenVec = Eigen::VectorXi::Random(cols);
 
     // std::cout << (csf3 * testDense2) << std::endl << std::endl << std::endl;
+    // std::cout << (csf2 * testDense2) << std::endl << std::endl << std::endl;
+
     // std::cout << (testEigenDense * testDense2) << std::endl;
 
 
@@ -75,44 +78,36 @@ int main() {
         std::stringstream os3;
 
         Eigen::MatrixXi dense = Eigen::MatrixXi::Random(rows, cols);
+        Eigen::MatrixXi dense2 = Eigen::MatrixXi::Random(cols, rows);
         // dense.fill(1);
-        Eigen::SparseMatrix<int> eigenDense = dense.sparseView().transpose();
+        Eigen::SparseMatrix<int> eigenDense = dense.sparseView();
         IVSparse::SparseMatrix<int, INDEX_TYPE, 3, isColMajor> csf3(eigenDense);
         IVSparse::SparseMatrix<int, INDEX_TYPE, 2, isColMajor> csf2(eigenDense);
 
-        // Eigen::VectorXi eigenVec = Eigen::VectorXi::Random(cols);
+        Eigen::VectorXi eigenVec = Eigen::VectorXi::Random(cols);
 
         // std::cout << "rows in vec:" << eigenVec.rows() << std::endl;
         // std::cout << "Rows and cols in dense: " << dense.rows() << " " << dense.cols() << std::endl;
         // std::cout << "Rows and cols in csf3: " << csf3.rows() << " " << csf3.cols() << std::endl;
 
         start = std::chrono::system_clock::now();
-        Eigen::MatrixXi filler2 = (csf2 * dense);
-        end = std::chrono::system_clock::now();
-        uint64_t csf2Time = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
-
-        start = std::chrono::system_clock::now();
-        Eigen::MatrixXi filler1 = (csf3 * dense);
+        Eigen::MatrixXi filler1 = csf3 * eigenVec;
         end = std::chrono::system_clock::now();
         uint64_t csf3Time = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
 
         start = std::chrono::system_clock::now();
-        Eigen::MatrixXi filler3 = (eigenDense * dense);
+        Eigen::MatrixXi filler2 = csf2 * eigenVec;
+        end = std::chrono::system_clock::now();
+        uint64_t csf2Time = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+
+        start = std::chrono::system_clock::now();
+        Eigen::MatrixXi filler3 = eigenDense * eigenVec;
         end = std::chrono::system_clock::now();
         uint64_t eigenTime = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
 
-
-        os1 << (csf3 * dense);
-        os3 << (csf2 * dense);
-        os2 << (eigenDense * dense);
-
         // std::cout << "Our sum: " << ourSum << " Their sum: " << theirSum << std::endl;
         // std::cout << "Sum: " << csf3Sum << " " << csf2Sum << " " << eigenSum << std::endl;
-        assert(filler1.sum() == filler2.sum());
-        assert(filler3.sum() == filler2.sum());
-        // compareOstreams(os1, os2);
-        assert(compareOstreams(os1, os2));
-        assert(compareOstreams(os1, os3));
+        assert(compareMatrices(filler1, filler2, filler3));
         // std::cout << i << ": Works!" << std::endl;
         printf("%10lu %10lu %10lu\n", csf2Time, csf3Time, eigenTime);
         eigenTimes.push_back(eigenTime);
@@ -196,16 +191,33 @@ int main() {
 
     return 0;
 }
-bool compareOstreams(std::stringstream& os1, std::stringstream& os2) {
 
-    std::string first = os1.str();
-    std::string second = os2.str();
-    int check = (strcmp(first.c_str(), second.c_str()) == 0);
+template <typename T>
+bool compareMatrices(Eigen::Matrix<T, -1, -1> mat1, Eigen::Matrix<T, -1, -1> mat2, Eigen::Matrix<T, -1, -1> mat3) {
 
-    // std::cout << check << std::endl;
+    if (mat1.cols() != mat2.cols() || mat2.cols() != mat3.cols()) {
+        std::cout << "mat1: " << mat1.cols() << " mat2: " << mat2.cols() << " mat3: " << mat3.cols() << std::endl;
+        return false;
+    }
+    if (mat1.rows() != mat2.rows() || mat2.rows() != mat3.rows()) {
+        std::cout << "mat1: " << mat1.rows() << " mat2: " << mat2.rows() << " mat3: " << mat3.rows() << std::endl;
+        return false;
+    }
+    if (mat1.sum() != mat2.sum() || mat2.sum() != mat3.sum()) {
+        std::cout << "mat1: " << mat1.sum() << " mat2: " << mat2.sum() << " mat3: " << mat3.sum() << std::endl;
+        return false;
+    }
 
+    for (int i = 0; i < mat3.rows(); i++) {
+        for (int j = 0; j < mat3.cols(); j++) {
+            if (mat1(i, j) != mat2(i, j) || mat2(i, j) != mat3(i, j)) {
+                std::cout << "mat1: " << mat1(i, j) << " mat2: " << mat2(i, j) << " mat3: " << mat3(i, j) << std::endl;
+                return false;
+            }
+        }
+    }
+    return true;
 
-    return check;
 }
 
 template <typename T, typename indexT>

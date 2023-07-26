@@ -60,10 +60,10 @@ namespace IVSparse {
         inline void inPlaceScalarMultiply(T scalar);
 
         // Matrix Vector Multiplication
-        inline Eigen::VectorXd vectorMultiply(Eigen::VectorXd &vec);
+        inline Eigen::Matrix<T, -1, 1> vectorMultiply(Eigen::Matrix<T, -1, 1> vec);
 
         // Matrix Vector Multiplication 2 (with IVSparse Vector)
-        inline Eigen::VectorXd vectorMultiply(typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector &vec);
+        inline Eigen::Matrix<T, -1, 1> vectorMultiply(typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector &vec);
 
         // Matrix Matrix Multiplication
         inline Eigen::Matrix<T, -1, -1> matrixMultiply(Eigen::Matrix<T, -1, -1> mat);
@@ -402,13 +402,13 @@ namespace IVSparse {
         void operator*=(T scalar);
 
         // Matrix Vector Multiplication
-        Eigen::VectorXd operator*(Eigen::VectorXd &vec);
+        Eigen::Matrix<T, -1, 1> operator*(Eigen::Matrix<T, -1, 1> vec);
 
         // Matrix Vector Multiplication 2 (with IVSparse Vector)
-        Eigen::VectorXd operator*(typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector &vec);
+        Eigen::Matrix<T, -1, 1> operator*(typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector &vec);
 
         // Matrix Matrix Multiplication
-        Eigen::Matrix<T, -1, -1> operator*(Eigen::Matrix<T, -1, -1>& mat);
+        Eigen::Matrix<T, -1, -1> operator*(Eigen::Matrix<T, -1, -1> mat);
 
     }; // End of SparseMatrix Class
 
