@@ -121,7 +121,7 @@ namespace IVSparse {
     template <typename T, typename indexT, bool columnMajor>
     typename SparseMatrix<T, indexT, 1, columnMajor>::Vector SparseMatrix<T, indexT, 1, columnMajor>::operator[](uint32_t vec) {
 
-        #ifdef CSF_DEBUG
+        #ifdef IVSPARSE_DEBUG
         // check if the vector is out of bounds
         assert((vec < outerDim && vec >= 0) && "Vector index out of bounds");
         #endif

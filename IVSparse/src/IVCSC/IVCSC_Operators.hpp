@@ -129,7 +129,7 @@ namespace IVSparse {
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator[](uint32_t vec) {
 
-        #ifdef CSF_DEBUG
+        #ifdef IVSPARSE_DEBUG
         // check if the vector is out of bounds
         assert((vec < outerDim && vec >= 0) && "Vector index out of bounds");
         #endif
@@ -143,7 +143,7 @@ namespace IVSparse {
     // Outstream Operator
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     std::ostream& operator<<(std::ostream& os, IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>& mat) {
-        #ifndef CSF_DEBUG
+        #ifndef IVSPARSE_DEBUG
         if (mat.cols() > 110) {
             std::cout << "IVSparse matrix is too large to print" << std::endl;
             return os;

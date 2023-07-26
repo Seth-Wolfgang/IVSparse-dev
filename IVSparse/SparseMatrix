@@ -17,9 +17,14 @@
 #define FOUR_BYTE_MAX 4294967295
 
 // Library Preprocessor Directives
-#define CSF_PARALLEL
-// #define CSF_DEBUG
-#define EigenFunctions
+
+#if defined(_OPENMP)
+   #define IVSPARSE_PARALLEL
+#endif
+
+
+// #define IVSPARSE_DEBUG
+// #define EigenFunctions
 
 // Library Includes
 #include <omp.h>

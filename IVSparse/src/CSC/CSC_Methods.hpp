@@ -35,7 +35,7 @@ namespace IVSparse {
     // Get a csf vector from the matrix
     template <typename T, typename indexT, bool columnMajor>
     typename SparseMatrix<T, indexT, 1, columnMajor>::Vector SparseMatrix<T, indexT, 1, columnMajor>::getVector(uint32_t vec) {
-        #ifdef CSF_DEBUG
+        #ifdef IVSPARSE_DEBUG
         // check if the vector is out of bounds
         assert((vec < outerDim && vec >= 0) && "Vector index out of bounds");
         #endif
@@ -206,7 +206,7 @@ namespace IVSparse {
     template <typename T, typename indexT, bool columnMajor>
     std::vector<typename IVSparse::SparseMatrix<T, indexT, 1, columnMajor>::Vector> SparseMatrix<T, indexT, 1, columnMajor>::slice(uint32_t start, uint32_t end) {
         // check if the start and end values are valid
-        #ifdef CSF_DEBUG
+        #ifdef IVSPARSE_DEBUG
         assert(start < outerDim && end <= outerDim && start < end && "Invalid start and end values!");
         #endif
 

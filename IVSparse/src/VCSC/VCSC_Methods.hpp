@@ -201,7 +201,7 @@ namespace IVSparse
     Eigen::SparseMatrix<T, columnMajor ? Eigen::ColMajor : Eigen::RowMajor> SparseMatrix<T, indexT, 2, columnMajor>::toEigen()
     {
 
-        #ifdef CSF_DEBUG
+        #ifdef IVSPARSE_DEBUG
         // assert that the matrix is not empty
         assert(outerDim > 0 && "Cannot convert an empty matrix to an Eigen matrix!");
         #endif
@@ -412,7 +412,7 @@ namespace IVSparse
     template <typename T, typename indexT, bool columnMajor>
     std::vector<typename IVSparse::SparseMatrix<T, indexT, 2, columnMajor>::Vector> SparseMatrix<T, indexT, 2, columnMajor>::slice(uint32_t start, uint32_t end)
     {
-        #ifdef CSF_DEBUG
+        #ifdef IVSPARSE_DEBUG
         assert(start < outerDim && end <= outerDim && start < end && "Invalid start and end values!");
         #endif
 

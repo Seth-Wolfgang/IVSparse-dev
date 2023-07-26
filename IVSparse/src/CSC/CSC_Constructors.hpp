@@ -61,7 +61,7 @@ namespace IVSparse {
         calculateCompSize();
 
         // run the user checks
-        #ifdef CSF_DEBUG
+        #ifdef IVSPARSE_DEBUG
         userChecks();
         #endif
     }
@@ -106,7 +106,7 @@ namespace IVSparse {
         calculateCompSize();
 
         // run the user checks
-        #ifdef CSF_DEBUG
+        #ifdef IVSPARSE_DEBUG
         userChecks();
         #endif
     }
@@ -136,7 +136,7 @@ namespace IVSparse {
         *this = temp;
 
         // run the user checks
-        #ifdef CSF_DEBUG
+        #ifdef IVSPARSE_DEBUG
         userChecks();
         #endif
     }
@@ -187,7 +187,7 @@ namespace IVSparse {
         calculateCompSize();
 
         // run the user checks
-        #ifdef CSF_DEBUG
+        #ifdef IVSPARSE_DEBUG
         userChecks();
         #endif
     }
@@ -253,7 +253,7 @@ namespace IVSparse {
         // calculate the compressed size and run the user checks
         calculateCompSize();
 
-        #ifdef CSF_DEBUG
+        #ifdef IVSPARSE_DEBUG
         userChecks();
         #endif
     }
@@ -274,7 +274,7 @@ namespace IVSparse {
         // run the user checks and calculate the compressed size
         calculateCompSize();
 
-        #ifdef CSF_DEBUG
+        #ifdef IVSPARSE_DEBUG
         userChecks();
         #endif
     }
@@ -327,7 +327,7 @@ namespace IVSparse {
         fclose(fp);
 
         // run the user checks
-        #ifdef CSF_DEBUG
+        #ifdef IVSPARSE_DEBUG
         userChecks();
         #endif
 
@@ -400,7 +400,7 @@ namespace IVSparse {
         outerPtr[OuterIndex + 1] = count;
 
         // run the user checks
-        #ifdef CSF_DEBUG
+        #ifdef IVSPARSE_DEBUG
         userChecks();
         #endif
 

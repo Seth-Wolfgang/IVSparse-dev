@@ -2,7 +2,7 @@
 #include "IVSparse/SparseMatrix"
 #include "misc/matrix_creator.cpp"
 #include <chrono>
-// #define EIGEN_DONT_PARALLELIZE
+
 #define DATA_TYPE int
 #define INDEX_TYPE int
 

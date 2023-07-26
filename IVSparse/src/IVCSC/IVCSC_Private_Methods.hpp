@@ -82,7 +82,7 @@ namespace IVSparse {
         metadata[5] = index_t;
 
         // run the user checks on the metadata
-        #ifdef CSF_DEBUG
+        #ifdef IVSPARSE_DEBUG
         userChecks();
         #endif
 

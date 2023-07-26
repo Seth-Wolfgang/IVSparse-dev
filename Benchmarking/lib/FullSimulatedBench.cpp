@@ -15,8 +15,8 @@
 #include <random>
 
 #define NUM_ITERATIONS 10
-#define DENSITY 0.1
-#define MATRICES 1000
+#define DENSITY 0.01
+#define MATRICES 2
 #define VALUE_TYPE double
 
 template <typename T, typename indexType, int compressionLevel> double averageRedundancy(IVSparse::SparseMatrix<T, indexType, compressionLevel>& matrix);
@@ -77,12 +77,12 @@ int main(int argc, char** argv) {
         generateMatrix(coords, atoi(argv[1]), atoi(argv[2]), 1);
     }
 
-    // std::cout << "\033[34;42;1;4mStarting VCSC Benchmark\033[0m" << std::endl;
-    // VCSC_Benchmark(coords, atoi(argv[1]), atoi(argv[2]));
-    // std::cout << "\033[34;42;1;4mStarting IVCSC Benchmark\033[0m" << std::endl;
-    // IVCSC_Benchmark(coords, atoi(argv[1]), atoi(argv[2]));
-    // std::cout << "\033[34;42;1;4mStarting Eigen Benchmark\033[0m" << std::endl;
-    // eigen_Benchmark(coords, atoi(argv[1]), atoi(argv[2]));
+    std::cout << "\033[34;42;1;4mStarting VCSC Benchmark\033[0m" << std::endl;
+    VCSC_Benchmark(coords, atoi(argv[1]), atoi(argv[2]));
+    std::cout << "\033[34;42;1;4mStarting IVCSC Benchmark\033[0m" << std::endl;
+    IVCSC_Benchmark(coords, atoi(argv[1]), atoi(argv[2]));
+    std::cout << "\033[34;42;1;4mStarting Eigen Benchmark\033[0m" << std::endl;
+    eigen_Benchmark(coords, atoi(argv[1]), atoi(argv[2]));
 
     return 1;
 }

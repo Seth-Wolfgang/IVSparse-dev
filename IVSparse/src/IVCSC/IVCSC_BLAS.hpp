@@ -19,7 +19,9 @@ namespace IVSparse {
         IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor> newMatrix(*this);
 
         // else use the iterator
-        #pragma omp parallel for schedule(dynamic)
+        #ifdef IVSPARSE_PARALLEL
+        #pragma omp parallel for
+        #endif
         for (uint32_t i = 0; i < this->outerDim; ++i) {
             for (typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator it(newMatrix, i); it; ++it) {
                 if (it.isNewRun()) {
@@ -34,7 +36,9 @@ namespace IVSparse {
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     inline void SparseMatrix<T, indexT, compressionLevel, columnMajor>::inPlaceScalarMultiply(T scalar) {
         // else use the iterator
-        #pragma omp parallel for schedule(dynamic)
+        #ifdef IVSPARSE_PARALLEL
+        #pragma omp parallel for
+        #endif
         for (uint32_t i = 0; i < outerDim; ++i) {
             for (typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator it(*this, i); it; ++it) {
                 if (it.isNewRun()) {
@@ -51,14 +55,13 @@ namespace IVSparse {
     inline Eigen::Matrix<T, -1, 1> SparseMatrix<T, indexT, compressionLevel, columnMajor>::vectorMultiply(Eigen::Matrix<T, -1, 1> vec) {
         // check that the vector is the correct size
         assert(vec.rows() == outerDim && "The vector must be the same size as the number of columns in the matrix!");
-
-        Eigen::Matrix<T, -1, 1> eigenTemp = Eigen::Matrix<T, -1, 1>::Zero(innerDim);
+        Eigen::Matrix<T, -1, 1> eigenTemp = Eigen::Matrix<T, -1, 1>::Zero(innerDim, 1);
 
         // iterate over the vector and multiply the corresponding row of the matrix by the vecIter value
-        #pragma omp parallel for schedule(dynamic)
-        for (int i = 0; i < innerDim; ++i) {
-            for (typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator matIter(*this, i); matIter; ++matIter) {
-                eigenTemp(matIter.row()) += vec(i) * matIter.value();
+
+        for (int i = 0; i < outerDim; i++) {
+            for (typename SparseMatrix<T, indexT, 3, columnMajor>::InnerIterator matIter(*this, i); matIter; ++matIter) {
+                eigenTemp(matIter.row()) += vec(matIter.col()) * matIter.value();
             }
         }
         return eigenTemp;
@@ -72,10 +75,9 @@ namespace IVSparse {
 
         Eigen::Matrix<T, -1, 1> eigenTemp = Eigen::Matrix<T, -1, 1>::Zero(innerDim, 1);
 
-        // #pragma omp parallel for schedule(dynamic)
         for (typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator vecIter(vec); vecIter; ++vecIter) {
             for (typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator matIter(*this, vecIter.row()); matIter; ++matIter) {
-                eigenTemp.coeffRef(matIter.row()) += matIter.value() * vecIter.value();
+                eigenTemp(matIter.row()) += matIter.value() * vecIter.value();
             }
         }
         return eigenTemp;
@@ -91,7 +93,9 @@ namespace IVSparse {
     inline std::vector<T> SparseMatrix<T, indexT, compressionLevel, columnMajor>::outerSum() {
         std::vector<T> outerSum = std::vector<T>(outerDim);
 
-        #pragma omp parallel for schedule(dynamic)
+        #ifdef IVSPARSE_PARALLEL
+        #pragma omp parallel for
+        #endif
         for (int i = 0; i < outerDim; i++) {
             for (typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator it(*this, i); it; ++it) {
                 outerSum[i] += it.value();
@@ -104,7 +108,9 @@ namespace IVSparse {
     inline std::vector<T> SparseMatrix<T, indexT, compressionLevel, columnMajor>::innerSum() {
         std::vector<T> innerSum = std::vector<T>(innerDim);
 
-        #pragma omp parallel for schedule(dynamic)
+        #ifdef IVSPARSE_PARALLEL
+        #pragma omp parallel for
+        #endif
         for (int i = 0; i < outerDim; i++) {
             for (typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator it(*this, i); it; ++it) {
                 innerSum[it.row()] += it.value();
@@ -117,7 +123,9 @@ namespace IVSparse {
     inline std::vector<T> SparseMatrix<T, indexT, compressionLevel, columnMajor>::maxColCoeff() {
         std::vector<T> maxCoeff = std::vector<T>(innerDim);
 
-        #pragma omp parallel for schedule(dynamic)
+        #ifdef IVSPARSE_PARALLEL
+        #pragma omp parallel for
+        #endif
         for (int i = 0; i < outerDim; i++) {
             for (typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator it(*this, i); it; ++it) {
                 if (it.value() > maxCoeff[i]) {
@@ -132,7 +140,9 @@ namespace IVSparse {
     inline std::vector<T> SparseMatrix<T, indexT, compressionLevel, columnMajor>::maxRowCoeff() {
         std::vector<T> maxCoeff = std::vector<T>(innerDim);
 
-        #pragma omp parallel for schedule(dynamic)
+        #ifdef IVSPARSE_PARALLEL
+        #pragma omp parallel for
+        #endif
         for (int i = 0; i < outerDim; i++) {
             for (typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator it(*this, i); it; ++it) {
                 if (it.value() > maxCoeff[it.row()]) {
@@ -147,7 +157,9 @@ namespace IVSparse {
     inline std::vector<T> SparseMatrix<T, indexT, compressionLevel, columnMajor>::minColCoeff() {
         std::vector<T> minCoeff = std::vector<T>(innerDim);
 
-        #pragma omp parallel for schedule(dynamic)
+        #ifdef IVSPARSE_PARALLEL
+        #pragma omp parallel for
+        #endif
         for (int i = 0; i < outerDim; i++) {
             for (typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator it(*this, i); it; ++it) {
                 if (it.value() < minCoeff[i]) {
@@ -163,7 +175,9 @@ namespace IVSparse {
         std::vector<T> minCoeff = std::vector<T>(innerDim);
         memset(minCoeff.data(), 0xF, innerDim * sizeof(T));
 
-        #pragma omp parallel for schedule(dynamic)
+        #ifdef IVSPARSE_PARALLEL
+        #pragma omp parallel for
+        #endif
         for (int i = 0; i < outerDim; i++) {
             for (typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator it(*this, i); it; ++it) {
                 if (it.value() < minCoeff[it.row()]) {
@@ -192,7 +206,9 @@ namespace IVSparse {
     inline T SparseMatrix<T, indexT, compressionLevel, columnMajor>::sum() {
         T sum = 0;
 
-        #pragma omp parallel for schedule(dynamic)
+        #ifdef IVSPARSE_PARALLEL
+        #pragma omp parallel for reduction(+:sum)
+        #endif
         for (int i = 0; i < outerDim; i++) {
             for (typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator it(*this, i); it; ++it) {
                 sum += it.value();
@@ -205,7 +221,9 @@ namespace IVSparse {
     inline double SparseMatrix<T, indexT, compressionLevel, columnMajor>::norm() {
         double norm = 0;
 
-        #pragma omp parallel for schedule(dynamic)
+        #ifdef IVSPARSE_PARALLEL
+        #pragma omp parallel for reduction(+:norm)
+        #endif
         for (int i = 0; i < outerDim; i++) {
             for (typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator it(*this, i); it; ++it) {
                 norm += it.value() * it.value();
@@ -218,7 +236,6 @@ namespace IVSparse {
     inline double SparseMatrix<T, indexT, compressionLevel, columnMajor>::vectorLength(uint32_t col) {
         double norm = 0;
 
-        // #pragma omp parallel for schedule(dynamic)
         for (typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator it(*this, col); it; ++it) {
             norm += it.value() * it.value();
         }

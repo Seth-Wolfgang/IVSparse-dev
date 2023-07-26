@@ -32,7 +32,7 @@ namespace IVSparse
     SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::Vector(IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor> &mat, uint32_t vec)
     {
 
-#ifdef CSF_DEBUG
+#ifdef IVSPARSE_DEBUG
         assert((vec >= 0 && vec < mat.outerSize()) && "Vector index out of bounds");
         assert((mat.outerSize() > 0 && mat.innerSize() > 0) && "Matrix is empty");
 #endif
@@ -118,7 +118,7 @@ namespace IVSparse
         // set the nnz
         nnz = vec.nonZeros();
 
-#ifdef CSF_DEBUG
+#ifdef IVSPARSE_DEBUG
         userChecks();
 #endif
     }
@@ -341,7 +341,7 @@ namespace IVSparse
     T SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector::operator[](uint32_t index)
     {
 
-#ifdef CSF_DEBUG
+#ifdef IVSPARSE_DEBUG
         // check if the index is out of bounds
         assert(index < length && "The index is out of bounds");
 #endif

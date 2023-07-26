@@ -143,7 +143,7 @@ namespace IVSparse
         // run the user checks and calculate the compression size
         calculateCompSize();
 
-#ifdef CSF_DEBUG
+#ifdef IVSPARSE_DEBUG
         userChecks();
 #endif
     }
@@ -326,7 +326,7 @@ namespace IVSparse
         // run the user checks and calculate the compression size
         calculateCompSize();
 
-#ifdef CSF_DEBUG
+#ifdef IVSPARSE_DEBUG
         userChecks();
 #endif
     }
@@ -413,7 +413,7 @@ namespace IVSparse
 
         // run the user checks and calculate the compression size
         calculateCompSize();
-#ifdef CSF_DEBUG
+#ifdef IVSPARSE_DEBUG
         userChecks();
 #endif
     } // end of IVSparse Vector Constructor
@@ -438,7 +438,7 @@ namespace IVSparse
         // run the user checks and calculate the compression size
         calculateCompSize();
 
-#ifdef CSF_DEBUG
+#ifdef IVSPARSE_DEBUG
         userChecks();
 #endif
     }
@@ -556,7 +556,7 @@ namespace IVSparse
         calculateCompSize();
 
 // run the user checks
-#ifdef CSF_DEBUG
+#ifdef IVSPARSE_DEBUG
         userChecks();
 #endif
     } // end of File Constructor
@@ -677,7 +677,7 @@ namespace IVSparse
         // run the user checks and calculate the compression size
         calculateCompSize();
 
-#ifdef CSF_DEBUG
+#ifdef IVSPARSE_DEBUG
         userChecks();
 #endif
     } // end of Private Tranpose Constructor

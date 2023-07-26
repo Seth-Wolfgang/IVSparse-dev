@@ -32,7 +32,7 @@ namespace IVSparse
     SparseMatrix<T, indexT, 1, columnMajor>::Vector::Vector(IVSparse::SparseMatrix<T, indexT, 1, columnMajor> &mat, uint32_t vec)
     {
 
-#ifdef CSF_DEBUG
+#ifdef IVSPARSE_DEBUG
         // make sure the vector is in bounds
         assert((vec >= 0 && vec < mat.outerSize()) && "Vector index out of bounds");
 
@@ -67,7 +67,7 @@ namespace IVSparse
 
         calculateCompSize();
 
-#ifdef CSF_DEBUG
+#ifdef IVSPARSE_DEBUG
         userChecks();
 #endif
     }
@@ -93,7 +93,7 @@ namespace IVSparse
         memcpy(vals, vec.vals, nnz * sizeof(T));
         memcpy(innerIdx, vec.innerIdx, nnz * sizeof(indexT));
 
-#ifdef CSF_DEBUG
+#ifdef IVSPARSE_DEBUG
         userChecks();
 #endif
     }
@@ -219,7 +219,7 @@ namespace IVSparse
         memcpy(vals, vec.vals, nnz * sizeof(T));
         memcpy(innerIdx, vec.innerIdx, nnz * sizeof(indexT));
 
-#ifdef CSF_DEBUG
+#ifdef IVSPARSE_DEBUG
         userChecks();
 #endif
 
@@ -260,7 +260,7 @@ namespace IVSparse
     template <typename T, typename indexT, bool columnMajor>
     T SparseMatrix<T, indexT, 1, columnMajor>::Vector::operator[](uint32_t index)
     {
-#ifdef CSF_DEBUG
+#ifdef IVSPARSE_DEBUG
         assert((index >= 0 && index < length) && "Index out of bounds");
 #endif
 
