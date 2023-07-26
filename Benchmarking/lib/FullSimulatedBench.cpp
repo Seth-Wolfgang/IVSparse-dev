@@ -15,8 +15,8 @@
 #include <random>
 
 #define NUM_ITERATIONS 10
-#define DENSITY 0.05
-#define MATRICES 1
+#define DENSITY 0.1
+#define MATRICES 1000
 #define VALUE_TYPE double
 
 template <typename T, typename indexType, int compressionLevel> double averageRedundancy(IVSparse::SparseMatrix<T, indexType, compressionLevel>& matrix);
@@ -65,7 +65,6 @@ int main(int argc, char** argv) {
     bool readFromDisk = false;
     std::vector<std::tuple<int, int, VALUE_TYPE>> coords;
     int rows, cols;
-
     if (readFromDisk) {
         char* filePath = "";
         loadMatrix(coords, filePath);
@@ -78,12 +77,12 @@ int main(int argc, char** argv) {
         generateMatrix(coords, atoi(argv[1]), atoi(argv[2]), 1);
     }
 
-    std::cout << "\033[34;42;1;4mStarting VCSC Benchmark\033[0m" << std::endl;
-    VCSC_Benchmark(coords, atoi(argv[1]), atoi(argv[2]));
-    std::cout << "\033[34;42;1;4mStarting IVCSC Benchmark\033[0m" << std::endl;
-    IVCSC_Benchmark(coords, atoi(argv[1]), atoi(argv[2]));
-    std::cout << "\033[34;42;1;4mStarting Eigen Benchmark\033[0m" << std::endl;
-    eigen_Benchmark(coords, atoi(argv[1]), atoi(argv[2]));
+    // std::cout << "\033[34;42;1;4mStarting VCSC Benchmark\033[0m" << std::endl;
+    // VCSC_Benchmark(coords, atoi(argv[1]), atoi(argv[2]));
+    // std::cout << "\033[34;42;1;4mStarting IVCSC Benchmark\033[0m" << std::endl;
+    // IVCSC_Benchmark(coords, atoi(argv[1]), atoi(argv[2]));
+    // std::cout << "\033[34;42;1;4mStarting Eigen Benchmark\033[0m" << std::endl;
+    // eigen_Benchmark(coords, atoi(argv[1]), atoi(argv[2]));
 
     return 1;
 }
@@ -568,12 +567,12 @@ void   IVCSC_spmvBenchmark(IVSparse::SparseMatrix<VALUE_TYPE, int, 3>& matrix, s
     std::chrono::time_point<std::chrono::system_clock> start, end;
     Eigen::Matrix<VALUE_TYPE, -1, 1> eigenVector = Eigen::Matrix<VALUE_TYPE, -1, 1>::Random(numCols);
     Eigen::Matrix<VALUE_TYPE, -1, 1> result;
+    std::cout << "here " << std::endl;
 
     //cold start
     for (int i = 0; i < 1; i++) {
         result = matrix * eigenVector;
     }
-
 
     for (int i = 0; i < NUM_ITERATIONS; i++) {
         start = std::chrono::high_resolution_clock::now();
