@@ -33,11 +33,38 @@ int main() {
     uint64_t seed = 522;
     int maxVal = 1;
     const bool isColMajor = true;
+
+
+
+
+    // Eigen::MatrixXi testDense = Eigen::MatrixXi::Random(rows, cols);
+    // Eigen::MatrixXi testDense2 = Eigen::MatrixXi::Random(cols, rows - 1);
+    // Eigen::SparseMatrix<DATA_TYPE> testEigenDense = testDense.sparseView();
+    // IVSparse::SparseMatrix<DATA_TYPE, INDEX_TYPE, 3, isColMajor> csf3(testEigenDense);
+    // IVSparse::SparseMatrix<DATA_TYPE, INDEX_TYPE, 2, isColMajor> csf2(testEigenDense);
+    // Eigen::VectorXi eigenVec = Eigen::VectorXi::Random(cols);
+
+    // std::cout << (csf3 * testDense2) << std::endl << std::endl << std::endl;
+    // std::cout << (testEigenDense * testDense2) << std::endl;
+
+
+    // std::cout << "IVCSC:   " << (csf3 * testDense2).sum() << std::endl;
+    // std::cout << "VCSC:    " << (csf2 * testDense2).sum() << std::endl;
+    // std::cout << "them:  " << (testEigenDense * testDense2).sum() << std::endl;
+
+
+    std::vector<uint64_t> csf3Times;
     std::vector<uint64_t> csf2Times;
     std::vector<uint64_t> eigenTimes;
-    printf("%10s %10s\n", "us", "them");
+    // return 1;
+    printf("%10s %10s %10s\n", "VCSC", "IVCSC", "Eigen");
     for (int i = 0; i < 1000; i++) {
-        srand(i);
+        srand(time(NULL));
+
+        // rows = rand() % 100 + 1;
+        // cols = rand() % 100 + 1;
+
+
 
         // std::cout << "iteration: " << i << std::endl;
         // std::cout << "Rows: " << rows << " Cols: " << cols << std::endl;
@@ -45,52 +72,74 @@ int main() {
 
         std::stringstream os1;
         std::stringstream os2;
+        std::stringstream os3;
 
         Eigen::MatrixXi dense = Eigen::MatrixXi::Random(rows, cols);
-        Eigen::SparseMatrix<DATA_TYPE> eigenDense = dense.sparseView();
-        IVSparse::SparseMatrix<DATA_TYPE, INDEX_TYPE, 2, isColMajor> csf3(eigenDense);
-        Eigen::VectorXi eigenVec = Eigen::VectorXi::Random(cols);
+        // dense.fill(1);
+        Eigen::SparseMatrix<int> eigenDense = dense.sparseView().transpose();
+        IVSparse::SparseMatrix<int, INDEX_TYPE, 3, isColMajor> csf3(eigenDense);
+        IVSparse::SparseMatrix<int, INDEX_TYPE, 2, isColMajor> csf2(eigenDense);
 
-        std::cout << "rows in vec:" << eigenVec.rows() << std::endl;
-        std::cout << "Rows and cols in dense: " << dense.rows() << " " << dense.cols() << std::endl;
-        std::cout << "Rows and cols in csf3: " << csf3.rows() << " " << csf3.cols() << std::endl;
+        // Eigen::VectorXi eigenVec = Eigen::VectorXi::Random(cols);
+
+        // std::cout << "rows in vec:" << eigenVec.rows() << std::endl;
+        // std::cout << "Rows and cols in dense: " << dense.rows() << " " << dense.cols() << std::endl;
+        // std::cout << "Rows and cols in csf3: " << csf3.rows() << " " << csf3.cols() << std::endl;
+
         start = std::chrono::system_clock::now();
-        int ourSum = (csf3 * eigenVec).sum();
+        Eigen::MatrixXi filler2 = (csf2 * dense);
         end = std::chrono::system_clock::now();
-        uint64_t us = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+        uint64_t csf2Time = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
 
         start = std::chrono::system_clock::now();
-        int theirSum = (eigenDense * eigenVec).sum();
+        Eigen::MatrixXi filler1 = (csf3 * dense);
         end = std::chrono::system_clock::now();
-        uint64_t them = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+        uint64_t csf3Time = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
 
-        
-        os1 << (csf3 * eigenVec);
-        os2 << (eigenDense * eigenVec);
+        start = std::chrono::system_clock::now();
+        Eigen::MatrixXi filler3 = (eigenDense * dense);
+        end = std::chrono::system_clock::now();
+        uint64_t eigenTime = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+
+
+        os1 << (csf3 * dense);
+        os3 << (csf2 * dense);
+        os2 << (eigenDense * dense);
 
         // std::cout << "Our sum: " << ourSum << " Their sum: " << theirSum << std::endl;
-        assert(ourSum == theirSum);
-        // compareOstreams(os1,os2);
+        // std::cout << "Sum: " << csf3Sum << " " << csf2Sum << " " << eigenSum << std::endl;
+        assert(filler1.sum() == filler2.sum());
+        assert(filler3.sum() == filler2.sum());
+        // compareOstreams(os1, os2);
         assert(compareOstreams(os1, os2));
+        assert(compareOstreams(os1, os3));
         // std::cout << i << ": Works!" << std::endl;
-        printf("%10lu %10lu\n", us, them);
-        eigenTimes.push_back(them);
-        csf2Times.push_back(us);
+        printf("%10lu %10lu %10lu\n", csf2Time, csf3Time, eigenTime);
+        eigenTimes.push_back(eigenTime);
+        csf2Times.push_back(csf2Time);
+        csf3Times.push_back(csf3Time);
     }
 
     uint64_t avgCSF2Time = 0;
     uint64_t avgEigenTime = 0;
+    uint64_t avgCSF3Time = 0;
 
     for (int i = 0; i < csf2Times.size(); i++) {
         avgCSF2Time += csf2Times[i];
         avgEigenTime += eigenTimes[i];
+        avgCSF3Time += csf3Times[i];
     }
 
     avgCSF2Time /= csf2Times.size();
     avgEigenTime /= eigenTimes.size();
+    avgCSF3Time /= csf3Times.size();
 
-    std::cout << "IVSparse: " << avgCSF2Time << std::endl;
+    std::cout << "VCSC:  " << avgCSF2Time << std::endl;
+    std::cout << "IVCSC: " << avgCSF3Time << std::endl;
     std::cout << "Eigen: " << avgEigenTime << std::endl;
+
+    std::cout << "Eigen takes " << (double)avgEigenTime / avgCSF2Time << " times as long as VCSC" << std::endl;
+    std::cout << "Eigen takes " << (double)avgEigenTime / avgCSF3Time << " times as long as IVCSC" << std::endl;
 
     // generateAllUniqueElements<DATA_TYPE>(eigen);
     // generateAllRedundantElements<DATA_TYPE>(eigen);

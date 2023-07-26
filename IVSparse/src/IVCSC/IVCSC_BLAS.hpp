@@ -85,26 +85,8 @@ namespace IVSparse {
     }
 
     //* BLAS Level 3 Routines *//
+    //Matrix multiplication has been moved to the IVCSC_Operator.hpp file
 
-    // Matrix Vector Multiplication (IVSparse::SparseMatrix * Eigen::Matrix)
-    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    inline Eigen::Matrix<T, -1, -1> SparseMatrix<T, indexT, compressionLevel, columnMajor>::matrixMultiply(Eigen::Matrix<T, -1, -1>& mat) {
-        // check that the matrix is the correct size
-        if (mat.rows() != outerDim)
-            throw std::invalid_argument("The left matrix must be the same size as the number of columns in the right matrix!");
-
-        Eigen::Matrix<T, -1, -1> newMatrix = Eigen::Matrix<T, -1, -1>::Zero(innerDim, mat.cols());
-
-        #pragma omp parallel for schedule(dynamic)
-        for (int row = 0; row < outerDim; row++) {
-            for (typename SparseMatrix<T, indexT, 3, columnMajor>::InnerIterator matIter(*this, row); matIter; ++matIter) {
-                for (int col = 0; col < innerDim; col++) {
-                    newMatrix(col, matIter.row()) += mat.coeff(matIter.col(), col) * matIter.value();
-                }
-            }
-        }
-        return newMatrix;
-    }
 
     //* Other Matrix Calculations *//
 

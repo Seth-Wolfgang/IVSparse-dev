@@ -44,7 +44,7 @@ namespace IVSparse {
 
     //* BLAS Level 2 Routines *//
 
-    // Matrix Vector Multiplication (Eigen::VectorXd * IVSparse::SparseMatrix)
+    // Matrix Vector Multiplication (IVSparse::SparseMatrix * Eigen::Vector)
     template <typename T, typename indexT, bool columnMajor>
     inline Eigen::Matrix<T, -1, 1> SparseMatrix<T, indexT, 2, columnMajor>::vectorMultiply(Eigen::Matrix<T, -1, 1>& vec) {
         // check that the vector is the correct size
@@ -63,7 +63,7 @@ namespace IVSparse {
 
 
 
-    // Matrix Vector Multiplication (IVSparse::SparseMatrix::Vector * IVSparse::SparseMatrix)
+    // Matrix Vector Multiplication (IVSparse::SparseMatrix * IVSparse::SparseMatrix::Vector)
     template <typename T, typename indexT, bool columnMajor>
     inline Eigen::Matrix<T, -1, 1> SparseMatrix<T, indexT, 2, columnMajor>::vectorMultiply(typename SparseMatrix<T, indexT, 2, columnMajor>::Vector& vec) {
         if (vec.length() != outerDim)
@@ -81,26 +81,8 @@ namespace IVSparse {
     }
 
     //* BLAS Level 3 Routines *//
+    //Matrix multiplication has been moved to the VCSC_Operator.hpp file
 
-    // Matrix Vector Multiplication (IVSparse::SparseMatrix * Eigen::Matrix)
-    template <typename T, typename indexT, bool columnMajor>
-    inline Eigen::Matrix<T, -1, -1> SparseMatrix<T, indexT, 2, columnMajor>::matrixMultiply(Eigen::Matrix<T, -1, -1>& mat) {
-        // check that the matrix is the correct size
-        if (mat.rows() != outerDim)
-            throw std::invalid_argument("The left matrix must have the same # of rows as columns in the right matrix!");
-
-        Eigen::Matrix<T, -1, -1> newMatrix = Eigen::Matrix<T, -1, -1>::Zero(innerDim, mat.cols());
-
-        #pragma omp parallel for schedule(dynamic)
-        for (int row = 0; row < outerDim; row++) {
-            for (typename SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator matIter(*this, row); matIter; ++matIter) {
-                for (int col = 0; col < innerDim; col++) {
-                    newMatrix(col, matIter.row()) += mat.coeff(matIter.col(), col) * matIter.value();
-                }
-            }
-        }
-        return newMatrix;
-    }
 
     //* Other Matrix Calculations *//
 

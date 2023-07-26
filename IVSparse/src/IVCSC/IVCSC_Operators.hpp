@@ -209,9 +209,23 @@ namespace IVSparse {
 
     // Matrix Matrix Multiplication (IVSparse Eigen -> Eigen)
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    Eigen::Matrix<T, -1, -1> SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator*(Eigen::Matrix<T, -1, -1> mat)
-    {
-        return matrixMultiply(mat);
+    Eigen::Matrix<T, -1, -1> SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator*(Eigen::Matrix<T, -1, -1>& mat) {
+        // check that the matrix is the correct size
+        if (mat.rows() != outerDim)
+            throw std::invalid_argument("The left matrix must have the same # of rows as columns in the right matrix!");
+
+        Eigen::Matrix<T, -1, -1> newMatrix = Eigen::Matrix<T, -1, -1>::Zero(innerDim, mat.cols());
+        Eigen::Matrix<T, -1, -1> matTranspose = mat.transpose();
+
+        #ifdef IVSPARSE_PARALLEL
+        #pragma omp parallel for
+        #endif
+        for (int row = 0; row < outerDim; row++) {
+            for (typename SparseMatrix<T, indexT, 3, columnMajor>::InnerIterator matIter(*this, row); matIter; ++matIter) {
+                newMatrix.col(matIter.row()) += matTranspose.col(row) * matIter.value();
+            }
+        }
+        return newMatrix;
     }
 
 } // namespace IVSparse
