@@ -55,12 +55,12 @@ namespace IVSparse {
         assert(vec.rows() == outerDim && "The vector must be the same size as the number of columns in the matrix!");
         Eigen::Matrix<T, -1, 1> eigenTemp = Eigen::Matrix<T, -1, 1>::Zero(innerDim, 1);
 
+        // iterate over the vector and multiply the corresponding row of the matrix by the vecIter value
         for (int i = 0; i < outerDim; i++) {
-            for (int j = 0; j < valueSizes[i]; j++) {
-                eigenTemp(indices[i][j]) += values[i][j] * vec(i) * counts[i][j];
+            for (typename SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator matIter(*this, i); matIter; ++matIter) {
+                eigenTemp(matIter.row()) += vec(matIter.col()) * matIter.value();
             }
         }
-
         return eigenTemp;
     }
 

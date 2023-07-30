@@ -29,8 +29,6 @@ namespace IVSparse {
         indexT newIndex = 0; // Next index
         T *val = nullptr;    // Current value
 
-        bool firstIndex = true; // Is this the first index of the vector
-
         T *vals = nullptr;         // Pointer to values
         indexT *counts = nullptr;  // Pointer to counts
         indexT *indices = nullptr; // Pointer to indices
@@ -112,7 +110,6 @@ namespace IVSparse {
         /**
          * @returns If the iterator is at the beginning of a new run.
          */
-        bool isNewRun();
 
         ///@}
 

@@ -150,8 +150,6 @@ namespace IVSparse {
 
             if (countIndex >= indexSize) { return; }
 
-            firstIndex = true;
-
             // Move to the next value
             val++;
 
@@ -167,8 +165,6 @@ namespace IVSparse {
             countIndex++;
             indices++;
             index = *indices;
-
-            firstIndex = false;
         }
 
     } // end operator++

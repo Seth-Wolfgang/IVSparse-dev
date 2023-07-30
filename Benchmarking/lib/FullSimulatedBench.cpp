@@ -14,9 +14,11 @@
 #include <algorithm>
 #include <random>
 
+
+
 #define NUM_ITERATIONS 10
-#define DENSITY 0.01
-#define MATRICES 2
+#define DENSITY 0.1
+#define MATRICES 1000
 #define VALUE_TYPE double
 
 template <typename T, typename indexType, int compressionLevel> double averageRedundancy(IVSparse::SparseMatrix<T, indexType, compressionLevel>& matrix);
@@ -172,7 +174,7 @@ void printDataToFile(std::vector<double>& data, std::vector<std::vector<uint64_t
 
     for (uint64_t i = 0; i < timeData.size(); i++) {
         fprintf(file, "%.0lf, %.0lf, %.0lf, %lf, %lf, %lf, %lf, %lu, %lu, %lu, %lu, %lu\n", data.at(0), data.at(1), data.at(2), data.at(3), DENSITY,
-                data.at(4), data.at(5), timeData.at(i).at(0), timeData.at(i).at(1), timeData.at(i).at(2), timeData.at(i).at(3)), timeData.at(i).at(4);
+                data.at(4), data.at(5), timeData.at(i).at(0), timeData.at(i).at(1), timeData.at(i).at(2), timeData.at(i).at(3), timeData.at(i).at(4));
 
     }
     fclose(file);
@@ -359,7 +361,7 @@ void eigen_Benchmark(std::vector<std::tuple<int, int, VALUE_TYPE>>& data, int nu
         std::cout << i << "/" << MATRICES << ": Eigen spmv done" << std::endl;
         eigen_spmmBenchmark(matrix, timeData, numRows, numCols);
         std::cout << i << "/" << MATRICES << ": Eigen spmm done" << std::endl;
-        
+
         std::stringstream path;
         path << "../results/EigenResults_" << DENSITY << ".csv";
         printDataToFile(matrixData, timeData, path.str().c_str());
@@ -502,9 +504,9 @@ void VCSC_outerSumBenchmark(IVSparse::SparseMatrix<VALUE_TYPE, int, 2>& matrix, 
         end = std::chrono::high_resolution_clock::now();
         resultData.at(i).at(4) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
     }
-    std::cout << "Sum: " << sum << std::endl;
-
+    // std::cout << "Sum: " << sum << std::endl;
 }
+
 
 
 /**
@@ -617,6 +619,7 @@ void IVCSC_spmmBenchmark(IVSparse::SparseMatrix<VALUE_TYPE, int, 3>& matrix, std
  * @param numCols
  */
 
+
 void IVCSC_outerSumBenchmark(IVSparse::SparseMatrix<VALUE_TYPE, int, 3>& matrix, std::vector<std::vector<uint64_t>>& resultData) {
     std::chrono::time_point<std::chrono::system_clock> start, end;
     IVSparse::SparseMatrix<VALUE_TYPE, int, 3> result;
@@ -627,15 +630,18 @@ void IVCSC_outerSumBenchmark(IVSparse::SparseMatrix<VALUE_TYPE, int, 3>& matrix,
         sum = matrix.sum();
     }
 
+
     for (int i = 0; i < NUM_ITERATIONS; i++) {
         start = std::chrono::high_resolution_clock::now();
         sum = matrix.sum();
         end = std::chrono::high_resolution_clock::now();
         resultData.at(i).at(4) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
     }
+
     std::cout << "Sum: " << sum << std::endl;
 
 }
+
 
 /**
  * @brief Benchmark for Eigen constructor

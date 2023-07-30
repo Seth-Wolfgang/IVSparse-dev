@@ -261,12 +261,6 @@ namespace IVSparse {
         Eigen::Matrix<T, -1, -1> newMatrix = Eigen::Matrix<T, -1, -1>::Zero(mat.cols(), innerDim);
         Eigen::Matrix<T, -1, -1> matTranspose = mat.transpose();
 
-        //sparse 4 x 5
-        //dense  5 x 3
-
-        //denseT 3 x 7
-        //end  4 x 3
-
         #ifdef IVSPARSE_PARALLEL
         #pragma omp parallel for
         #endif

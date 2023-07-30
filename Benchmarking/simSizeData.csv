@@ -1,0 +1,3 @@
+COO size,dimension,nonzeros,Sparsity,Redundancy,100, CSF1 Size,CSF2 Size,CSF3 Size, CSF1 Bytes, CSF2 Bytes, CSF3 Bytes
+ & 1.60 & 1000000\times1000 & 100000000 & 10.000000 & 0.499104 & 100 & 75.000252 & 99.627670 & 104.218578 & 1200004028 & 1594042716 & 1667497247 \ 
+

@@ -28,11 +28,11 @@ std::vector<std::tuple<int, int, int>> generateCOO(int rows, int cols, int max);
 //  clear; rm a.out; g++ test.cpp; ./a.out
 
 int main() {
-    int rows = 100;
+    int rows = 10000;
     int cols = 100;
-    int sparsity = 1;
+    int sparsity = 10;
     uint64_t seed = 522;
-    int maxVal = 1;
+    int maxVal = 10;
     const bool isColMajor = true;
 
 
@@ -61,11 +61,12 @@ int main() {
     std::vector<uint64_t> eigenTimes;
     // return 1;
     printf("%10s %10s %10s\n", "VCSC", "IVCSC", "Eigen");
-    for (int i = 0; i < 1000; i++) {
+    for (int i = 0; i < 100; i++) {
         srand(time(NULL));
 
         // rows = rand() % 100 + 1;
         // cols = rand() % 100 + 1;
+        Eigen::SparseMatrix<int> original = generateMatrix<int>(rows, cols, sparsity, seed, maxVal);
 
 
 
@@ -78,8 +79,9 @@ int main() {
         std::stringstream os3;
 
         Eigen::MatrixXi dense = Eigen::MatrixXi::Random(rows, cols);
-        Eigen::MatrixXi dense2 = Eigen::MatrixXi::Random(cols, rows);
-        // dense.fill(1);
+        // Eigen::MatrixXi dense2 = Eigen::MatrixXi::Random(cols, rows);
+        dense.fill(1);
+        // std::cout << "Dense: " << dense << std::endl;
         Eigen::SparseMatrix<int> eigenDense = dense.sparseView();
         IVSparse::SparseMatrix<int, INDEX_TYPE, 3, isColMajor> csf3(eigenDense);
         IVSparse::SparseMatrix<int, INDEX_TYPE, 2, isColMajor> csf2(eigenDense);
@@ -105,10 +107,22 @@ int main() {
         end = std::chrono::system_clock::now();
         uint64_t eigenTime = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
 
+
+        // std::cout << "filler1" << std::endl;
+        // std::cout << filler1 << std::endl;
+
+        // std::cout << "filler2" << std::endl;
+        // std::cout << filler2 << std::endl;
+
+        // std::cout << "filler3" << std::endl;
+        // std::cout << filler3 << std::endl;
+
         // std::cout << "Our sum: " << ourSum << " Their sum: " << theirSum << std::endl;
         // std::cout << "Sum: " << csf3Sum << " " << csf2Sum << " " << eigenSum << std::endl;
         assert(compareMatrices(filler1, filler2, filler3));
         // std::cout << i << ": Works!" << std::endl;
+        // assert(sum1 == sum2);
+        // assert(sum2 == sum3);
         printf("%10lu %10lu %10lu\n", csf2Time, csf3Time, eigenTime);
         eigenTimes.push_back(eigenTime);
         csf2Times.push_back(csf2Time);
