@@ -4,7 +4,7 @@
 
 [Github Repo](https://github.com/Seth-Wolfgang/IVSparse)
 
-[New Abstract Here Later Skyler]
+One of the most popular ways of storing and using sparse data is in Compressed Sparse Column (CSC) format. As a general-purpose sparse data storage format, CSC provides no mechanism to take advantage of redundant data. This data, found in many areas such as genomics and machine learning, can end up prohibitively expensive to store in CSC format, where each value is stored explicitly. Taking advantage of redundant data to compress, we propose two original formats that build upon CSC, Value Compressed Sparse Column (VCSC) as well as Index and Value Compressed Sparse Column (IVCSC). These formats compress values by only storing the unique values in each column, minimizing the necessary information for reading values and the amount of values stored. IVCSC takes compression a step further by positive-delta encoding and byte-packing the indices of each unique value, allowing indices to take as little as one byte to store. Our testing collected data of our formats compared to popular alternatives such as CSC, which benchmarking shows IVCSC can compress down to 20% the size, with a reasonable computational trade-off, and VCSC can compress down to 35% but performs faster. These two compression formats offer a novel solution to storing and using redundant sparse data at a minimal computational cost.
 
 ### What is IVSparse?
 

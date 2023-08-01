@@ -226,7 +226,7 @@ class IVSparse::SparseMatrix&lt; T, indexT, compressionLevel, columnMajor &gt;</
 </dl>
 <p>A class to represent a sparse matrix compressed in the Compressed Sparse Fiber format (IVSparse). <br  />
  <br  />
-IVSparse Sparse Matrix is a read-only matrix class optimized for sparse-dense computation in cases where values are highly redundant. For such cases, sparse fiber storage can reduce memory footprint by up to 50% compared to standard sparse compression. IVSparse also increases the ability to further compress index arrays within each run. This default templated version is for compression3 specifically. For compression level 1 and 2 there are template specializations. </p>
+ IVSparse Sparse Matrix is a read-only matrix class optimized for sparse-dense computation in cases where values are highly redundant. For such cases, sparse fiber storage can reduce memory footprint by up to 50% compared to standard sparse compression. IVSparse also increases the ability to further compress index arrays within each run. This default templated version is for compression3 specifically. For compression level 1 and 2 there are template specializations. </p>
 </div><h2 class="groupheader">Constructor &amp; Destructor Documentation</h2>
 <a id="a79446a803c1bed8b17c8ac937d07be39"></a>
 <h2 class="memtitle"><span class="permalink"><a href="#a79446a803c1bed8b17c8ac937d07be39">&#9670;&nbsp;</a></span>SparseMatrix() <span class="overload">[1/11]</span></h2>
@@ -371,7 +371,7 @@ Same as previous constructor but for Row Major Eigen Sparse Matrices. </p>
 </dl>
 <p>Convert a IVSparse matrix of a different compression level to this compression level. <br  />
  <br  />
-This constructor takes in a IVSparse matrix of the same storage order, value, and index type and converts it to a different compresion level. This is useful for converting between compression levels without having to go through the CSC format. </p>
+ This constructor takes in a IVSparse matrix of the same storage order, value, and index type and converts it to a different compresion level. This is useful for converting between compression levels without having to go through the CSC format. </p>
 
 </div>
 </div>
@@ -979,7 +979,7 @@ false If the matrix is stored in row major format</dd></dl>
   </table>
   </dd>
 </dl>
-<p>This method writes the IVSparse matrix to a file in binary format. This can then be read in later using the file constructor. Currently .csf is the perfered file extension.</p>
+<p>This method writes the IVSparse matrix to a file in binary format. This can then be read in later using the file constructor. Currently .ivsparse is the perfered file extension.</p>
 <dl class="section note"><dt>Note</dt><dd>Useful to split a matrix up and then write each part separately. </dd></dl>
 
 <p>Implements <a class="el" href="class_i_v_sparse_1_1_sparse_matrix_base.html#ac4ca0def94eb41d9d42b087ccc40da0f">SparseMatrixBase</a>.</p>
@@ -1149,7 +1149,7 @@ false If the matrix is stored in row major format</dd></dl>
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
     <li class="navelem"><b>IVSparse</b></li><li class="navelem"><a class="el" href="class_i_v_sparse_1_1_sparse_matrix.html">SparseMatrix</a></li>
-    <li class="footer">Generated on Tue Jul 25 2023 19:11:06 for IVSparse by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
+    <li class="footer">Generated on Tue Aug 1 2023 19:20:22 for IVSparse by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
   </ul>
 </div>
 </body>

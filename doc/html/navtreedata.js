@@ -28,10 +28,12 @@ var NAVTREE =
     [ "Overview", "index.html", null ],
     [ "Examples", "examples.html", "examples" ],
     [ "Getting Started", "getting_started.html", [
-      [ "Getting IVSparse", "getting_started.html#getting_csf", [
-        [ "Installing IVSparse", "getting_started.html#install_csf", null ],
-        [ "Programming with IVSparse", "getting_started.html#program_csf", null ],
-        [ "Compiling IVSparse", "getting_started.html#compiling_csf", null ]
+      [ "Getting IVSparse", "getting_started.html#getting_ivsparse", [
+        [ "Installing IVSparse", "getting_started.html#install_ivsparse", null ],
+        [ "Programming with IVSparse", "getting_started.html#program_ivsparse", null ],
+        [ "Compiling IVSparse", "getting_started.html#compiling_ivsparse", [
+          [ "Preprocessor Macros", "getting_started.html#preprocessor_macros", null ]
+        ] ]
       ] ],
       [ "Matrices, Vectors, and Iterators", "getting_started.html#mats_vecs_iters", [
         [ "Matrices", "getting_started.html#matrices", [
@@ -66,7 +68,7 @@ var NAVTREE =
 var NAVTREEINDEX =
 [
 "_c_s_c___b_l_a_s_8hpp.html",
-"construction_example.html#coo"
+"class_i_v_sparse_1_1_sparse_matrix_3_01_t_00_01index_t_00_012_00_01column_major_01_4_1_1_vector.html#a53de49d8c84dcc44f9b4086e3a371475"
 ];
 
 var SYNCONMSG = 'click to disable panel synchronisation';

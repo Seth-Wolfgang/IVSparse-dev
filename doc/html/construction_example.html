@@ -133,7 +133,7 @@ Constructors</h1>
 Default Constructor</h2>
 <p>The default constructor has no use other than to create an empty matrix. Since it is not possible to insert values into an IVSparse Matrix after construction this is only useful for creating a matrix to be overwritten later. It's also worth mentioning that IVCSC also has a construtor that allows for the specification of rows and columns for an empty matrix. This is essentially the same as the default constructor but allows for the specification of rows and columns.</p>
 <div class="fragment"><div class="line"><a class="code" href="class_i_v_sparse_1_1_sparse_matrix.html">IVSparse::SparseMatrix&lt;double&gt;</a> matrix();</div>
-<div class="ttc" id="aclass_i_v_sparse_1_1_sparse_matrix_html"><div class="ttname"><a href="class_i_v_sparse_1_1_sparse_matrix.html">IVSparse::SparseMatrix</a></div><div class="ttdef"><b>Definition:</b> IVCSC_SparseMatrix.hpp:27</div></div>
+<div class="ttc" id="aclass_i_v_sparse_1_1_sparse_matrix_html"><div class="ttname"><a href="class_i_v_sparse_1_1_sparse_matrix.html">IVSparse::SparseMatrix</a></div><div class="ttdef"><b>Definition:</b> IVCSC_SparseMatrix.hpp:29</div></div>
 </div><!-- fragment --><h1><a class="anchor" id="outside_formats"></a>
 Loading Data into IVSparse</h1>
 <p>This is how to load data into IVSparse from outside sources using COO, CSC, or Eigen.</p>
@@ -211,14 +211,14 @@ Vector Constructors</h2>
 <div class="line"><span class="comment">// Make a matrix from an array of vectors</span></div>
 <div class="line">std::vector&lt;IVSparse::SparseMatrix&lt;double&gt;::Vector&gt; vectors = {vector1, vector2, vector3, vector4};</div>
 <div class="line"><a class="code" href="class_i_v_sparse_1_1_sparse_matrix.html">IVSparse::SparseMatrix&lt;double&gt;</a> arrayOfVectorsMatrix(vectors);</div>
-<div class="ttc" id="aclass_i_v_sparse_1_1_sparse_matrix_1_1_vector_html"><div class="ttname"><a href="class_i_v_sparse_1_1_sparse_matrix_1_1_vector.html">IVSparse::SparseMatrix::Vector</a></div><div class="ttdef"><b>Definition:</b> IVCSC_Vector.hpp:27</div></div>
+<div class="ttc" id="aclass_i_v_sparse_1_1_sparse_matrix_1_1_vector_html"><div class="ttname"><a href="class_i_v_sparse_1_1_sparse_matrix_1_1_vector.html">IVSparse::SparseMatrix::Vector</a></div><div class="ttdef"><b>Definition:</b> IVCSC_Vector.hpp:25</div></div>
 </div><!-- fragment --> </div></div><!-- contents -->
 </div><!-- PageDoc -->
 </div><!-- doc-content -->
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Tue Jul 25 2023 19:11:06 for IVSparse by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
+    <li class="footer">Generated on Tue Aug 1 2023 19:20:22 for IVSparse by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
   </ul>
 </div>
 </body>

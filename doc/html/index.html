@@ -100,7 +100,7 @@ $(document).ready(function(){initNavTree('index.html',''); initResizable(); });
 <div class="contents">
 <div class="textblock"><h2>IVSparse (Index and Value Sparse) Library</h2>
 <p><a href="https://github.com/Seth-Wolfgang/IVSparse">Github Repo</a></p>
-<p>[New Abstract Here Later Skyler]</p>
+<p>One of the most popular ways of storing and using sparse data is in Compressed Sparse Column (CSC) format. As a general-purpose sparse data storage format, CSC provides no mechanism to take advantage of redundant data. This data, found in many areas such as genomics and machine learning, can end up prohibitively expensive to store in CSC format, where each value is stored explicitly. Taking advantage of redundant data to compress, we propose two original formats that build upon CSC, Value Compressed Sparse Column (VCSC) as well as Index and Value Compressed Sparse Column (IVCSC). These formats compress values by only storing the unique values in each column, minimizing the necessary information for reading values and the amount of values stored. IVCSC takes compression a step further by positive-delta encoding and byte-packing the indices of each unique value, allowing indices to take as little as one byte to store. Our testing collected data of our formats compared to popular alternatives such as CSC, which benchmarking shows IVCSC can compress down to 20% the size, with a reasonable computational trade-off, and VCSC can compress down to 35% but performs faster. These two compression formats offer a novel solution to storing and using redundant sparse data at a minimal computational cost.</p>
 <h3>What is IVSparse?</h3>
 <p>IVSparse is a library with two new ways to store sparse data much like compressed sparse column (CSC) or coordinate format (COO). These two new compression formats are called Value Compressed Sparse Column (VCSC) and Index and Value Compressed Sparse Column (IVCSC). These two formats are meant to take advantage of highly redundant data and compress it by value or by index and value respectively, without losing too much traversal speed. </p><hr  />
 <h3>How does VCSC and IVCSC Compress?</h3>
@@ -129,7 +129,7 @@ $(document).ready(function(){initNavTree('index.html',''); initResizable(); });
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Tue Jul 25 2023 19:11:06 for IVSparse by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
+    <li class="footer">Generated on Tue Aug 1 2023 19:20:22 for IVSparse by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
   </ul>
 </div>
 </body>

@@ -10,9 +10,7 @@ To get IVSparse you need to go to our Github Repository and download the source 
 
 @subsection install_ivsparse Installing IVSparse
 
-In order to use IVSparse you need to download the header library. This can be done from our Github Repository. 
-It's also highly recommended to also install Eigen as well, specifically the Eigen Sparse Core module. 
-Further instructions on how to install Eigen can be found on their website. The process for IVSparse should be similar to Eigen by design.
+The process for installing IVSparse is similar to the process for isntalling the Eigen library. As a header library one only needs to include the path to the IVSparse directory in their compiler's include path. This is shown in how to compile IVSparse below. This is easy to do by cloning the IVSparse repository into your project directory and including the path to the IVSparse directory in your compiler's include path. Since Eigen is a required dependency of IVSparse you will also need to include the path to the Eigen library in your compiler's include path. This is also shown in how to compile IVSparse below. IVSparse does not have CMake support yet.
 
 @subsection program_ivsparse Programming with IVSparse
 
@@ -56,7 +54,23 @@ To compile IVSparse you need to include the path to IVSparse and Eigen in your c
 
 `g++ test.cpp -I /path/to/IVSparse -I /path/to/Eigen -o test`
 
-To activate the parallel sections run with the `-fopenmp` flag.
+To activate the parallel sections run with the `-fopenmp` flag. Running with the `-02` optimization flag is also recommended.
+
+@subsubsection preprocessor_macros Preprocessor Macros
+
+Parallelism is on by default when running with `-fopenmp` but can be turned off by defining `IVSPARSE_DONT_PARALLEL` before including IVSparse.
+
+```cpp
+#define IVSPARSE_DONT_PARALLEL
+#include <IVSparse/SparseMatrix>
+```
+
+To turn off debugging flags define `IVSPARSE_DEBUG_OFF` before including IVSparse.
+
+```cpp
+#define IVSPARSE_DEBUG_OFF
+#include <IVSparse/SparseMatrix>
+```
 
 @section mats_vecs_iters Matrices, Vectors, and Iterators
 

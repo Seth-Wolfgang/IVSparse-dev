@@ -99,9 +99,11 @@ $(document).ready(function(){initNavTree('getting_started.html',''); initResizab
 </div><!--header-->
 <div class="contents">
 <div class="toc"><h3>Table of Contents</h3>
-<ul><li class="level1"><a href="#getting_csf">Getting IVSparse</a><ul><li class="level2"><a href="#install_csf">Installing IVSparse</a></li>
-<li class="level2"><a href="#program_csf">Programming with IVSparse</a></li>
-<li class="level2"><a href="#compiling_csf">Compiling IVSparse</a></li>
+<ul><li class="level1"><a href="#getting_ivsparse">Getting IVSparse</a><ul><li class="level2"><a href="#install_ivsparse">Installing IVSparse</a></li>
+<li class="level2"><a href="#program_ivsparse">Programming with IVSparse</a></li>
+<li class="level2"><a href="#compiling_ivsparse">Compiling IVSparse</a><ul><li class="level3"><a href="#preprocessor_macros">Preprocessor Macros</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="level1"><a href="#mats_vecs_iters">Matrices, Vectors, and Iterators</a><ul><li class="level2"><a href="#matrices">Matrices</a><ul><li class="level3"><a href="#templates">Template Parameters</a></li>
@@ -121,13 +123,13 @@ $(document).ready(function(){initNavTree('getting_started.html',''); initResizab
 </ul>
 </div>
 <div class="textblock"><p>This page serves as the main entry point for those looking to jump into coding with the IVSparse Library. This page will go through how to get IVSparse, how to compile it, how to use it, and where to learn more about it.</p>
-<h1><a class="anchor" id="getting_csf"></a>
+<h1><a class="anchor" id="getting_ivsparse"></a>
 Getting IVSparse</h1>
 <p>To get IVSparse you need to go to our Github Repository and download the source code.</p>
-<h2><a class="anchor" id="install_csf"></a>
+<h2><a class="anchor" id="install_ivsparse"></a>
 Installing IVSparse</h2>
-<p>In order to use IVSparse you need to download the header library. This can be done from our Github Repository. It's also highly recommended to also install Eigen as well, specifically the Eigen Sparse Core module. Further instructions on how to install Eigen can be found on their website. The process for IVSparse should be similar to Eigen by design.</p>
-<h2><a class="anchor" id="program_csf"></a>
+<p>The process for installing IVSparse is similar to the process for isntalling the Eigen library. As a header library one only needs to include the path to the IVSparse directory in their compiler's include path. This is shown in how to compile IVSparse below. This is easy to do by cloning the IVSparse repository into your project directory and including the path to the IVSparse directory in your compiler's include path. Since Eigen is a required dependency of IVSparse you will also need to include the path to the Eigen library in your compiler's include path. This is also shown in how to compile IVSparse below. IVSparse does not have CMake support yet.</p>
+<h2><a class="anchor" id="program_ivsparse"></a>
 Programming with IVSparse</h2>
 <p>Below is a simple example of how to create a IVSparse SparseMatrix object and print it out.</p>
 <div class="fragment"><div class="line"><span class="preprocessor">#include &lt;Eigen/Sparse&gt;</span></div>
@@ -148,7 +150,7 @@ Programming with IVSparse</h2>
 <div class="line"> </div>
 <div class="line">    matrix.print();</div>
 <div class="line">}</div>
-<div class="ttc" id="aclass_i_v_sparse_1_1_sparse_matrix_html"><div class="ttname"><a href="class_i_v_sparse_1_1_sparse_matrix.html">IVSparse::SparseMatrix</a></div><div class="ttdef"><b>Definition:</b> IVCSC_SparseMatrix.hpp:27</div></div>
+<div class="ttc" id="aclass_i_v_sparse_1_1_sparse_matrix_html"><div class="ttname"><a href="class_i_v_sparse_1_1_sparse_matrix.html">IVSparse::SparseMatrix</a></div><div class="ttdef"><b>Definition:</b> IVCSC_SparseMatrix.hpp:29</div></div>
 </div><!-- fragment --><p>The output for this program is:</p>
 <div class="fragment"><div class="line">IVSparse Matrix:</div>
 <div class="line"> </div>
@@ -156,12 +158,20 @@ Programming with IVSparse</h2>
 <div class="line">0 2 0 0</div>
 <div class="line">0 0 3 0</div>
 <div class="line">0 0 0 4</div>
-</div><!-- fragment --><h2><a class="anchor" id="compiling_csf"></a>
+</div><!-- fragment --><h2><a class="anchor" id="compiling_ivsparse"></a>
 Compiling IVSparse</h2>
 <p>To compile IVSparse you need to include the path to IVSparse and Eigen in your compiler's include path.</p>
 <p><code>g++ test.cpp -I /path/to/IVSparse -I /path/to/Eigen -o test</code></p>
-<p>To activate the parallel sections run with the <code>-fopenmp</code> flag.</p>
-<h1><a class="anchor" id="mats_vecs_iters"></a>
+<p>To activate the parallel sections run with the <code>-fopenmp</code> flag. Running with the <code>-02</code> optimization flag is also recommended.</p>
+<h3><a class="anchor" id="preprocessor_macros"></a>
+Preprocessor Macros</h3>
+<p>Parallelism is on by default when running with <code>-fopenmp</code> but can be turned off by defining <code>IVSPARSE_DONT_PARALLEL</code> before including IVSparse.</p>
+<div class="fragment"><div class="line"><span class="preprocessor">#define IVSPARSE_DONT_PARALLEL</span></div>
+<div class="line"><span class="preprocessor">#include &lt;IVSparse/SparseMatrix&gt;</span></div>
+</div><!-- fragment --><p>To turn off debugging flags define <code>IVSPARSE_DEBUG_OFF</code> before including IVSparse.</p>
+<div class="fragment"><div class="line"><span class="preprocessor">#define IVSPARSE_DEBUG_OFF</span></div>
+<div class="line"><span class="preprocessor">#include &lt;IVSparse/SparseMatrix&gt;</span></div>
+</div><!-- fragment --><h1><a class="anchor" id="mats_vecs_iters"></a>
 Matrices, Vectors, and Iterators</h1>
 <p>The three formats supported by IVSparse all have their specific matrix implementations but also have their own vector and iterator implementations as well. The only conversion between formats however happens on a matrix level. This means a IVCSC Vector can only be created from a IVCSC Matrix and not later turned directly into a CSC vector.</p>
 <h2><a class="anchor" id="matrices"></a>
@@ -197,7 +207,7 @@ Vectors</h2>
 <div class="line"><a class="code" href="class_i_v_sparse_1_1_sparse_matrix_1_1_vector.html">IVSparse::SparseMatrix&lt;double&gt;::Vector</a> vector(matrix, 0);</div>
 <div class="line"> </div>
 <div class="line">vector.print();</div>
-<div class="ttc" id="aclass_i_v_sparse_1_1_sparse_matrix_1_1_vector_html"><div class="ttname"><a href="class_i_v_sparse_1_1_sparse_matrix_1_1_vector.html">IVSparse::SparseMatrix::Vector</a></div><div class="ttdef"><b>Definition:</b> IVCSC_Vector.hpp:27</div></div>
+<div class="ttc" id="aclass_i_v_sparse_1_1_sparse_matrix_1_1_vector_html"><div class="ttname"><a href="class_i_v_sparse_1_1_sparse_matrix_1_1_vector.html">IVSparse::SparseMatrix::Vector</a></div><div class="ttdef"><b>Definition:</b> IVCSC_Vector.hpp:25</div></div>
 </div><!-- fragment --><p>The output for this program using the same matrix from above is:</p>
 <div class="fragment"><div class="line">IVSparse Vector:</div>
 <div class="line"> </div>
@@ -240,7 +250,7 @@ Contact</h2>
 <!-- start footer part -->
 <div id="nav-path" class="navpath"><!-- id is needed for treeview function! -->
   <ul>
-    <li class="footer">Generated on Tue Jul 25 2023 19:11:06 for IVSparse by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
+    <li class="footer">Generated on Tue Aug 1 2023 19:20:22 for IVSparse by <a href="https://www.doxygen.org/index.html"><img class="footer" src="doxygen.svg" width="104" height="31" alt="doxygen"/></a> 1.9.1 </li>
   </ul>
 </div>
 </body>
