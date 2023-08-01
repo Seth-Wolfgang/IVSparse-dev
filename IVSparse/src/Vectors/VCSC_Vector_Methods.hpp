@@ -1,5 +1,5 @@
 /**
- * @file CSF2_Vector_Methods.hpp
+ * @file VCSC_Vector_Methods.hpp
  * @author Skyler Ruiter and Seth Wolfgang
  * @brief Vector Methods for VCSC Sparse Matrices
  * @version 0.1

@@ -1,5 +1,5 @@
 /**
- * @file CSF3_Vector_Methods.hpp
+ * @file IVCSC_Vector_Methods.hpp
  * @author Skyler Ruiter and Seth Wolfgang
  * @brief IVCSC Vector Methods
  * @version 0.1

@@ -1,5 +1,5 @@
 /**
- * @file CSF3_SparseMatrix.hpp
+ * @file IVCSC_SparseMatrix.hpp
  * @author Skyler Ruiter and Seth Wolfgang
  * @brief IVCSC Sparse Matrix Class Declarations
  * @version 0.1
@@ -8,7 +8,8 @@
 
 #pragma once
 
-namespace IVSparse {
+namespace IVSparse
+{
 
     /**
      * @tparam T The data type of the values in the matrix
@@ -24,9 +25,10 @@ namespace IVSparse {
      * are template specializations.
      */
     template <typename T, typename indexT = uint64_t, uint8_t compressionLevel = 3, bool columnMajor = true>
-    class SparseMatrix : public SparseMatrixBase {
+    class SparseMatrix : public SparseMatrixBase
+    {
 
-        private:
+    private:
         //* The Matrix Data *//
 
         void **data = nullptr;        // The data of the matrix
@@ -68,7 +70,7 @@ namespace IVSparse {
         // Matrix Matrix Multiplication
         inline Eigen::Matrix<T, -1, -1> matrixMultiply(Eigen::Matrix<T, -1, -1> mat);
 
-        public:
+    public:
         //* Nested Subclasses *//
 
         // Vector Class for IVCSC Sparse Matrix
@@ -149,7 +151,7 @@ namespace IVSparse {
          * The tuples are sorted and then converted to a IVSparse matrix.
          *
          * @note COO is (row, col, value) format.
-         * 
+         *
          * @warning This constructor does not allow for duplicates but will sort the tuples.
          */
         template <typename T2, typename indexT2>
@@ -314,7 +316,7 @@ namespace IVSparse {
          *
          * This method writes the IVSparse matrix to a file in binary format.
          * This can then be read in later using the file constructor.
-         * Currently .csf is the perfered file extension.
+         * Currently .ivsparse is the perfered file extension.
          *
          * @note Useful to split a matrix up and then write each part separately.
          */

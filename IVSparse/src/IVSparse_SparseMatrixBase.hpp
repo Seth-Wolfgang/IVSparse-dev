@@ -1,5 +1,5 @@
 /**
- * @file CSF_SparseMatrixBase.hpp
+ * @file IVSparse_SparseMatrixBase.hpp
  * @author Skyler Ruiter and Seth Wolfgang
  * @brief IVSparse Sparse Matrix Base Class Declerations
  * @version 0.1
@@ -8,7 +8,8 @@
 
 #pragma once
 
-namespace IVSparse {
+namespace IVSparse
+{
 
     /**
      * IVSparse Sparse Matrix Base Class \n \n
@@ -17,10 +18,10 @@ namespace IVSparse {
      * compression levels of IVSparse Sparse Matrices and serves to reduce
      * code duplication.
      */
-    class SparseMatrixBase {
+    class SparseMatrixBase
+    {
 
-        private:
-
+    private:
         //* The Matrix Info *//
 
         uint32_t innerDim = 0; // The inner dimension of the matrix
@@ -56,10 +57,8 @@ namespace IVSparse {
 
         // Calculates the size of the matrix in bytes
         virtual void calculateCompSize() = 0;
-        
 
-        public:
-
+    public:
         //* Friends *//
 
         // IVSparse Sparse Matrix Class
@@ -69,13 +68,13 @@ namespace IVSparse {
         //* Constructors *//
 
         // Default Constructor
-        SparseMatrixBase() {};
+        SparseMatrixBase(){};
 
         //* Getters *//
 
         /**
          * @returns The element at the given row and column.
-        */
+         */
         template <typename T>
         T coeff(uint32_t row, uint32_t col);
 

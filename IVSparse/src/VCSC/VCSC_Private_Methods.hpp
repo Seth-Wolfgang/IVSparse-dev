@@ -1,5 +1,5 @@
 /**
- * @file CSF2_Private_Methods.hpp
+ * @file VCSC_Private_Methods.hpp
  * @author Skyler Ruiter and Seth Wolfgang
  * @brief Private Methods for VCSC Sparse Matrices
  * @version 0.1
@@ -98,10 +98,10 @@ namespace IVSparse
         metadata[4] = val_t;
         metadata[5] = index_t;
 
-        // run the user checks on the metadata
-        #ifdef IVSPARSE_DEBUG
+// run the user checks on the metadata
+#ifdef IVSPARSE_DEBUG
         userChecks();
-        #endif
+#endif
 
         // allocate space for the 2D Run lenngth encoded CSC matrix
         try
@@ -119,12 +119,12 @@ namespace IVSparse
             exit(1);
         }
 
-        // ---- Stage 2: Construct the Dictionary For Each Column ---- //
+// ---- Stage 2: Construct the Dictionary For Each Column ---- //
 
-        // Loop through each column and construct a middle data structre for the matrix
-        #ifdef CSF_PARALLEL
-        #pragma omp parallel for
-        #endif
+// Loop through each column and construct a middle data structre for the matrix
+#ifdef IVSPARSE_PARALLEL
+#pragma omp parallel for
+#endif
         for (uint32_t i = 0; i < outerDim; i++)
         {
             // create the data structure to temporarily hold the data

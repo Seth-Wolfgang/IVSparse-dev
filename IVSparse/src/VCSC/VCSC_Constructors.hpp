@@ -1,5 +1,5 @@
 /**
- * @file CSF2_Constructors.hpp
+ * @file VCSC_Constructors.hpp
  * @author Skyler Ruiter and Seth Wolfgang
  * @brief Constructors for VCSC Sparse Matrices
  * @version 0.1
@@ -261,7 +261,7 @@ namespace IVSparse
         } // end of loop through tuples
 
 // loop through the array
-#ifdef CSF_PARALLEL
+#ifdef IVSPARSE_PARALLEL
 #pragma omp parallel for
 #endif
         for (size_t i = 0; i < outerDim; i++)
@@ -600,7 +600,7 @@ namespace IVSparse
         }
 
 // loop through the array
-#ifdef CSF_PARALLEL
+#ifdef IVSPARSE_PARALLEL
 #pragma omp parallel for
 #endif
         for (size_t i = 0; i < outerDim; i++)

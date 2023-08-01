@@ -1,5 +1,5 @@
 /**
- * @file CSF2_Methods.hpp
+ * @file VCSC_Methods.hpp
  * @author Skyler Ruiter and Seth Wolfgang
  * @brief Methods for VCSC Sparse Matrices
  * @version 0.1
@@ -37,7 +37,10 @@ namespace IVSparse
     template <typename T, typename indexT, bool columnMajor>
     indexT SparseMatrix<T, indexT, 2, columnMajor>::getNumUniqueVals(uint32_t vec) const
     {
-        if (valueSizes == nullptr) { return 0; }
+        if (valueSizes == nullptr)
+        {
+            return 0;
+        }
         return valueSizes[vec];
     }
 
@@ -45,7 +48,10 @@ namespace IVSparse
     template <typename T, typename indexT, bool columnMajor>
     indexT SparseMatrix<T, indexT, 2, columnMajor>::getNumIndices(uint32_t vec) const
     {
-        if (indexSizes == nullptr) { return 0; }
+        if (indexSizes == nullptr)
+        {
+            return 0;
+        }
         return indexSizes[vec];
     }
 
@@ -66,17 +72,32 @@ namespace IVSparse
         fwrite(metadata, 1, NUM_META_DATA * sizeof(uint32_t), fp);
 
         // write the lengths of the vectors
-        for (uint32_t i = 0; i < outerDim; ++i) { fwrite(&valueSizes[i], 1, sizeof(indexT), fp); }
-        for (uint32_t i = 0; i < outerDim; ++i) { fwrite(&indexSizes[i], 1, sizeof(indexT), fp); }
+        for (uint32_t i = 0; i < outerDim; ++i)
+        {
+            fwrite(&valueSizes[i], 1, sizeof(indexT), fp);
+        }
+        for (uint32_t i = 0; i < outerDim; ++i)
+        {
+            fwrite(&indexSizes[i], 1, sizeof(indexT), fp);
+        }
 
         // write the values
-        for (uint32_t i = 0; i < outerDim; ++i) { fwrite(values[i], 1, valueSizes[i] * sizeof(T), fp); }
+        for (uint32_t i = 0; i < outerDim; ++i)
+        {
+            fwrite(values[i], 1, valueSizes[i] * sizeof(T), fp);
+        }
 
         // write the counts
-        for (uint32_t i = 0; i < outerDim; ++i) { fwrite(counts[i], 1, valueSizes[i] * sizeof(indexT), fp); }
+        for (uint32_t i = 0; i < outerDim; ++i)
+        {
+            fwrite(counts[i], 1, valueSizes[i] * sizeof(indexT), fp);
+        }
 
         // write the indices
-        for (uint32_t i = 0; i < outerDim; ++i) { fwrite(indices[i], 1, indexSizes[i] * sizeof(indexT), fp); }
+        for (uint32_t i = 0; i < outerDim; ++i)
+        {
+            fwrite(indices[i], 1, indexSizes[i] * sizeof(indexT), fp);
+        }
 
         // close the file
         fclose(fp);
@@ -196,15 +217,15 @@ namespace IVSparse
         return mat;
     }
 
-    // converts the csf matrix to an eigen one and returns it
+    // converts the ivsparse matrix to an eigen one and returns it
     template <typename T, typename indexT, bool columnMajor>
     Eigen::SparseMatrix<T, columnMajor ? Eigen::ColMajor : Eigen::RowMajor> SparseMatrix<T, indexT, 2, columnMajor>::toEigen()
     {
 
-        #ifdef IVSPARSE_DEBUG
+#ifdef IVSPARSE_DEBUG
         // assert that the matrix is not empty
         assert(outerDim > 0 && "Cannot convert an empty matrix to an Eigen matrix!");
-        #endif
+#endif
 
         // create a new sparse matrix
         Eigen::SparseMatrix<T, columnMajor ? Eigen::ColMajor : Eigen::RowMajor> eigenMatrix(numRows, numCols);
@@ -348,7 +369,7 @@ namespace IVSparse
 
     } // end append
 
-    // tranposes the csf matrix
+    // tranposes the ivsparse matrix
     template <typename T, typename indexT, bool columnMajor>
     IVSparse::SparseMatrix<T, indexT, 2, columnMajor> SparseMatrix<T, indexT, 2, columnMajor>::transpose()
     {
@@ -412,9 +433,9 @@ namespace IVSparse
     template <typename T, typename indexT, bool columnMajor>
     std::vector<typename IVSparse::SparseMatrix<T, indexT, 2, columnMajor>::Vector> SparseMatrix<T, indexT, 2, columnMajor>::slice(uint32_t start, uint32_t end)
     {
-        #ifdef IVSPARSE_DEBUG
+#ifdef IVSPARSE_DEBUG
         assert(start < outerDim && end <= outerDim && start < end && "Invalid start and end values!");
-        #endif
+#endif
 
         // make a vector of IVSparse vectors
         std::vector<typename IVSparse::SparseMatrix<T, indexT, 2, columnMajor>::Vector> vecs(end - start);

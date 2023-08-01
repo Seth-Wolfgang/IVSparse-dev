@@ -1,5 +1,5 @@
 /**
- * @file CSF3_Iterator.hpp
+ * @file IVCSC_Iterator.hpp
  * @author Skyler Ruiter and Seth Wolfgang
  * @brief Inner Iterator for IVCSC Declerations
  * @version 0.1
@@ -8,7 +8,8 @@
 
 #pragma once
 
-namespace IVSparse {
+namespace IVSparse
+{
 
     /**
      * @tparam T The type of the values in the matrix
@@ -22,9 +23,10 @@ namespace IVSparse {
      * compressed data.
      */
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    class SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator {
+    class SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator
+    {
 
-        private:
+    private:
         //* Private Class Variables *//
 
         indexT outer;     // Outer dimension
@@ -45,7 +47,7 @@ namespace IVSparse {
         // Decodes the index from the data pointer
         void __attribute__((hot)) decodeIndex();
 
-        public:
+    public:
         //* Constructors & Destructor *//
         /** @name Constructors
          */

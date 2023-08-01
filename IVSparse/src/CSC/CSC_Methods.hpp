@@ -8,7 +8,8 @@
 
 #pragma once
 
-namespace IVSparse {
+namespace IVSparse
+{
 
     //* ------------------------------ Getters ------------------------------ *//
 
@@ -32,13 +33,14 @@ namespace IVSparse {
     template <typename T, typename indexT, bool columnMajor>
     indexT *SparseMatrix<T, indexT, 1, columnMajor>::getOuterPointers() const { return outerPtr; }
 
-    // Get a csf vector from the matrix
+    // Get a IVSparse vector from the matrix
     template <typename T, typename indexT, bool columnMajor>
-    typename SparseMatrix<T, indexT, 1, columnMajor>::Vector SparseMatrix<T, indexT, 1, columnMajor>::getVector(uint32_t vec) {
-        #ifdef IVSPARSE_DEBUG
+    typename SparseMatrix<T, indexT, 1, columnMajor>::Vector SparseMatrix<T, indexT, 1, columnMajor>::getVector(uint32_t vec)
+    {
+#ifdef IVSPARSE_DEBUG
         // check if the vector is out of bounds
         assert((vec < outerDim && vec >= 0) && "Vector index out of bounds");
-        #endif
+#endif
 
         // create a vector from the matrix and return it
         typename SparseMatrix<T, indexT, 1, columnMajor>::Vector v(*this, vec);
@@ -49,7 +51,8 @@ namespace IVSparse {
 
     // write the matrix to file
     template <typename T, typename indexT, bool columnMajor>
-    void SparseMatrix<T, indexT, 1, columnMajor>::write(const char *filename) {
+    void SparseMatrix<T, indexT, 1, columnMajor>::write(const char *filename)
+    {
 
         // open the file
         FILE *fp = fopen(filename, "wb");
@@ -72,21 +75,33 @@ namespace IVSparse {
 
     // print the matrix to stdout
     template <typename T, typename indexT, bool columnMajor>
-    void SparseMatrix<T, indexT, 1, columnMajor>::print() {
+    void SparseMatrix<T, indexT, 1, columnMajor>::print()
+    {
         std::cout << std::endl;
         std::cout << "IVSparse Matrix" << std::endl;
 
         // if the matrix is less than 100 rows and columns print the whole thing
-        if (numRows < 100 && numCols < 100) {
+        if (numRows < 100 && numCols < 100)
+        {
             // print the matrix
-            for (uint32_t i = 0; i < numRows; i++) {
-                for (uint32_t j = 0; j < numCols; j++) { std::cout << coeff(i, j) << " "; }
+            for (uint32_t i = 0; i < numRows; i++)
+            {
+                for (uint32_t j = 0; j < numCols; j++)
+                {
+                    std::cout << coeff(i, j) << " ";
+                }
                 std::cout << std::endl;
             }
-        } else if (numRows >= 100 && numCols >= 100) {
+        }
+        else if (numRows >= 100 && numCols >= 100)
+        {
             // print the first 100 rows and columns
-            for (uint32_t i = 0; i < 100; i++) {
-                for (uint32_t j = 0; j < 100; j++) { std::cout << coeff(i, j) << " "; }
+            for (uint32_t i = 0; i < 100; i++)
+            {
+                for (uint32_t j = 0; j < 100; j++)
+                {
+                    std::cout << coeff(i, j) << " ";
+                }
                 std::cout << std::endl;
             }
         }
@@ -94,36 +109,44 @@ namespace IVSparse {
 
     // Converts the CSC Matrix to a VCSC Matrix
     template <typename T, typename indexT, bool columnMajor>
-    IVSparse::SparseMatrix<T, indexT, 2, columnMajor> SparseMatrix<T, indexT, 1, columnMajor>::toVCSC() {
+    IVSparse::SparseMatrix<T, indexT, 2, columnMajor> SparseMatrix<T, indexT, 1, columnMajor>::toVCSC()
+    {
         // create a new IVSparse matrix
-        IVSparse::SparseMatrix<T, indexT, 2, columnMajor> csfMat(vals, innerIdx, outerPtr, numRows, numCols, nnz);
+        IVSparse::SparseMatrix<T, indexT, 2, columnMajor> ivMat(vals, innerIdx, outerPtr, numRows, numCols, nnz);
 
         // return the matrix
-        return csfMat;
+        return ivMat;
     }
 
     // Converts the CSC Matrix to a IVCSC Matrix
     template <typename T, typename indexT, bool columnMajor>
-    IVSparse::SparseMatrix<T, indexT, 3, columnMajor> SparseMatrix<T, indexT, 1, columnMajor>::toIVCSC() {
+    IVSparse::SparseMatrix<T, indexT, 3, columnMajor> SparseMatrix<T, indexT, 1, columnMajor>::toIVCSC()
+    {
         // create a new IVSparse matrix
-        IVSparse::SparseMatrix<T, indexT, 3, columnMajor> csfMat(vals, innerIdx, outerPtr, numRows, numCols, nnz);
+        IVSparse::SparseMatrix<T, indexT, 3, columnMajor> ivMat(vals, innerIdx, outerPtr, numRows, numCols, nnz);
 
         // return the matrix
-        return csfMat;
+        return ivMat;
     }
 
     // Converts the CSC Matrix to an Eigen Sparse Matrix
     template <typename T, typename indexT, bool columnMajor>
-    Eigen::SparseMatrix<T, columnMajor ? Eigen::ColMajor : Eigen::RowMajor> SparseMatrix<T, indexT, 1, columnMajor>::toEigen() {
+    Eigen::SparseMatrix<T, columnMajor ? Eigen::ColMajor : Eigen::RowMajor> SparseMatrix<T, indexT, 1, columnMajor>::toEigen()
+    {
         // create a new sparse matrix with the correct dimensions
         Eigen::SparseMatrix<T, columnMajor ? Eigen::ColMajor : Eigen::RowMajor> eigenMat(numRows, numCols);
 
         // check if the matrix is empty
-        if (nnz == 0) { return eigenMat; }
+        if (nnz == 0)
+        {
+            return eigenMat;
+        }
 
         // add the values to the matrix
-        for (uint32_t i = 0; i < outerDim; i++) {
-            for (indexT j = outerPtr[i]; j < outerPtr[i + 1]; j++) {
+        for (uint32_t i = 0; i < outerDim; i++)
+        {
+            for (indexT j = outerPtr[i]; j < outerPtr[i + 1]; j++)
+            {
                 eigenMat.insert(innerIdx[j], i) = vals[j];
             }
         }
@@ -136,7 +159,8 @@ namespace IVSparse {
 
     // Transposes the CSC Matrix and Returns it
     template <typename T, typename indexT, bool columnMajor>
-    IVSparse::SparseMatrix<T, indexT, 1, columnMajor> SparseMatrix<T, indexT, 1, columnMajor>::transpose() {
+    IVSparse::SparseMatrix<T, indexT, 1, columnMajor> SparseMatrix<T, indexT, 1, columnMajor>::transpose()
+    {
         // create an eigen matrix
         Eigen::SparseMatrix<T> eigenMat = (*this).toEigen();
 
@@ -144,15 +168,16 @@ namespace IVSparse {
         eigenMat = eigenMat.transpose();
 
         // create a new IVSparse matrix
-        IVSparse::SparseMatrix<T, indexT, 1, columnMajor> csfMat(eigenMat);
+        IVSparse::SparseMatrix<T, indexT, 1, columnMajor> ivMat(eigenMat);
 
         // return the matrix
-        return csfMat;
+        return ivMat;
     }
 
     // In Place Transpose
     template <typename T, typename indexT, bool columnMajor>
-    void SparseMatrix<T, indexT, 1, columnMajor>::inPlaceTranspose() {
+    void SparseMatrix<T, indexT, 1, columnMajor>::inPlaceTranspose()
+    {
         // create an eigen matrix
         Eigen::SparseMatrix<T> eigenMat = (*this).toEigen();
 
@@ -165,22 +190,32 @@ namespace IVSparse {
 
     // Appends a CSC vector onto a CSC matrix
     template <typename T, typename indexT, bool columnMajor>
-    void SparseMatrix<T, indexT, 1, columnMajor>::append(SparseMatrix<T, indexT, 1, columnMajor>::Vector &vec) {
+    void SparseMatrix<T, indexT, 1, columnMajor>::append(SparseMatrix<T, indexT, 1, columnMajor>::Vector &vec)
+    {
 
         // update the dimensions and nnz
-        if (columnMajor) { numCols++; }
-        else { numRows++; }
+        if (columnMajor)
+        {
+            numCols++;
+        }
+        else
+        {
+            numRows++;
+        }
         outerDim++;
         nnz += vec.nonZeros();
         metadata[2] = outerDim;
         metadata[3] = nnz;
 
         // realloc the arrays
-        try {
+        try
+        {
             vals = (T *)realloc(vals, sizeof(T) * nnz);
             innerIdx = (indexT *)realloc(innerIdx, sizeof(indexT) * nnz);
             outerPtr = (indexT *)realloc(outerPtr, sizeof(indexT) * (outerDim + 1));
-        } catch (std::bad_alloc &ba) {
+        }
+        catch (std::bad_alloc &ba)
+        {
             std::cerr << "Error: " << ba.what() << std::endl;
             exit(1);
         }
@@ -193,7 +228,8 @@ namespace IVSparse {
         outerPtr[outerDim] = nnz;
 
         // check if the vector is empty
-        if (vec.nonZeros() == 0) {
+        if (vec.nonZeros() == 0)
+        {
             outerPtr[outerDim - 1] = nnz;
             return;
         }
@@ -204,17 +240,19 @@ namespace IVSparse {
 
     // slice method that returns a vector of IVSparse vectors
     template <typename T, typename indexT, bool columnMajor>
-    std::vector<typename IVSparse::SparseMatrix<T, indexT, 1, columnMajor>::Vector> SparseMatrix<T, indexT, 1, columnMajor>::slice(uint32_t start, uint32_t end) {
-        // check if the start and end values are valid
-        #ifdef IVSPARSE_DEBUG
+    std::vector<typename IVSparse::SparseMatrix<T, indexT, 1, columnMajor>::Vector> SparseMatrix<T, indexT, 1, columnMajor>::slice(uint32_t start, uint32_t end)
+    {
+// check if the start and end values are valid
+#ifdef IVSPARSE_DEBUG
         assert(start < outerDim && end <= outerDim && start < end && "Invalid start and end values!");
-        #endif
+#endif
 
         // make a vector of IVSparse vectors
         std::vector<typename IVSparse::SparseMatrix<T, indexT, 1, columnMajor>::Vector> vecs(end - start);
 
         // grab the vectors and add them to vecs
-        for (uint32_t i = start; i < end; ++i) {
+        for (uint32_t i = start; i < end; ++i)
+        {
             // make a temp vector
             IVSparse::SparseMatrix<T, indexT, 1, columnMajor>::Vector temp(*this, i);
 

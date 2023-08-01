@@ -8,7 +8,8 @@
 
 #pragma once
 
-namespace IVSparse {
+namespace IVSparse
+{
 
     /**
      *
@@ -21,9 +22,10 @@ namespace IVSparse {
      * If one needs CSC BLAS support, Eigen is a good library to use.
      */
     template <typename T, typename indexT, bool columnMajor>
-    class SparseMatrix<T, indexT, 1, columnMajor> : public SparseMatrixBase {
+    class SparseMatrix<T, indexT, 1, columnMajor> : public SparseMatrixBase
+    {
 
-        private:
+    private:
         //* The Matrix Data *//
         T *vals = nullptr;          // The values of the matrix
         indexT *innerIdx = nullptr; // The inner indices of the matrix
@@ -58,7 +60,7 @@ namespace IVSparse {
         // Matrix Matrix Multiplication
         inline Eigen::Matrix<T, -1, -1> matrixMultiply(Eigen::Matrix<T, -1, -1> &mat);
 
-        public:
+    public:
         //* Nested Subclasses *//
 
         // Vector Class for CSC Sparse Matrices
@@ -288,7 +290,7 @@ namespace IVSparse {
          *
          * This method writes the IVSparse matrix to a file in binary format.
          * This can then be read in later using the file constructor.
-         * Currently .csf is the perfered file extension.
+         * Currently .ivs is the perfered file extension.
          *
          * @note Useful to split a matrix up and then write each part separately.
          */
@@ -379,7 +381,6 @@ namespace IVSparse {
 
         // Matrix Matrix Multiplication
         Eigen::Matrix<T, -1, -1> operator*(Eigen::Matrix<T, -1, -1> mat);
-
     };
 
 } // namespace IVSparse

@@ -1,5 +1,5 @@
 /**
- * @file CSF3_Iterator_Methods.hpp
+ * @file IVCSC_Iterator_Methods.hpp
  * @author Skyler Ruiter and Seth Wolfgang
  * @brief Iterator Methods for IVCSC Sparse Matrices
  * @version 0.1

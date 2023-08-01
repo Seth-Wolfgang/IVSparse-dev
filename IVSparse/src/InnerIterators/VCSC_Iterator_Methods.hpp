@@ -1,5 +1,5 @@
 /**
- * @file CSF2_Iterator_Methods.hpp
+ * @file VCSC_Iterator_Methods.hpp
  * @author Skyler Ruiter and Seth Wolfgang
  * @brief Iterator Methods for VCSC Sparse Matrices
  * @version 0.1
@@ -8,16 +8,19 @@
 
 #pragma once
 
-namespace IVSparse {
+namespace IVSparse
+{
 
     //* Constructors *//
 
     // Matrix Constructor
     template <typename T, typename indexT, bool columnMajor>
-    inline SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::InnerIterator(IVSparse::SparseMatrix<T, indexT, 2, columnMajor> &matrix, uint32_t vec) {
+    inline SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::InnerIterator(IVSparse::SparseMatrix<T, indexT, 2, columnMajor> &matrix, uint32_t vec)
+    {
 
         // check if the vector is empty
-        if (matrix.getNumUniqueVals(vec) == 0) {
+        if (matrix.getNumUniqueVals(vec) == 0)
+        {
             this->vals = nullptr;
             this->counts = nullptr;
             this->indices = nullptr;
@@ -49,9 +52,11 @@ namespace IVSparse {
 
     // Vector Constructor
     template <typename T, typename indexT, bool columnMajor>
-    SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::InnerIterator(SparseMatrix<T, indexT, 2, columnMajor>::Vector &vector) {
+    SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::InnerIterator(SparseMatrix<T, indexT, 2, columnMajor>::Vector &vector)
+    {
         // check if the vector is empty
-        if (vector.nonZeros() == 0) {
+        if (vector.nonZeros() == 0)
+        {
             this->vals = nullptr;
             this->counts = nullptr;
             this->indices = nullptr;
@@ -101,16 +106,30 @@ namespace IVSparse {
 
     // Get the current row
     template <typename T, typename indexT, bool columnMajor>
-    indexT SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::row() {
-        if constexpr (!columnMajor) {return outer;}
-        else {return index;}
+    indexT SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::row()
+    {
+        if constexpr (!columnMajor)
+        {
+            return outer;
+        }
+        else
+        {
+            return index;
+        }
     }
 
     // Get the current column
     template <typename T, typename indexT, bool columnMajor>
-    indexT SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::col() {
-        if constexpr (!columnMajor) {return index;}
-        else {return outer;}
+    indexT SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::col()
+    {
+        if constexpr (!columnMajor)
+        {
+            return index;
+        }
+        else
+        {
+            return outer;
+        }
     }
 
     //* Operator Overloads *//
@@ -137,18 +156,23 @@ namespace IVSparse {
 
     // Increment Operator
     template <typename T, typename indexT, bool columnMajor>
-    inline void SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::operator++() {
+    inline void SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::operator++()
+    {
 
         // decriment count
         count--;
 
         // if count is 0 then we need to move to the next value
-        if (count == 0) {
+        if (count == 0)
+        {
 
             // Check if we are at the end of the values array
             countIndex++;
 
-            if (countIndex >= indexSize) { return; }
+            if (countIndex >= indexSize)
+            {
+                return;
+            }
 
             // Move to the next value
             val++;
@@ -160,7 +184,9 @@ namespace IVSparse {
             // Get the new index
             indices++;
             index = *indices;
-        } else {
+        }
+        else
+        {
             // Move to the next index
             countIndex++;
             indices++;

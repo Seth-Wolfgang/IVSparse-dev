@@ -19,9 +19,8 @@
 // Library Preprocessor Directives
 
 #if defined(_OPENMP)
-   #define IVSPARSE_PARALLEL
+#define IVSPARSE_PARALLEL
 #endif
-
 
 // #define IVSPARSE_DEBUG
 // #define EigenFunctions

@@ -1,5 +1,5 @@
 /**
- * @file CSF3_Constructors.hpp
+ * @file IVCSC_Constructors.hpp
  * @author Skyler Ruiter and Seth Wolfgang
  * @brief Constructors for IVCSC Sparse Matrices
  * @version 0.1
@@ -8,32 +8,51 @@
 
 #pragma once
 
-namespace IVSparse {
+namespace IVSparse
+{
 
     // Destructor
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    SparseMatrix<T, indexT, compressionLevel, columnMajor>::~SparseMatrix() {
+    SparseMatrix<T, indexT, compressionLevel, columnMajor>::~SparseMatrix()
+    {
         // delete the meta data
-        if (metadata != nullptr) { delete[] metadata; }
+        if (metadata != nullptr)
+        {
+            delete[] metadata;
+        }
 
-        if (data != nullptr) {
+        if (data != nullptr)
+        {
             // free the data
-            for (size_t i = 0; i < outerDim; i++) { if (data[i] != nullptr) { free(data[i]); } }
+            for (size_t i = 0; i < outerDim; i++)
+            {
+                if (data[i] != nullptr)
+                {
+                    free(data[i]);
+                }
+            }
             free(data);
         }
 
-        if (endPointers != nullptr) { free(endPointers); }
+        if (endPointers != nullptr)
+        {
+            free(endPointers);
+        }
     }
 
     // Row and Column Constructor
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(uint32_t num_rows, uint32_t num_cols) {
+    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(uint32_t num_rows, uint32_t num_cols)
+    {
 
         // set class variables
-        if constexpr (columnMajor) {
+        if constexpr (columnMajor)
+        {
             innerDim = num_cols;
             outerDim = num_rows;
-        } else {
+        }
+        else
+        {
             innerDim = num_rows;
             outerDim = num_cols;
         }
@@ -44,15 +63,19 @@ namespace IVSparse {
         nnz = 0;
 
         // allocate memory for the data
-        try {
+        try
+        {
             data = (void **)malloc(outerDim * sizeof(void *));
             endPointers = (void **)malloc(outerDim * sizeof(void *));
-        } catch (const std::exception &e) {
+        }
+        catch (const std::exception &e)
+        {
             std::cerr << e.what() << '\n';
         }
 
         // set all data and endpointers to the nullptr
-        for (size_t i = 0; i < outerDim; i++) {
+        for (size_t i = 0; i < outerDim; i++)
+        {
             data[i] = nullptr;
             endPointers[i] = nullptr;
         }
@@ -69,17 +92,19 @@ namespace IVSparse {
         // calculate the compression size
         calculateCompSize();
 
-        // run the user checks
-        #ifdef IVSPARSE_DEBUG
+// run the user checks
+#ifdef IVSPARSE_DEBUG
         userChecks();
-        #endif
+#endif
     }
 
     // Eigen Constructor
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(Eigen::SparseMatrix<T> &mat) {
+    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(Eigen::SparseMatrix<T> &mat)
+    {
         // check if the matrix is empty
-        if (mat.nonZeros() == 0) {
+        if (mat.nonZeros() == 0)
+        {
             val_t = 0;
             index_t = 0;
 
@@ -108,9 +133,11 @@ namespace IVSparse {
 
     // Eigen Row Major Constructor
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(Eigen::SparseMatrix<T, Eigen::RowMajor> &mat) {
+    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(Eigen::SparseMatrix<T, Eigen::RowMajor> &mat)
+    {
         // check if the matrix is empty
-        if (mat.nonZeros() == 0) {
+        if (mat.nonZeros() == 0)
+        {
             val_t = 0;
             index_t = 0;
 
@@ -144,10 +171,12 @@ namespace IVSparse {
     // Conversion Constructor
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     template <uint8_t otherCompressionLevel>
-    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(IVSparse::SparseMatrix<T, indexT, otherCompressionLevel, columnMajor> &other) {
+    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(IVSparse::SparseMatrix<T, indexT, otherCompressionLevel, columnMajor> &other)
+    {
 
         // if already the right compression level
-        if constexpr (otherCompressionLevel == compressionLevel) {
+        if constexpr (otherCompressionLevel == compressionLevel)
+        {
             *this = other;
             return;
         }
@@ -156,24 +185,32 @@ namespace IVSparse {
         IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor> temp;
 
         // convert other to the right compression level
-        if constexpr (otherCompressionLevel == 1) { temp = other.toIVCSC(); }
-        else if constexpr (otherCompressionLevel == 2) { temp = other.toIVCSC(); }
+        if constexpr (otherCompressionLevel == 1)
+        {
+            temp = other.toIVCSC();
+        }
+        else if constexpr (otherCompressionLevel == 2)
+        {
+            temp = other.toIVCSC();
+        }
 
         // other should be the same compression level as this now
         *this = temp;
 
-        // run the user checks
-        #ifdef IVSPARSE_DEBUG
+// run the user checks
+#ifdef IVSPARSE_DEBUG
         userChecks();
-        #endif
+#endif
     }
 
     // Raw CSC Constructor
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     template <typename T2, typename indexT2>
-    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(T2 *vals, indexT2 *innerIndices, indexT2 *outerPtr, uint32_t num_rows, uint32_t num_cols, uint32_t nnz) {
+    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(T2 *vals, indexT2 *innerIndices, indexT2 *outerPtr, uint32_t num_rows, uint32_t num_cols, uint32_t nnz)
+    {
         // see if the matrix is empty
-        if (nnz == 0) [[unlikely]] {
+        if (nnz == 0) [[unlikely]]
+        {
             val_t = 0;
             index_t = 0;
             data = nullptr;
@@ -183,10 +220,13 @@ namespace IVSparse {
         }
 
         // set class variables
-        if (columnMajor) {
+        if (columnMajor)
+        {
             innerDim = num_rows;
             outerDim = num_cols;
-        } else {
+        }
+        else
+        {
             innerDim = num_cols;
             outerDim = num_rows;
         }
@@ -201,19 +241,24 @@ namespace IVSparse {
     // COO Constructor
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     template <typename T2, typename indexT2>
-    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(std::vector<std::tuple<indexT2, indexT2, T2>> &entries, uint32_t num_rows, uint32_t num_cols, uint32_t nnz) {
+    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(std::vector<std::tuple<indexT2, indexT2, T2>> &entries, uint32_t num_rows, uint32_t num_cols, uint32_t nnz)
+    {
 
         // see if the matrix is empty
-        if (nnz == 0) [[unlikely]] {
+        if (nnz == 0) [[unlikely]]
+        {
             *this = SparseMatrix<T, indexT, compressionLevel, columnMajor>(num_rows, num_cols);
             return;
         }
 
         // set class variables
-        if (columnMajor) {
+        if (columnMajor)
+        {
             innerDim = num_rows;
             outerDim = num_cols;
-        } else {
+        }
+        else
+        {
             innerDim = num_cols;
             outerDim = num_rows;
         }
@@ -233,16 +278,20 @@ namespace IVSparse {
         metadata[5] = index_t;
 
         // allocate memory for the data
-        try {
+        try
+        {
             data = (void **)malloc(outerDim * sizeof(void *));
             endPointers = (void **)malloc(outerDim * sizeof(void *));
-        } catch (std::bad_alloc &e) {
+        }
+        catch (std::bad_alloc &e)
+        {
             std::cerr << "Error: Could not allocate memory for IVSparse matrix" << std::endl;
             exit(1);
         }
 
         // set all data and endpointers to the nullptr
-        for (size_t i = 0; i < outerDim; i++) {
+        for (size_t i = 0; i < outerDim; i++)
+        {
             data[i] = nullptr;
             endPointers[i] = nullptr;
         }
@@ -259,14 +308,16 @@ namespace IVSparse {
         std::map<T2, std::vector<indexT2>> maps[outerDim];
 
         // loop through the tuples
-        for (size_t i = 0; i < nnz; i++) {
+        for (size_t i = 0; i < nnz; i++)
+        {
             // get the column
             indexT2 row = std::get<0>(entries[i]);
             indexT2 col = std::get<1>(entries[i]);
             T2 val = std::get<2>(entries[i]);
 
             // check if the value is already in the map
-            if (maps[col].find(val) != maps[col].end()) {
+            if (maps[col].find(val) != maps[col].end())
+            {
 
                 // value found positive delta encode it
                 maps[col][val].push_back(row - maps[col][val][1]);
@@ -277,7 +328,9 @@ namespace IVSparse {
                 // update the maximum delta
                 if (maps[col][val][maps[col][val].size() - 1] > maps[col][val][0])
                     maps[col][val][0] = maps[col][val][maps[col][val].size() - 1];
-            } else {
+            }
+            else
+            {
 
                 // value not found
                 maps[col][val] = std::vector<indexT2>{row};
@@ -288,15 +341,17 @@ namespace IVSparse {
             }
         } // end of loop through tuples
 
-        // loop through the maps
-        #ifdef CSF_PARALLEL
-        #pragma omp parallel for
-        #endif
-        for (uint32_t i = 0; i < outerDim; i++) {
+// loop through the maps
+#ifdef IVSPARSE_PARALLEL
+#pragma omp parallel for
+#endif
+        for (uint32_t i = 0; i < outerDim; i++)
+        {
 
             size_t outerByteSize = 0;
 
-            for (auto &pair : maps[i]) {
+            for (auto &pair : maps[i])
+            {
                 // change first value to be byte width of the maximum delta
                 pair.second[0] = byteWidth(pair.second[0]);
 
@@ -306,15 +361,20 @@ namespace IVSparse {
             }
 
             // if column is empty set the data and endpointer to nullptr
-            if (outerByteSize == 0) {
+            if (outerByteSize == 0)
+            {
                 data[i] = nullptr;
                 endPointers[i] = nullptr;
                 continue;
             }
 
             // allocate space for the column
-            try { data[i] = malloc(outerByteSize); }
-            catch (std::bad_alloc &e) {
+            try
+            {
+                data[i] = malloc(outerByteSize);
+            }
+            catch (std::bad_alloc &e)
+            {
                 std::cout << "Error: " << e.what() << std::endl;
                 exit(1);
             }
@@ -323,7 +383,8 @@ namespace IVSparse {
             void *helpPtr = data[i];
 
             // loop through the dictionary and write to memory
-            for (auto &pair : maps[i]) {
+            for (auto &pair : maps[i])
+            {
                 // Write the value to memory
                 *(T *)helpPtr = (T)pair.first;
                 helpPtr = (T *)helpPtr + 1;
@@ -333,13 +394,18 @@ namespace IVSparse {
                 helpPtr = (uint8_t *)helpPtr + 1;
 
                 // loop through the indices and write them to memory
-                for (size_t k = 0; k < pair.second.size(); k++) {
+                for (size_t k = 0; k < pair.second.size(); k++)
+                {
 
                     // if compression level 3 skip the first two indices and cast the index
-                    if (k == 0 || k == 1) { continue; }
+                    if (k == 0 || k == 1)
+                    {
+                        continue;
+                    }
 
                     // create a type of the correct width
-                    switch (pair.second[0]) {
+                    switch (pair.second[0])
+                    {
                     case 1:
                         *(uint8_t *)helpPtr = (uint8_t)pair.second[k];
                         helpPtr = (uint8_t *)helpPtr + 1;
@@ -361,7 +427,8 @@ namespace IVSparse {
                 } // End of index loop
 
                 // write a delimiter of the correct width
-                switch (pair.second[0]) {
+                switch (pair.second[0])
+                {
                 case 1:
                     *(uint8_t *)helpPtr = (uint8_t)DELIM;
                     helpPtr = (uint8_t *)helpPtr + 1;
@@ -391,14 +458,18 @@ namespace IVSparse {
 
     // IVSparse Vector Constructor
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(typename IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector &vec) {
+    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(typename IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector &vec)
+    {
         // if it is the matrix is empty and we need to construct it
-        if (columnMajor) {
+        if (columnMajor)
+        {
             numRows = vec.getLength();
             numCols = 1;
             innerDim = numRows;
             outerDim = numCols;
-        } else {
+        }
+        else
+        {
             numRows = 1;
             numCols = vec.getLength();
             innerDim = numCols;
@@ -411,24 +482,33 @@ namespace IVSparse {
         index_t = sizeof(indexT);
 
         // malloc the data
-        try {
+        try
+        {
             data = (void **)malloc(sizeof(void *));
             endPointers = (void **)malloc(sizeof(void *));
-        } catch (std::bad_alloc &e) {
+        }
+        catch (std::bad_alloc &e)
+        {
             throw std::bad_alloc();
         }
 
         // malloc the vector
-        try {
+        try
+        {
             // if vector is empty set the data to null
-            if (vec.begin() == vec.end()) {
+            if (vec.begin() == vec.end())
+            {
                 data[0] = nullptr;
                 endPointers[0] = nullptr;
-            } else {
+            }
+            else
+            {
                 data[0] = malloc(vec.byteSize());
                 endPointers[0] = (char *)data[0] + vec.byteSize();
             }
-        } catch (std::bad_alloc &e) {
+        }
+        catch (std::bad_alloc &e)
+        {
             throw std::bad_alloc();
         }
 
@@ -447,35 +527,43 @@ namespace IVSparse {
 
         // run the user checks and calculate the compression size
         calculateCompSize();
-        #ifdef IVSPARSE_DEBUG
+#ifdef IVSPARSE_DEBUG
         userChecks();
-        #endif
+#endif
     }
 
     // Array of Vectors Constructor
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(std::vector<typename IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector> &vecs) {
+    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(std::vector<typename IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector> &vecs)
+    {
 
         IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor> temp(vecs[0]);
 
-        for (size_t i = 1; i < vecs.size(); i++) { temp.append(vecs[i]); }
+        for (size_t i = 1; i < vecs.size(); i++)
+        {
+            temp.append(vecs[i]);
+        }
 
         *this = temp;
 
         calculateCompSize();
 
-        // run the user checks
-        #ifdef IVSPARSE_DEBUG
+// run the user checks
+#ifdef IVSPARSE_DEBUG
         userChecks();
-        #endif
+#endif
     }
 
     // File Constructor
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(const char *filename) {
+    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(const char *filename)
+    {
         FILE *fp = fopen(filename, "rb");
 
-        if (fp == nullptr) { throw std::runtime_error("Error: Could not open file"); }
+        if (fp == nullptr)
+        {
+            throw std::runtime_error("Error: Could not open file");
+        }
 
         // read the metadata
         metadata = new uint32_t[NUM_META_DATA];
@@ -492,44 +580,56 @@ namespace IVSparse {
         numCols = columnMajor ? outerDim : innerDim;
 
         // if the compression level of the file is different than the compression level of the class
-        if (metadata[0] != compressionLevel) {
+        if (metadata[0] != compressionLevel)
+        {
             // throw an error
             throw std::runtime_error("Error: Compression level of file does not match compression level of class");
         }
 
         // allocate the memory
-        try {
+        try
+        {
             data = (void **)malloc(outerDim * sizeof(void *));
             endPointers = (void **)malloc(outerDim * sizeof(void *));
-        } catch (std::bad_alloc &e) {
+        }
+        catch (std::bad_alloc &e)
+        {
             std::cerr << "Error: Could not allocate memory for IVSparse matrix" << std::endl;
             exit(1);
         }
 
         // get the vector sizes and allocate memory
-        for (size_t i = 0; i < outerDim; i++) {
+        for (size_t i = 0; i < outerDim; i++)
+        {
             // get the size of the column
             uint64_t size;
             fread(&size, sizeof(uint64_t), 1, fp);
 
             // if the size is 0, set the data and endpointer to nullptr
-            if (size == 0) {
+            if (size == 0)
+            {
                 data[i] = nullptr;
                 endPointers[i] = nullptr;
                 continue;
             }
 
             // malloc the column
-            try {
+            try
+            {
                 data[i] = malloc(size);
                 endPointers[i] = (char *)data[i] + size;
-            } catch (std::bad_alloc &e) {
+            }
+            catch (std::bad_alloc &e)
+            {
                 throw std::bad_alloc();
             }
         }
 
         // read the data
-        for (size_t i = 0; i < outerDim; i++) { fread(data[i], 1, (uint8_t *)endPointers[i] - (uint8_t *)data[i], fp); }
+        for (size_t i = 0; i < outerDim; i++)
+        {
+            fread(data[i], 1, (uint8_t *)endPointers[i] - (uint8_t *)data[i], fp);
+        }
 
         // close the file
         fclose(fp);
@@ -537,10 +637,10 @@ namespace IVSparse {
         // calculate the compresssion size
         calculateCompSize();
 
-        // run the user checks
-        #ifdef IVSPARSE_DEBUG
+// run the user checks
+#ifdef IVSPARSE_DEBUG
         userChecks();
-        #endif
+#endif
 
     } // end of file constructor
 
@@ -548,12 +648,16 @@ namespace IVSparse {
 
     // Private Tranpose Constructor
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(std::unordered_map<T, std::vector<indexT>> maps[], uint32_t num_rows, uint32_t num_cols) {
+    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(std::unordered_map<T, std::vector<indexT>> maps[], uint32_t num_rows, uint32_t num_cols)
+    {
         // set class variables
-        if constexpr (columnMajor) {
+        if constexpr (columnMajor)
+        {
             innerDim = num_cols;
             outerDim = num_rows;
-        } else {
+        }
+        else
+        {
             innerDim = num_rows;
             outerDim = num_cols;
         }
@@ -564,29 +668,35 @@ namespace IVSparse {
         index_t = sizeof(indexT);
 
         // allocate memory for the data
-        try {
+        try
+        {
             data = (void **)malloc(outerDim * sizeof(void *));
             endPointers = (void **)malloc(outerDim * sizeof(void *));
-        } catch (const std::exception &e) {
+        }
+        catch (const std::exception &e)
+        {
             std::cerr << e.what() << '\n';
         }
 
         // set all data and endpointers to the nullptr
-        for (size_t i = 0; i < outerDim; i++) {
+        for (size_t i = 0; i < outerDim; i++)
+        {
             data[i] = nullptr;
             endPointers[i] = nullptr;
         }
 
-        //* logic here
+//* logic here
 
-        // loop through the array
-        #ifdef CSF_PARALLEL
-        #pragma omp parallel for
-        #endif
-        for (size_t i = 0; i < outerDim; i++) {
+// loop through the array
+#ifdef IVSPARSE_PARALLEL
+#pragma omp parallel for
+#endif
+        for (size_t i = 0; i < outerDim; i++)
+        {
 
             // check if the column is empty
-            if (maps[i].empty()) [[unlikely]] {
+            if (maps[i].empty()) [[unlikely]]
+            {
                 data[i] = nullptr;
                 endPointers[i] = nullptr;
                 continue;
@@ -595,14 +705,21 @@ namespace IVSparse {
             size_t byteSize = 0;
 
             // loop through the vectors of the map
-            for (auto &val : maps[i]) {
+            for (auto &val : maps[i])
+            {
                 // add the size of the vector to the byteSize
                 byteSize += sizeof(T) + 1 + (val.second[val.second.size() - 1] * (val.second.size() - 1) + val.second[val.second.size() - 1]);
             }
 
             // allocate memory for the vector
-            try { data[i] = malloc(byteSize); }
-            catch (const std::exception &e) { std::cerr << e.what() << '\n'; }
+            try
+            {
+                data[i] = malloc(byteSize);
+            }
+            catch (const std::exception &e)
+            {
+                std::cerr << e.what() << '\n';
+            }
 
             // set the end pointer
             endPointers[i] = (char *)data[i] + byteSize;
@@ -610,7 +727,8 @@ namespace IVSparse {
             // compressCSC the column
             void *helpPtr = data[i];
 
-            for (auto &val : maps[i]) {
+            for (auto &val : maps[i])
+            {
 
                 nnz += val.second.size() - 1;
 
@@ -621,12 +739,14 @@ namespace IVSparse {
                 helpPtr = (uint8_t *)helpPtr + 1;
 
                 // write the indices
-                for (size_t k = 0; k < val.second.size(); k++) {
+                for (size_t k = 0; k < val.second.size(); k++)
+                {
 
                     if (k == val.second.size() - 1)
                         break;
 
-                    switch (val.second[val.second.size() - 1]) {
+                    switch (val.second[val.second.size() - 1])
+                    {
                     case 1:
                         *(uint8_t *)helpPtr = (uint8_t)val.second[k];
                         helpPtr = (uint8_t *)helpPtr + 1;
@@ -647,7 +767,8 @@ namespace IVSparse {
                 }
 
                 // write a delimiter of the correct width
-                switch (val.second[val.second.size() - 1]) {
+                switch (val.second[val.second.size() - 1])
+                {
                 case 1:
                     *(uint8_t *)helpPtr = (uint8_t)DELIM;
                     helpPtr = (uint8_t *)helpPtr + 1;
@@ -683,10 +804,10 @@ namespace IVSparse {
         // calculate the compression size
         calculateCompSize();
 
-        // run the user checks
-        #ifdef IVSPARSE_DEBUG
+// run the user checks
+#ifdef IVSPARSE_DEBUG
         userChecks();
-        #endif
+#endif
 
     } // end of private transpose constructor
 

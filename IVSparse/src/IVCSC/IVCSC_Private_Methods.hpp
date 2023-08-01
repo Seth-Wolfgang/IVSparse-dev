@@ -1,5 +1,5 @@
 /**
- * @file CSF3_Private_Methods.hpp
+ * @file IVCSC_Private_Methods.hpp
  * @author Skyler Ruiter and Seth Wolfgang
  * @brief Private Methods for IVCSC Sparse Matrices
  * @version 0.1
@@ -8,11 +8,13 @@
 
 #pragma once
 
-namespace IVSparse {
+namespace IVSparse
+{
 
     // Encodes the value type of the matrix in a uint32_t
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    void SparseMatrix<T, indexT, compressionLevel, columnMajor>::encodeValueType() {
+    void SparseMatrix<T, indexT, compressionLevel, columnMajor>::encodeValueType()
+    {
         uint8_t byte0 = sizeof(T);
         uint8_t byte1 = std::is_floating_point<T>::value ? 1 : 0;
         uint8_t byte2 = std::is_signed_v<T> ? 1 : 0;
@@ -23,7 +25,8 @@ namespace IVSparse {
 
     // Checks if the value type is correct for the matrix
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    void SparseMatrix<T, indexT, compressionLevel, columnMajor>::checkValueType() {
+    void SparseMatrix<T, indexT, compressionLevel, columnMajor>::checkValueType()
+    {
         uint8_t byte0 = val_t & 0xFF;
         uint8_t byte1 = (val_t >> 8) & 0xFF;
         uint8_t byte2 = (val_t >> 16) & 0xFF;
@@ -36,7 +39,8 @@ namespace IVSparse {
 
     // performs some simple user checks on the matrices metadata
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    void SparseMatrix<T, indexT, compressionLevel, columnMajor>::userChecks() {
+    void SparseMatrix<T, indexT, compressionLevel, columnMajor>::userChecks()
+    {
         assert((innerDim >= 1 || outerDim >= 1) && "The matrix must have at least one row, column, and nonzero value");
         assert(std::is_floating_point<indexT>::value == false && "The index type must be a non-floating point type");
         assert((compressionLevel == 3) && "The compression level must be 3");
@@ -48,7 +52,8 @@ namespace IVSparse {
 
     // Calculates the current byte size of the matrix in memory
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    void SparseMatrix<T, indexT, compressionLevel, columnMajor>::calculateCompSize() {
+    void SparseMatrix<T, indexT, compressionLevel, columnMajor>::calculateCompSize()
+    {
         // set compSize to zero
         compSize = 0;
 
@@ -59,13 +64,17 @@ namespace IVSparse {
         compSize += (sizeof(void *) * outerDim) * 2;
 
         // add the size of the data itself
-        for (uint32_t i = 0; i < outerDim; i++) { compSize += *((uint8_t **)endPointers + i) - *((uint8_t **)data + i); }
+        for (uint32_t i = 0; i < outerDim; i++)
+        {
+            compSize += *((uint8_t **)endPointers + i) - *((uint8_t **)data + i);
+        }
     }
 
     // Compression Algorithm for going from CSC to IVCSC
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     template <typename T2, typename indexT2>
-    void SparseMatrix<T, indexT, compressionLevel, columnMajor>::compressCSC(T2 *vals, indexT2 *innerIndices, indexT2 *outerPointers) {
+    void SparseMatrix<T, indexT, compressionLevel, columnMajor>::compressCSC(T2 *vals, indexT2 *innerIndices, indexT2 *outerPointers)
+    {
         // ---- Stage 1: Setup the Matrix ---- //
 
         // set the value and index types of the matrix
@@ -81,42 +90,49 @@ namespace IVSparse {
         metadata[4] = val_t;
         metadata[5] = index_t;
 
-        // run the user checks on the metadata
-        #ifdef IVSPARSE_DEBUG
+// run the user checks on the metadata
+#ifdef IVSPARSE_DEBUG
         userChecks();
-        #endif
+#endif
 
         // allocate space for the data
-        try {
+        try
+        {
             data = (void **)malloc(outerDim * sizeof(void *));
             endPointers = (void **)malloc(outerDim * sizeof(void *));
-        } catch (std::bad_alloc &e) {
+        }
+        catch (std::bad_alloc &e)
+        {
             std::cout << "Error: " << e.what() << std::endl;
             exit(1);
         }
 
-        // ---- Stage 2: Construct the Dictionary For Each Column ---- //
+// ---- Stage 2: Construct the Dictionary For Each Column ---- //
 
-        // Loop through each column and construct a middle data structre for the matrix
-        #ifdef CSF_PARALLEL
-        #pragma omp parallel for
-        #endif
-        for (uint32_t i = 0; i < outerDim; i++) {
+// Loop through each column and construct a middle data structre for the matrix
+#ifdef IVSPARSE_PARALLEL
+#pragma omp parallel for
+#endif
+        for (uint32_t i = 0; i < outerDim; i++)
+        {
             // create the data structure to temporarily hold the data
             std::map<T2, std::vector<indexT2>> dict; // Key = value, Value = vector of indices
 
             // check if the current column is empty
-            if (outerPointers[i] == outerPointers[i + 1]) {
+            if (outerPointers[i] == outerPointers[i + 1])
+            {
                 data[i] = nullptr;
                 endPointers[i] = nullptr;
                 continue;
             }
 
             // loop through each value in the column and add it to dict
-            for (indexT2 j = outerPointers[i]; j < outerPointers[i + 1]; j++) {
+            for (indexT2 j = outerPointers[i]; j < outerPointers[i + 1]; j++)
+            {
 
                 // check if the value is already in the dictionary or not
-                if (dict.find(vals[j]) != dict.end()) {
+                if (dict.find(vals[j]) != dict.end())
+                {
 
                     // add the index to the vector
 
@@ -127,10 +143,13 @@ namespace IVSparse {
                     dict[vals[j]][1] = innerIndices[j];
 
                     // update the maximum delta (stored in the first index of the vector)
-                    if (dict[vals[j]][dict[vals[j]].size() - 1] > dict[vals[j]][0]) {
+                    if (dict[vals[j]][dict[vals[j]].size() - 1] > dict[vals[j]][0])
+                    {
                         dict[vals[j]][0] = dict[vals[j]][dict[vals[j]].size() - 1];
                     }
-                } else {
+                }
+                else
+                {
                     // if value not already in the dictionary add it
 
                     // create a new vector for the indices
@@ -149,7 +168,8 @@ namespace IVSparse {
             size_t outerByteSize = 0;
 
             // loop through dictionary finding the byte size of the total column data
-            for (auto &pair : dict) {
+            for (auto &pair : dict)
+            {
                 // change first value to be byte width of the maximum delta
                 pair.second[0] = byteWidth(pair.second[0]);
 
@@ -159,9 +179,12 @@ namespace IVSparse {
             }
 
             // allocate space for the column
-            try {
+            try
+            {
                 data[i] = malloc(outerByteSize);
-            } catch (std::bad_alloc &e) {
+            }
+            catch (std::bad_alloc &e)
+            {
                 std::cout << "Error: " << e.what() << std::endl;
                 exit(1);
             }
@@ -172,7 +195,8 @@ namespace IVSparse {
             void *helpPtr = data[i];
 
             // loop through the dictionary and write to memory
-            for (auto &pair : dict) {
+            for (auto &pair : dict)
+            {
                 // Write the value to memory
                 *(T *)helpPtr = (T)pair.first;
                 helpPtr = (T *)helpPtr + 1;
@@ -182,13 +206,18 @@ namespace IVSparse {
                 helpPtr = (uint8_t *)helpPtr + 1;
 
                 // loop through the indices and write them to memory
-                for (size_t k = 0; k < pair.second.size(); k++) {
+                for (size_t k = 0; k < pair.second.size(); k++)
+                {
 
                     // if compression level 3 skip the first two indices and cast the index
-                    if (k == 0 || k == 1) { continue; }
+                    if (k == 0 || k == 1)
+                    {
+                        continue;
+                    }
 
                     // create a type of the correct width
-                    switch (pair.second[0]) {
+                    switch (pair.second[0])
+                    {
                     case 1:
                         *(uint8_t *)helpPtr = (uint8_t)pair.second[k];
                         helpPtr = (uint8_t *)helpPtr + 1;
@@ -210,7 +239,8 @@ namespace IVSparse {
                 } // End of index loop
 
                 // write a delimiter of the correct width
-                switch (pair.second[0]) {
+                switch (pair.second[0])
+                {
                 case 1:
                     *(uint8_t *)helpPtr = (uint8_t)DELIM;
                     helpPtr = (uint8_t *)helpPtr + 1;

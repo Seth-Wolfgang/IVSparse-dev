@@ -1,5 +1,5 @@
 /**
- * @file CSF2_Iterator.hpp
+ * @file VCSC_Iterator.hpp
  * @author Skyler Ruiter and Seth Wolfgang
  * @brief Inner Iterator for VCSC Declerations
  * @version 0.1
@@ -8,7 +8,8 @@
 
 #pragma once
 
-namespace IVSparse {
+namespace IVSparse
+{
 
     /**
      * VCSC Inner Iterator Class \n \n
@@ -19,9 +20,10 @@ namespace IVSparse {
      * VCSC Matrix instead of a outer pointers vector.
      */
     template <typename T, typename indexT, bool columnMajor>
-    class SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator {
+    class SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator
+    {
 
-        private:
+    private:
         //* Private Class Variables *//
 
         indexT outer = 0;    // Outer dimension
@@ -41,7 +43,7 @@ namespace IVSparse {
 
         //* Private Class Methods *//
 
-        public:
+    public:
         //* Constructors & Destructor *//
         /** @name Constructors
          */

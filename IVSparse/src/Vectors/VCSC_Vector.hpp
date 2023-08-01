@@ -1,5 +1,5 @@
 /**
- * @file CSF2_Vector.hpp
+ * @file VCSC_Vector.hpp
  * @author Skyler Ruiter and Seth Wolfgang
  * @brief VCSC Vector Class Declerations
  * @version 0.1

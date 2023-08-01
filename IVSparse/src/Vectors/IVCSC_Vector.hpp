@@ -1,5 +1,5 @@
 /**
- * @file CSF3_Vector.hpp
+ * @file IVCSC_Vector.hpp
  * @author Skyler Ruiter and Seth Wolfgang
  * @brief IVCSC Vector Class Declerations
  * @version 0.1

@@ -1,5 +1,5 @@
 /**
- * @file CSF_Base_Methods.hpp
+ * @file IVSparse_Base_Methods.hpp
  * @author Skyler Ruiter and Seth Wolfgang
  * @brief IVSparse Sparse Matrix Base Methods
  * @version 0.1
@@ -8,14 +8,28 @@
 
 #pragma once
 
-namespace IVSparse {
+namespace IVSparse
+{
 
     // Calculates the number of bytes needed to store a value
-    inline uint8_t SparseMatrixBase::byteWidth(size_t size) {
-        if (size <= ONE_BYTE_MAX) { return 1; } 
-        else if (size <= TWO_BYTE_MAX) { return 2; } 
-        else if (size <= FOUR_BYTE_MAX) { return 4; } 
-        else { return 8; }
+    inline uint8_t SparseMatrixBase::byteWidth(size_t size)
+    {
+        if (size <= ONE_BYTE_MAX)
+        {
+            return 1;
+        }
+        else if (size <= TWO_BYTE_MAX)
+        {
+            return 2;
+        }
+        else if (size <= FOUR_BYTE_MAX)
+        {
+            return 4;
+        }
+        else
+        {
+            return 8;
+        }
     }
 
     // Gets the number of rows in the matrix

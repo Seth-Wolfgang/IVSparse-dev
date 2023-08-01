@@ -1,5 +1,5 @@
 /**
- * @file CSF2_SparseMatrix.hpp
+ * @file VCSC_SparseMatrix.hpp
  * @author Skyler Ruiter and Seth Wolfgang
  * @brief Header File for VCSC Sparse Matrix Declarations
  * @version 0.1
@@ -63,7 +63,6 @@ namespace IVSparse
 
         // Matrix Vector Multiplication 2 (with IVSparse Vector)
         inline Eigen::Matrix<T, -1, 1> vectorMultiply(typename SparseMatrix<T, indexT, 2, columnMajor>::Vector &vec);
-
 
     public:
         //* Nested Subclasses *//
@@ -312,7 +311,7 @@ namespace IVSparse
          *
          * This method writes the IVSparse matrix to a file in binary format.
          * This can then be read in later using the file constructor.
-         * Currently .csf is the perfered file extension.
+         * Currently .ivsparse is the perfered file extension.
          *
          * @note Useful to split a matrix up and then write each part separately.
          */
@@ -400,7 +399,7 @@ namespace IVSparse
         void operator*=(T scalar);
 
         // Matrix Vector Multiplication
-        Eigen::Matrix<T, -1, 1> operator*(Eigen::Matrix<T, -1, 1>& vec);
+        Eigen::Matrix<T, -1, 1> operator*(Eigen::Matrix<T, -1, 1> &vec);
 
         // Matrix Vector Multiplication 2 (with IVSparse Vector)
         Eigen::Matrix<T, -1, 1> operator*(typename SparseMatrix<T, indexT, 2, columnMajor>::Vector &vec);

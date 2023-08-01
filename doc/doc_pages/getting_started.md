@@ -4,17 +4,17 @@
 This page serves as the main entry point for those looking to jump into coding with the IVSparse Library. 
 This page will go through how to get IVSparse, how to compile it, how to use it, and where to learn more about it.
 
-@section getting_csf Getting IVSparse
+@section getting_ivsparse Getting IVSparse
 
 To get IVSparse you need to go to our Github Repository and download the source code.
 
-@subsection install_csf Installing IVSparse
+@subsection install_ivsparse Installing IVSparse
 
 In order to use IVSparse you need to download the header library. This can be done from our Github Repository. 
 It's also highly recommended to also install Eigen as well, specifically the Eigen Sparse Core module. 
 Further instructions on how to install Eigen can be found on their website. The process for IVSparse should be similar to Eigen by design.
 
-@subsection program_csf Programming with IVSparse
+@subsection program_ivsparse Programming with IVSparse
 
 Below is a simple example of how to create a IVSparse SparseMatrix object and print it out.
 
@@ -50,7 +50,7 @@ IVSparse Matrix:
 0 0 0 4
 ```
 
-@subsection compiling_csf Compiling IVSparse
+@subsection compiling_ivsparse Compiling IVSparse
 
 To compile IVSparse you need to include the path to IVSparse and Eigen in your compiler's include path.
 
