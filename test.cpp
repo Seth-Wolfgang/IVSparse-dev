@@ -133,7 +133,7 @@ int main() {
     uint64_t avgEigenTime = 0;
     uint64_t avgCSF3Time = 0;
 
-    for (int i = 0; i < csf2Times.size(); i++) {
+    for (uint32_t i = 0; i < csf2Times.size(); i++) {
         avgCSF2Time += csf2Times[i];
         avgEigenTime += eigenTimes[i];
         avgCSF3Time += csf3Times[i];

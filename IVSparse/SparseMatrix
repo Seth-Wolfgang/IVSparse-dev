@@ -18,15 +18,21 @@
 
 // Library Preprocessor Directives
 
-#if defined(_OPENMP)
-#define IVSPARSE_PARALLEL
+// Parallel Processing Directives (On by default)
+#if (defined _OPENMP) && (!defined IVSPARSE_DONT_PARALLEL)
+    #define IVSPARSE_HAS_OPENMP
+#endif
+#ifdef IVSPARSE_HAS_OPENMP
+#include <atomic>
+#include <omp.h>
 #endif
 
-// #define IVSPARSE_DEBUG
-// #define EigenFunctions
+// Debugging Directives (Off by default)
+#ifndef IVSPARSE_DEBUG_OFF
+#define IVSPARSE_DEBUG
+#endif
 
 // Library Includes
-#include <omp.h>
 #include <Eigen/Sparse>
 #include <iostream>
 #include <vector>
@@ -49,11 +55,11 @@
 #include "src/IVCSC/IVCSC_Methods.hpp"
 #include "src/IVCSC/IVCSC_Constructors.hpp"
 #include "src/IVCSC/IVCSC_BLAS.hpp"
-// Vector and Iterator Files
-#include "src/Vectors/IVCSC_Vector.hpp"
-#include "src/Vectors/IVCSC_Vector_Methods.hpp"
-#include "src/InnerIterators/IVCSC_Iterator.hpp"
-#include "src/InnerIterators/IVCSC_Iterator_Methods.hpp"
+    // Vector and Iterator Files
+    #include "src/Vectors/IVCSC_Vector.hpp"
+    #include "src/Vectors/IVCSC_Vector_Methods.hpp"
+    #include "src/InnerIterators/IVCSC_Iterator.hpp"
+    #include "src/InnerIterators/IVCSC_Iterator_Methods.hpp"
 
 // SparseMatrix Level 2 Files
 #include "src/VCSC/VCSC_SparseMatrix.hpp"
@@ -62,11 +68,11 @@
 #include "src/VCSC/VCSC_Methods.hpp"
 #include "src/VCSC/VCSC_Constructors.hpp"
 #include "src/VCSC/VCSC_BLAS.hpp"
-// Vector and Iterator Files
-#include "src/Vectors/VCSC_Vector.hpp"
-#include "src/Vectors/VCSC_Vector_Methods.hpp"
-#include "src/InnerIterators/VCSC_Iterator.hpp"
-#include "src/InnerIterators/VCSC_Iterator_Methods.hpp"
+    // Vector and Iterator Files
+    #include "src/Vectors/VCSC_Vector.hpp"
+    #include "src/Vectors/VCSC_Vector_Methods.hpp"
+    #include "src/InnerIterators/VCSC_Iterator.hpp"
+    #include "src/InnerIterators/VCSC_Iterator_Methods.hpp"
 
 // SparseMatrix Level 1 Files
 #include "src/CSC/CSC_SparseMatrix.hpp"
@@ -75,8 +81,8 @@
 #include "src/CSC/CSC_Methods.hpp"
 #include "src/CSC/CSC_Constructors.hpp"
 #include "src/CSC/CSC_BLAS.hpp"
-// Vector and Iterator Files
-#include "src/Vectors/CSC_Vector.hpp"
-#include "src/Vectors/CSC_Vector_Methods.hpp"
-#include "src/InnerIterators/CSC_Iterator.hpp"
-#include "src/InnerIterators/CSC_Iterator_Methods.hpp"
+    // Vector and Iterator Files
+    #include "src/Vectors/CSC_Vector.hpp"
+    #include "src/Vectors/CSC_Vector_Methods.hpp"
+    #include "src/InnerIterators/CSC_Iterator.hpp"
+    #include "src/InnerIterators/CSC_Iterator_Methods.hpp"
