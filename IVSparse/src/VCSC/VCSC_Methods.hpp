@@ -244,7 +244,7 @@ void SparseMatrix<T, indexT, 2, columnMajor>::append(typename IVSparse::SparseMa
     // check that the vector is the correct size
     assert((vec.getLength() == innerDim) &&
            "The vector must be the same size as the outer dimension of the "
-           "matrix!")
+           "matrix!");
   #endif
 
   // check if the matrix is empty
