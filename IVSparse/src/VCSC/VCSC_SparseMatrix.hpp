@@ -434,7 +434,7 @@ class SparseMatrix<T, indexT, 2, columnMajor> : public SparseMatrixBase {
       typename SparseMatrix<T, indexT, 2, columnMajor>::Vector &vec);
 
   // Matrix Matrix Multiplication
-  Eigen::Matrix<T, -1, -1> operator*(Eigen::Matrix<T, -1, -1> mat);
+  Eigen::Matrix<T, -1, -1> operator*(Eigen::Matrix<T, -1, -1> &mat);
 
 };  // End of VCSC Sparse Matrix Class
 

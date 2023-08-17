@@ -27,7 +27,7 @@ int main() {
     std::cout << std::endl;
     std::cout << std::endl;
     // benchmark("../datasets/ratings.csv", returnDouble);
-    benchmark("../datasets/filtered_feature_bc_matrix.mtx", returnDouble);
+    benchmark("../../../datasets/single_cell/matrix.mtx", returnDouble);
     return 0;
 }
 
@@ -74,10 +74,23 @@ void benchmark(char* filepath, std::function<double(std::string, std::unordered_
     std::vector<std::tuple<uint, uint, double>> data;
 
     // loadMatrix(data, func, filepath);
+    std::cout << "Loading matrix... " << filepath << std::endl;
     load_mm_matrix(data, filepath);
     // generateMatrix(data, 500000, 10000, 99, 1, 1);
-    // std::cout << "Done loading matrix" << std::endl;
+    std::cout << "Done loading matrix" << std::endl;
     data.resize(data.size());
+
+    // loop through the tuples and count the number of unique values
+
+    // construct a dictionary of the unique values
+    std::map<uint, uint> uniqueValues;
+
+    for (uint i = 0; i < data.size(); i++) {
+        uniqueValues.insert(std::pair<uint, uint>(std::get<2>(data.at(i)), 0));
+    }
+
+    // print the number of unique values
+    std::cout << "Number of unique values: " << uniqueValues.size() << std::endl;
 
     uint cols = (uint)[&data] {
         int max = 0;
@@ -211,6 +224,8 @@ void load_mm_matrix(std::vector<std::tuple<uint, uint, double>>& data, char* fil
     free(val);
 
     std::cout << "Loaded: " << filename << std::endl;
+
+    return;
 }
 
 void generateMatrix(std::vector<std::tuple<uint, uint, double>>& data, int numRows, int numCols, int sparsity, uint64_t seed, uint64_t maxValue) {
@@ -232,8 +247,10 @@ template <typename T, typename indexType, int compressionLevel>
 uint64_t buildMatrix(std::vector<std::tuple<uint, uint, double>>& data, uint rows, uint cols, uint nnz) {
 
     IVSparse::SparseMatrix<T, indexType, compressionLevel> matrix(data, rows, cols, nnz);
-    if constexpr (compressionLevel == 3)
+    
+    if constexpr (compressionLevel == 3) {
         averageRedundancy<double, uint, 3>(matrix);
+    }
 
     return matrix.byteSize();
 }

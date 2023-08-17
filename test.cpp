@@ -24,51 +24,50 @@ bool compareMatrices(Eigen::Matrix<T, -1, -1> mat1, Eigen::Matrix<T, -1, -1> mat
 
 template <typename T>
 std::vector<std::tuple<int, int, int>> generateCOO(int rows, int cols, int max);
-// For my convenience
+
+//  For my convenience
 //  clear; rm a.out; g++ test.cpp; ./a.out
 
 int main() {
+    
     int rows = 10000;
     int cols = 100;
-    int sparsity = 10;
+    int sparsity = 5;
     uint64_t seed = 522;
     int maxVal = 10;
     const bool isColMajor = true;
 
-
-
-
-    // Eigen::MatrixXi testDense = Eigen::MatrixXi::Random(rows-1, cols);
-    // Eigen::MatrixXi testDense2 = Eigen::MatrixXi::Random(cols, rows + 3);
-    // Eigen::SparseMatrix<DATA_TYPE> testEigenDense = testDense.sparseView();
-    // IVSparse::SparseMatrix<DATA_TYPE, INDEX_TYPE, 3, isColMajor> csf3(testEigenDense);
-    // IVSparse::SparseMatrix<DATA_TYPE, INDEX_TYPE, 2, isColMajor> csf2(testEigenDense);
-    // // Eigen::VectorXi eigenVec = Eigen::VectorXi::Random(cols);
+    Eigen::MatrixXi testDense = Eigen::MatrixXi::Random(rows-1, cols);
+    Eigen::MatrixXi testDense2 = Eigen::MatrixXi::Random(cols, rows + 3);
+    Eigen::SparseMatrix<DATA_TYPE> testEigenDense = testDense.sparseView();
+    IVSparse::SparseMatrix<DATA_TYPE, INDEX_TYPE, 3, isColMajor> csf3(testEigenDense);
+    IVSparse::SparseMatrix<DATA_TYPE, INDEX_TYPE, 2, isColMajor> csf2(testEigenDense);
+    Eigen::VectorXi eigenVec = Eigen::VectorXi::Random(cols);
 
     // std::cout << (csf3 * testDense2) << std::endl << std::endl << std::endl;
     // std::cout << (csf2 * testDense2) << std::endl << std::endl << std::endl;
 
+
     // std::cout << (testEigenDense * testDense2) << std::endl;
 
 
-    // std::cout << "IVCSC:   " << (csf3 * testDense2).sum() << std::endl;
-    // std::cout << "VCSC:    " << (csf2 * testDense2).sum() << std::endl;
-    // std::cout << "them:  " << (testEigenDense * testDense2).sum() << std::endl;
-
+    std::cout << "IVCSC:   " << (csf3 * testDense2).sum() << std::endl;
+    std::cout << "VCSC:    " << (csf2 * testDense2).sum() << std::endl;
+    std::cout << "them:  " << (testEigenDense * testDense2).sum() << std::endl;
 
     std::vector<uint64_t> csf3Times;
     std::vector<uint64_t> csf2Times;
     std::vector<uint64_t> eigenTimes;
     // return 1;
+
     printf("%10s %10s %10s\n", "VCSC", "IVCSC", "Eigen");
+    
     for (int i = 0; i < 100; i++) {
         srand(time(NULL));
 
         // rows = rand() % 100 + 1;
         // cols = rand() % 100 + 1;
         Eigen::SparseMatrix<int> original = generateMatrix<int>(rows, cols, sparsity, seed, maxVal);
-
-
 
         // std::cout << "iteration: " << i << std::endl;
         // std::cout << "Rows: " << rows << " Cols: " << cols << std::endl;
@@ -149,59 +148,6 @@ int main() {
 
     std::cout << "Eigen takes " << (double)avgEigenTime / avgCSF2Time << " times as long as VCSC" << std::endl;
     std::cout << "Eigen takes " << (double)avgEigenTime / avgCSF3Time << " times as long as IVCSC" << std::endl;
-
-    // generateAllUniqueElements<DATA_TYPE>(eigen);
-    // generateAllRedundantElements<DATA_TYPE>(eigen);
-    // std::cout << eigen << std::endl;
-
-    // Eigen::MatrixXi mat(6, 6);
-    // mat << 0, 6, 4,  1, -1, 4,
-    //        3, 9, 0,  0, -6, 4,
-    //        0, 0,-5,-10,  0, 1,
-    //        9, 8, 7,  6,  5, 4,
-    //        0, 0, 0,  0,  0, 4,
-    //        0, 0, 0,  0,  0,-1;
-
-    // Eigen::Vector<DATA_TYPE, 6> eigenVec(6,1);
-    // eigenVec << 0,
-    //             3,
-    //             0,
-    //             9,
-    //             0,
-    //             0;
-
-    // insert 6 1's into every row of eigen
-    //  for(int i = 0; i < eigen.cols(); i++){
-    //      for(int j = 0; j < 2; j++){
-    //          eigen.insert(i, j) = 1;
-    //      }
-    //  }
-
-    // // IVSparse::SparseMatrix<DATA_TYPE, uint32_t, 1> csf(eigen);
-    // IVSparse::SparseMatrix<DATA_TYPE, INDEX_TYPE, 3, isColMajor> csf3(eigen);
-    // IVSparse::SparseMatrix<DATA_TYPE, INDEX_TYPE, 2, isColMajor> csf2(eigen);
-    // IVSparse::SparseMatrix<DATA_TYPE, INDEX_TYPE, 1, isColMajor> CSC(eigen);
-    // uint64_t eigenSize = eigen.nonZeros() * sizeof(DATA_TYPE) + eigen.nonZeros() * sizeof(INDEX_TYPE) + (eigen.outerSize() + 1) * sizeof(INDEX_TYPE);
-
-    // std::cout << "Eigen size: " << eigenSize << std::endl;
-    // std::cout << "VCSC size: " << csf2.byteSize() << std::endl;
-    // std::cout << "IVCSC size: " << csf3.byteSize() << std::endl;
-
-    // std::cout << "Ratios -> VCSC: " << (double)csf2.byteSize() / eigenSize << " \tCSF3: " << (double)csf3.byteSize() / eigenSize << std::endl;
-
-    // assert(csf2.sum() == csf3.sum());
-    // assert(csf2.sum() == CSC.sum());
-    // assert(csf3.sum() == CSC.sum());
-    // assert(eigen.sum() == CSC.sum());
-    // assert(eigen.sum() == csf2.sum());
-    // assert(eigen.sum() == csf3.sum());
-
-
-
-
-    // iteratorTest<int, int, 3>();
-    // iteratorTest<int, int, 2>();
-    // iteratorTest<int, int, 1>();
 
     return 0;
 }

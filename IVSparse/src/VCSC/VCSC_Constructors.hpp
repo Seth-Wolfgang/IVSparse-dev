@@ -276,7 +276,6 @@ SparseMatrix<T, indexT, 2, columnMajor>::SparseMatrix(
 
     valueSizes[i] = maps[i].size();
     indexSizes[i] = numInidces;
-    nnz += numInidces;
 
     size_t index = 0;
     size_t valIndex = 0;

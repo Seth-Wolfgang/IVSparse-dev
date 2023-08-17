@@ -273,25 +273,22 @@ Eigen::Matrix<T, -1, 1> SparseMatrix<T, indexT, 2, columnMajor>::operator*(Eigen
 
 // Matrix Matrix Multiplication (IVSparse Eigen -> Eigen)
 template <typename T, typename indexT, bool columnMajor>
-Eigen::Matrix<T, -1, -1> SparseMatrix<T, indexT, 2, columnMajor>::operator*(Eigen::Matrix<T, -1, -1> mat) {
+Eigen::Matrix<T, -1, -1> SparseMatrix<T, indexT, 2, columnMajor>::operator*(Eigen::Matrix<T, -1, -1> &mat) {
   
   #ifdef IVSPARSE_DEBUG
   // check that the matrix is the correct size
-  if (mat.rows() != outerDim)
+  if (mat.rows() != numCols)
     throw std::invalid_argument(
         "The left matrix must have the same # of rows as columns in the right "
         "matrix!");
   #endif
 
-  Eigen::Matrix<T, -1, -1> newMatrix = Eigen::Matrix<T, -1, -1>::Zero(mat.cols(), innerDim);
+  Eigen::Matrix<T, -1, -1> newMatrix = Eigen::Matrix<T, -1, -1>::Zero(mat.cols(), numRows);
   Eigen::Matrix<T, -1, -1> matTranspose = mat.transpose();
 
-  #ifdef IVSPARSE_HAS_OPENMP
-  #pragma omp parallel for
-  #endif
-  for (int col = 0; col < outerDim; col++) {
-    for (typename SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator matIter(*this, col);
-         matIter; ++matIter) {
+  // Fix Parallelism issue (race condition because of partial sums and orientation of Sparse * Dense)
+  for (uint32_t col = 0; col < numCols; col++) {
+    for (typename SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator matIter(*this, col); matIter; ++matIter) {
       newMatrix.col(matIter.row()) += matTranspose.col(col) * matIter.value();
     }
   }

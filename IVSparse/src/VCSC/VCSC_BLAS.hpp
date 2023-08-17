@@ -59,12 +59,9 @@ inline Eigen::Matrix<T, -1, 1> SparseMatrix<T, indexT, 2, columnMajor>::vectorMu
 
   Eigen::Matrix<T, -1, 1> eigenTemp = Eigen::Matrix<T, -1, 1>::Zero(innerDim, 1);
 
-  // iterate over the vector and multiply the corresponding row of the matrix by
-  // the vecIter value
+  // iterate over the vector and multiply the corresponding row of the matrix by the vecIter value
   for (uint32_t i = 0; i < outerDim; i++) {
-    for (typename SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator
-             matIter(*this, i);
-         matIter; ++matIter) {
+    for (typename SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator matIter(*this, i); matIter; ++matIter) {
       eigenTemp(matIter.row()) += vec(matIter.col()) * matIter.value();
     }
   }

@@ -53,7 +53,7 @@ inline void SparseMatrix<T, indexT, compressionLevel, columnMajor>::inPlaceScala
 
 // Matrix Vector Multiplication (Eigen::VectorXd * IVSparse::SparseMatrix)
 template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-inline Eigen::Matrix<T, -1, 1> SparseMatrix<T, indexT, compressionLevel, columnMajor>::vectorMultiply(Eigen::Matrix<T, -1, 1> vec) {
+inline Eigen::Matrix<T, -1, 1> SparseMatrix<T, indexT, compressionLevel, columnMajor>::vectorMultiply(Eigen::Matrix<T, -1, 1> &vec) {
   
   #ifdef IVSPARSE_DEBUG
   // check that the vector is the correct size
@@ -64,13 +64,10 @@ inline Eigen::Matrix<T, -1, 1> SparseMatrix<T, indexT, compressionLevel, columnM
 
   Eigen::Matrix<T, -1, 1> eigenTemp = Eigen::Matrix<T, -1, 1>::Zero(innerDim, 1);
 
-  // iterate over the vector and multiply the corresponding row of the matrix by
-  // the vecIter value
+  // iterate over the vector and multiply the corresponding row of the matrix by the vecIter value
 
   for (uint32_t i = 0; i < outerDim; i++) {
-    for (typename SparseMatrix<T, indexT, 3, columnMajor>::InnerIterator
-             matIter(*this, i);
-         matIter; ++matIter) {
+    for (typename SparseMatrix<T, indexT, 3, columnMajor>::InnerIterator matIter(*this, i); matIter; ++matIter) {
       eigenTemp(matIter.row()) += vec(matIter.col()) * matIter.value();
     }
   }
@@ -243,9 +240,7 @@ inline T SparseMatrix<T, indexT, compressionLevel, columnMajor>::sum() {
   #pragma omp parallel for reduction(+ : sum)
   #endif
   for (int i = 0; i < outerDim; i++) {
-    for (typename SparseMatrix<T, indexT, compressionLevel,
-                               columnMajor>::InnerIterator it(*this, i);
-         it; ++it) {
+    for (typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator it(*this, i); it; ++it) {
       sum += it.value();
     }
   }

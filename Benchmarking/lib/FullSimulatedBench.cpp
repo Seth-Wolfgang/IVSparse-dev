@@ -18,7 +18,7 @@
 
 #define NUM_ITERATIONS 10
 #define DENSITY 0.1
-#define MATRICES 1000
+#define MATRICES 100
 #define VALUE_TYPE double
 
 template <typename T, typename indexType, int compressionLevel> double averageRedundancy(IVSparse::SparseMatrix<T, indexType, compressionLevel>& matrix);
@@ -59,8 +59,10 @@ int main(int argc, char** argv) {
         argv = (char**)malloc(3 * sizeof(char*));
         argv[1] = (char*)malloc(10 * sizeof(char));
         argv[2] = (char*)malloc(10 * sizeof(char));
-        argv[1] = "10000";
-        argv[2] = "100";
+        char rows[] = "1000";
+        char cols[] = "100";
+        argv[1] = rows;
+        argv[2] = cols;
     }
     std::cout << "Running with " << argv[1] << " rows and " << argv[2] << " columns" << std::endl;
 
@@ -68,7 +70,8 @@ int main(int argc, char** argv) {
     std::vector<std::tuple<int, int, VALUE_TYPE>> coords;
     int rows, cols;
     if (readFromDisk) {
-        char* filePath = "";
+        char file[] = "";
+        char* filePath = file;
         loadMatrix(coords, filePath);
         rows = getMax<0>(coords);
         cols = getMax<1>(coords);
@@ -124,12 +127,12 @@ void loadMatrix(std::vector<std::tuple<int, int, VALUE_TYPE>>& data, char* filen
     //copy data to data vector
     fclose(file);
 }
+
 /**
  * @brief gets the max in the tuple
  *
  *
  */
-
 template <int index>
 int __attribute__((optimize("Ofast"))) getMax(std::vector<std::tuple<int, int, VALUE_TYPE>>& data) {
     int max = 0;
@@ -185,6 +188,8 @@ void __attribute__((optimize("Ofast"))) generateMatrix(std::vector<std::tuple<in
     uint numElements = static_cast<uint>(numRows * numCols * DENSITY);
     std::map<std::tuple<int, int, VALUE_TYPE>, bool> visited;  // Store visited coordinates
 
+    data.resize(numElements);
+
     while (data.size() < numElements) {
         int row = rng() % numRows;
         int col = rng() % numCols;
@@ -199,8 +204,6 @@ void __attribute__((optimize("Ofast"))) generateMatrix(std::vector<std::tuple<in
         visited[coordinate] = true;  // Mark coordinate as visited
         data.push_back(coordinate);
     }
-
-    data.resize(numElements);
 }
 
 
@@ -423,7 +426,7 @@ void   VCSC_scalarBenchmark(IVSparse::SparseMatrix<VALUE_TYPE, int, 2> matrix, s
 
     for (int i = 0; i < NUM_ITERATIONS; i++) {
         start = std::chrono::high_resolution_clock::now();
-        matrix *= 2;
+        result *= 2;
         end = std::chrono::high_resolution_clock::now();
         resultData.at(i).at(1) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
     }
@@ -551,7 +554,7 @@ void IVCSC_scalarBenchmark(IVSparse::SparseMatrix<VALUE_TYPE, int, 3> matrix, st
 
     for (int i = 0; i < NUM_ITERATIONS; i++) {
         start = std::chrono::high_resolution_clock::now();
-        matrix *= 2;
+        result *= 2;
         end = std::chrono::high_resolution_clock::now();
         resultData.at(i).at(1) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
     }

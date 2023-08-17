@@ -229,37 +229,35 @@ Eigen::Matrix<T, -1, 1> SparseMatrix<T, indexT, compressionLevel, columnMajor>::
 // Matrix Vector Multiplication (IVSparse Eigen -> Eigen)
 template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
 Eigen::Matrix<T, -1, 1> SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator*(
-    Eigen::Matrix<T, -1, 1> vec) {
+    Eigen::Matrix<T, -1, 1> &vec) {
   
   return vectorMultiply(vec);
 }
 
 // Matrix Matrix Multiplication (IVSparse Eigen -> Eigen)
 template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-Eigen::Matrix<T, -1, -1> SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator*(Eigen::Matrix<T, -1, -1> mat) {
+Eigen::Matrix<T, -1, -1> SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator*(Eigen::Matrix<T, -1, -1> &mat) {
 
   #ifdef IVSPARSE_DEBUG
   // check that the matrix is the correct size
-  if (mat.rows() != outerDim)
+  if (mat.rows() != numCols)
     throw std::invalid_argument(
         "The left matrix must have the same # of rows as columns in the right "
         "matrix!");
   #endif
 
-  Eigen::Matrix<T, -1, -1> newMatrix = Eigen::Matrix<T, -1, -1>::Zero(mat.cols(), innerDim);
+  Eigen::Matrix<T, -1, -1> newMatrix = Eigen::Matrix<T, -1, -1>::Zero(mat.cols(), numRows);
   Eigen::Matrix<T, -1, -1> matTranspose = mat.transpose();
 
-  #ifdef IVSPARSE_HAS_OPENMP
-  #pragma omp parallel for
-  #endif
-  for (int col = 0; col < outerDim; col++) {
-    for (typename SparseMatrix<T, indexT, 3, columnMajor>::InnerIterator
-             matIter(*this, col);
-         matIter; ++matIter) {
+  // #ifdef IVSPARSE_HAS_OPENMP
+  // #pragma omp parallel for
+  // #endif
+  for (uint32_t col = 0; col < numCols; col++) {
+    for (typename SparseMatrix<T, indexT, 3, columnMajor>::InnerIterator matIter(*this, col); matIter; ++matIter) {
       newMatrix.col(matIter.row()) += matTranspose.col(col) * matIter.value();
     }
   }
   return newMatrix.transpose();
 }
 
-}  // namespace IVSparse
+} // namespace IVSparse
