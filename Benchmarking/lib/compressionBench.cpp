@@ -27,7 +27,7 @@ int main() {
     std::cout << std::endl;
     std::cout << std::endl;
     // benchmark("../datasets/ratings.csv", returnDouble);
-    benchmark("../../../datasets/single_cell/matrix.mtx", returnDouble);
+    benchmark("../datasets/PR02R.mtx", returnDouble);
     return 0;
 }
 
@@ -120,6 +120,7 @@ void benchmark(char* filepath, std::function<double(std::string, std::unordered_
     std::cout << "Cols: " << cols << std::endl;
     std::cout << "Size: " << size << std::endl;
     std::cout << "Density: " << density << std::endl;
+    std::cout << "gigabytes: " << (double)(static_cast<double>(size) * 16) / (double)(1024 * 1024 * 1024) << std::endl;
     // print all of data
     //  for (uint i = 0; i < data.size(); i++) {
     //      std::cout << std::get<0>(data.at(i)) << ", " << std::get<1>(data.at(i)) << ", " << std::get<2>(data.at(i)) << std::endl;
@@ -149,8 +150,11 @@ template <typename T, typename indexType, int compressionLevel>
 void averageRedundancy(IVSparse::SparseMatrix<T, indexType, compressionLevel>& matrix) {
     const int numRows = matrix.rows();
     const int numCols = matrix.cols();
+    std::cout << "Fetching redundancy" << std::endl;
     int colsWithValues = 0;
     double totalRedundancy = 0.0;
+    std::unordered_map<double, double> uniqueValues_overall;
+
 
     for (int j = 0; j < numCols; ++j) {
         double totalValues = 0;
@@ -159,6 +163,7 @@ void averageRedundancy(IVSparse::SparseMatrix<T, indexType, compressionLevel>& m
 
         for (typename IVSparse::SparseMatrix<T, indexType, compressionLevel>::InnerIterator it(matrix, j); it; ++it) {
             uniqueValues.insert(std::pair<double, int>(it.value(), 0));
+            uniqueValues_overall.insert(std::pair<double, int>(it.value(), 0));
             totalValues++;
         }
 
@@ -171,6 +176,7 @@ void averageRedundancy(IVSparse::SparseMatrix<T, indexType, compressionLevel>& m
         totalRedundancy += redundancy;
         colsWithValues++;
     }
+    std::cout << "Unique values in whole matrix: " << uniqueValues_overall.size() << std::endl;
 
     std::cout << "Avg Redundancy: " << totalRedundancy / static_cast<double>(colsWithValues) << std::endl;
 }
@@ -232,12 +238,23 @@ void generateMatrix(std::vector<std::tuple<uint, uint, double>>& data, int numRo
     // generate a random sparse matrix
     rng randMatrixGen = rng(seed);
     data.reserve(numRows * 2);
+    std::unordered_map<int, int> uniqueValues;
 
-#pragma openmp parallel for threadNum(4)
+
     for (int i = 0; i < numRows; i++) {
         for (int j = 0; j < numCols; j++) {
             if (randMatrixGen.draw<int>(i, j, sparsity)) {
-                data.push_back(std::make_tuple(i, j, rand() % maxValue + 1));
+                // int size = uniqueValues.size();
+                // int newVal = rand();
+                // uniqueValues.insert(std::pair<double, int>(newVal, 0));
+
+                // while (uniqueValues.size() == size) {
+                //     newVal = rand();
+                //     uniqueValues.insert(std::pair<double, int>(newVal, 0));
+                // }
+                // data.push_back(std::make_tuple(i, j, newVal));
+                data.push_back(std::make_tuple(i, j, 1));
+
             }
         }
     }
@@ -252,5 +269,6 @@ uint64_t buildMatrix(std::vector<std::tuple<uint, uint, double>>& data, uint row
         averageRedundancy<double, uint, 3>(matrix);
     }
 
-    return matrix.byteSize();
+    uint64_t size = matrix.byteSize();
+    return size;
 }

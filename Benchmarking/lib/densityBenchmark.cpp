@@ -1,9 +1,3 @@
-/**
- * 
- * All benchmarking requires the use of The Eigen Sparse Matrix Library
- * 
-*/
-
 
 #include <chrono> 
 #include "../../IVSparse/SparseMatrix"

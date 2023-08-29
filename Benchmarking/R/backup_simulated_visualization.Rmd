@@ -29,6 +29,29 @@ eigenResults10 = read.csv("~/results/EigenResults_0.1.csv")
 VCSCResults10 = read.csv("~/results/VCSCResults_0.1.csv")
 IVCSCResults10 = read.csv("~/results/IVCSCResults_0.1.csv")
 
+format_y_axis_label <- function(y_axis_variable) {
+  # Split the y-axis variable by underscores
+  words <- strsplit(y_axis_variable, "_")[[1]]
+  
+  # Check the number of words after splitting
+  num_words <- length(words)
+  
+  if (num_words == 2) {
+    if (words[1] == "spmv") {
+      formatted_label <- "SpMV Time"
+    } else if (words[1] == "spmm") {
+      formatted_label <- "SpMM Time"
+    } else {
+      formatted_label <- tools::toTitleCase(paste(words, collapse = " "))
+    }
+  } else {
+    formatted_label <- tools::toTitleCase(y_axis_variable)
+  }
+  
+  
+  return(formatted_label)
+}
+
 
 
 # 
@@ -110,100 +133,210 @@ library(ggplot2)
 library(dplyr)
 library(stringr)
 
+triple_scatter_plot <- function(dataset1_results, dataset1_name, dataset2_results, dataset2_name, dataset3_results, dataset3_name, y_axis_variable, name) {
+  
+    dir.create(file.path(paste0("~/vscode/CSF-Figures/plots/",name)), showWarnings = FALSE)
+    path <- paste0("~/vscode/CSF-Figures/plots/",name,"/",y_axis_variable,".pdf")
+
+    pdf(file <- path,  
+    width = 6, # The width of the plot in inches
+    height = 6) # The height of the plot in inches
+
+  dataset1_first_data <- dataset1_results %>%
+    group_by(ID) %>%
+    summarise_at(vars(redundancy, all_of(y_axis_variable)), ~mean(., na.rm = TRUE))
+
+  dataset2_first_data <- dataset2_results %>%
+    group_by(ID) %>%
+    summarise_at(vars(redundancy, all_of(y_axis_variable)), ~mean(., na.rm = TRUE))
+
+  dataset3_first_data <- dataset3_results %>%
+    group_by(ID) %>%
+    summarise_at(vars(redundancy, all_of(y_axis_variable)), ~mean(., na.rm = TRUE))
+
+  # Combine the data frames for all three datasets and eigenResults
+  combined_data <- rbind(
+    data.frame(redundancy = dataset1_first_data$redundancy, y_axis_variable = dataset1_first_data[[y_axis_variable]] / 1e6, dataset = dataset1_name),
+    data.frame(redundancy = dataset2_first_data$redundancy, y_axis_variable = dataset2_first_data[[y_axis_variable]] / 1e6, dataset = dataset2_name),
+    data.frame(redundancy = dataset3_first_data$redundancy, y_axis_variable = dataset3_first_data[[y_axis_variable]] / 1e6, dataset = dataset3_name)
+  )
+  
+      if (grepl("All", name, ignore.case = TRUE)) {
+    name <- ""
+    legend_name <- "Format"
+    
+    } else {
+      name <- paste0(name, " ")
+      legend_name <- "Density"
+    }
+
+  # Convert the dataset variable to a factor and set custom levels to control the order of appearance
+  combined_data$dataset <- factor(combined_data$dataset, levels = c(dataset1_name, dataset2_name, dataset3_name))
+  combined_data$ratio <- with(combined_data, y_axis_variable[order(dataset)])
+
+  # Create the scatter plot for the dataset ratio over Eigen
+  p <- ggplot(combined_data, aes(x = redundancy, y = y_axis_variable, color = dataset, shape = dataset)) +
+    geom_point() +
+    labs(x = "Redundancy",
+         y = paste0("Avg ", format_y_axis_label(y_axis_variable), " Time (ms)")) +
+    theme_minimal() +
+    theme(axis.title.y = element_text(size = 18),
+          axis.title.x = element_text(size = 18),
+          axis.text = element_text(size = 18),
+          legend.text = element_text(size =18),    # Adjust the font size of legend labels
+          legend.title = element_text(size = 18)) +  # Adjust the font size here
+    scale_y_continuous(breaks = scales::pretty_breaks(n = 10)) +
+    scale_x_continuous(breaks = scales::pretty_breaks(n = 5)) +
+    scale_color_manual(values = c("#00C058", "#BF00F1", "#0000EE"), labels = c(dataset1_name, dataset2_name, dataset3_name), name = legend_name) +
+    scale_shape_manual(values = c(16, 17, 15), labels = c(dataset1_name, dataset2_name, dataset3_name), name = legend_name) +   
+    theme(
+      legend.direction = "horizontal", 
+      legend.text.align = 0.5, 
+      legend.position = "bottom", 
+      legend.spacing.x = unit(0.5, "mm"))
+  
+  # Count the number of markers (data points)
+  num_markers <- nrow(combined_data)
+  cat("Number of markers:", num_markers, "\n")
+
+  # Define custom dataset names for the legend
+  dataset_names <- c(dataset1_name, dataset2_name, dataset3_name)
+
+  # Print the final plot
+  print(p)
+  
+  dev.off()
+}
+
 
 
 # # Create the function with data averaging
-# create_scatter_plot <- function(data, dataset_name, y_col) {
-#   # Group data by IDs and calculate the average values for the specified columns
-#   averaged_data <- data %>%
-#     group_by(ID) %>%
-#     summarise_at(vars(redundancy, y_col), ~mean(., na.rm = TRUE))
-#   
-#   # Create the scatter plot using the averaged data
-#   ggplot(averaged_data, aes_string(x = "redundancy", y = y_col)) +
-#     geom_point(color = "blue") +
-#     labs(title = paste(dataset_name, "-", y_col), x = "Redundancy", y = y_col) +
-#     theme_minimal()
-# }
-# # Example usage:
-# # Assuming you have data frames 'eigenResults', 'VCSCResults', 'IVCSCResults' with columns 'ID', 'redundancy', and 'spmm_time'
-# 
-# scatter_eigenResults <- create_scatter_plot(eigenResults5, "Eigen" , "size" )
-# scatter_VCSCResults <- create_scatter_plot(VCSCResults5, "VCSC", "size")
-# scatter_IVCSCResults <- create_scatter_plot(IVCSCResults5, "IVCSC","size")
-# print(scatter_eigenResults)
-# print(scatter_VCSCResults)
-# print(scatter_IVCSCResults)
-# 
-# scatter_eigenResults <- create_scatter_plot(eigenResults5, "Eigen" , "constructor_time" )
-# scatter_VCSCResults <- create_scatter_plot(VCSCResults5, "VCSC", "constructor_time")
-# scatter_IVCSCResults <- create_scatter_plot(IVCSCResults5, "IVCSC","constructor_time")
-# print(scatter_eigenResults)
-# print(scatter_VCSCResults)
-# print(scatter_IVCSCResults)
-# 
-# scatter_eigenResults <- create_scatter_plot(eigenResults5, "Eigen" , "scalar_time" )
-# scatter_VCSCResults <- create_scatter_plot(VCSCResults5, "VCSC", "scalar_time")
-# scatter_IVCSCResults <- create_scatter_plot(IVCSCResults5, "IVCSC","scalar_time")
-# print(scatter_eigenResults)
-# print(scatter_VCSCResults)
-# print(scatter_IVCSCResults)
-# 
-# 
-# scatter_eigenResults <- create_scatter_plot(eigenResults5, "Eigen" , "spmv_time" )
-# scatter_VCSCResults <- create_scatter_plot(VCSCResults5, "VCSC", "spmv_time")
-# scatter_IVCSCResults <- create_scatter_plot(IVCSCResults5, "IVCSC","spmv_time")
-# print(scatter_eigenResults)
-# print(scatter_VCSCResults)
-# print(scatter_IVCSCResults)
-# 
-# scatter_eigenResults <- create_scatter_plot(eigenResults5, "Eigen" , "spmm_time" )
-# scatter_VCSCResults <- create_scatter_plot(VCSCResults5, "VCSC", "spmm_time")
-# scatter_IVCSCResults <- create_scatter_plot(IVCSCResults5, "IVCSC","spmm_time")
-# print(scatter_eigenResults)
-# print(scatter_VCSCResults)
-# print(scatter_IVCSCResults)
+ create_scatter_plot <- function(data, dataset_name, y_col) {
+   # Group data by IDs and calculate the average values for the specified columns
+   averaged_data <- data %>%
+     group_by(ID) %>%
+     summarise_at(vars(redundancy, y_col), ~mean(., na.rm = TRUE))
+
+   # Create the scatter plot using the averaged data
+   ggplot(averaged_data, aes_string(x = "redundancy", y = y_col)) +
+     geom_point(color = "blue") +
+     labs(title = paste(dataset_name, "-", y_col), x = "Redundancy", y = y_col) +
+     theme_minimal()
+ }
+ # Example usage:
+ # Assuming you have data frames 'eigenResults', 'VCSCResults', 'IVCSCResults' with columns 'ID', 'redundancy', and 'spmm_time'
+
+ triple_scatter_plot(VCSCResults5, "VCSC 5%", IVCSCResults5, "IVCSC 5%" , eigenResults5, "Eigen", "spmm_time", "All_5_density")
+ # scatter_VCSCResults <- create_scatter_plot(VCSCResults5, "VCSC", "size")
+ # scatter_IVCSCResults <- create_scatter_plot(IVCSCResults5, "IVCSC","size")
+ # print(scatter_eigenResults)
+ # print(scatter_VCSCResults)
+ # print(scatter_IVCSCResults)
+ # 
+ # scatter_eigenResults <- create_scatter_plot(eigenResults5, "Eigen" , "constructor_time" )
+ # scatter_VCSCResults <- create_scatter_plot(VCSCResults5, "VCSC", "constructor_time")
+ # scatter_IVCSCResults <- create_scatter_plot(IVCSCResults5, "IVCSC","constructor_time")
+ # print(scatter_eigenResults)
+ # print(scatter_VCSCResults)
+ # print(scatter_IVCSCResults)
+ # 
+ # scatter_eigenResults <- create_scatter_plot(eigenResults5, "Eigen" , "scalar_time" )
+ # scatter_VCSCResults <- create_scatter_plot(VCSCResults5, "VCSC", "scalar_time")
+ # scatter_IVCSCResults <- create_scatter_plot(IVCSCResults5, "IVCSC","scalar_time")
+ # print(scatter_eigenResults)
+ # print(scatter_VCSCResults)
+ # print(scatter_IVCSCResults)
+ # 
+ # 
+ # scatter_eigenResults <- create_scatter_plot(eigenResults5, "Eigen" , "spmv_time" )
+ # scatter_VCSCResults <- create_scatter_plot(VCSCResults5, "VCSC", "spmv_time")
+ # scatter_IVCSCResults <- create_scatter_plot(IVCSCResults5, "IVCSC","spmv_time")
+ # print(scatter_eigenResults)
+ # print(scatter_VCSCResults)
+ # print(scatter_IVCSCResults)
+ # 
+ # scatter_eigenResults <- create_scatter_plot(eigenResults5, "Eigen" , "spmm_time" )
+ # scatter_VCSCResults <- create_scatter_plot(VCSCResults5, "VCSC", "spmm_time")
+ # scatter_IVCSCResults <- create_scatter_plot(IVCSCResults5, "IVCSC","spmm_time")
+ # print(scatter_eigenResults)
+ # print(scatter_VCSCResults)
+ # print(scatter_IVCSCResults)
 
 ```
 ## **Averages of Data at 10% Density**
 
 ```{R}
 
-# scatter_eigenResults <- create_scatter_plot(eigenResults10, "Eigen" , "spmm_time" )
-# scatter_VCSCResults <- create_scatter_plot(VCSCResults10, "VCSC", "spmm_time")
-# scatter_IVCSCResults <- create_scatter_plot(IVCSCResults10, "IVCSC","spmm_time")
-# print(scatter_eigenResults)
-# print(scatter_VCSCResults)
-# print(scatter_IVCSCResults)
-# 
-# scatter_eigenResults <- create_scatter_plot(eigenResults10, "Eigen" , "spmv_time" )
-# scatter_VCSCResults <- create_scatter_plot(VCSCResults10, "VCSC", "spmv_time")
-# scatter_IVCSCResults <- create_scatter_plot(IVCSCResults10, "IVCSC","spmv_time")
-# print(scatter_eigenResults)
-# print(scatter_VCSCResults)
-# print(scatter_IVCSCResults)
-# 
-# scatter_eigenResults <- create_scatter_plot(eigenResults10, "Eigen" , "scalar_time" )
-# scatter_VCSCResults <- create_scatter_plot(VCSCResults10, "VCSC", "scalar_time")
-# scatter_IVCSCResults <- create_scatter_plot(IVCSCResults10, "IVCSC","scalar_time")
-# print(scatter_eigenResults)
-# print(scatter_VCSCResults)
-# print(scatter_IVCSCResults)
-# 
-# scatter_eigenResults <- create_scatter_plot(eigenResults10, "Eigen" , "constructor_time" )
-# scatter_VCSCResults <- create_scatter_plot(VCSCResults10, "VCSC", "constructor_time")
-# scatter_IVCSCResults <- create_scatter_plot(IVCSCResults10, "IVCSC","constructor_time")
-# print(scatter_eigenResults)
-# print(scatter_VCSCResults)
-# print(scatter_IVCSCResults)
-# 
-# scatter_eigenResults <- create_scatter_plot(eigenResults10, "Eigen" , "size" )
-# scatter_VCSCResults <- create_scatter_plot(VCSCResults10, "VCSC", "size")
-# scatter_IVCSCResults <- create_scatter_plot(IVCSCResults10, "IVCSC","size")
-# print(scatter_eigenResults)
-# print(scatter_VCSCResults)
-# print(scatter_IVCSCResults)
+ scatter_eigenResults <- create_scatter_plot(eigenResults10, "Eigen" , "spmm_time" )
+ scatter_VCSCResults <- create_scatter_plot(VCSCResults10, "VCSC", "spmm_time")
+ scatter_IVCSCResults <- create_scatter_plot(IVCSCResults10, "IVCSC","spmm_time")
+ print(scatter_eigenResults)
+ print(scatter_VCSCResults)
+ print(scatter_IVCSCResults)
 
+ scatter_eigenResults <- create_scatter_plot(eigenResults10, "Eigen" , "spmv_time" )
+ scatter_VCSCResults <- create_scatter_plot(VCSCResults10, "VCSC", "spmv_time")
+ scatter_IVCSCResults <- create_scatter_plot(IVCSCResults10, "IVCSC","spmv_time")
+ print(scatter_eigenResults)
+ print(scatter_VCSCResults)
+ print(scatter_IVCSCResults)
+
+ scatter_eigenResults <- create_scatter_plot(eigenResults10, "Eigen" , "scalar_time" )
+ scatter_VCSCResults <- create_scatter_plot(VCSCResults10, "VCSC", "scalar_time")
+ scatter_IVCSCResults <- create_scatter_plot(IVCSCResults10, "IVCSC","scalar_time")
+ print(scatter_eigenResults)
+ print(scatter_VCSCResults)
+ print(scatter_IVCSCResults)
+
+ scatter_eigenResults <- create_scatter_plot(eigenResults10, "Eigen" , "constructor_time" )
+ scatter_VCSCResults <- create_scatter_plot(VCSCResults10, "VCSC", "constructor_time")
+ scatter_IVCSCResults <- create_scatter_plot(IVCSCResults10, "IVCSC","constructor_time")
+ print(scatter_eigenResults)
+ print(scatter_VCSCResults)
+ print(scatter_IVCSCResults)
+
+ scatter_eigenResults <- create_scatter_plot(eigenResults10, "Eigen" , "size" )
+ scatter_VCSCResults <- create_scatter_plot(VCSCResults10, "VCSC", "size")
+ scatter_IVCSCResults <- create_scatter_plot(IVCSCResults10, "IVCSC","size")
+ print(scatter_eigenResults)
+ print(scatter_VCSCResults)
+ print(scatter_IVCSCResults)
+
+
+```
+
+
+```{R}
+
+triple_scatter_plot(VCSCResults1, "1%", VCSCResults5, "5%", VCSCResults10, "10%", "constructor_time", "VCSC")
+triple_scatter_plot(VCSCResults1, "1%", VCSCResults5, "5%", VCSCResults10, "10%", "scalar_time", "VCSC")
+triple_scatter_plot(VCSCResults1, "1%", VCSCResults5, "5%", VCSCResults10, "10%", "spmv_time", "VCSC")
+triple_scatter_plot(VCSCResults1, "1%", VCSCResults5, "5%", VCSCResults10, "10%", "spmm_time", "VCSC")
+triple_scatter_plot(VCSCResults1, "1%", VCSCResults5, "5%", VCSCResults10, "10%", "sum_time", "VCSC")
+
+triple_scatter_plot(IVCSCResults1, "1%", IVCSCResults5, "5%", IVCSCResults10, "10%", "constructor_time", "IVCSC")
+triple_scatter_plot(IVCSCResults1, "1%", IVCSCResults5, "5%", IVCSCResults10, "10%", "scalar_time", "IVCSC")
+triple_scatter_plot(IVCSCResults1, "1%", IVCSCResults5, "5%", IVCSCResults10, "10%", "spmv_time", "IVCSC")
+triple_scatter_plot(IVCSCResults1, "1%", IVCSCResults5, "5%", IVCSCResults10, "10%", "spmm_time", "IVCSC")
+triple_scatter_plot(IVCSCResults1, "1%", IVCSCResults5, "5%", IVCSCResults10, "10%", "sum_time", "IVCSC")
+
+triple_scatter_plot(IVCSCResults1, "IVCSC", VCSCResults1, "VCSC", eigenResults1, "Eigen", "constructor_time", "All_1_density")
+triple_scatter_plot(IVCSCResults1, "IVCSC", VCSCResults1, "VCSC", eigenResults1, "Eigen", "scalar_time", "All_1_density")
+triple_scatter_plot(IVCSCResults1, "IVCSC", VCSCResults1, "VCSC", eigenResults1, "Eigen", "spmv_time", "All_1_density")
+triple_scatter_plot(IVCSCResults1, "IVCSC", VCSCResults1, "VCSC", eigenResults1, "Eigen", "spmm_time", "All_1_density")
+triple_scatter_plot(IVCSCResults1, "IVCSC", VCSCResults1, "VCSC", eigenResults1, "Eigen", "sum_time", "All_1_density")
+
+triple_scatter_plot(IVCSCResults5, "IVCSC", VCSCResults5, "VCSC", eigenResults5, "Eigen", "constructor_time", "All_5_density")
+triple_scatter_plot(IVCSCResults5, "IVCSC", VCSCResults5, "VCSC", eigenResults5, "Eigen", "scalar_time", "All_5_density")
+triple_scatter_plot(IVCSCResults5, "IVCSC", VCSCResults5, "VCSC", eigenResults5, "Eigen", "spmv_time", "All_5_density")
+triple_scatter_plot(IVCSCResults5, "IVCSC", VCSCResults5, "VCSC", eigenResults5, "Eigen", "spmm_time", "All_5_density")
+triple_scatter_plot(IVCSCResults5, "IVCSC", VCSCResults5, "VCSC", eigenResults5, "Eigen", "sum_time", "All_5_density")
+
+triple_scatter_plot(IVCSCResults5, "IVCSC", VCSCResults5, "VCSC", eigenResults10, "Eigen", "constructor_time", "All_10_density")
+triple_scatter_plot(IVCSCResults5, "IVCSC", VCSCResults5, "VCSC", eigenResults10, "Eigen", "scalar_time", "All_10_density")
+triple_scatter_plot(IVCSCResults5, "IVCSC", VCSCResults5, "VCSC", eigenResults10, "Eigen", "spmv_time", "All_10_density")
+triple_scatter_plot(IVCSCResults5, "IVCSC", VCSCResults5, "VCSC", eigenResults10, "Eigen", "spmm_time", "All_10_density")
+triple_scatter_plot(IVCSCResults5, "IVCSC", VCSCResults5, "VCSC", eigenResults10, "Eigen", "sum_time", "All_10_density")
 
 ```
 
@@ -214,38 +347,16 @@ library(stringr)
 ```{R}
 
 
-format_y_axis_label <- function(y_axis_variable) {
-  # Split the y-axis variable by underscores
-  words <- strsplit(y_axis_variable, "_")[[1]]
-  
-  # Check the number of words after splitting
-  num_words <- length(words)
-  
-  if (num_words == 2) {
-    if (words[1] == "spmv") {
-      formatted_label <- "SpMV Time"
-    } else if (words[1] == "spmm") {
-      formatted_label <- "SpMM Time"
-    } else {
-      formatted_label <- tools::toTitleCase(paste(words, collapse = " "))
-    }
-  } else {
-    formatted_label <- tools::toTitleCase(y_axis_variable)
-  }
-  
-  
-  return(formatted_label)
-}
 
 triple_plot_ratio_over_eigen <- function(dataset1_results, dataset1_name, dataset2_results, dataset2_name, dataset3_results, dataset3_name, eigen1, eigen2, eigen3, y_axis_variable, name) {
   # Step 1: Call the pdf command to start the plot
     
     dir.create(file.path(paste0("~/vscode/CSF-Figures/plots/",name)), showWarnings = FALSE)
-    path <- paste0("~/vscode/CSF-Figures/plots/",name,"/",y_axis_variable,".pdf")
+    path <- paste0("~/vscode/CSF-Figures/plots/",name,"/",y_axis_variable, "_ratio.pdf")
 
     pdf(file <- path,  
-    width = 5, # The width of the plot in inches
-    height = 3) # The height of the plot in inches
+    width = 6, # The width of the plot in inches
+    height = 6) # The height of the plot in inches
   
   # Select the first data point for each ID in eigenResults5, eigenResults10, and eigenResults3
   eigen_first_data_1 <- eigen1 %>%
@@ -291,6 +402,13 @@ triple_plot_ratio_over_eigen <- function(dataset1_results, dataset1_name, datase
   # Convert the dataset variable to a factor and set custom levels to control the order of appearance
   combined_data$dataset <- factor(combined_data$dataset, levels = c(dataset1_name, dataset2_name, dataset3_name))
   combined_data$ratio <- with(combined_data, ratio[order(dataset)])
+  
+    legend_name <- "Density"
+    if (grepl("All", name, ignore.case = TRUE)) {
+    name <- ""
+    legend_name <- "Format"
+    
+    }
 
   # Create the scatter plot for the dataset ratio over Eigen
   p <- ggplot(combined_data, aes(x = redundancy, y = ratio, color = dataset, shape = dataset)) +
@@ -298,25 +416,23 @@ triple_plot_ratio_over_eigen <- function(dataset1_results, dataset1_name, datase
     labs(x = "Redundancy",
          y = paste0("Ratio of ", format_y_axis_label(y_axis_variable), " Over Eigen")) +
     theme_minimal() +
-    theme(axis.title.y = element_text(size = 15),
-          axis.title.x = element_text(size = 15),
-          axis.text = element_text(size = 15),
+    theme(axis.title.y = element_text(size = 18),
+          axis.title.x = element_text(size = 18),
+          axis.text = element_text(size = 18),
           legend.text = element_text(size =18),    # Adjust the font size of legend labels
-          legend.title = element_text(size = 18))  # Adjust the font size here
-
-  
+          legend.title = element_text(size = 18)) +  # Adjust the font size here
+    scale_y_continuous(breaks = scales::pretty_breaks(n = 10)) +
+    scale_x_continuous(breaks = scales::pretty_breaks(n = 5)) +
+    scale_color_manual(values = c("#00C058", "#BF00F1", "#0000EE"), labels = c(dataset1_name, dataset2_name, dataset3_name), name = legend_name) +
+    scale_shape_manual(values = c(16, 17, 15), labels = c(dataset1_name, dataset2_name, dataset3_name), name = legend_name) +   
+    theme(
+      legend.direction = "horizontal", 
+      legend.text.align = 0.5, 
+      legend.position = "bottom", 
+      legend.spacing.x = unit(0.5, "mm"))
   
   # Add a label "1.0" on the y-axis at y=1
   p <- p + geom_hline(yintercept = 1, linetype = "dashed", color = "blue") 
-
-  # Count the number of markers (data points)
-  num_markers <- nrow(combined_data)
-  cat("Number of markers:", num_markers, "\n")
-
-  # Set colors and labels for the legend using scale_color_manual
-  p <- p + scale_color_manual(values = c("purple", "green", "blue"), labels = c(dataset1_name, dataset2_name, dataset3_name), name = "Format")
-  p <- p + scale_shape_manual(values = c(16, 17, 15), labels = c(dataset1_name, dataset2_name, dataset3_name), name = "Format")
-
 
   # Count the number of markers (data points)
   num_markers <- nrow(combined_data)
@@ -600,6 +716,9 @@ triple_plot(IVCSCResults1, "IVCSC 1% Dense", VCSCResults1, "VCSC 1% Dense", eige
 triple_plot(IVCSCResults5, "IVCSC 5% Dense", VCSCResults5, "VCSC 5% Dense", eigenResults5, "Eigen 5% Dense" , eigenResults5, c("scalar_time","spmv_time","spmm_time"),"All_5_density")
 triple_plot(IVCSCResults10, "IVCSC 10% Dense", VCSCResults10, "VCSC 10% Dense", eigenResults10, "Eigen 10% Dense" , eigenResults10, c("scalar_time","spmv_time","spmm_time"),"All_10_density")
 
+triple_plot(IVCSCResults10, "IVCSC 10% Dense", VCSCResults10, "VCSC 10% Dense", eigenResults10, "Eigen 10% Dense" , eigenResults10, c("constructor_time","sum_time","spmm_time"),"All_10_density")
+
+
 ```
 
 
@@ -607,20 +726,20 @@ triple_plot(IVCSCResults10, "IVCSC 10% Dense", VCSCResults10, "VCSC 10% Dense", 
 
 
 triple_size_plot(VCSCResults1, "1%", VCSCResults5, "5%", VCSCResults10, "10%", eigenResults1, eigenResults5, eigenResults10, "VCSC")
-triple_plot_ratio_over_eigen(VCSCResults1, "VCSC 1% Dense", VCSCResults5, "VCSC 5% Dense", VCSCResults10, "VCSC 10% Dense", eigenResults1, eigenResults5, eigenResults10, "constructor_time", "VCSC")
-triple_plot_ratio_over_eigen(VCSCResults1, "VCSC 1% Dense", VCSCResults5, "VCSC 5% Dense", VCSCResults10, "VCSC 10% Dense", eigenResults1, eigenResults5, eigenResults10, "scalar_time", "VCSC")
-triple_plot_ratio_over_eigen(VCSCResults1, "VCSC 1% Dense", VCSCResults5, "VCSC 5% Dense", VCSCResults10, "VCSC 10% Dense", eigenResults1, eigenResults5, eigenResults10, "spmv_time", "VCSC")
-triple_plot_ratio_over_eigen(VCSCResults1, "VCSC 1% Dense", VCSCResults5, "VCSC 5% Dense", VCSCResults10, "VCSC 10% Dense", eigenResults1, eigenResults5, eigenResults10, "spmm_time", "VCSC")
-triple_plot_ratio_over_eigen(VCSCResults1, "VCSC 1% Dense", VCSCResults5, "VCSC 5% Dense", VCSCResults10, "VCSC 10% Dense", eigenResults1, eigenResults5, eigenResults10, "sum_time", "VCSC")
+triple_plot_ratio_over_eigen(VCSCResults1, "1%", VCSCResults5, "5%", VCSCResults10, "10%", eigenResults1, eigenResults5, eigenResults10, "constructor_time", "VCSC")
+triple_plot_ratio_over_eigen(VCSCResults1, "1%", VCSCResults5, "5%", VCSCResults10, "10%", eigenResults1, eigenResults5, eigenResults10, "scalar_time", "VCSC")
+triple_plot_ratio_over_eigen(VCSCResults1, "1%", VCSCResults5, "5%", VCSCResults10, "10%", eigenResults1, eigenResults5, eigenResults10, "spmv_time", "VCSC")
+triple_plot_ratio_over_eigen(VCSCResults1, "1%", VCSCResults5, "5%", VCSCResults10, "10%", eigenResults1, eigenResults5, eigenResults10, "spmm_time", "VCSC")
+triple_plot_ratio_over_eigen(VCSCResults1, "1%", VCSCResults5, "5%", VCSCResults10, "10%", eigenResults1, eigenResults5, eigenResults10, "sum_time", "VCSC")
 ```
 
 ```{R}
 triple_size_plot(IVCSCResults1, "1%", IVCSCResults5, "5%", IVCSCResults10, "10%", eigenResults1, eigenResults5, eigenResults10, "IVCSC")
-triple_plot_ratio_over_eigen(IVCSCResults1, "IVCSC 1% Dense", IVCSCResults5, "IVCSC 5% Dense", IVCSCResults10, "IVCSC 10% Dense", eigenResults1, eigenResults5, eigenResults10, "constructor_time", "IVCSC")
-triple_plot_ratio_over_eigen(IVCSCResults1, "IVCSC 1% Dense", IVCSCResults5, "IVCSC 5% Dense", IVCSCResults10, "IVCSC 10% Dense", eigenResults1, eigenResults5, eigenResults10, "scalar_time", "IVCSC")
-triple_plot_ratio_over_eigen(IVCSCResults1, "IVCSC 1% Dense", IVCSCResults5, "IVCSC 5% Dense", IVCSCResults10, "IVCSC 10% Dense", eigenResults1, eigenResults5, eigenResults10, "spmv_time", "IVCSC")
-triple_plot_ratio_over_eigen(IVCSCResults1, "IVCSC 1% Dense", IVCSCResults5, "IVCSC 5% Dense", IVCSCResults10, "IVCSC 10% Dense", eigenResults1, eigenResults5, eigenResults10, "spmm_time", "IVCSC")
-triple_plot_ratio_over_eigen(IVCSCResults1, "IVCSC 1% Dense", IVCSCResults5, "IVCSC 5% Dense", IVCSCResults10, "IVCSC 10% Dense", eigenResults1, eigenResults5, eigenResults10, "sum_time", "IVCSC")
+triple_plot_ratio_over_eigen(IVCSCResults1, "1%", IVCSCResults5, "5%", IVCSCResults10, "10%", eigenResults1, eigenResults5, eigenResults10, "constructor_time", "IVCSC")
+triple_plot_ratio_over_eigen(IVCSCResults1, "1%", IVCSCResults5, "5%", IVCSCResults10, "10%", eigenResults1, eigenResults5, eigenResults10, "scalar_time", "IVCSC")
+triple_plot_ratio_over_eigen(IVCSCResults1, "1%", IVCSCResults5, "5%", IVCSCResults10, "10%", eigenResults1, eigenResults5, eigenResults10, "spmv_time", "IVCSC")
+triple_plot_ratio_over_eigen(IVCSCResults1, "1%", IVCSCResults5, "5%", IVCSCResults10, "10%", eigenResults1, eigenResults5, eigenResults10, "spmm_time", "IVCSC")
+triple_plot_ratio_over_eigen(IVCSCResults1, "1%", IVCSCResults5, "5%", IVCSCResults10, "10%", eigenResults1, eigenResults5, eigenResults10, "sum_time", "IVCSC")
 
 ```
 
@@ -628,11 +747,11 @@ triple_plot_ratio_over_eigen(IVCSCResults1, "IVCSC 1% Dense", IVCSCResults5, "IV
 ```{R}
 
 triple_size_plot(IVCSCResults1, "IVCSC",  VCSCResults1, "VCSC", eigenResults1, "CSC" , eigenResults1, eigenResults1, eigenResults1,"All_1_density")
-triple_plot_ratio_over_eigen(IVCSCResults1, "IVCSC 1% Dense", VCSCResults1, "VCSC 1% Dense", eigenResults1, "Eigen 1% Dense" ,eigenResults1, eigenResults1, eigenResults1 ,"constructor_time","All_1_density")
-triple_plot_ratio_over_eigen(IVCSCResults1, "IVCSC 1% Dense", VCSCResults1, "VCSC 1% Dense", eigenResults1, "Eigen 1% Dense" ,eigenResults1, eigenResults1, eigenResults1 ,"scalar_time","All_1_density")
-triple_plot_ratio_over_eigen(IVCSCResults1, "IVCSC 1% Dense", VCSCResults1, "VCSC 1% Dense", eigenResults1, "Eigen 1% Dense" ,eigenResults1, eigenResults1, eigenResults1 ,"spmv_time","All_1_density")
-triple_plot_ratio_over_eigen(IVCSCResults1, "IVCSC 1% Dense", VCSCResults1, "VCSC 1% Dense", eigenResults1, "Eigen 1% Dense" ,eigenResults1, eigenResults1, eigenResults1 ,"spmm_time","All_1_density")
-triple_plot_ratio_over_eigen(IVCSCResults1, "IVCSC 1% Dense", VCSCResults1, "VCSC 1% Dense", eigenResults1, "Eigen 1% Dense" ,eigenResults1, eigenResults1, eigenResults1 ,"sum_time","All_10_density")
+triple_plot_ratio_over_eigen(IVCSCResults1, "IVCSC", VCSCResults1, "VCSC", eigenResults1, "Eigen" ,eigenResults1, eigenResults1, eigenResults1 ,"constructor_time","All_1_density")
+triple_plot_ratio_over_eigen(IVCSCResults1, "IVCSC", VCSCResults1, "VCSC", eigenResults1, "Eigen" ,eigenResults1, eigenResults1, eigenResults1 ,"scalar_time","All_1_density")
+triple_plot_ratio_over_eigen(IVCSCResults1, "IVCSC", VCSCResults1, "VCSC", eigenResults1, "Eigen" ,eigenResults1, eigenResults1, eigenResults1 ,"spmv_time","All_1_density")
+triple_plot_ratio_over_eigen(IVCSCResults1, "IVCSC", VCSCResults1, "VCSC", eigenResults1, "Eigen" ,eigenResults1, eigenResults1, eigenResults1 ,"spmm_time","All_1_density")
+triple_plot_ratio_over_eigen(IVCSCResults1, "IVCSC", VCSCResults1, "VCSC", eigenResults1, "Eigen" ,eigenResults1, eigenResults1, eigenResults1 ,"sum_time","All_1_density")
 
 ```
 
@@ -643,11 +762,11 @@ triple_plot_ratio_over_eigen(IVCSCResults1, "IVCSC 1% Dense", VCSCResults1, "VCS
 
 ```{R}
 triple_size_plot(IVCSCResults5, "IVCSC",  VCSCResults5, "VCSC", eigenResults5, "CSC" , eigenResults5, eigenResults5, eigenResults5,"All_5_density")
-triple_plot_ratio_over_eigen(IVCSCResults5, "IVCSC 5% Dense", VCSCResults5, "VCSC 5% Dense", eigenResults5, "Eigen 5% Dense" ,eigenResults5, eigenResults5, eigenResults5 ,"constructor_time","All_5_density")
-triple_plot_ratio_over_eigen(IVCSCResults5, "IVCSC 5% Dense", VCSCResults5, "VCSC 5% Dense", eigenResults5, "Eigen 5% Dense" ,eigenResults5, eigenResults5, eigenResults5 ,"scalar_time","All_5_density")
-triple_plot_ratio_over_eigen(IVCSCResults5, "IVCSC 5% Dense", VCSCResults5, "VCSC 5% Dense", eigenResults5, "Eigen 5% Dense" ,eigenResults5, eigenResults5, eigenResults5 ,"spmv_time","All_5_density")
-triple_plot_ratio_over_eigen(IVCSCResults5, "IVCSC 5% Dense", VCSCResults5, "VCSC 5% Dense", eigenResults5, "Eigen 5% Dense" ,eigenResults5, eigenResults5, eigenResults5 ,"spmm_time","All_5_density")
-triple_plot_ratio_over_eigen(IVCSCResults5, "IVCSC 5% Dense", VCSCResults5, "VCSC 5% Dense", eigenResults5, "Eigen 5% Dense" ,eigenResults5, eigenResults5, eigenResults5 ,"sum_time","All_5_density")
+triple_plot_ratio_over_eigen(IVCSCResults5, "IVCSC", VCSCResults5, "VCSC", eigenResults5, "Eigen" ,eigenResults5, eigenResults5, eigenResults5 ,"constructor_time","All_5_density")
+triple_plot_ratio_over_eigen(IVCSCResults5, "IVCSC", VCSCResults5, "VCSC", eigenResults5, "Eigen" ,eigenResults5, eigenResults5, eigenResults5 ,"scalar_time","All_5_density")
+triple_plot_ratio_over_eigen(IVCSCResults5, "IVCSC", VCSCResults5, "VCSC", eigenResults5, "Eigen" ,eigenResults5, eigenResults5, eigenResults5 ,"spmv_time","All_5_density")
+triple_plot_ratio_over_eigen(IVCSCResults5, "IVCSC", VCSCResults5, "VCSC", eigenResults5, "Eigen" ,eigenResults5, eigenResults5, eigenResults5 ,"spmm_time","All_5_density")
+triple_plot_ratio_over_eigen(IVCSCResults5, "IVCSC", VCSCResults5, "VCSC", eigenResults5, "Eigen" ,eigenResults5, eigenResults5, eigenResults5 ,"sum_time","All_5_density")
 
 ```
 
@@ -655,11 +774,11 @@ triple_plot_ratio_over_eigen(IVCSCResults5, "IVCSC 5% Dense", VCSCResults5, "VCS
 
 ```{R}
 triple_size_plot(IVCSCResults10, "IVCSC",  VCSCResults10, "VCSC", eigenResults10, "CSC" , eigenResults10, eigenResults10, eigenResults10 ,"All_10_density")
-triple_plot_ratio_over_eigen(IVCSCResults10, "IVCSC 10% Dense", VCSCResults10, "VCSC 10% Dense", eigenResults10, "Eigen 10% Dense" ,eigenResults10, eigenResults10, eigenResults10 ,"constructor_time","All_10_density")
-triple_plot_ratio_over_eigen(IVCSCResults10, "IVCSC 10% Dense", VCSCResults10, "VCSC 10% Dense", eigenResults10, "Eigen 10% Dense" ,eigenResults10, eigenResults10, eigenResults10 ,"scalar_time","All_10_density")
-triple_plot_ratio_over_eigen(IVCSCResults10, "IVCSC 10% Dense", VCSCResults10, "VCSC 10% Dense", eigenResults10, "Eigen 10% Dense" ,eigenResults10, eigenResults10, eigenResults10 ,"spmv_time","All_10_density")
-triple_plot_ratio_over_eigen(IVCSCResults10, "IVCSC 10% Dense", VCSCResults10, "VCSC 10% Dense", eigenResults10, "Eigen 10% Dense" ,eigenResults10, eigenResults10, eigenResults10 ,"spmm_time","All_10_density")
-triple_plot_ratio_over_eigen(IVCSCResults10, "IVCSC 10% Dense", VCSCResults10, "VCSC 10% Dense", eigenResults10, "Eigen 10% Dense" ,eigenResults10, eigenResults10, eigenResults10 ,"sum_time","All_10_density")
+triple_plot_ratio_over_eigen(IVCSCResults10, "IVCSC", VCSCResults10, "VCSC", eigenResults10, "Eigen" ,eigenResults10, eigenResults10, eigenResults10 ,"constructor_time","All_10_density")
+triple_plot_ratio_over_eigen(IVCSCResults10, "IVCSC", VCSCResults10, "VCSC", eigenResults10, "Eigen" ,eigenResults10, eigenResults10, eigenResults10 ,"scalar_time","All_10_density")
+triple_plot_ratio_over_eigen(IVCSCResults10, "IVCSC", VCSCResults10, "VCSC", eigenResults10, "Eigen" ,eigenResults10, eigenResults10, eigenResults10 ,"spmv_time","All_10_density")
+triple_plot_ratio_over_eigen(IVCSCResults10, "IVCSC", VCSCResults10, "VCSC", eigenResults10, "Eigen" ,eigenResults10, eigenResults10, eigenResults10 ,"spmm_time","All_10_density")
+triple_plot_ratio_over_eigen(IVCSCResults10, "IVCSC", VCSCResults10, "VCSC", eigenResults10, "Eigen" ,eigenResults10, eigenResults10, eigenResults10 ,"sum_time","All_10_density")
 ```
 
 ## Combined Plots
