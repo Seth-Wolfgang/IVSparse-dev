@@ -6,6 +6,8 @@ output:
 date: "2023-07-21"
 ---
 
+This code is not pretty - it was meant to be done quickly.
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
 ```
@@ -15,7 +17,10 @@ library(ggplot2)
 library(dplyr)
 library(scales)
 library(patchwork)
+library(stringr)
 
+
+plotSavePath = "~/vscode/CSF-Figures/plots/"
 
 eigenResults1 = read.csv("~/results/EigenResults_0.01.csv")
 VCSCResults1 = read.csv("~/results/VCSCResults_0.01.csv")
@@ -111,7 +116,6 @@ library(ggplot2)
 # Load required library
 library(ggplot2)
 library(dplyr)
-library(stringr)
 
 
 
@@ -240,7 +244,7 @@ format_y_axis_label <- function(y_axis_variable) {
   return(formatted_label)
 }
 
-triple_plot_ratio_over_eigen <- function(dataset1_results, dataset1_name, dataset2_results, dataset2_name, dataset3_results, dataset3_name, eigen1, eigen2, eigen3, y_axis_variable, name) {
+triple_plot_ratio_over_eigen_no_legend <- function(dataset1_results, dataset1_name, dataset2_results, dataset2_name, dataset3_results, dataset3_name, eigen1, eigen2, eigen3, y_axis_variable, name) {
   # Step 1: Call the pdf command to start the plot
     
     dir.create(file.path(paste0("~/vscode/CSF-Figures/plots/",name)), showWarnings = FALSE)
@@ -248,7 +252,142 @@ triple_plot_ratio_over_eigen <- function(dataset1_results, dataset1_name, datase
 
     pdf(file <- path,  
     width = 6, # The width of the plot in inches
-    height = 6) # The height of the plot in inches
+    height = 7) # The height of the plot in inches
+  
+  # Select the first data point for each ID in eigenResults5, eigenResults10, and eigenResults3
+  eigen_first_data_1 <- eigen1 %>%
+    group_by(ID) %>%
+    summarise_at(vars(redundancy, y_axis_variable), ~mean(., na.rm = TRUE))
+  
+  eigen_first_data_2 <- eigen2 %>%
+    group_by(ID) %>%
+    summarise_at(vars(redundancy, y_axis_variable), ~mean(., na.rm = TRUE))
+  
+  eigen_first_data_3 <- eigen3 %>%
+    group_by(ID) %>%
+    summarise_at(vars(redundancy, y_axis_variable), ~mean(., na.rm = TRUE))
+  
+  dataset1_first_data <- dataset1_results %>%
+    group_by(ID) %>%
+    summarise_at(vars(redundancy, y_axis_variable), ~mean(., na.rm = TRUE))
+  
+  dataset2_first_data <- dataset2_results %>%
+    group_by(ID) %>%
+    summarise_at(vars(redundancy, y_axis_variable), ~mean(., na.rm = TRUE))
+  
+  dataset3_first_data <- dataset3_results %>%
+    group_by(ID) %>%
+    summarise_at(vars(redundancy, y_axis_variable), ~mean(., na.rm = TRUE))
+  
+  # Calculate the ratio by dividing y_axis_variable in dataset1_results by the corresponding values in eigen_first_data_5
+  ratio1 <- dataset1_first_data[[y_axis_variable]] / eigen_first_data_1[[y_axis_variable]]
+  
+  # Calculate the ratio by dividing y_axis_variable in dataset2_results by the corresponding values in eigen_first_data_10
+  ratio2 <- dataset2_first_data[[y_axis_variable]] / eigen_first_data_2[[y_axis_variable]]
+  
+  # Calculate the ratio by dividing y_axis_variable in dataset3_results by the corresponding values in eigen_first_data_3
+  ratio3 <- dataset3_first_data[[y_axis_variable]] / eigen_first_data_3[[y_axis_variable]]
+  
+  # Combine the data frames for all three datasets and eigenResults
+  combined_data <- rbind(
+    data.frame(redundancy = eigen_first_data_1$redundancy, ratio = ratio1, dataset = dataset1_name, eigenResult = "eigen1"),
+    data.frame(redundancy = eigen_first_data_2$redundancy, ratio = ratio2, dataset = dataset2_name, eigenResult = "eigen2"),
+    data.frame(redundancy = eigen_first_data_3$redundancy, ratio = ratio3, dataset = dataset3_name, eigenResult = "eigen3")
+  )
+
+  # Convert the dataset variable to a factor and set custom levels to control the order of appearance
+  combined_data$dataset <- factor(combined_data$dataset, levels = c(dataset1_name, dataset2_name, dataset3_name))
+  combined_data$ratio <- with(combined_data, ratio[order(dataset)])
+  
+    # if (grepl("All", name, ignore.case = TRUE)) {
+    #   name <- ""
+    #   legend_name <- "Format"
+    # 
+    # } else {
+    #   name <- paste0(name, " ")
+    #   legend_name <- "Density"
+    # }
+  
+
+  # Create the scatter plot for the dataset ratio over Eigen
+p <- ggplot(combined_data, aes(x = redundancy, y = ratio, color = dataset, shape = dataset)) +
+    geom_point() +
+    labs(x = "Redundancy",
+         y = paste0("Ratio of ", format_y_axis_label(y_axis_variable), " Over Eigen")) +
+    theme_minimal() +
+    theme(axis.title.y = element_text(size = 18),
+          axis.title.x = element_text(size = 18),
+          axis.text = element_text(size = 18),
+          legend.position = "none") +  # Remove the legend
+    scale_y_continuous(breaks = scales::pretty_breaks(n = 10)) +
+    scale_x_continuous(breaks = scales::pretty_breaks(n = 5)) +
+    scale_color_manual(values = c("#00C058", "#BF00F1", "#0000EE"),
+                       labels = c(dataset1_name, dataset2_name, dataset3_name),
+                       guide = guide_legend(override.aes = list(shape = NA, size = NA)),
+                       name = element_text(color = "white")) +  # Set legend text color
+    scale_shape_manual(values = c(16, 17, 15),
+                       labels = c(dataset1_name, dataset2_name, dataset3_name),
+                       guide = guide_legend(override.aes = list(color = NA, size = NA)),
+                       name = element_text(color = "white")) +  # Set legend text color
+    theme( # All legend colors is made white as to be invisible. This keep spacing for when there is a legend present -> all plots have same dimension/layout
+      legend.direction = "horizontal", 
+      legend.text.align = 0.5, 
+      legend.position = "bottom", 
+      legend.spacing.x = unit(0.5, "mm"),
+      legend.text = element_text(size = 18, color = "white"),  # Set legend text color
+      legend.title = element_text(size = 18, color = "white"))  # Set legend title color
+
+
+
+    # theme(
+    #   legend.direction = "horizontal", 
+    #   legend.text.align = 0.5, 
+    #   legend.position = "bottom", 
+    #   legend.spacing.x = unit(0.5, "mm"))
+  
+
+  
+  
+  # Add a label "1.0" on the y-axis at y=1
+  p <- p + geom_hline(yintercept = 1, linetype = "dashed", color = "blue") 
+
+  # Count the number of markers (data points)
+  num_markers <- nrow(combined_data)
+  cat("Number of markers:", num_markers, "\n")
+
+  # # Set colors and labels for the legend using scale_color_manual
+  # p <- p + scale_color_manual(values = c("purple", "green", "blue"), labels = c(dataset1_name, dataset2_name, dataset3_name), name = "Format")
+  # p <- p + scale_shape_manual(values = c(16, 17, 15), labels = c(dataset1_name, dataset2_name, dataset3_name), name = "Format")
+  # 
+
+  # Count the number of markers (data points)
+  num_markers <- nrow(combined_data)
+  cat("Number of markers:", num_markers, "\n")
+
+  # Define custom dataset names for the legend
+  # dataset_names <- c(dataset1_name, dataset2_name, dataset3_name)
+
+  # Set colors and labels for the legend using scale_color_manual
+  # p <- p + scale_color_manual(values = c("purple", "green", "blue"), labels = dataset_names)
+
+  # Print the final plot
+  print(p)
+  dev.off()
+}
+triple_plot_ratio_over_eigen_no_legend(IVCSCResults10, "IVCSC", VCSCResults10, "VCSC", eigenResults10, "Eigen" ,eigenResults10, eigenResults10, eigenResults10 ,"spmv_time","All_10_density")
+
+```
+
+```{R}
+triple_plot_ratio_over_eigen_bottom_legend <- function(dataset1_results, dataset1_name, dataset2_results, dataset2_name, dataset3_results, dataset3_name, eigen1, eigen2, eigen3, y_axis_variable, name) {
+  # Step 1: Call the pdf command to start the plot
+    
+    dir.create(file.path(paste0("~/vscode/CSF-Figures/plots/",name)), showWarnings = FALSE)
+    path <- paste0("~/vscode/CSF-Figures/plots/",name,"/",y_axis_variable,".pdf")
+
+    pdf(file <- path,  
+    width = 6, # The width of the plot in inches
+    height = 7) # The height of the plot in inches
   
   # Select the first data point for each ID in eigenResults5, eigenResults10, and eigenResults3
   eigen_first_data_1 <- eigen1 %>%
@@ -306,7 +445,7 @@ triple_plot_ratio_over_eigen <- function(dataset1_results, dataset1_name, datase
   
 
   # Create the scatter plot for the dataset ratio over Eigen
-  p <- ggplot(combined_data, aes(x = redundancy, y = ratio, color = dataset, shape = dataset)) +
+p <- ggplot(combined_data, aes(x = redundancy, y = ratio, color = dataset, shape = dataset)) +
     geom_point() +
     labs(x = "Redundancy",
          y = paste0("Ratio of ", format_y_axis_label(y_axis_variable), " Over Eigen")) +
@@ -314,18 +453,24 @@ triple_plot_ratio_over_eigen <- function(dataset1_results, dataset1_name, datase
     theme(axis.title.y = element_text(size = 18),
           axis.title.x = element_text(size = 18),
           axis.text = element_text(size = 18),
-          legend.text = element_text(size =18),    # Adjust the font size of legend labels
+          legend.text = element_text(size = 18),    # Adjust the font size of legend labels
           legend.title = element_text(size = 18)) +  # Adjust the font size here
     scale_y_continuous(breaks = scales::pretty_breaks(n = 10)) +
     scale_x_continuous(breaks = scales::pretty_breaks(n = 5)) +
-    scale_color_manual(values = c("#00C058", "#BF00F1", "#0000EE"), labels = c(dataset1_name, dataset2_name, dataset3_name), name = legend_name) +
-    scale_shape_manual(values = c(16, 17, 15), labels = c(dataset1_name, dataset2_name, dataset3_name), name = legend_name) +   
+    scale_color_manual(values = c("#00C058", "#BF00F1", "#0000EE"), 
+                       labels = c(dataset1_name, dataset2_name, dataset3_name), 
+                       name = legend_name,
+                       guide = guide_legend(override.aes = list(size = 4))) +  # Increase symbol size
+    scale_shape_manual(values = c(16, 17, 15), 
+                       labels = c(dataset1_name, dataset2_name, dataset3_name), 
+                       name = legend_name,
+                       guide = guide_legend(override.aes = list(size = 6))) +  # Increase symbol size
     theme(
       legend.direction = "horizontal", 
       legend.text.align = 0.5, 
       legend.position = "bottom", 
-      legend.spacing.x = unit(0.5, "mm"))
-  
+      legend.spacing.x = unit(0.5, "mm"),
+      legend.text = element_text(size = 18))
 
   
   
@@ -355,6 +500,7 @@ triple_plot_ratio_over_eigen <- function(dataset1_results, dataset1_name, datase
   print(p)
   dev.off()
 }
+triple_plot_ratio_over_eigen_bottom_legend(IVCSCResults10, "IVCSC", VCSCResults10, "VCSC", eigenResults10, "Eigen" ,eigenResults10, eigenResults10, eigenResults10 ,"spmv_time","All_10_density")
 
 ```
 
@@ -392,7 +538,7 @@ triple_plot_raw <- function(dataset1_results, dataset1_name, dataset2_results, d
     path <- paste0("~/vscode/CSF-Figures/plots/",name,"/","raw_",y_axis_variable,".pdf")
 
     pdf(file <- path,  
-    width = 12, # The width of the plot in inches
+    width = 6, # The width of the plot in inches
     height = 6) # The height of the plot in inches
   
   # Select the first data point for each ID in eigenResults5, eigenResults10, and eigenResults3
@@ -514,11 +660,11 @@ triple_size_plot <- function(dataset1_results, dataset1_name, dataset2_results, 
   firstNonzero <- eigenResults1[1, "nonzeros"]
   secondNonzero <- eigenResults5[1, "nonzeros"]
   thirdNonzero <- eigenResults10[1, "nonzeros"]
-  # path = paste0("~/vscode/CSF-Figures/plots/", name, "/")
-  # dir.create(file.path(path), showWarnings = FALSE)
-  # pdf(paste0(path,name,"_",y_axis_variable, ".pdf"),
-  #     width = 6,
-  #     height = 6)
+  path = paste0("~/vscode/CSF-Figures/plots/", name, "/")
+  dir.create(file.path(path), showWarnings = FALSE)
+  pdf(paste0(path,name,"_",y_axis_variable, ".pdf"),
+      width = 6,
+      height = 6)
   
   
   # Select the first data point for each ID in eigenResults5, eigenResults10, and eigenResults3
@@ -651,7 +797,7 @@ p <- ggplot(combined_data, aes(x = redundancy, y = ratio, color = dataset, shape
   # 
   # Print the final combined plot with a single legend beside the plots
   print(p)
-  # dev.off()
+  dev.off()
 }
 
 triple_size_plot(IVCSCResults10, "IVCSC",  VCSCResults10, "VCSC", eigenResults10, "CSC" , eigenResults10, eigenResults10, eigenResults10 ,"All_10_density")
@@ -729,8 +875,8 @@ density_triple_size_plot <- function(dataset1_results, dataset1_name, dataset2_r
   
   
 
-p <- ggplot(combined_data, aes(x = sparsity, y = ratio, color = dataset, shape = dataset)) +
-    geom_point() +
+p <- ggplot(combined_data, aes(x = sparsity, y = ratio, color = dataset, linetype = dataset)) +
+    geom_line(size = 1.2) +
     labs(x = "Sparsity",
          y = paste0("Ratio of ", name, " Memory Usage Over Dense")) +
     theme_minimal() +
@@ -742,7 +888,7 @@ p <- ggplot(combined_data, aes(x = sparsity, y = ratio, color = dataset, shape =
     scale_y_continuous(breaks = scales::pretty_breaks(n = 10)) + # Set limits to start from 0.1
     scale_x_continuous(breaks = scales::pretty_breaks(n = 5)) +
     scale_color_manual(values = c("#00C058", "#BF00F1", "#0000EE"), labels = c(dataset1_name, dataset2_name, dataset3_name), name = legend_name) +
-    scale_shape_manual(values = c(16, 17, 15), labels = c(dataset1_name, dataset2_name, dataset3_name), name = legend_name) +   
+    scale_linetype_manual(values = c("solid", "dashed", "dotted"), labels = c(dataset1_name, dataset2_name, dataset3_name), name = legend_name) +   
     theme(
       legend.direction = "horizontal", 
       legend.text.align = 0.5, 
@@ -919,22 +1065,22 @@ triple_plot(IVCSCResults10, "IVCSC 10% Dense", VCSCResults10, "VCSC 10% Dense", 
 
 
 triple_size_plot(VCSCResults1, "1%", VCSCResults5, "5%", VCSCResults10, "10%", eigenResults1, eigenResults5, eigenResults10, "VCSC")
-triple_plot_ratio_over_eigen(VCSCResults1, "1%", VCSCResults5, "5%", VCSCResults10, "10%", eigenResults1, eigenResults5, eigenResults10, "constructor_time", "VCSC")
+triple_plot_ratio_over_eigen_no_legend(VCSCResults1, "1%", VCSCResults5, "5%", VCSCResults10, "10%", eigenResults1, eigenResults5, eigenResults10, "constructor_time", "VCSC")
 triple_plot_raw(VCSCResults1, "1%", VCSCResults5, "5%", VCSCResults10, "10%", eigenResults1, eigenResults5, eigenResults10, "constructor_time", "VCSC")
-triple_plot_ratio_over_eigen(VCSCResults1, "1%", VCSCResults5, "5%", VCSCResults10, "10%", eigenResults1, eigenResults5, eigenResults10, "scalar_time", "VCSC")
-triple_plot_ratio_over_eigen(VCSCResults1, "1%", VCSCResults5, "5%", VCSCResults10, "10%", eigenResults1, eigenResults5, eigenResults10, "spmv_time", "VCSC")
-triple_plot_ratio_over_eigen(VCSCResults1, "1%", VCSCResults5, "5%", VCSCResults10, "10%", eigenResults1, eigenResults5, eigenResults10, "spmm_time", "VCSC")
-triple_plot_ratio_over_eigen(VCSCResults1, "1%", VCSCResults5, "5%", VCSCResults10, "10%", eigenResults1, eigenResults5, eigenResults10, "sum_time", "VCSC")
+triple_plot_ratio_over_eigen_no_legend(VCSCResults1, "1%", VCSCResults5, "5%", VCSCResults10, "10%", eigenResults1, eigenResults5, eigenResults10, "scalar_time", "VCSC")
+triple_plot_ratio_over_eigen_no_legend(VCSCResults1, "1%", VCSCResults5, "5%", VCSCResults10, "10%", eigenResults1, eigenResults5, eigenResults10, "spmv_time", "VCSC")
+triple_plot_ratio_over_eigen_no_legend(VCSCResults1, "1%", VCSCResults5, "5%", VCSCResults10, "10%", eigenResults1, eigenResults5, eigenResults10, "spmm_time", "VCSC")
+triple_plot_ratio_over_eigen_no_legend(VCSCResults1, "1%", VCSCResults5, "5%", VCSCResults10, "10%", eigenResults1, eigenResults5, eigenResults10, "sum_time", "VCSC")
 ```
 
 ```{R}
 triple_size_plot(IVCSCResults1, "1%", IVCSCResults5, "5%", IVCSCResults10, "10%", eigenResults1, eigenResults5, eigenResults10, "IVCSC")
-triple_plot_ratio_over_eigen(IVCSCResults1, "1%", IVCSCResults5, "5%", IVCSCResults10, "10%", eigenResults1, eigenResults5, eigenResults10, "constructor_time", "IVCSC")
+triple_plot_ratio_over_eigen_no_legend(IVCSCResults1, "1%", IVCSCResults5, "5%", IVCSCResults10, "10%", eigenResults1, eigenResults5, eigenResults10, "constructor_time", "IVCSC")
 triple_plot_raw(IVCSCResults1, "1%", IVCSCResults5, "5%", IVCSCResults10, "10%", eigenResults1, eigenResults5, eigenResults10, "constructor_time", "IVCSC")
-triple_plot_ratio_over_eigen(IVCSCResults1, "1%", IVCSCResults5, "5%", IVCSCResults10, "10%", eigenResults1, eigenResults5, eigenResults10, "scalar_time", "IVCSC")
-triple_plot_ratio_over_eigen(IVCSCResults1, "1%", IVCSCResults5, "5%", IVCSCResults10, "10%", eigenResults1, eigenResults5, eigenResults10, "spmv_time", "IVCSC")
-triple_plot_ratio_over_eigen(IVCSCResults1, "1%", IVCSCResults5, "5%", IVCSCResults10, "10%", eigenResults1, eigenResults5, eigenResults10, "spmm_time", "IVCSC")
-triple_plot_ratio_over_eigen(IVCSCResults1, "1%", IVCSCResults5, "5%", IVCSCResults10, "10%", eigenResults1, eigenResults5, eigenResults10, "sum_time", "IVCSC")
+triple_plot_ratio_over_eigen_no_legend(IVCSCResults1, "1%", IVCSCResults5, "5%", IVCSCResults10, "10%", eigenResults1, eigenResults5, eigenResults10, "scalar_time", "IVCSC")
+triple_plot_ratio_over_eigen_no_legend(IVCSCResults1, "1%", IVCSCResults5, "5%", IVCSCResults10, "10%", eigenResults1, eigenResults5, eigenResults10, "spmv_time", "IVCSC")
+triple_plot_ratio_over_eigen_no_legend(IVCSCResults1, "1%", IVCSCResults5, "5%", IVCSCResults10, "10%", eigenResults1, eigenResults5, eigenResults10, "spmm_time", "IVCSC")
+triple_plot_ratio_over_eigen_no_legend(IVCSCResults1, "1%", IVCSCResults5, "5%", IVCSCResults10, "10%", eigenResults1, eigenResults5, eigenResults10, "sum_time", "IVCSC")
 
 ```
 
@@ -942,12 +1088,12 @@ triple_plot_ratio_over_eigen(IVCSCResults1, "1%", IVCSCResults5, "5%", IVCSCResu
 ```{R}
 
 triple_size_plot(IVCSCResults1, "IVCSC",  VCSCResults1, "VCSC", eigenResults1, "CSC" , eigenResults1, eigenResults1, eigenResults1,"All_1_density")
-triple_plot_ratio_over_eigen(IVCSCResults1, "IVCSC", VCSCResults1, "VCSC", eigenResults1, "Eigen" ,eigenResults1, eigenResults1, eigenResults1 ,"constructor_time","All_1_density")
+triple_plot_ratio_over_eigen_no_legend(IVCSCResults1, "IVCSC", VCSCResults1, "VCSC", eigenResults1, "Eigen" ,eigenResults1, eigenResults1, eigenResults1 ,"constructor_time","All_1_density")
 triple_plot_raw(IVCSCResults1, "IVCSC", VCSCResults1, "VCSC", eigenResults1, "Eigen" ,eigenResults1, eigenResults1, eigenResults1 ,"constructor_time","All_1_density")
-triple_plot_ratio_over_eigen(IVCSCResults1, "IVCSC", VCSCResults1, "VCSC", eigenResults1, "Eigen" ,eigenResults1, eigenResults1, eigenResults1 ,"scalar_time","All_1_density")
-triple_plot_ratio_over_eigen(IVCSCResults1, "IVCSC", VCSCResults1, "VCSC", eigenResults1, "Eigen" ,eigenResults1, eigenResults1, eigenResults1 ,"spmv_time","All_1_density")
-triple_plot_ratio_over_eigen(IVCSCResults1, "IVCSC", VCSCResults1, "VCSC", eigenResults1, "Eigen" ,eigenResults1, eigenResults1, eigenResults1 ,"spmm_time","All_1_density")
-triple_plot_ratio_over_eigen(IVCSCResults1, "IVCSC", VCSCResults1, "VCSC", eigenResults1, "Eigen" ,eigenResults1, eigenResults1, eigenResults1 ,"sum_time","All_10_density")
+triple_plot_ratio_over_eigen_no_legend(IVCSCResults1, "IVCSC", VCSCResults1, "VCSC", eigenResults1, "Eigen" ,eigenResults1, eigenResults1, eigenResults1 ,"scalar_time","All_1_density")
+triple_plot_ratio_over_eigen_no_legend(IVCSCResults1, "IVCSC", VCSCResults1, "VCSC", eigenResults1, "Eigen" ,eigenResults1, eigenResults1, eigenResults1 ,"spmv_time","All_1_density")
+triple_plot_ratio_over_eigen_no_legend(IVCSCResults1, "IVCSC", VCSCResults1, "VCSC", eigenResults1, "Eigen" ,eigenResults1, eigenResults1, eigenResults1 ,"spmm_time","All_1_density")
+triple_plot_ratio_over_eigen_no_legend(IVCSCResults1, "IVCSC", VCSCResults1, "VCSC", eigenResults1, "Eigen" ,eigenResults1, eigenResults1, eigenResults1 ,"sum_time","All_1_density")
 
 ```
 
@@ -958,12 +1104,12 @@ triple_plot_ratio_over_eigen(IVCSCResults1, "IVCSC", VCSCResults1, "VCSC", eigen
 
 ```{R}
 triple_size_plot(IVCSCResults5, "IVCSC",  VCSCResults5, "VCSC", eigenResults5, "CSC" , eigenResults5, eigenResults5, eigenResults5,"All_5_density")
-triple_plot_ratio_over_eigen(IVCSCResults5, "IVCSC", VCSCResults5, "VCSC", eigenResults5, "Eigen" ,eigenResults5, eigenResults5, eigenResults5 ,"constructor_time","All_5_density")
+triple_plot_ratio_over_eigen_no_legend(IVCSCResults5, "IVCSC", VCSCResults5, "VCSC", eigenResults5, "Eigen" ,eigenResults5, eigenResults5, eigenResults5 ,"constructor_time","All_5_density")
 triple_plot_raw(IVCSCResults5, "IVCSC", VCSCResults5, "VCSC", eigenResults5, "Eigen" ,eigenResults5, eigenResults5, eigenResults5 ,"constructor_time","All_5_density")
-triple_plot_ratio_over_eigen(IVCSCResults5, "IVCSC", VCSCResults5, "VCSC", eigenResults5, "Eigen" ,eigenResults5, eigenResults5, eigenResults5 ,"scalar_time","All_5_density")
-triple_plot_ratio_over_eigen(IVCSCResults5, "IVCSC", VCSCResults5, "VCSC", eigenResults5, "Eigen" ,eigenResults5, eigenResults5, eigenResults5 ,"spmv_time","All_5_density")
-triple_plot_ratio_over_eigen(IVCSCResults5, "IVCSC", VCSCResults5, "VCSC", eigenResults5, "Eigen" ,eigenResults5, eigenResults5, eigenResults5 ,"spmm_time","All_5_density")
-triple_plot_ratio_over_eigen(IVCSCResults5, "IVCSC", VCSCResults5, "VCSC", eigenResults5, "Eigen" ,eigenResults5, eigenResults5, eigenResults5 ,"sum_time","All_5_density")
+triple_plot_ratio_over_eigen_no_legend(IVCSCResults5, "IVCSC", VCSCResults5, "VCSC", eigenResults5, "Eigen" ,eigenResults5, eigenResults5, eigenResults5 ,"scalar_time","All_5_density")
+triple_plot_ratio_over_eigen_no_legend(IVCSCResults5, "IVCSC", VCSCResults5, "VCSC", eigenResults5, "Eigen" ,eigenResults5, eigenResults5, eigenResults5 ,"spmv_time","All_5_density")
+triple_plot_ratio_over_eigen_no_legend(IVCSCResults5, "IVCSC", VCSCResults5, "VCSC", eigenResults5, "Eigen" ,eigenResults5, eigenResults5, eigenResults5 ,"spmm_time","All_5_density")
+triple_plot_ratio_over_eigen_no_legend(IVCSCResults5, "IVCSC", VCSCResults5, "VCSC", eigenResults5, "Eigen" ,eigenResults5, eigenResults5, eigenResults5 ,"sum_time","All_5_density")
 
 ```
 
@@ -971,12 +1117,15 @@ triple_plot_ratio_over_eigen(IVCSCResults5, "IVCSC", VCSCResults5, "VCSC", eigen
 
 ```{R}
 triple_size_plot(IVCSCResults10, "IVCSC",  VCSCResults10, "VCSC", eigenResults10, "CSC" , eigenResults10, eigenResults10, eigenResults10 ,"All_10_density")
-triple_plot_ratio_over_eigen(IVCSCResults10, "IVCSC", VCSCResults10, "VCSC", eigenResults10, "Eigen" ,eigenResults10, eigenResults10, eigenResults10 ,"constructor_time","All_10_density")
+triple_plot_ratio_over_eigen_no_legend(IVCSCResults10, "IVCSC", VCSCResults10, "VCSC", eigenResults10, "Eigen" ,eigenResults10, eigenResults10, eigenResults10 ,"constructor_time","All_10_density")
 triple_plot_raw(IVCSCResults10, "IVCSC", VCSCResults10, "VCSC", eigenResults10, "Eigen" ,eigenResults10, eigenResults10, eigenResults10 ,"constructor_time","All_10_density")
-triple_plot_ratio_over_eigen(IVCSCResults10, "IVCSC", VCSCResults10, "VCSC", eigenResults10, "Eigen" ,eigenResults10, eigenResults10, eigenResults10 ,"scalar_time","All_10_density")
-triple_plot_ratio_over_eigen(IVCSCResults10, "IVCSC", VCSCResults10, "VCSC", eigenResults10, "Eigen" ,eigenResults10, eigenResults10, eigenResults10 ,"spmv_time","All_10_density")
-triple_plot_ratio_over_eigen(IVCSCResults10, "IVCSC", VCSCResults10, "VCSC", eigenResults10, "Eigen" ,eigenResults10, eigenResults10, eigenResults10 ,"spmm_time","All_10_density")
-triple_plot_ratio_over_eigen(IVCSCResults10, "IVCSC", VCSCResults10, "VCSC", eigenResults10, "Eigen" ,eigenResults10, eigenResults10, eigenResults10 ,"sum_time","All_10_density")
+triple_plot_ratio_over_eigen_no_legend(IVCSCResults10, "IVCSC", VCSCResults10, "VCSC", eigenResults10, "Eigen" ,eigenResults10, eigenResults10, eigenResults10 ,"scalar_time","All_10_density")
+triple_plot_ratio_over_eigen_no_legend(IVCSCResults10, "IVCSC", VCSCResults10, "VCSC", eigenResults10, "Eigen" ,eigenResults10, eigenResults10, eigenResults10 ,"spmv_time","All_10_density")
+triple_plot_ratio_over_eigen_bottom_legend(IVCSCResults10, "IVCSC", VCSCResults10, "VCSC", eigenResults10, "Eigen" ,eigenResults10, eigenResults10, eigenResults10 ,"spmv_time","All_10_density")
+triple_plot_ratio_over_eigen_no_legend(IVCSCResults10, "IVCSC", VCSCResults10, "VCSC", eigenResults10, "Eigen" ,eigenResults10, eigenResults10, eigenResults10 ,"spmm_time","All_10_density")
+# triple_plot_ratio_over_eigen_bottom_legend(IVCSCResults10, "IVCSC", VCSCResults10, "VCSC", eigenResults10, "Eigen" ,eigenResults10, eigenResults10, eigenResults10 ,"spmm_time","All_10_density")
+
+triple_plot_ratio_over_eigen_no_legend(IVCSCResults10, "IVCSC", VCSCResults10, "VCSC", eigenResults10, "Eigen" ,eigenResults10, eigenResults10, eigenResults10 ,"sum_time","All_10_density")
 ```
 
 ## Combined Plots
@@ -984,7 +1133,7 @@ triple_plot_ratio_over_eigen(IVCSCResults10, "IVCSC", VCSCResults10, "VCSC", eig
 ```{R}
 
 
-density_triple_size_plot(density_IVCSCResults10, "IVCSC",  density_VCSCResults10, "VCSC", density_eigenResults10, "CSC" , density_eigenResults10, density_eigenResults10, density_eigenResults10 ,"All_10_redundancy")
+density_triple_size_plot(density_IVCSCResults10, "IVCSC",  density_VCSCResults10, "VCSC", density_eigenResults10, "CSC" ,"All_10_redundancy")
 
   
 ```

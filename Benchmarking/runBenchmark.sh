@@ -1,5 +1,9 @@
 #!/bin/sh
 
+ # https://github.com/ginkgo-project/ssget is required for runBenchmark.sh. 
+ # The version of ssget provided is slightly modified to store matrices in 
+ # /Benchmarking/matrices.
+
 # echo "Running benchmark with $numCols columns, $numRows rows, $numNonzeros nonzeros, $numMatrices matrices, and \"$problemKind\" problem kind"
 
 # Compiling benchmark
