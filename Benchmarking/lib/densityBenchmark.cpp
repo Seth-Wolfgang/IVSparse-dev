@@ -1,4 +1,32 @@
-
+/**
+ * @file densityBenchmark.cpp
+ * @author Seth Wolfgang
+ * @brief This is meant to create a matrix of a set redundancy and track memory usage based on sparsity (# of nonzeros / rows * cols).
+ *        This is used to make the second size subfigure in the publication associated with this library. To reproduce the results, compile 
+ *        and run this file with the defualt arguments:
+ *        #define NUM_ITERATIONS 10
+ *        #define REDUNDANCY 0.1
+ *        #define MATRICES 1000
+ *        #define VALUE_TYPE double
+ * 
+ *        Performance benchmarks are included, but were never used in the publication, so only size ones will run by default. 
+ *        You may uncomment performance benchmarks if you wish to run them.
+ * 
+ *       To create a plot of the results, compile and run this file and use the output data in the .Rmd file in the /R folder:
+ * 
+  *      Run the R script in the R folder. Look for simulated_bench_visualizations.Rmd in /Benchmarking/R.
+ *       - This will create the plots used in the paper.
+ *       - Some additional packages may be required for the Rmd file. See Rmd file for what you may need to install.
+ *         Look for the library() calls.
+ *       - You may need to change the path of where plots are saved, or you may comment out dev.off() and pdf() calls.
+ *       - It is enough to simply run all cells in the rmd file if you ran the program with runFullSimulatedBench.sh
+ * 
+ * @version 1
+ * @date 2023-08-30
+ * 
+ * @copyright Copyright (c) 2023
+ * 
+ */
 #include <chrono> 
 #include "../../IVSparse/SparseMatrix"
 #include <unordered_set>
@@ -81,11 +109,11 @@ int main(int argc, char** argv) {
         generateMatrix(coords, atoi(argv[1]), atoi(argv[2]), 1);
     }
 
-    // std::cout << "\033[34;42;1;4mStarting VCSC Benchmark\033[0m" << std::endl;
-    // VCSC_Benchmark(coords, atoi(argv[1]), atoi(argv[2]));
-    // std::cout << "\033[34;42;1;4mStarting IVCSC Benchmark\033[0m" << std::endl;
-    // IVCSC_Benchmark(coords, atoi(argv[1]), atoi(argv[2]));
-    // std::cout << "\033[34;42;1;4mStarting Eigen Benchmark\033[0m" << std::endl;
+    std::cout << "\033[34;42;1;4mStarting VCSC Benchmark\033[0m" << std::endl;
+    VCSC_Benchmark(coords, atoi(argv[1]), atoi(argv[2]));
+    std::cout << "\033[34;42;1;4mStarting IVCSC Benchmark\033[0m" << std::endl;
+    IVCSC_Benchmark(coords, atoi(argv[1]), atoi(argv[2]));
+    std::cout << "\033[34;42;1;4mStarting Eigen Benchmark\033[0m" << std::endl;
     eigen_Benchmark(coords, atoi(argv[1]), atoi(argv[2]));
 
     return 1;

@@ -16,6 +16,10 @@
  * 1. Run this program using runFullSimulatedBench.sh with the desired number of rows and columns, and the desired density. 
  *  - The paper uses 10,000x100 matrices
  *  - The following should be defined as such:
+    NUM_ITERATIONS 10
+    DENSITY 0.01 -> THIS WILL CHANGE IF YOU RUN WITH runFullSimulatedBench.sh. This is intentional.
+    MATRICES 1000
+    VALUE_TYPE double
 
  * 
  * 2. Run the R script in the R folder. Look for simulated_bench_visualizations.Rmd in /Benchmarking/R.
@@ -23,10 +27,12 @@
  *  - Some additional packages may be required for the Rmd file. See Rmd file for what you may need to install.
  *    Look for the library() calls.
  *  - You may need to change the path of where plots are saved, or you may comment out dev.off() and pdf() calls.
+ *  - It is enough to simply run all cells in the rmd file if you ran the program with runFullSimulatedBench.sh
  * 
  * 
  * 
  */
+
 
 #include <chrono> 
 #include "../../IVSparse/SparseMatrix"
@@ -46,7 +52,7 @@
 
 
 #define NUM_ITERATIONS 10
-#define REDUNDANCY 0.1
+#define DENSITY 0.01
 #define MATRICES 1000
 #define VALUE_TYPE double
 
@@ -55,9 +61,7 @@ template <typename T, typename indexType, int compressionLevel> double averageRe
 template <int index> int __attribute__((optimize("Ofast"))) getMax(std::vector<std::tuple<int, int, VALUE_TYPE>>& data);
 void printDataToFile(std::vector<uint64_t>& data, std::vector<std::vector<uint64_t>>& timeData, const char* filename);
 void generateMatrix(std::vector<std::tuple<int, int, VALUE_TYPE>>& data, int numRows, int numCols, uint64_t seed);
-inline __attribute__((optimize("O2"))) void adjustCoords(std::vector<std::tuple<int, int, VALUE_TYPE>>& data, int maxValue, int seed, int numRows, int numCols);
 inline void adjustValues(std::vector<std::tuple<int, int, VALUE_TYPE>>& data, int maxValue, int seed);
-
 void loadMatrix(std::vector<std::tuple<int, int, VALUE_TYPE>>& data, char* filename);
 
 void VCSC_Benchmark(std::vector<std::tuple<int, int, VALUE_TYPE>>& data, int numRows, int numCols);
@@ -110,11 +114,11 @@ int main(int argc, char** argv) {
         generateMatrix(coords, atoi(argv[1]), atoi(argv[2]), 1);
     }
 
-    // std::cout << "\033[34;42;1;4mStarting VCSC Benchmark\033[0m" << std::endl;
-    // VCSC_Benchmark(coords, atoi(argv[1]), atoi(argv[2]));
-    // std::cout << "\033[34;42;1;4mStarting IVCSC Benchmark\033[0m" << std::endl;
-    // IVCSC_Benchmark(coords, atoi(argv[1]), atoi(argv[2]));
-    // std::cout << "\033[34;42;1;4mStarting Eigen Benchmark\033[0m" << std::endl;
+    std::cout << "\033[34;42;1;4mStarting VCSC Benchmark\033[0m" << std::endl;
+    VCSC_Benchmark(coords, atoi(argv[1]), atoi(argv[2]));
+    std::cout << "\033[34;42;1;4mStarting IVCSC Benchmark\033[0m" << std::endl;
+    IVCSC_Benchmark(coords, atoi(argv[1]), atoi(argv[2]));
+    std::cout << "\033[34;42;1;4mStarting Eigen Benchmark\033[0m" << std::endl;
     eigen_Benchmark(coords, atoi(argv[1]), atoi(argv[2]));
 
     return 1;
@@ -192,8 +196,6 @@ void printDataToFile(std::vector<double>& data, std::vector<std::vector<uint64_t
     file = fopen(filename, "a");
 
     for (uint64_t i = 0; i < timeData[i].size(); i++) {
-        printf("Sparsity: %2.3lf | ", ((double)data.at(3) / (double)(data.at(1) * data.at(2))));
-        // std::cout << "Sparsity: " << ( data.at(0) * data.at(1) /  data.at(3) ) << " | " ;
         std::cout << data.at(4) << " ";
         std::cout << timeData.at(i).at(0) << " " << timeData.at(i).at(1) << " " << timeData.at(i).at(2) << " " << timeData.at(i).at(3) << " " << timeData.at(i).at(4) << std::endl;
     }
@@ -203,9 +205,10 @@ void printDataToFile(std::vector<double>& data, std::vector<std::vector<uint64_t
      *
      * scalar time, spmv time, spmm time
      */
+     // double redundancy = (double)(1.0 / data.at(3));
 
     for (uint64_t i = 0; i < timeData.size(); i++) {
-        fprintf(file, "%.0lf, %.0lf, %.0lf, %lf, %lf, %lf, %lf, %lu, %lu, %lu, %lu, %lu\n", data.at(0), data.at(1), data.at(2), data.at(3), ((double)data.at(3) / (double)(data.at(1) * data.at(2))),
+        fprintf(file, "%.0lf, %.0lf, %.0lf, %lf, %lf, %lf, %lf, %lu, %lu, %lu, %lu, %lu\n", data.at(0), data.at(1), data.at(2), data.at(3), DENSITY,
                 data.at(4), data.at(5), timeData.at(i).at(0), timeData.at(i).at(1), timeData.at(i).at(2), timeData.at(i).at(3), timeData.at(i).at(4));
 
     }
@@ -214,51 +217,10 @@ void printDataToFile(std::vector<double>& data, std::vector<std::vector<uint64_t
 
 void __attribute__((optimize("Ofast"))) generateMatrix(std::vector<std::tuple<int, int, VALUE_TYPE>>& data, int numRows, int numCols, uint64_t seed) {
     std::mt19937_64 rng(seed);
-    uint numElements = static_cast<uint>(numRows * numCols);
+    uint numElements = static_cast<uint>(numRows * numCols * DENSITY);
     std::map<std::tuple<int, int, VALUE_TYPE>, bool> visited;  // Store visited coordinates
 
-    while (data.size() <= numElements) {
-        int row = rng() % numRows;
-        int col = rng() % numCols;
-
-        std::tuple<int, int, VALUE_TYPE> coordinate(row, col, fmod(rng(), numRows * REDUNDANCY) + 1);
-
-        // Check if coordinate is already visited
-        if (visited[coordinate]) {
-            continue;  // Skip duplicate coordinates
-        }
-
-        visited[coordinate] = true;  // Mark coordinate as visited
-        data.push_back(coordinate);
-    }
-
-    data.resize(numElements);
-}
-
-inline __attribute__((optimize("O2"))) void adjustValues(std::vector<std::tuple<int, int, VALUE_TYPE>>& data, int maxValue, int seed) {
-    srand(seed);
-    for (uint64_t i = 0; i < data.size(); i++) {
-        std::get<2>(data.at(i)) = rand() % maxValue + 1;
-    }
-}
-
-
-
-/**
- * @brief
- *
- * @tparam T
- * @param data
- * @param maxValue
- * @param seed
- */
-
-inline __attribute__((optimize("O2"))) void adjustCoords(std::vector<std::tuple<int, int, VALUE_TYPE>>& data, int maxValue, int seed, int numRows, int numCols) {
-    std::mt19937_64 rng(seed);
-    std::map<std::tuple<int, int, VALUE_TYPE>, bool> visited;  // Store visited coordinates
-    data.clear();
-
-    while (data.size() < maxValue) {
+    while (data.size() < numElements) {
         int row = rng() % numRows;
         int col = rng() % numCols;
 
@@ -272,9 +234,26 @@ inline __attribute__((optimize("O2"))) void adjustCoords(std::vector<std::tuple<
         visited[coordinate] = true;  // Mark coordinate as visited
         data.push_back(coordinate);
     }
-    std::cout << "data size: " << data.size() << std::endl;
 
-    data.resize(maxValue);
+    data.resize(numElements);
+}
+
+
+
+/**
+ * @brief This randomizes values to help control redundancy between trials
+ *
+ * @tparam T
+ * @param data
+ * @param maxValue
+ * @param seed
+ */
+
+inline __attribute__((optimize("O2"))) void adjustValues(std::vector<std::tuple<int, int, VALUE_TYPE>>& data, int maxValue, int seed) {
+    srand(seed);
+    for (uint64_t i = 0; i < data.size(); i++) {
+        std::get<2>(data.at(i)) = rand() % maxValue + 1;
+    }
 }
 
 /**
@@ -289,12 +268,10 @@ inline __attribute__((optimize("O2"))) void adjustCoords(std::vector<std::tuple<
 void  VCSC_Benchmark(std::vector<std::tuple<int, int, VALUE_TYPE>>& data, int numRows, int numCols) {
     std::vector<double> matrixData(1);
     std::vector<std::vector<uint64_t>> timeData(NUM_ITERATIONS);
-    // adjustCoords(data, 1, 1, numRows, numCols);
-    for (int i = 1; i <= MATRICES; i++) {
-        int numValues = static_cast<int>(numRows * numCols * (double)((double)(i) / (double)MATRICES));
-        adjustCoords(data, numValues, i, numRows, numCols);
-        adjustValues(data, numValues * REDUNDANCY / numCols, i);
-        IVSparse::SparseMatrix<VALUE_TYPE, int, 2> matrix(data, numRows, numCols, data.size());
+    IVSparse::SparseMatrix<VALUE_TYPE, int, 2> matrix;
+    adjustValues(data, 1, 1);
+    for (int i = 0; i < MATRICES; i++) {
+        matrix = IVSparse::SparseMatrix<VALUE_TYPE, int, 2>(data, numRows, numCols, data.size());
 
         matrixData.resize(6);
         matrixData.at(0) = i;
@@ -308,22 +285,21 @@ void  VCSC_Benchmark(std::vector<std::tuple<int, int, VALUE_TYPE>>& data, int nu
             timeData.at(j).resize(5);
         }
 
-        // VCSC_constructorBenchmark(data, timeData, numRows, numCols);
-        // std::cout << i << "/" << MATRICES << ": VCSC constructor done" << std::endl;
-        // VCSC_scalarBenchmark(matrix, timeData);
-        // std::cout << i << "/" << MATRICES << ": VCSC scalar done" << std::endl;
-        // VCSC_outerSumBenchmark(matrix, timeData);
-        // std::cout << i << "/" << MATRICES << ": VCSC column sums done" << std::endl;
-        // VCSC_spmvBenchmark(matrix, timeData, numCols);
-        // std::cout << i << "/" << MATRICES << ": VCSC spmv done" << std::endl;
-        // VCSC_spmmBenchmark(matrix, timeData, numRows, numCols);
-        // std::cout << i << "/" << MATRICES << ": VCSC spmm done\n" << std::endl;
+        VCSC_constructorBenchmark(data, timeData, numRows, numCols);
+        std::cout << i << "/" << MATRICES << ": VCSC constructor done" << std::endl;
+        VCSC_scalarBenchmark(matrix, timeData);
+        std::cout << i << "/" << MATRICES << ": VCSC scalar done" << std::endl;
+        VCSC_outerSumBenchmark(matrix, timeData);
+        std::cout << i << "/" << MATRICES << ": VCSC column sums done" << std::endl;
+        VCSC_spmvBenchmark(matrix, timeData, numCols);
+        std::cout << i << "/" << MATRICES << ": VCSC spmv done" << std::endl;
+        VCSC_spmmBenchmark(matrix, timeData, numRows, numCols);
+        std::cout << i << "/" << MATRICES << ": VCSC spmm done\n" << std::endl;
 
         std::stringstream path;
-        path << "../results/density_VCSCResults_" << REDUNDANCY << ".csv";
+        path << "../results/VCSCResults_" << DENSITY << ".csv";
         printDataToFile(matrixData, timeData, path.str().c_str());
-        data.clear();
-
+        adjustValues(data, static_cast<int>(((double)numRows / (double)MATRICES) * (i + 1)), i);
     }
 }
 
@@ -339,12 +315,9 @@ void  VCSC_Benchmark(std::vector<std::tuple<int, int, VALUE_TYPE>>& data, int nu
 void   IVCSC_Benchmark(std::vector<std::tuple<int, int, VALUE_TYPE>>& data, int numRows, int numCols) {
     std::vector<double> matrixData(1);
     std::vector<std::vector<uint64_t>> timeData(NUM_ITERATIONS);
-    // adjustCoords(data, 1, 1, numRows, numCols);
+    adjustValues(data, 1, 1);
 
-    for (int i = 1; i <= MATRICES; i++) {
-        int numValues = static_cast<int>(numRows * numCols * (double)((double)(i) / (double)MATRICES));
-        adjustCoords(data, numValues, i, numRows, numCols);
-        adjustValues(data, numValues / numRows * REDUNDANCY + 1, i);
+    for (int i = 0; i < MATRICES; i++) {
         IVSparse::SparseMatrix<VALUE_TYPE, int, 3> matrix(data, numRows, numCols, data.size());
 
         matrixData.resize(6);
@@ -359,22 +332,21 @@ void   IVCSC_Benchmark(std::vector<std::tuple<int, int, VALUE_TYPE>>& data, int 
             timeData.at(j).resize(5);
         }
 
-        // IVCSC_constructorBenchmark(data, timeData, numRows, numCols);
-        // std::cout << i << "/" << MATRICES << ": IVCSC constructor done" << std::endl;
-        // IVCSC_scalarBenchmark(matrix, timeData);
-        // std::cout << i << "/" << MATRICES << ": IVCSC scalar done" << std::endl;
-        // IVCSC_outerSumBenchmark(matrix, timeData);
-        // std::cout << i << "/" << MATRICES << ": IVCSC column sums done" << std::endl;
-        // IVCSC_spmvBenchmark(matrix, timeData, numCols);
-        // std::cout << i << "/" << MATRICES << ": IVCSC spmv done" << std::endl;
-        // IVCSC_spmmBenchmark(matrix, timeData, numRows, numCols);
-        // std::cout << i << "/" << MATRICES << ": IVCSC spmm done\n" << std::endl;
+        IVCSC_constructorBenchmark(data, timeData, numRows, numCols);
+        std::cout << i << "/" << MATRICES << ": IVCSC constructor done" << std::endl;
+        IVCSC_scalarBenchmark(matrix, timeData);
+        std::cout << i << "/" << MATRICES << ": IVCSC scalar done" << std::endl;
+        IVCSC_outerSumBenchmark(matrix, timeData);
+        std::cout << i << "/" << MATRICES << ": IVCSC column sums done" << std::endl;
+        IVCSC_spmvBenchmark(matrix, timeData, numCols);
+        std::cout << i << "/" << MATRICES << ": IVCSC spmv done" << std::endl;
+        IVCSC_spmmBenchmark(matrix, timeData, numRows, numCols);
+        std::cout << i << "/" << MATRICES << ": IVCSC spmm done\n" << std::endl;
 
         std::stringstream path;
-        path << "../results/density_IVCSCResults_" << REDUNDANCY << ".csv";
+        path << "../results/IVCSCResults_" << DENSITY << ".csv";
         printDataToFile(matrixData, timeData, path.str().c_str());
-        data.clear();
-        // adjustCoords(data, static_cast<int>(numRows * numCols * ((double)(MATRICES - i) / (double)MATRICES)), i, numRows, numCols);
+        adjustValues(data, static_cast<int>(((double)numRows / (double)MATRICES) * (i + 1)), i);
     }
 }
 
@@ -388,23 +360,19 @@ void   IVCSC_Benchmark(std::vector<std::tuple<int, int, VALUE_TYPE>>& data, int 
  */
 
 void eigen_Benchmark(std::vector<std::tuple<int, int, VALUE_TYPE>>& data, int numRows, int numCols) {
+    Eigen::SparseMatrix<VALUE_TYPE> matrix(numRows, numCols);
+    matrix.reserve(data.size());
     std::vector<Eigen::Triplet<VALUE_TYPE>> triplet;
     std::vector<double> matrixData(1);
     std::vector<std::vector<uint64_t>> timeData(NUM_ITERATIONS);
+    adjustValues(data, 1, 1);
 
-    for (int i = 1; i <= MATRICES; i++) {
-        int numValues = static_cast<int>(numRows * numCols * (double)((double)(i) / (double)MATRICES));
-        std::cout << "numValues: " << numValues << std::endl;
-        adjustCoords(data, numValues, i, numRows, numCols);
-        adjustValues(data, numValues / numRows * REDUNDANCY + 1, i);
+    for (int i = 0; i < MATRICES; i++) {
         for (int i = 0; i < data.size(); i++) {
             triplet.push_back(Eigen::Triplet<VALUE_TYPE>(std::get<0>(data.at(i)), std::get<1>(data.at(i)), std::get<2>(data.at(i))));
+
         }
-
-        Eigen::SparseMatrix<VALUE_TYPE> matrix(numRows, numCols);
-        matrix.reserve(data.size());
         matrix.setFromTriplets(triplet.begin(), triplet.end());
-
 
         matrixData.resize(6);
         matrixData.at(0) = i;
@@ -412,34 +380,27 @@ void eigen_Benchmark(std::vector<std::tuple<int, int, VALUE_TYPE>>& data, int nu
         matrixData.at(2) = numCols;
         matrixData.at(3) = data.size();
         matrixData.at(4) = averageRedundancy<VALUE_TYPE, int, 2>(matrix);
-
-
-        matrixData.at(5) = (double)(matrix.nonZeros() * sizeof(VALUE_TYPE) + matrix.nonZeros() * sizeof(uint32_t) + (101) * sizeof(uint32_t));
-        std::cout << "matrix nonzeros: " << matrix.nonZeros() << std::endl;
-
-        printf("Ratio: %lf | Eigen size: %lf | Dense size %d\n", (matrixData.at(5) / (10000 * 100 * 8)), matrixData.at(5), 10000 * 100 * 8);
+        matrixData.at(5) = matrix.nonZeros() * sizeof(VALUE_TYPE) + matrix.nonZeros() * sizeof(uint32_t) + (matrix.outerSize() + 1) * sizeof(uint32_t);
 
         for (int j = 0; j < NUM_ITERATIONS; j++) {
             timeData.at(j).resize(5);
         }
 
-        // eigen_constructorBenchmark(data, timeData, numRows, numCols);
-        // std::cout << i << "/" << MATRICES << ": Eigen constructor done" << std::endl;
-        // eigen_scalarBenchmark(matrix, timeData);
-        // std::cout << i << "/" << MATRICES << ": Eigen scalar done" << std::endl;
-        // eigen_outerSumBenchmark(matrix, timeData);
-        // std::cout << i << "/" << MATRICES << ": Eigen column sums done" << std::endl;
-        // eigen_spmvBenchmark(matrix, timeData, numCols);
-        // std::cout << i << "/" << MATRICES << ": Eigen spmv done" << std::endl;
-        // eigen_spmmBenchmark(matrix, timeData, numRows, numCols);
-        // std::cout << i << "/" << MATRICES << ": Eigen spmm done" << std::endl;
+        eigen_constructorBenchmark(data, timeData, numRows, numCols);
+        std::cout << i << "/" << MATRICES << ": Eigen constructor done" << std::endl;
+        eigen_scalarBenchmark(matrix, timeData);
+        std::cout << i << "/" << MATRICES << ": Eigen scalar done" << std::endl;
+        eigen_outerSumBenchmark(matrix, timeData);
+        std::cout << i << "/" << MATRICES << ": Eigen column sums done" << std::endl;
+        eigen_spmvBenchmark(matrix, timeData, numCols);
+        std::cout << i << "/" << MATRICES << ": Eigen spmv done" << std::endl;
+        eigen_spmmBenchmark(matrix, timeData, numRows, numCols);
+        std::cout << i << "/" << MATRICES << ": Eigen spmm done" << std::endl;
 
         std::stringstream path;
-        path << "../results/density_EigenResults_" << REDUNDANCY << ".csv";
+        path << "../results/EigenResults_" << DENSITY << ".csv";
         printDataToFile(matrixData, timeData, path.str().c_str());
-        triplet.clear();
-
-        // adjustCoords(data, static_cast<int>(numRows * numCols * ((double)(MATRICES - i) / (double)MATRICES)), i, numRows, numCols);
+        adjustValues(data, static_cast<int>(((double)numRows / (double)MATRICES) * (i + 1)), i);
     }
 }
 
@@ -643,6 +604,7 @@ void   IVCSC_spmvBenchmark(IVSparse::SparseMatrix<VALUE_TYPE, int, 3>& matrix, s
     std::chrono::time_point<std::chrono::system_clock> start, end;
     Eigen::Matrix<VALUE_TYPE, -1, 1> eigenVector = Eigen::Matrix<VALUE_TYPE, -1, 1>::Random(numCols);
     Eigen::Matrix<VALUE_TYPE, -1, 1> result;
+    std::cout << "here " << std::endl;
 
     //cold start
     for (int i = 0; i < 1; i++) {
@@ -861,8 +823,8 @@ void eigen_outerSumBenchmark(Eigen::SparseMatrix<VALUE_TYPE>& matrix, std::vecto
 
 template <typename T, typename indexType, int compressionLevel>
 double averageRedundancy(IVSparse::SparseMatrix<T, indexType, compressionLevel>& matrix) {
-    int numRows = matrix.rows();
-    int numCols = matrix.cols();
+    const int numRows = matrix.rows();
+    const int numCols = matrix.cols();
     int colsWithValues = 0;
     double totalRedundancy = 0.0;
 
@@ -870,17 +832,18 @@ double averageRedundancy(IVSparse::SparseMatrix<T, indexType, compressionLevel>&
         double totalValues = 0;
         double redundancy = 0;
         std::unordered_map<double, double> uniqueValues;
+
         for (typename IVSparse::SparseMatrix<T, indexType, compressionLevel>::InnerIterator it(matrix, j); it; ++it) {
             uniqueValues.insert(std::pair<double, int>(it.value(), 0));
             totalValues++;
         }
+
         if (totalValues == 0 || uniqueValues.size() == 0)
             continue;
         else if (uniqueValues.size() == 1)
             return 1;
-        else {
+        else
             redundancy = 1 - (uniqueValues.size() / totalValues);
-        }
         totalRedundancy += redundancy;
         colsWithValues++;
     }
