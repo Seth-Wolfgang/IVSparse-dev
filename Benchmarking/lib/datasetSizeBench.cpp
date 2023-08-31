@@ -75,7 +75,7 @@ void loadMatrix(std::vector<std::tuple<uint, uint, double>>& data, std::function
         std::string val3String(val3);
 
         // add the values to the data vector
-        data.push_back(std::make_tuple(atoi(val2), atoi(val1), func(val3String, map)));
+        data.push_back(std::make_tuple(atoi(val2), atoi(val1), func(val3String, map))); //val1 and val2 may need to be switched depending on data set.
     }
 
     // copy data to data vector
@@ -137,7 +137,7 @@ void benchmark(char* filepath, std::function<double(std::string, std::unordered_
     uint cols = (uint)[&data] {
         int max = 0;
         for (uint i = 0; i < data.size(); i++) {
-            if (std::get<1>(data.at(i)) > max) {
+            if (std::get<1>(data.at(i)) > max) { // The value parameter may need to be changed depending on the data set.
                 max = std::get<1>(data.at(i));
             }
         }
@@ -148,8 +148,8 @@ void benchmark(char* filepath, std::function<double(std::string, std::unordered_
     int rows = (uint)[&data] {
         int max = 0;
         for (uint i = 0; i < data.size(); i++) {
-            if (std::get<0>(data.at(i)) > max) {
-                max = std::get<0>(data.at(i));
+            if (std::get<0>(data.at(i)) > max) { // The value parameter may need to be changed depending on the data set.
+                max = std::get<0>(data.at(i));  
             }
         }
         return max;
