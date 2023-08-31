@@ -1,7 +1,9 @@
 /**
  * @file benchmark.cpp
  * @author Seth Wolfgang
- * @brief Automated benchmarking for IVSparse and Eigen using matrix market files
+ * @brief Automated benchmarking for IVSparse and Eigen using matrix market files. 
+ *        The main use for this was in benchmarking SuiteSparse matrices and should be 
+ *        run with runBenchmark.sh in /Benchmarking.
  * @version 1.0
  * @date 2023-03-19
  *
@@ -9,10 +11,16 @@
  *
  * Matrix market exmaple code used
  * Source: https://math.nist.gov/MatrixMarket/mmio/c/example_read.c
+ * 
+ * https://github.com/ginkgo-project/ssget is required for runBenchmark.sh. 
+ * The version of ssget provided is slightly modified to store matrices in 
+ * /Benchmarking/matrices.
+ * 
+ * https://arma.sourceforge.net/ is also a reuqirement, but can be commented out
  */
 
 #define NUM_ITERATIONS 5
-#include "benchmarkFunctions.h"
+#include "suiteSparseBenchmarkFunctions.h"
 
 int main(int argc, char** argv) {
 

@@ -1,10 +1,21 @@
+/**
+ * @file benchmarkFunctions.h
+ * @author your name (you@domain.com)
+ * @brief For function definitions in benchmark.cpp
+ * @version 0.1
+ * @date 2023-08-30
+ * 
+ * @copyright Copyright (c) 2023
+ * 
+ */
+
 
 #include <chrono>
 #include "../../IVSparse/SparseMatrix"
 #include <unordered_set>
-#include "benchmarkAnalysis.cpp"
+#include "suiteSparseBenchmarkAnalysis.cpp"
 #include "mmio.c"
-#include "armadillo"
+#include "armadillo" // https://arma.sourceforge.net/
 #include <Eigen/Dense>
 #include <Eigen/Sparse>
 #include <iterator>

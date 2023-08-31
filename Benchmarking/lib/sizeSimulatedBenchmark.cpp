@@ -1,4 +1,14 @@
-#include "benchmarkFunctions.h"
+/**
+ * @file sizeSimulatedBenchmark.cpp
+ * @author Seth Wolfgang
+ * @brief This program was meant for a directed way of generating and testing a matrix of specific size, density, and value range.
+ * @date 2023-08-30
+ * 
+ * @copyright Copyright (c) 2023
+ * 
+ */
+
+#include "suiteSparseBenchmarkFunctions.h"
 #include "../../misc/matrix_creator.cpp"
 
 #define DENSITY 0.1

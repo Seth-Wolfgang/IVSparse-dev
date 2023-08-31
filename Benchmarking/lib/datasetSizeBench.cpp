@@ -1,3 +1,26 @@
+/**
+ * @file datasetSizeBench.cpp
+ * @author Seth Wolfgang
+ * @brief This file is used to benchmark the size of the CSC and IVSparse matrices. This file
+ *        was specifically made to work with real datasets of matrix market format or text files
+ *        containing only coordinates and values. There is a generate matrix method provided, but 
+ *        its call in benchmark() is commented out.
+ * 
+ *        COO csv files should look like:
+ *         1,1,1
+ *         3,4,3
+ *         4,6,4
+ *         only the coordinates should be listed
+ *         with no metadata.
+ * 
+ * @date 2023-08-30
+ * 
+ * @copyright Copyright (c) 2023
+ * 
+ */
+
+
+
 #include "benchmarkFunctions.h"
 #include "../../misc/matrix_creator.cpp"
 #include <tuple>
@@ -23,15 +46,19 @@ void averageRedundancy(IVSparse::SparseMatrix<T, indexType, compressionLevel>& m
 
 int main() {
 
-    // benchmark("../datasets/tags.csv", classifyDouble);
-    std::cout << std::endl;
-    std::cout << std::endl;
-    // benchmark("../datasets/ratings.csv", returnDouble);
-    benchmark("../datasets/PR02R.mtx", returnDouble);
+    char* path = "../datasets/PR02R.mtx"; // comes from 10X genmatics, see bibliography from the paper for this librar for more info.
+
+     //returnDouble is a first class function. Some data sets use strings (like survey data: "very likely, likely..."), 
+     //so we can classify them by using the other first class function classifyDouble.
+    benchmark(path, returnDouble);
+    // benchmark("../datasets/tags.csv", classifyDouble);  // tags.csv comes from movieLens 25ml dataset
+
     return 0;
 }
 
-// have a function that takes in a double and a map and returns a double
+// This reads in a COO matrix and creates a vector of tuples to store it.
+// The tuples are in the form of (row, col, value) and values are seperated by commas (.csv).
+// The first line of the input file is the first tuple of the matrix. The second line is the second tuple, etc.
 void loadMatrix(std::vector<std::tuple<uint, uint, double>>& data, std::function<double(std::string, std::unordered_map<std::string, double>&)> func, char* filename) {
     std::unordered_map<std::string, double> map;
 
@@ -55,10 +82,21 @@ void loadMatrix(std::vector<std::tuple<uint, uint, double>>& data, std::function
     fclose(file);
 }
 
-double returnDouble(std::string val, std::unordered_map<std::string, double>& myMap) {
+/**
+ * This simply converts a string to a double.
+ * It is meant to be ea first class function for loadMatrix()
+ * 
+ */
 
+double returnDouble(std::string val, std::unordered_map<std::string, double>& myMap) {
     return atof(val.c_str());
 }
+
+/**
+ * This function is used to classify qualitative data, like survey data
+ * that lists "very likely, likely, neutral, unlikely, very unlikely"
+ * or it can be used for data like movie tags.
+ */
 
 double classifyDouble(std::string val, std::unordered_map<std::string, double>& myMap) {
     if (myMap.find(val) != myMap.end()) {
@@ -70,17 +108,20 @@ double classifyDouble(std::string val, std::unordered_map<std::string, double>& 
     }
 }
 
+/**
+ * The main benchmarking function for checking the size of CSC and IVSparse matrices
+ * 
+ */
+
 void benchmark(char* filepath, std::function<double(std::string, std::unordered_map<std::string, double>&)> func) {
     std::vector<std::tuple<uint, uint, double>> data;
 
-    // loadMatrix(data, func, filepath);
+    // loadMatrix(data, func, filepath); // for reading COO matrices (no metadata, just 3 values per row seperated by commas)
     std::cout << "Loading matrix... " << filepath << std::endl;
     load_mm_matrix(data, filepath);
-    // generateMatrix(data, 500000, 10000, 99, 1, 1);
+    // generateMatrix(data, 500000, 10000, 99, 1, 1); //optional for generating a matrix
     std::cout << "Done loading matrix" << std::endl;
     data.resize(data.size());
-
-    // loop through the tuples and count the number of unique values
 
     // construct a dictionary of the unique values
     std::map<uint, uint> uniqueValues;
@@ -92,6 +133,7 @@ void benchmark(char* filepath, std::function<double(std::string, std::unordered_
     // print the number of unique values
     std::cout << "Number of unique values: " << uniqueValues.size() << std::endl;
 
+    // for reading how many columns and rows are in the dataset
     uint cols = (uint)[&data] {
         int max = 0;
         for (uint i = 0; i < data.size(); i++) {
@@ -121,10 +163,6 @@ void benchmark(char* filepath, std::function<double(std::string, std::unordered_
     std::cout << "Size: " << size << std::endl;
     std::cout << "Density: " << density << std::endl;
     std::cout << "gigabytes: " << (double)(static_cast<double>(size) * 16) / (double)(1024 * 1024 * 1024) << std::endl;
-    // print all of data
-    //  for (uint i = 0; i < data.size(); i++) {
-    //      std::cout << std::get<0>(data.at(i)) << ", " << std::get<1>(data.at(i)) << ", " << std::get<2>(data.at(i)) << std::endl;
-    //  }
 
     std::cout << "//////////////////////////////////////////////////////////// In: " << filepath << " ////////////////////////////////////////////////////////////" << std::endl;
     std::cout << "CSC: " << std::endl;
@@ -145,6 +183,11 @@ void benchmark(char* filepath, std::function<double(std::string, std::unordered_
     std::cout << "VCSC: " << (double)csf2Size / (size * 16) << std::endl;
     std::cout << "IVCSC: " << (double)csf3Size / (size * 16) << std::endl;
 }
+
+/**
+ * Computes the average redundancy of a matrix. This method can be found in 
+ * other benchmarking files in this folder.
+ */
 
 template <typename T, typename indexType, int compressionLevel>
 void averageRedundancy(IVSparse::SparseMatrix<T, indexType, compressionLevel>& matrix) {
@@ -181,6 +224,10 @@ void averageRedundancy(IVSparse::SparseMatrix<T, indexType, compressionLevel>& m
     std::cout << "Avg Redundancy: " << totalRedundancy / static_cast<double>(colsWithValues) << std::endl;
 }
 
+// https://math.nist.gov/MatrixMarket/mmio-c.html
+//
+// https://math.nist.gov/MatrixMarket/mmio/c/example_read.c
+// This code is slightly modified from the code found at the above link
 void load_mm_matrix(std::vector<std::tuple<uint, uint, double>>& data, char* filename) {
     int retCode;
     MM_typecode matcode;
@@ -235,7 +282,6 @@ void load_mm_matrix(std::vector<std::tuple<uint, uint, double>>& data, char* fil
 }
 
 void generateMatrix(std::vector<std::tuple<uint, uint, double>>& data, int numRows, int numCols, int sparsity, uint64_t seed, uint64_t maxValue) {
-    // generate a random sparse matrix
     rng randMatrixGen = rng(seed);
     data.reserve(numRows * 2);
     std::unordered_map<int, int> uniqueValues;
@@ -244,21 +290,28 @@ void generateMatrix(std::vector<std::tuple<uint, uint, double>>& data, int numRo
     for (int i = 0; i < numRows; i++) {
         for (int j = 0; j < numCols; j++) {
             if (randMatrixGen.draw<int>(i, j, sparsity)) {
-                // int size = uniqueValues.size();
-                // int newVal = rand();
-                // uniqueValues.insert(std::pair<double, int>(newVal, 0));
+                int size = uniqueValues.size();
+                int newVal = rand();
+                uniqueValues.insert(std::pair<double, int>(newVal, 0));
 
-                // while (uniqueValues.size() == size) {
-                //     newVal = rand();
-                //     uniqueValues.insert(std::pair<double, int>(newVal, 0));
-                // }
-                // data.push_back(std::make_tuple(i, j, newVal));
+                while (uniqueValues.size() == size) {
+                    newVal = rand();
+                    uniqueValues.insert(std::pair<double, int>(newVal, 0));
+                }
+                data.push_back(std::make_tuple(i, j, newVal));
                 data.push_back(std::make_tuple(i, j, 1));
 
             }
         }
     }
 }
+
+
+/**
+ * Used to construct a matrix and check redundancy for IVCSC. This function was created to help
+ * house matrices that were too big to store others, so we construct in here and let the system
+ * destruct the matrix when it goes out of scope.
+ */
 
 template <typename T, typename indexType, int compressionLevel>
 uint64_t buildMatrix(std::vector<std::tuple<uint, uint, double>>& data, uint rows, uint cols, uint nnz) {

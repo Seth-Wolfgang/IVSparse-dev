@@ -1,9 +1,32 @@
 /**
+ * @file simulatedBench.cpp
+ * @author Seth Wolfgang
+ * @brief This benchmark is the one used ot create data for plots in the paper.
+ *        It is meant to be run with a specified number of rows, columns, and a specified density.
+ *        Redundancy is adjusted each iteration, and the change is modified by the defined MATRICES variable.
+ *        Less matrices leads to bigger changes in redundancy between iterations. Data from this can be plotted
+ *        using the supplied R script in the R folder. Look for simulated_bench_visualizations.Rmd in /Benchmarking/R.
+ * @version 1
+ * @date 2023-08-30
  * 
- * All benchmarking requires the use of The Eigen Sparse Matrix Library
+ * @copyright Copyright (c) 2023
  * 
-*/
+ * 
+ * STEPS FOR REPRODUCABILITY:
+ * 1. Run this program using runFullSimulatedBench.sh with the desired number of rows and columns, and the desired density. 
+ *  - The paper uses 10,000x100 matrices
+ *  - The following should be defined as such:
 
+ * 
+ * 2. Run the R script in the R folder. Look for simulated_bench_visualizations.Rmd in /Benchmarking/R.
+ *  - This will create the plots used in the paper.
+ *  - Some additional packages may be required for the Rmd file. See Rmd file for what you may need to install.
+ *    Look for the library() calls.
+ *  - You may need to change the path of where plots are saved, or you may comment out dev.off() and pdf() calls.
+ * 
+ * 
+ * 
+ */
 
 #include <chrono> 
 #include "../../IVSparse/SparseMatrix"
