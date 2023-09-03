@@ -299,7 +299,7 @@ void generateMatrix(std::vector<std::tuple<uint, uint, double>>& data, int numRo
                     uniqueValues.insert(std::pair<double, int>(newVal, 0));
                 }
                 data.push_back(std::make_tuple(i, j, newVal));
-                data.push_back(std::make_tuple(i, j, 1));
+                // data.push_back(std::make_tuple(i, j, 1));
 
             }
         }
