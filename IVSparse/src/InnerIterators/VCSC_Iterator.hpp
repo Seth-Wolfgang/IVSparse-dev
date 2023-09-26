@@ -27,10 +27,10 @@ class SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator {
   indexT index = 0;  // Current index
 
   // pointer to the map of values being iterated over
-  std::map<T, std::vector<indexT>> *data = nullptr;
+  std::unordered_map<T, std::vector<indexT>> *data = nullptr;
 
   // iterator for the values
-  typename std::map<T, std::vector<indexT>>::iterator valIter;
+  typename std::unordered_map<T, std::vector<indexT>>::iterator valIter;
 
   // iterator for the indices
   typename std::vector<indexT>::iterator idxIter;

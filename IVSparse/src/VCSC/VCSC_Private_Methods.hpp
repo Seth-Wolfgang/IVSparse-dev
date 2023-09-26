@@ -66,9 +66,12 @@ void SparseMatrix<T, indexT, 2, columnMajor>::calculateCompSize() {
   for (uint32_t i = 0; i < outerDim; i++) {
     compSize += sizeof(T) * data[i].size(); //values
     compSize += sizeof(indexT) * data[i].size(); // counts
-    for (uint32_t j = 0; j < data[i].size(); j++) {
-      compSize += sizeof(indexT) * data[i][j].size(); // indices
+
+    // iterate over the map and get all the indices
+    for (auto it = data[i].begin(); it != data[i].end(); ++it) {
+      compSize += sizeof(indexT) * it->second.size();
     }
+
     compSize += sizeof(indexT); // len
   }
 }
@@ -108,13 +111,14 @@ void SparseMatrix<T, indexT, 2, columnMajor>::compressCSC(T2 *vals, indexT2 *inn
   #endif
   for (uint32_t i = 0; i < outerDim; i++) {
 
-    data[i] = std::map<T2, std::vector<indexT2>>();
+    // get the map for the current column
+    data[i] = std::unordered_map<T, std::vector<indexT>>();
+
 
     // check if the current column is empty
     if (outerPointers[i] == outerPointers[i + 1]) {
       continue;
     }
-
 
     // loop through each value in the column and add it to dict
     for (indexT2 j = outerPointers[i]; j < outerPointers[i + 1]; j++) {
@@ -127,7 +131,7 @@ void SparseMatrix<T, indexT, 2, columnMajor>::compressCSC(T2 *vals, indexT2 *inn
 
       } else {
         // add the value
-        data[i][vals[j]] = std::vector<indexT2>{innerIndices[j]};
+        data[i][vals[j]] = std::vector<indexT>{innerIndices[j]};
       }
 
     }  // end value loop

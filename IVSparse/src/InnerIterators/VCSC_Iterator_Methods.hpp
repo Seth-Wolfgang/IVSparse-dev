@@ -26,16 +26,16 @@ inline SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::InnerIterator(IVS
   }
 
   // set the map to the internal map
-  this->data = matrix.getMap(vec);
+  data = matrix.getMap(vec);
+
+  valIter = data->begin();
+  idxIter = data->begin()->second.begin();
 
   // get the first value
-  this->val = data->begin()->first;
+  val = valIter->first;
 
-  // get the first index
-  this->index = *(data->begin()->second.begin());
-
-  this->valIter = data->begin();
-  this->idxIter = data->begin()->second.begin();
+  // get the first value in the first vector
+  index = valIter->second.front();
 
   outer = vec;
 }

@@ -29,7 +29,9 @@ class SparseMatrix<T, indexT, 2, columnMajor> : public SparseMatrixBase {
 //   indexT *valueSizes = nullptr;  // The sizes of the value arrays
 //   indexT *indexSizes = nullptr;  // The sizes of the index arrays
 
-  std::vector<std::map<T, std::vector<indexT>>> data; // The data of the matrix
+  std::vector<std::unordered_map<T, std::vector<indexT>>> data; // The data of the matrix
+
+    // std::array<std::unordered_map<T, std::vector<indexT>>, 2> data;
 
   //* Private Methods *//
 
@@ -267,7 +269,7 @@ class SparseMatrix<T, indexT, 2, columnMajor> : public SparseMatrixBase {
      * 
      * Get the map representing the data in the vector
     */
-    std::map<T, std::vector<indexT>>* getMap(uint32_t vec);
+    std::unordered_map<T, std::vector<indexT>>* getMap(uint32_t vec);
 
   ///@}
 

@@ -90,7 +90,7 @@ SparseMatrix<T, indexT, 2, columnMajor>::getVector(uint32_t vec) {
 
 // get the underlying data for a given vector
 template <typename T, typename indexT, bool columnMajor>
-std::map<T, std::vector<indexT>>* SparseMatrix<T, indexT, 2, columnMajor>::getMap(uint32_t vec) {
+std::unordered_map<T, std::vector<indexT>>* SparseMatrix<T, indexT, 2, columnMajor>::getMap(uint32_t vec) {
   return &data[vec];
 }
 

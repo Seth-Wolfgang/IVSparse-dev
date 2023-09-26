@@ -47,7 +47,7 @@ void getMat(Eigen::SparseMatrix<int>& myMatrix_e) {
   myMatrix_e.insert(8, 5) = 2;
 
   // col 6
-  myMatrix_e.insert(3, 6) = 6;
+  myMatrix_e.insert(3, 6) = 8; // used to be a 6
   myMatrix_e.insert(5, 6) = 1;
   myMatrix_e.insert(7, 6) = 3;
 
@@ -90,6 +90,6 @@ int main() {
   IVSparse::SparseMatrix<int, int, 2, true> myMatrix(myMatrix_e);
 
   myMatrix.print();
-
+  
   return 0;
 }
