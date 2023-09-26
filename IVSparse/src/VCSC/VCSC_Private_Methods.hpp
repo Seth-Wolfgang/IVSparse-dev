@@ -62,17 +62,14 @@ void SparseMatrix<T, indexT, 2, columnMajor>::calculateCompSize() {
   // add the size of the metadata
   compSize += META_DATA_SIZE;
 
-  // add the performance vectors
-  compSize += (sizeof(T *) * outerDim);       // values
-  compSize += (sizeof(indexT *) * outerDim);  // counts
-  compSize += (sizeof(indexT *) * outerDim);  // indices
-
-  compSize += (sizeof(indexT) * outerDim);  // valueSizes
-  compSize += (sizeof(indexT) * outerDim);  // indexSizes
+  // iterate through the map and add the size of each column
   for (uint32_t i = 0; i < outerDim; i++) {
-    compSize += (sizeof(T) * valueSizes[i]);       // values
-    compSize += (sizeof(indexT) * valueSizes[i]);  // counts
-    compSize += (sizeof(indexT) * indexSizes[i]);  // indices
+    compSize += sizeof(T) * data[i].size(); //values
+    compSize += sizeof(indexT) * data[i].size(); // counts
+    for (uint32_t j = 0; j < data[i].size(); j++) {
+      compSize += sizeof(indexT) * data[i][j].size(); // indices
+    }
+    compSize += sizeof(indexT); // len
   }
 }
 
@@ -101,18 +98,7 @@ void SparseMatrix<T, indexT, 2, columnMajor>::compressCSC(T2 *vals, indexT2 *inn
   userChecks();
   #endif
 
-  // allocate space for the 2D Run lenngth encoded CSC matrix
-  try {
-    values = (T **)malloc(sizeof(T *) * outerDim);
-    counts = (indexT **)malloc(sizeof(indexT *) * outerDim);
-    indices = (indexT **)malloc(sizeof(indexT *) * outerDim);
-
-    valueSizes = (indexT *)malloc(sizeof(indexT) * outerDim);
-    indexSizes = (indexT *)malloc(sizeof(indexT) * outerDim);
-  } catch (std::bad_alloc &e) {
-    std::cerr << "Error: Could not allocate memory for the matrix" << std::endl;
-    exit(1);
-  }
+  data.reserve(outerDim);
 
   // ---- Stage 2: Construct the Dictionary For Each Column ---- //
 
@@ -121,73 +107,30 @@ void SparseMatrix<T, indexT, 2, columnMajor>::compressCSC(T2 *vals, indexT2 *inn
   #pragma omp parallel for
   #endif
   for (uint32_t i = 0; i < outerDim; i++) {
-    // create the data structure to temporarily hold the data
-    std::map<T2, std::vector<indexT2>>
-        dict;  // Key = value, Value = vector of indices
 
     // check if the current column is empty
     if (outerPointers[i] == outerPointers[i + 1]) {
-      valueSizes[i] = 0;
-      indexSizes[i] = 0;
-
-      values[i] = nullptr;
-      counts[i] = nullptr;
-      indices[i] = nullptr;
       continue;
     }
 
-    // create a variable to hold the size of the column
-    size_t numIndices = 0;
+
 
     // loop through each value in the column and add it to dict
     for (indexT2 j = outerPointers[i]; j < outerPointers[i + 1]; j++) {
       // check if the value is already in the dictionary or not
-      if (dict.find(vals[j]) != dict.end()) {
+      if (data[i].find(vals[j]) != data[i].end()) {
         // add the index
-        dict[vals[j]].push_back(innerIndices[j]);
+        data[i][vals[j]].push_back(innerIndices[j]);
 
-        numIndices++;
       } else {
         // if value not already in the dictionary add it
 
         // create a new vector for the indices
-        dict[vals[j]] = std::vector<indexT2>{innerIndices[j]};
+        data[i][vals[j]] = std::vector<indexT2>{innerIndices[j]};
 
-        numIndices++;
       }
 
     }  // end value loop
-
-    // ---- Stage 3: Allocate Size of Column Data ---- //
-
-    try {
-      values[i] = (T *)malloc(sizeof(T) * dict.size());
-      counts[i] = (indexT *)malloc(sizeof(indexT) * dict.size());
-      indices[i] = (indexT *)malloc(sizeof(indexT) * numIndices);
-    } catch (std::bad_alloc &e) {
-      std::cerr << "Error: Could not allocate memory for the matrix"
-                << std::endl;
-      exit(1);
-    }
-
-    // set the size of the column
-    valueSizes[i] = dict.size();
-    indexSizes[i] = numIndices;
-    size_t performanceVecSize = 0;
-    size_t indexSize = 0;
-
-    // ---- Stage 4: Populate the Column Data ---- //
-
-    for (auto &pair : dict) {
-      values[i][performanceVecSize] = pair.first;
-      counts[i][performanceVecSize] = pair.second.size();
-
-      for (uint32_t j = 0; j < pair.second.size(); j++) {
-        indices[i][indexSize] = pair.second[j];
-        indexSize++;
-      }
-      performanceVecSize++;
-    }
 
   }  // end column loop
 

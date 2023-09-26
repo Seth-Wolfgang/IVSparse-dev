@@ -193,7 +193,7 @@ IVSparse::SparseMatrix<T, indexT, 2, columnMajor> SparseMatrix<T, indexT, compre
     }
   }
 
-  // return a IVCSC matrix from the CSC vectors
+  // return a VCSC matrix from the CSC vectors
   IVSparse::SparseMatrix<T, indexT, 2, columnMajor> mat(
       values, indices, colPtrs, numRows, numCols, nnz);
 

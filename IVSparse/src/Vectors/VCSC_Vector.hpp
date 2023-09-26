@@ -23,11 +23,7 @@ class SparseMatrix<T, indexT, 2, columnMajor>::Vector {
 
   size_t size = 0;  // size of the vector in bytes
 
-  T *values = nullptr;        // values of the vector
-  indexT *counts = nullptr;   // counts of the vectors values
-  indexT *indices = nullptr;  // indices of the vectors values
-  indexT valuesSize = 0;      // size of the values array
-  indexT indexSize = 0;       // size of the indices array
+  std::map<T, std::vector<indexT>> data;  // map of values to indices
 
   uint32_t length = 0;  // length of the vector
 
@@ -115,17 +111,22 @@ class SparseMatrix<T, indexT, 2, columnMajor>::Vector {
   /**
    * @returns A pointer to the values of the vector.
    */
-  T *getValues();
+  std::vector<T> getValues();
 
   /**
    * @returns A pointer to the counts of the vector.
    */
-  indexT *getCounts();
+  std::vector<indexT> getCounts();
 
   /**
    * @returns A pointer to the indices of the vector.
    */
-  indexT *getIndices();
+  std::vector<indexT> getIndices();
+
+  /**
+   * @returns The underlying data map
+  */
+  std::map<T, std::vector<indexT>> getData();
 
   /**
    * @returns The number of unique values in the vector.

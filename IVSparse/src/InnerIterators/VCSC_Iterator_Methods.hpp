@@ -21,34 +21,23 @@ inline SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::InnerIterator(IVS
   #endif
 
   // check if the vector is empty
-  if (matrix.getNumUniqueVals(vec) == 0) {
-    this->vals = nullptr;
-    this->counts = nullptr;
-    this->indices = nullptr;
-    this->val = nullptr;
-    this->index = 0;
-    this->count = 0;
-
-    countIndex = 0;
-    indexSize = 0;
-
+  if (matrix.getMap(vec)->size() == 0) {
     return;
   }
 
-  this->outer = vec;
+  // set the map to the internal map
+  this->data = matrix.getMap(vec);
 
-  // set the pointers to the correct locations
-  this->vals = matrix.getValues(vec);
-  this->counts = matrix.getCounts(vec);
-  this->indices = matrix.getIndices(vec);
+  // get the first value
+  this->val = data->begin()->first;
 
-  this->valsSize = matrix.getNumUniqueVals(vec);
-  this->indexSize = matrix.getNumIndices(vec);
+  // get the first index
+  this->index = *(data->begin()->second.begin());
 
-  // set the values of the iterator
-  this->val = vals;
-  this->index = indices[0];
-  this->count = counts[0];
+  this->valIter = data->begin();
+  this->idxIter = data->begin()->second.begin();
+
+  outer = vec;
 }
 
 // Vector Constructor
@@ -56,47 +45,28 @@ template <typename T, typename indexT, bool columnMajor>
 SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::InnerIterator(SparseMatrix<T, indexT, 2, columnMajor>::Vector &vector) {
   // check if the vector is empty
   if (vector.nonZeros() == 0) {
-    this->vals = nullptr;
-    this->counts = nullptr;
-    this->indices = nullptr;
-    this->val = nullptr;
-    this->index = 0;
-    this->count = 0;
-
-    countIndex = 0;
-    indexSize = 0;
-
     return;
   }
 
-  this->outer = 0;
+  // set the map to the internal map
+  this->data = vector.getData();
 
-  // set the pointers to the correct locations
-  this->vals = vector.getValues();
-  this->counts = vector.getCounts();
-  this->indices = vector.getIndices();
+  this->val = data->begin()->first;
+  this->index = *(data->begin()->second->begin());
 
-  this->valsSize = vector.uniqueVals();
-  this->indexSize = vector.nonZeros();
+  this->valIter = data->begin();
+  this->idxIter = data->begin()->second->begin();
 
-  // set the values of the iterator
-  this->val = vals;
-  this->index = indices[0];
-  this->count = counts[0];
+  outer = 0;
 }
 
 //* Getters *//
 
-// Get the outer dimension
-template <typename T, typename indexT, bool columnMajor>
-indexT SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::outerDim() {
-  return outer;
-}
 
 // Get the value
 template <typename T, typename indexT, bool columnMajor>
 T SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::value() {
-  return *val;
+  return val;
 }
 
 // Get the index
@@ -107,8 +77,7 @@ indexT SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::getIndex() {
 
 // Get a pointer to the value
 template <typename T, typename indexT, bool columnMajor>
-inline void SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::coeff(
-    T newValue) {
+inline void SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::coeff(T newValue) {
   *val = newValue;
 }
 
@@ -143,59 +112,56 @@ T &SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::operator*() {
 // Equality Operator
 template <typename T, typename indexT, bool columnMajor>
 bool SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::operator==(const InnerIterator &other) {
-  return values == other.values;
+  return data == other.data;
 }
 
 // Inequality Operator
 template <typename T, typename indexT, bool columnMajor>
 bool SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::operator!=(const InnerIterator &other) {
-  return values != other.values;
+  return data != other.data;
 }
 
 // Less Than Operator
 template <typename T, typename indexT, bool columnMajor>
 bool SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::operator<(const InnerIterator &other) {
-  return values < other.values;
+  return data < other.data;
 }
 
 // Greater Than Operator
 template <typename T, typename indexT, bool columnMajor>
 bool SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::operator>(const InnerIterator &other) {
-  return values > other.values;
+  return data > other.data;
 }
 
 // Increment Operator
 template <typename T, typename indexT, bool columnMajor>
 inline void SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::operator++() {
   
-  // decriment count
-  count--;
+  // increment the index iterator
+  idxIter++;
 
-  // if count is 0 then we need to move to the next value
-  if (count == 0) {
-    // Check if we are at the end of the values array
-    countIndex++;
+  // check if the index iterator is at the end of the current vector
+  if (idxIter == valIter->second.end()) {
+    // increment the value iterator
+    valIter++;
 
-    if (countIndex >= indexSize) {
+    // check if the value iterator is at the end of the map
+    if (valIter == data->end()) {
+      // set the value iterator to the end of the map
+      valIter = data->end();
       return;
     }
 
-    // Move to the next value
-    val++;
-
-    // Get the new count
-    counts++;
-    count = *counts;
-
-    // Get the new index
-    indices++;
-    index = *indices;
-  } else {
-    // Move to the next index
-    countIndex++;
-    indices++;
-    index = *indices;
+    // set the index to the beginning of the next vector
+    index = *(valIter->second.begin());
+    idxIter = valIter->second.begin();
+    val = valIter->first;
+    return;
   }
+
+  // set the index to the next index in the current vector
+  index = *idxIter;
+  return;
 
 }  // end operator++
 

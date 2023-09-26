@@ -17,32 +17,7 @@ SparseMatrix<T, indexT, 2, columnMajor> &SparseMatrix<T, indexT, 2, columnMajor>
   
   // check if the matrices are the same
   if (this != &other) {
-    // free the old data
-    if (values != nullptr) {
-      for (uint32_t i = 0; i < outerDim; i++) {
-        if (values[i] != nullptr) free(values[i]);
-      }
-      free(values);
-    }
-    if (counts != nullptr) {
-      for (uint32_t i = 0; i < outerDim; i++) {
-        if (counts[i] != nullptr) free(counts[i]);
-      }
-      free(counts);
-    }
-    if (indices != nullptr) {
-      for (uint32_t i = 0; i < outerDim; i++) {
-        if (indices[i] != nullptr) free(indices[i]);
-      }
-      free(indices);
-    }
-    // free the metadata and size arrays
-    if (valueSizes != nullptr) {
-      free(valueSizes);
-    }
-    if (indexSizes != nullptr) {
-      free(indexSizes);
-    }
+    // free the memory
     if (metadata != nullptr) {
       delete[] metadata;
     }
@@ -55,22 +30,6 @@ SparseMatrix<T, indexT, 2, columnMajor> &SparseMatrix<T, indexT, 2, columnMajor>
     nnz = other.nnz;
     compSize = other.compSize;
 
-    // allocate the memory
-    try {
-      values = (T **)malloc(outerDim * sizeof(T *));
-      counts = (indexT **)malloc(outerDim * sizeof(indexT *));
-      indices = (indexT **)malloc(outerDim * sizeof(indexT *));
-
-      valueSizes = (indexT *)malloc(outerDim * sizeof(indexT));
-      indexSizes = (indexT *)malloc(outerDim * sizeof(indexT));
-
-      metadata = new uint32_t[NUM_META_DATA];
-    } catch (std::bad_alloc &e) {
-      std::cerr << "Error: Could not allocate memory for IVSparse matrix"
-                << std::endl;
-      exit(1);
-    }
-
     // copy the metadata
     memcpy(metadata, other.metadata, sizeof(uint32_t) * NUM_META_DATA);
 
@@ -78,27 +37,16 @@ SparseMatrix<T, indexT, 2, columnMajor> &SparseMatrix<T, indexT, 2, columnMajor>
     encodeValueType();
     index_t = other.index_t;
 
+    data.reserve(outerDim);
+
     // copy the data
     for (uint32_t i = 0; i < outerDim; i++) {
-      try {
-        values[i] = (T *)malloc(other.valueSizes[i] * sizeof(T));
-        counts[i] = (indexT *)malloc(other.valueSizes[i] * sizeof(indexT));
-        indices[i] = (indexT *)malloc(other.indexSizes[i] * sizeof(indexT));
-      } catch (std::bad_alloc &e) {
-        std::cerr << "Error: Could not allocate memory for IVSparse matrix"
-                  << std::endl;
-        exit(1);
-      }
-
-      // copy the data
-      memcpy(values[i], other.values[i], sizeof(T) * other.valueSizes[i]);
-      memcpy(counts[i], other.counts[i], sizeof(indexT) * other.valueSizes[i]);
-      memcpy(indices[i], other.indices[i],
-             sizeof(indexT) * other.indexSizes[i]);
-
-      valueSizes[i] = other.valueSizes[i];
-      indexSizes[i] = other.indexSizes[i];
+      // copy the map of the other matrix
+      data[i].swap(other.data[i]);
     }
+
+    // calculate comp size
+    calculateCompSize();
   }
 
   // return the new matrix
@@ -116,25 +64,9 @@ bool SparseMatrix<T, indexT, 2, columnMajor>::operator==(
     return false;
   }
 
-  // check the value array
+  // check if the underlying maps are the same for each column
   for (uint32_t i = 0; i < outerDim; i++) {
-    if (memcmp(values[i], other.values[i], sizeof(T) * valueSizes[i]) != 0) {
-      return false;
-    }
-  }
-
-  // check the index array
-  for (uint32_t i = 0; i < outerDim; i++) {
-    if (memcmp(indices[i], other.indices[i], sizeof(indexT) * indexSizes[i]) !=
-        0) {
-      return false;
-    }
-  }
-
-  // check the count array
-  for (uint32_t i = 0; i < outerDim; i++) {
-    if (memcmp(counts[i], other.counts[i], sizeof(indexT) * valueSizes[i]) !=
-        0) {
+    if (data[i] != other.data[i]) {
       return false;
     }
   }
@@ -171,9 +103,7 @@ T SparseMatrix<T, indexT, 2, columnMajor>::operator()(uint32_t row, uint32_t col
   uint32_t index = columnMajor ? row : col;
 
   // get an iterator for the desired vector
-  for (typename SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator it(
-           *this, vector);
-       it; ++it) {
+  for (typename SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator it(*this, vector); it; ++it) {
     if (it.getIndex() == (indexT)index) {
       return it.value();
     }

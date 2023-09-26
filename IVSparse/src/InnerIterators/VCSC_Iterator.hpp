@@ -23,20 +23,19 @@ class SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator {
  private:
   //* Private Class Variables *//
 
-  indexT outer = 0;     // Outer dimension
-  indexT index = 0;     // Current index
-  indexT newIndex = 0;  // Next index
-  T *val = nullptr;     // Current value
+  T val = 0;     // Current value
+  indexT index = 0;  // Current index
 
-  T *vals = nullptr;          // Pointer to values
-  indexT *counts = nullptr;   // Pointer to counts
-  indexT *indices = nullptr;  // Pointer to indices
+  // pointer to the map of values being iterated over
+  std::map<T, std::vector<indexT>> *data = nullptr;
 
-  indexT valsSize = 0;   // Number of unique values
-  indexT indexSize = 0;  // Number of indices
+  // iterator for the values
+  typename std::map<T, std::vector<indexT>>::iterator valIter;
 
-  indexT count = 0;       // Current count
-  indexT countIndex = 0;  // Current count of indices
+  // iterator for the indices
+  typename std::vector<indexT>::iterator idxIter;
+
+  indexT outer = 0;
 
   //* Private Class Methods *//
 
@@ -78,11 +77,6 @@ class SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator {
    * @returns The current index of the iterator.
    */
   indexT getIndex();
-
-  /**
-   * @returns The current outer dimension of the iterator.
-   */
-  indexT outerDim();
 
   /**
    * @returns The current row of the iterator.
@@ -130,7 +124,7 @@ class SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator {
   bool operator>(const InnerIterator &other);
 
   // Boolean operator
-  inline __attribute__((hot)) operator bool() { return countIndex < indexSize; }
+  inline __attribute__((hot)) operator bool() { return valIter != data->end(); }
 
   // Dereference operator
   T &operator*();

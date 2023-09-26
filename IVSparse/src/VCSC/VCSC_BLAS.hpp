@@ -23,9 +23,12 @@ inline IVSparse::SparseMatrix<T, indexT, 2, columnMajor> SparseMatrix<T, indexT,
   #pragma omp parallel for
   #endif
   for (int i = 0; i < outerDim; i++) {
-    for (int j = 0; j < valueSizes[i]; j++) {
-      newMatrix.values[i][j] *= scalar;
+    std::map<T, std::vector<indexT>> newValues;
+    for (const auto& [key, value] : data[i]) {
+      newValues[key * scalar] = value;
     }
+
+    newMatrix.data[i] = newValues;
   }
   return newMatrix;
 }
@@ -38,9 +41,12 @@ inline void SparseMatrix<T, indexT, 2, columnMajor>::inPlaceScalarMultiply(T sca
   #pragma omp parallel for
   #endif
   for (int i = 0; i < outerDim; i++) {
-    for (int j = 0; j < valueSizes[i]; j++) {
-      values[i][j] *= scalar;
+    std::map<T, std::vector<indexT>> newValues;
+    for (const auto& [key, value] : data[i]) {
+      newValues[key * scalar] = value;
     }
+
+    data[i] = newValues;
   }
 }
 
@@ -108,8 +114,8 @@ inline std::vector<T> SparseMatrix<T, indexT, 2, columnMajor>::outerSum() {
   #pragma omp parallel for
   #endif
   for (int i = 0; i < outerDim; i++) {
-    for (int j = 0; j < valueSizes[i]; j++) {
-      outerSum[i] += values[i][j] * counts[i][j];
+    for (typename SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator it(*this, i); it; ++it) {
+      outerSum[it.col()] += it.value();
     }
   }
   return outerSum;
@@ -136,15 +142,15 @@ inline std::vector<T> SparseMatrix<T, indexT, 2, columnMajor>::innerSum() {
 // Finds the maximum value in each column
 template <typename T, typename indexT, bool columnMajor>
 inline std::vector<T> SparseMatrix<T, indexT, 2, columnMajor>::maxColCoeff() {
-  std::vector<T> maxCoeff = std::vector<T>(innerDim);
+  std::vector<T> maxCoeff = std::vector<T>(outerDim);
 
   #ifdef IVSPARSE_HAS_OPENMP
   #pragma omp parallel for
   #endif
   for (int i = 0; i < outerDim; i++) {
-    for (int j = 0; j < valueSizes[i]; j++) {
-      if (values[i][j] > maxCoeff[i]) {
-        maxCoeff[i] = values[i][j];
+    for (typename SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator it(*this, i); it; ++it) {
+      if (it.value() > maxCoeff[it.col()]) {
+        maxCoeff[it.col()] = it.value();
       }
     }
   }
@@ -160,9 +166,7 @@ inline std::vector<T> SparseMatrix<T, indexT, 2, columnMajor>::maxRowCoeff() {
   #pragma omp parallel for
   #endif
   for (int i = 0; i < outerDim; i++) {
-    for (typename SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator it(
-             *this, i);
-         it; ++it) {
+    for (typename SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator it(*this, i); it; ++it) {
       if (it.value() > maxCoeff[it.row()]) {
         maxCoeff[it.row()] = it.value();
       }
@@ -174,15 +178,15 @@ inline std::vector<T> SparseMatrix<T, indexT, 2, columnMajor>::maxRowCoeff() {
 // Finds the minimum value in each column
 template <typename T, typename indexT, bool columnMajor>
 inline std::vector<T> SparseMatrix<T, indexT, 2, columnMajor>::minColCoeff() {
-  std::vector<T> minCoeff = std::vector<T>(innerDim);
+  std::vector<T> minCoeff = std::vector<T>(outerDim);
 
   #ifdef IVSPARSE_HAS_OPENMP
   #pragma omp parallel for
   #endif
   for (int i = 0; i < outerDim; i++) {
-    for (int j = 0; j < valueSizes[i]; j++) {
-      if (values[i][j] < minCoeff[i]) {
-        minCoeff[i] = values[i][j];
+    for (typename SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator it(*this, i); it; ++it) {
+      if (it.value() < minCoeff[it.col()]) {
+        minCoeff[it.col()] = it.value();
       }
     }
   }
@@ -241,14 +245,13 @@ inline T SparseMatrix<T, indexT, 2, columnMajor>::trace() {
 template <typename T, typename indexT, bool columnMajor>
 inline T SparseMatrix<T, indexT, 2, columnMajor>::sum() {
   T sum = 0;
-  // std::vector<T> outerSum = this->outerSum();
 
   #ifdef IVSPARSE_HAS_OPENMP
   #pragma omp parallel for reduction(+ : sum)
   #endif
   for (int i = 0; i < outerDim; i++) {
-    for (int j = 0; j < valueSizes[i]; j++) {
-      sum += values[i][j] * counts[i][j];
+    for (typename SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator it(*this, i); it; ++it) {
+      sum += it.value();
     }
   }
   return sum;
@@ -263,8 +266,8 @@ inline double SparseMatrix<T, indexT, 2, columnMajor>::norm() {
   #pragma omp parallel for reduction(+ : norm)
   #endif
   for (int i = 0; i < outerDim; i++) {
-    for (int j = 0; j < valueSizes[i]; j++) {
-      norm += values[i][j] * values[i][j] * counts[i][j];
+    for (typename SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator it(*this, i); it; ++it) {
+      norm += it.value() * it.value();
     }
   }
   return sqrt(norm);
@@ -280,12 +283,10 @@ inline double SparseMatrix<T, indexT, 2, columnMajor>::vectorLength(uint32_t col
   
   double norm = 0;
 
-  #ifdef IVSPARSE_HAS_OPENMP
-  #pragma omp parallel for reduction(+ : norm)
-  #endif
-  for (int i = 0; i < valueSizes[col]; i++) {
-    norm += values[col][i] * values[col][i] * counts[col][i];
+  for (typename SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator it(*this, col); it; ++it) {
+    norm += it.value() * it.value();
   }
+  
   return sqrt(norm);
 }
 
