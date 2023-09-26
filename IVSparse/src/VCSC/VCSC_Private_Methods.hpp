@@ -108,26 +108,26 @@ void SparseMatrix<T, indexT, 2, columnMajor>::compressCSC(T2 *vals, indexT2 *inn
   #endif
   for (uint32_t i = 0; i < outerDim; i++) {
 
+    data[i] = std::map<T2, std::vector<indexT2>>();
+
     // check if the current column is empty
     if (outerPointers[i] == outerPointers[i + 1]) {
       continue;
     }
 
 
-
     // loop through each value in the column and add it to dict
     for (indexT2 j = outerPointers[i]; j < outerPointers[i + 1]; j++) {
+
       // check if the value is already in the dictionary or not
       if (data[i].find(vals[j]) != data[i].end()) {
+
         // add the index
         data[i][vals[j]].push_back(innerIndices[j]);
 
       } else {
-        // if value not already in the dictionary add it
-
-        // create a new vector for the indices
+        // add the value
         data[i][vals[j]] = std::vector<indexT2>{innerIndices[j]};
-
       }
 
     }  // end value loop
