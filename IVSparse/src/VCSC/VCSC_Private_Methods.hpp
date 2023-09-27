@@ -60,22 +60,20 @@ namespace IVSparse {
         compSize = 0;
 
         // add the size of the metadata
-        compSize += META_DATA_SIZE;
+        // compSize += META_DATA_SIZE;
 
         // pointers * cols 
 
-        // col * 32 + (4 * indices) + (4 * counts) + (8 * values)
-
-        // IVCSC
-        // 8 * values per column + ) + sum(ones, twos, fours, eights) + 16 * column 
 
         // add pointers to arrays
         // compSize += (sizeof(T*) * outerDim);       // values 8
         // compSize += (sizeof(indexT*) * outerDim);  // counts 4
         // compSize += (sizeof(indexT*) * outerDim);  // indices 4
 
-        // compSize += (sizeof(indexT) * outerDim);  // valueSizes 4
-        // compSize += (sizeof(indexT) * outerDim);  // indexSizes 4
+        compSize += (sizeof(indexT) * outerDim);  // valueSizes 4
+        std::cout << "valueSizes: " << (sizeof(indexT) * outerDim) << std::endl;
+        compSize += (sizeof(indexT) * outerDim);  // indexSizes 4
+        std::cout << "indexSizes: " << (sizeof(indexT) * outerDim) << std::endl;
 
         for (uint32_t i = 0; i < outerDim; i++) {
 
@@ -89,7 +87,6 @@ namespace IVSparse {
     template <typename T, typename indexT, bool columnMajor>
     template <typename T2, typename indexT2>
     void SparseMatrix<T, indexT, 2, columnMajor>::compressCSC(T2* vals, indexT2* innerIndices, indexT2* outerPointers) {
-        compSize = 0;
         // ---- Stage 1: Setup the Matrix ---- //
 
         // set the value and index types of the matrix
@@ -118,13 +115,6 @@ namespace IVSparse {
 
             valueSizes = (indexT*)malloc(sizeof(indexT) * outerDim);
             indexSizes = (indexT*)malloc(sizeof(indexT) * outerDim);
-
-            compSize += (sizeof(T*) * outerDim);       // values
-            compSize += (sizeof(indexT*) * outerDim);  // counts
-            compSize += (sizeof(indexT*) * outerDim);  // indices
-
-            compSize += (sizeof(indexT) * outerDim);  // valueSizes
-            compSize += (sizeof(indexT) * outerDim);  // indexSizes
         }
         catch (std::bad_alloc& e) {
             std::cerr << "Error: Could not allocate memory for the matrix" << std::endl;
@@ -182,10 +172,6 @@ namespace IVSparse {
                 values[i] = (T*)malloc(sizeof(T) * dict.size());
                 counts[i] = (indexT*)malloc(sizeof(indexT) * dict.size());
                 indices[i] = (indexT*)malloc(sizeof(indexT) * numIndices);
-
-                compSize += (sizeof(T) * dict.size());       // values
-                compSize += (sizeof(indexT) * dict.size());  // counts
-                compSize += (sizeof(indexT) * numIndices);   // indices
             }
             catch (std::bad_alloc& e) {
                 std::cerr << "Error: Could not allocate memory for the matrix"
@@ -214,7 +200,7 @@ namespace IVSparse {
 
         }  // end column loop
 
-        // calculateCompSize();
+        calculateCompSize();
 
     }  // end compressCSC
 
