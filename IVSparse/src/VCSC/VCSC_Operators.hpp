@@ -12,8 +12,7 @@ namespace IVSparse {
 
     // Assignment Operator
     template <typename T, typename indexT, bool columnMajor>
-    SparseMatrix<T, indexT, 2, columnMajor>& SparseMatrix<T, indexT, 2, columnMajor>::operator=(
-        const IVSparse::SparseMatrix<T, indexT, 2, columnMajor>& other) {
+    SparseMatrix<T, indexT, 2, columnMajor>& SparseMatrix<T, indexT, 2, columnMajor>::operator=(const SparseMatrix<T, indexT, 2, columnMajor>& other) {
 
         // check if the matrices are the same
         if (this != &other) {
@@ -31,6 +30,7 @@ namespace IVSparse {
             compSize = other.compSize;
 
             // copy the metadata
+            metadata = new uint32_t[NUM_META_DATA];
             memcpy(metadata, other.metadata, sizeof(uint32_t) * NUM_META_DATA);
 
             // set the index and value types
@@ -42,7 +42,7 @@ namespace IVSparse {
             // copy the data
             for (uint32_t i = 0; i < outerDim; i++) {
                 // copy the map of the other matrix
-                data[i].swap(other.data[i]);
+                data[i] = other.data[i];
             }
 
             // calculate comp size

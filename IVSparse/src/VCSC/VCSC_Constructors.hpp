@@ -10,14 +10,14 @@
 
 namespace IVSparse {
 
-// Destructor
-template <typename T, typename indexT, bool columnMajor>
-SparseMatrix<T, indexT, 2, columnMajor>::~SparseMatrix() {
-  // delete the meta data
-  if (metadata != nullptr) {
-    delete[] metadata;
-  }
-}
+    // Destructor
+    template <typename T, typename indexT, bool columnMajor>
+    SparseMatrix<T, indexT, 2, columnMajor>::~SparseMatrix() {
+        // delete the meta data
+        if (metadata != nullptr) {
+            delete[] metadata;
+        }
+    }
 
     // Eigen Constructor
     template <typename T, typename indexT, bool columnMajor>
@@ -182,7 +182,7 @@ SparseMatrix<T, indexT, 2, columnMajor>::~SparseMatrix() {
                   });
 
 
-  data.reserve(outerDim);
+        data.reserve(outerDim);
 
         // loop through the tuples
         for (size_t i = 0; i < nnz; i++) {
@@ -191,18 +191,19 @@ SparseMatrix<T, indexT, 2, columnMajor>::~SparseMatrix() {
             indexT2 col = std::get<1>(entries[i]);
             T2 val = std::get<2>(entries[i]);
 
-    // check if the value is already in the map
-    if (data[col].find(val) != data[col].end()) {
-      // value found positive delta encode it
-      data[col][val].push_back(row);
-    } else {
-      // value not found
-      data[col][val] = std::vector<indexT2>{row};
-    }
+            // check if the value is already in the map
+            if (data[col].find(val) != data[col].end()) {
+                // value found positive delta encode it
+                data[col][val].push_back(row);
+            }
+            else {
+                // value not found
+                data[col][val] = std::vector<indexT2>{ row };
+            }
 
-  }  // end of loop through tuples
+        }  // end of loop through tuples
 
-        // run the user checks and calculate the compression size
+              // run the user checks and calculate the compression size
         calculateCompSize();
 
         #ifdef IVSPARSE_DEBUG
@@ -232,33 +233,33 @@ SparseMatrix<T, indexT, 2, columnMajor>::~SparseMatrix() {
         encodeValueType();
         index_t = sizeof(indexT);
 
-  metadata = new uint32_t[NUM_META_DATA];
-  metadata[0] = 2;
-  metadata[1] = innerDim;
-  metadata[2] = outerDim;
-  metadata[3] = nnz;
-  metadata[4] = val_t;
-  metadata[5] = index_t;
+        metadata = new uint32_t[NUM_META_DATA];
+        metadata[0] = 2;
+        metadata[1] = innerDim;
+        metadata[2] = outerDim;
+        metadata[3] = nnz;
+        metadata[4] = val_t;
+        metadata[5] = index_t;
 
-  // check if the vector is empty
-  if (vec.byteSize() == 0) [[unlikely]] {
-    return;
-  }
+        // check if the vector is empty
+        if (vec.byteSize() == 0) [[unlikely]] {
+            return;
+            }
 
-  data.reserve(1);
+        data.reserve(1);
 
-  // copy the vector map to the matrix
-  data[0] = vec.data;
+        // copy the vector map to the matrix
+        data[0] = vec.data;
 
-  // run the user checks and calculate the compression size
-  calculateCompSize();
+        // run the user checks and calculate the compression size
+        calculateCompSize();
 
-  #ifdef IVSPARSE_DEBUG
-  userChecks();
-  #endif
-}  // end of IVSparse Vector Constructor
+        #ifdef IVSPARSE_DEBUG
+        userChecks();
+        #endif
+    }  // end of IVSparse Vector Constructor
 
-    // Array of Vectors Constructor
+        // Array of Vectors Constructor
     template <typename T, typename indexT, bool columnMajor>
     SparseMatrix<T, indexT, 2, columnMajor>::SparseMatrix(
         std::vector<typename IVSparse::SparseMatrix<T, indexT, 2, columnMajor>::Vector>& vecs) {
@@ -319,49 +320,49 @@ SparseMatrix<T, indexT, 2, columnMajor>::~SparseMatrix() {
         }
         #endif
 
-  data.reserve(outerDim);
+        data.reserve(outerDim);
 
-  // loop through the columns
-  for (uint32_t i = 0; i < outerDim; i++) {
+        // loop through the columns
+        for (uint32_t i = 0; i < outerDim; i++) {
 
-    // read in the number of unique values for the column
-    indexT numUnique;
+            // read in the number of unique values for the column
+            indexT numUnique;
 
-    fread(&numUnique, sizeof(indexT), 1, fp);
+            fread(&numUnique, sizeof(indexT), 1, fp);
 
-    // read in the unique values into the map
-    for (indexT j = 0; j < numUnique; j++) {
+            // read in the unique values into the map
+            for (indexT j = 0; j < numUnique; j++) {
 
-      // read the value
-      T val; 
-      fread(&val, sizeof(T), 1, fp);
+                // read the value
+                T val;
+                fread(&val, sizeof(T), 1, fp);
 
-      // add the value to the map
-      data[i][val] = std::vector<indexT>();
-    }
+                // add the value to the map
+                data[i][val] = std::vector<indexT>();
+            }
 
-    // read in the counts for the column
-    indexT counts[numUnique];
+            // read in the counts for the column
+            indexT counts[numUnique];
 
-    fread(&counts, sizeof(indexT), numUnique, fp);
+            fread(&counts, sizeof(indexT), numUnique, fp);
 
-    // read in the indices for the column
-    for (indexT j = 0; j < numUnique; j++) {
+            // read in the indices for the column
+            for (indexT j = 0; j < numUnique; j++) {
 
-      // get the number of indices
-      indexT numIndices = counts[j];
+                // get the number of indices
+                indexT numIndices = counts[j];
 
-      // read in the indices
-      indexT indices[numIndices];
-      fread(indices, sizeof(indexT), numIndices, fp);
+                // read in the indices
+                indexT indices[numIndices];
+                fread(indices, sizeof(indexT), numIndices, fp);
 
-      // add the indices to the map using reserve and memcpy
-      data[i][j].reserve(numIndices);
-      memcpy(data[i][j].data(), indices, sizeof(indexT) * numIndices);
+                // add the indices to the map using reserve and memcpy
+                data[i][j].reserve(numIndices);
+                memcpy(data[i][j].data(), indices, sizeof(indexT) * numIndices);
 
-    }
+            }
 
-  }
+        }
 
         // close the file
         fclose(fp);
@@ -378,25 +379,30 @@ SparseMatrix<T, indexT, 2, columnMajor>::~SparseMatrix() {
     //* Private Constructors *//
 
 // Private Tranpose Constructor
-template <typename T, typename indexT, bool columnMajor>
-SparseMatrix<T, indexT, 2, columnMajor>::SparseMatrix(
-    std::map<T, std::vector<indexT>> maps[], uint32_t num_rows, uint32_t num_cols) {
-  
-  // set class variables
-  if constexpr (columnMajor) {
-    innerDim = num_cols;
-    outerDim = num_rows;
-  } else {
-    innerDim = num_rows;
-    outerDim = num_cols;
-  }
+    template <typename T, typename indexT, bool columnMajor>
+    SparseMatrix<T, indexT, 2, columnMajor>::SparseMatrix(std::unordered_map<T, std::vector<indexT>> maps[], uint32_t num_rows, uint32_t num_cols) {
+
+        // set class variables
+        if constexpr (columnMajor) {
+            innerDim = num_cols;
+            outerDim = num_rows;
+        }
+        else {
+            innerDim = num_rows;
+            outerDim = num_cols;
+        }
 
         numRows = num_cols;
         numCols = num_rows;
         encodeValueType();
         index_t = sizeof(indexT);
+        
 
-  data = maps;
+        for(uint32_t i = 0; i < outerDim; i++) {
+            data[i] = maps[i];
+        }
+
+        // data = maps;
 
         // set the metadata
         metadata = new uint32_t[NUM_META_DATA];

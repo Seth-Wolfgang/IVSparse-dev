@@ -199,7 +199,7 @@ std::unordered_map<T, std::vector<indexT>>* SparseMatrix<T, indexT, 2, columnMaj
         colPtrs[0] = 0;
 
         // make an array of ordered maps to hold the data
-        std::map<indexT, T> dict[outerDim];
+        std::unordered_map<indexT, T> dict[outerDim];
 
         // iterate through the data using the iterator
         for (uint32_t i = 0; i < outerDim; ++i) {
@@ -387,7 +387,7 @@ std::unordered_map<T, std::vector<indexT>>* SparseMatrix<T, indexT, 2, columnMaj
 template <typename T, typename indexT, bool columnMajor>
 IVSparse::SparseMatrix<T, indexT, 2, columnMajor> SparseMatrix<T, indexT, 2, columnMajor>::transpose() {
   // make a data structure to store the tranpose
-  std::map<T, std::vector<indexT>> mapsT[innerDim];
+  std::unordered_map<T, std::vector<indexT>> mapsT[innerDim];
 
         // populate the transpose data structure
         for (uint32_t i = 0; i < outerDim; ++i) {
@@ -414,7 +414,7 @@ IVSparse::SparseMatrix<T, indexT, 2, columnMajor> SparseMatrix<T, indexT, 2, col
 template <typename T, typename indexT, bool columnMajor>
 void SparseMatrix<T, indexT, 2, columnMajor>::inPlaceTranspose() {
   // make a data structure to store the tranpose
-  std::map<T, std::vector<indexT>> mapsT[innerDim];
+  std::unordered_map<T, std::vector<indexT>> mapsT[innerDim];
 
         // populate the transpose data structure
         for (uint32_t i = 0; i < outerDim; ++i) {

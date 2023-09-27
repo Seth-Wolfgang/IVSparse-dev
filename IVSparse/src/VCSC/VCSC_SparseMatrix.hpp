@@ -29,13 +29,13 @@ namespace IVSparse {
 //   indexT *valueSizes = nullptr;  // The sizes of the value arrays
 //   indexT *indexSizes = nullptr;  // The sizes of the index arrays
 
-  std::vector<std::unordered_map<T, std::vector<indexT>>> data; // The data of the matrix
+        std::vector<std::unordered_map<T, std::vector<indexT>>> data; // The data of the matrix
 
-    // std::array<std::unordered_map<T, std::vector<indexT>>, 2> data;
+        // std::array<std::unordered_map<T, std::vector<indexT>>, 2> data;
 
-        //* Private Methods *//
+            //* Private Methods *//
 
-        // Compression Algorithm for going from CSC to VCSC or IVCSCC
+            // Compression Algorithm for going from CSC to VCSC or IVCSCC
         template <typename T2, typename indexT2>
         void compressCSC(T2* vals, indexT2* innerIndices, indexT2* outerPointers);
 
@@ -51,9 +51,9 @@ namespace IVSparse {
         // Calculates the current byte size of the matrix in memory
         void calculateCompSize();
 
-  // Private Helper Constructor for tranposing a IVSparse matrix
-  SparseMatrix(std::map<T, std::vector<indexT>> maps[],
-               uint32_t num_rows, uint32_t num_cols);
+        // Private Helper Constructor for tranposing a IVSparse matrix
+        SparseMatrix(std::unordered_map<T, std::vector<indexT>> maps[],
+                     uint32_t num_rows, uint32_t num_cols);
 
         // Scalar Multiplication
         inline IVSparse::SparseMatrix<T, indexT, 2, columnMajor> scalarMultiply(
@@ -219,23 +219,23 @@ namespace IVSparse {
          */
         bool isColumnMajor() const;
 
-  /**
-   * @param vec The vector to get the values for
-   * @returns A pointer to the values of a given vector in a VCSC Matrix
-   */
-  std::vector<T> getValues(uint32_t vec) const;
+        /**
+         * @param vec The vector to get the values for
+         * @returns A pointer to the values of a given vector in a VCSC Matrix
+         */
+        std::vector<T> getValues(uint32_t vec) const;
 
-  /**
-   * @param vec The vector to get the counts for
-   * @returns A pointer to the value counts of a given vector in a VCSC Matrix
-   */
-  std::vector<indexT> getCounts(uint32_t vec) const;
+        /**
+         * @param vec The vector to get the counts for
+         * @returns A pointer to the value counts of a given vector in a VCSC Matrix
+         */
+        std::vector<indexT> getCounts(uint32_t vec) const;
 
-  /**
-   * @param vec The vector to get the indices for
-   * @returns A pointer to the indices of a given vector in a VCSC Matrix
-   */
-  std::vector<indexT> getIndices(uint32_t vec) const;
+        /**
+         * @param vec The vector to get the indices for
+         * @returns A pointer to the indices of a given vector in a VCSC Matrix
+         */
+        std::vector<indexT> getIndices(uint32_t vec) const;
 
         /**
          * @param vec The vector to get the unique values for
@@ -262,26 +262,26 @@ namespace IVSparse {
         typename IVSparse::SparseMatrix<T, indexT, 2, columnMajor>::Vector getVector(
             uint32_t vec);
 
-    
-    /**
-     * @param vec The vector to get the map for
-     * @returns The map representing the data in the vector
-     * 
-     * Get the map representing the data in the vector
-    */
-    std::unordered_map<T, std::vector<indexT>>* getMap(uint32_t vec);
 
-  ///@}
-
-        //* Calculations *//
         /**
-         * @name Calculations
-         */
-         ///@{
+         * @param vec The vector to get the map for
+         * @returns The map representing the data in the vector
+         *
+         * Get the map representing the data in the vector
+        */
+        std::unordered_map<T, std::vector<indexT>>* getMap(uint32_t vec);
 
-         /**
-          * @returns A vector of the sum of each vector along the outer dimension.
-          */
+        ///@}
+
+              //* Calculations *//
+              /**
+               * @name Calculations
+               */
+               ///@{
+
+               /**
+                * @returns A vector of the sum of each vector along the outer dimension.
+                */
         inline std::vector<T> outerSum();
 
         /**
@@ -417,8 +417,8 @@ namespace IVSparse {
         //* Operator Overloads *//
 
         // Assignment Operator
-        IVSparse::SparseMatrix<T, indexT, 2, columnMajor>& operator=(
-            const IVSparse::SparseMatrix<T, indexT, 2, columnMajor>& other);
+        SparseMatrix<T, indexT, 2, columnMajor>& operator=(
+            const SparseMatrix<T, indexT, 2, columnMajor>& other);
 
         // Equality Operator
         bool operator==(const SparseMatrix<T, indexT, 2, columnMajor>& other);
