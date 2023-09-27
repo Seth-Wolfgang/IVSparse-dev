@@ -194,9 +194,9 @@ namespace IVSparse {
             }
         }
 
-        // return a IVCSC matrix from the CSC vectors
-        IVSparse::SparseMatrix<T, indexT, 2, columnMajor> mat(
-            values, indices, colPtrs, numRows, numCols, nnz);
+  // return a VCSC matrix from the CSC vectors
+  IVSparse::SparseMatrix<T, indexT, 2, columnMajor> mat(
+      values, indices, colPtrs, numRows, numCols, nnz);
 
         // free the CSC vectors
         free(values);

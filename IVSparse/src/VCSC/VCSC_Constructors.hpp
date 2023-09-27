@@ -10,47 +10,14 @@
 
 namespace IVSparse {
 
-    // Destructor
-    template <typename T, typename indexT, bool columnMajor>
-    SparseMatrix<T, indexT, 2, columnMajor>::~SparseMatrix() {
-        // delete the meta data
-        if (metadata != nullptr) {
-            delete[] metadata;
-        }
-
-        // delete the values
-        if (values != nullptr) {
-            for (size_t i = 0; i < outerDim; i++) {
-                if (values[i] != nullptr) {
-                    free(values[i]);
-                }
-            }
-            free(values);
-        }
-        if (counts != nullptr) {
-            for (size_t i = 0; i < outerDim; i++) {
-                if (counts[i] != nullptr) {
-                    free(counts[i]);
-                }
-            }
-            free(counts);
-        }
-        if (indices != nullptr) {
-            for (size_t i = 0; i < outerDim; i++) {
-                if (indices[i] != nullptr) {
-                    free(indices[i]);
-                }
-            }
-            free(indices);
-        }
-
-        if (valueSizes != nullptr) {
-            free(valueSizes);
-        }
-        if (indexSizes != nullptr) {
-            free(indexSizes);
-        }
-    }
+// Destructor
+template <typename T, typename indexT, bool columnMajor>
+SparseMatrix<T, indexT, 2, columnMajor>::~SparseMatrix() {
+  // delete the meta data
+  if (metadata != nullptr) {
+    delete[] metadata;
+  }
+}
 
     // Eigen Constructor
     template <typename T, typename indexT, bool columnMajor>
@@ -201,18 +168,6 @@ namespace IVSparse {
         metadata[4] = val_t;
         metadata[5] = index_t;
 
-        // allocate the vectors
-        try {
-            values = (T**)malloc(sizeof(T*) * outerDim);
-            counts = (indexT**)malloc(sizeof(indexT*) * outerDim);
-            indices = (indexT**)malloc(sizeof(indexT*) * outerDim);
-            valueSizes = (indexT*)malloc(sizeof(indexT) * outerDim);
-            indexSizes = (indexT*)malloc(sizeof(indexT) * outerDim);
-        }
-        catch (std::bad_alloc& ba) {
-            std::cerr << "bad_alloc caught: " << ba.what() << '\n';
-            throw std::runtime_error("Error: Could not allocate memory");
-        }
 
         // sort the tuples by first by column then by row
         std::sort(entries.begin(), entries.end(),
@@ -226,7 +181,8 @@ namespace IVSparse {
                          }
                   });
 
-        std::map<T2, std::vector<indexT2>> maps[outerDim];
+
+  data.reserve(outerDim);
 
         // loop through the tuples
         for (size_t i = 0; i < nnz; i++) {
@@ -235,71 +191,16 @@ namespace IVSparse {
             indexT2 col = std::get<1>(entries[i]);
             T2 val = std::get<2>(entries[i]);
 
-            // check if the value is already in the map
-            if (maps[col].find(val) != maps[col].end()) {
-                // value found positive delta encode it
-                maps[col][val].push_back(row);
-            }
-            else {
-                // value not found
-                maps[col][val] = std::vector<indexT2>{ row };
-            }
+    // check if the value is already in the map
+    if (data[col].find(val) != data[col].end()) {
+      // value found positive delta encode it
+      data[col][val].push_back(row);
+    } else {
+      // value not found
+      data[col][val] = std::vector<indexT2>{row};
+    }
 
-        }  // end of loop through tuples
-
-        // loop through the array
-        #ifdef IVSPARSE_HAS_OPENMP
-        #pragma omp parallel for
-        #endif
-        for (size_t i = 0; i < outerDim; i++) {
-            // check if the column is empty
-            if (maps[i].empty()) {
-                values[i] = nullptr;
-                counts[i] = nullptr;
-                indices[i] = nullptr;
-                valueSizes[i] = 0;
-                indexSizes[i] = 0;
-                continue;
-            }
-
-            size_t performanceVecSize = 0;
-            size_t numInidces = 0;
-
-            // loop through the vectors of the map
-            for (auto& val : maps[i]) {
-                performanceVecSize++;
-                numInidces += val.second.size();
-            }
-
-            try {
-                values[i] = (T*)malloc(sizeof(T) * maps[i].size());
-                counts[i] = (indexT*)malloc(sizeof(indexT) * maps[i].size());
-                indices[i] = (indexT*)malloc(sizeof(indexT) * numInidces);
-            }
-            catch (std::bad_alloc& ba) {
-                std::cerr << "bad_alloc caught: " << ba.what() << '\n';
-                throw std::runtime_error("Error: Could not allocate memory");
-            }
-
-            valueSizes[i] = maps[i].size();
-            indexSizes[i] = numInidces;
-
-            size_t index = 0;
-            size_t valIndex = 0;
-
-            for (auto& val : maps[i]) {
-                values[i][valIndex] = val.first;
-                counts[i][valIndex] = val.second.size();
-
-                for (auto& indexVal : val.second) {
-                    indices[i][index] = indexVal;
-                    index++;
-                }
-
-                valIndex++;
-            }
-
-        }  // end of loop through the array
+  }  // end of loop through tuples
 
         // run the user checks and calculate the compression size
         calculateCompSize();
@@ -331,63 +232,31 @@ namespace IVSparse {
         encodeValueType();
         index_t = sizeof(indexT);
 
-        metadata = new uint32_t[NUM_META_DATA];
-        metadata[0] = 2;
-        metadata[1] = innerDim;
-        metadata[2] = outerDim;
-        metadata[3] = nnz;
-        metadata[4] = val_t;
-        metadata[5] = index_t;
+  metadata = new uint32_t[NUM_META_DATA];
+  metadata[0] = 2;
+  metadata[1] = innerDim;
+  metadata[2] = outerDim;
+  metadata[3] = nnz;
+  metadata[4] = val_t;
+  metadata[5] = index_t;
 
-        // allocate the vectors
-        try {
-            values = (T**)malloc(sizeof(T*));
-            counts = (indexT**)malloc(sizeof(indexT*));
-            indices = (indexT**)malloc(sizeof(indexT*));
-            valueSizes = (indexT*)malloc(sizeof(indexT));
-            indexSizes = (indexT*)malloc(sizeof(indexT));
-        }
-        catch (std::bad_alloc& ba) {
-            std::cerr << "bad_alloc caught: " << ba.what() << '\n';
-            throw std::runtime_error("Error: Could not allocate memory");
-        }
+  // check if the vector is empty
+  if (vec.byteSize() == 0) [[unlikely]] {
+    return;
+  }
 
-        // check if the vector is empty
-        if (vec.byteSize() == 0) [[unlikely]] {
-            values[0] = nullptr;
-            counts[0] = nullptr;
-            indices[0] = nullptr;
-            valueSizes[0] = 0;
-            indexSizes[0] = 0;
-            return;
-            }
+  data.reserve(1);
 
-            // set the sizes
-        valueSizes[0] = vec.uniqueVals();
-        indexSizes[0] = vec.nonZeros();
+  // copy the vector map to the matrix
+  data[0] = vec.data;
 
-        // allocate the memory for the one vector
-        try {
-            values[0] = (T*)malloc(sizeof(T) * valueSizes[0]);
-            counts[0] = (indexT*)malloc(sizeof(indexT) * valueSizes[0]);
-            indices[0] = (indexT*)malloc(sizeof(indexT) * indexSizes[0]);
-        }
-        catch (std::bad_alloc& ba) {
-            std::cerr << "bad_alloc caught: " << ba.what() << '\n';
-            throw std::runtime_error("Error: Could not allocate memory");
-        }
+  // run the user checks and calculate the compression size
+  calculateCompSize();
 
-        // copy the values
-        memcpy(values[0], vec.getValues(), sizeof(T) * valueSizes[0]);
-        memcpy(counts[0], vec.getCounts(), sizeof(indexT) * valueSizes[0]);
-        memcpy(indices[0], vec.getIndices(), sizeof(indexT) * indexSizes[0]);
-
-        // run the user checks and calculate the compression size
-        calculateCompSize();
-        #ifdef IVSPARSE_DEBUG
-        userChecks();
-        #endif
-    }  // end of IVSparse Vector Constructor
+  #ifdef IVSPARSE_DEBUG
+  userChecks();
+  #endif
+}  // end of IVSparse Vector Constructor
 
     // Array of Vectors Constructor
     template <typename T, typename indexT, bool columnMajor>
@@ -450,64 +319,49 @@ namespace IVSparse {
         }
         #endif
 
-        // allocate the vectors
-        try {
-            values = (T**)malloc(sizeof(T*) * outerDim);
-            counts = (indexT**)malloc(sizeof(indexT*) * outerDim);
-            indices = (indexT**)malloc(sizeof(indexT*) * outerDim);
-            valueSizes = (indexT*)malloc(sizeof(indexT) * outerDim);
-            indexSizes = (indexT*)malloc(sizeof(indexT) * outerDim);
-        }
-        catch (std::bad_alloc& ba) {
-            std::cerr << "bad_alloc caught: " << ba.what() << '\n';
-            throw std::runtime_error("Error: Could not allocate memory");
-        }
+  data.reserve(outerDim);
 
-        // read in the value sizes
-        for (size_t i = 0; i < outerDim; i++) {
-            fread(&valueSizes[i], sizeof(indexT), 1, fp);
-        }
+  // loop through the columns
+  for (uint32_t i = 0; i < outerDim; i++) {
 
-        // read in the index sizes
-        for (size_t i = 0; i < outerDim; i++) {
-            fread(&indexSizes[i], sizeof(indexT), 1, fp);
-        }
+    // read in the number of unique values for the column
+    indexT numUnique;
 
-        // read in the values
-        for (size_t i = 0; i < outerDim; i++) {
-            try {
-                values[i] = (T*)malloc(sizeof(T) * valueSizes[i]);
-            }
-            catch (std::bad_alloc& ba) {
-                std::cerr << "bad_alloc caught: " << ba.what() << '\n';
-                throw std::runtime_error("Error: Could not allocate memory");
-            }
-            fread(values[i], sizeof(T), valueSizes[i], fp);
-        }
+    fread(&numUnique, sizeof(indexT), 1, fp);
 
-        // read in the counts
-        for (size_t i = 0; i < outerDim; i++) {
-            try {
-                counts[i] = (indexT*)malloc(sizeof(indexT) * valueSizes[i]);
-            }
-            catch (std::bad_alloc& ba) {
-                std::cerr << "bad_alloc caught: " << ba.what() << '\n';
-                throw std::runtime_error("Error: Could not allocate memory");
-            }
-            fread(counts[i], sizeof(indexT), valueSizes[i], fp);
-        }
+    // read in the unique values into the map
+    for (indexT j = 0; j < numUnique; j++) {
 
-        // read in the indices
-        for (size_t i = 0; i < outerDim; i++) {
-            try {
-                indices[i] = (indexT*)malloc(sizeof(indexT) * indexSizes[i]);
-            }
-            catch (std::bad_alloc& ba) {
-                std::cerr << "bad_alloc caught: " << ba.what() << '\n';
-                throw std::runtime_error("Error: Could not allocate memory");
-            }
-            fread(indices[i], sizeof(indexT), indexSizes[i], fp);
-        }
+      // read the value
+      T val; 
+      fread(&val, sizeof(T), 1, fp);
+
+      // add the value to the map
+      data[i][val] = std::vector<indexT>();
+    }
+
+    // read in the counts for the column
+    indexT counts[numUnique];
+
+    fread(&counts, sizeof(indexT), numUnique, fp);
+
+    // read in the indices for the column
+    for (indexT j = 0; j < numUnique; j++) {
+
+      // get the number of indices
+      indexT numIndices = counts[j];
+
+      // read in the indices
+      indexT indices[numIndices];
+      fread(indices, sizeof(indexT), numIndices, fp);
+
+      // add the indices to the map using reserve and memcpy
+      data[i][j].reserve(numIndices);
+      memcpy(data[i][j].data(), indices, sizeof(indexT) * numIndices);
+
+    }
+
+  }
 
         // close the file
         fclose(fp);
@@ -523,95 +377,26 @@ namespace IVSparse {
 
     //* Private Constructors *//
 
-    // Private Tranpose Constructor
-    template <typename T, typename indexT, bool columnMajor>
-    SparseMatrix<T, indexT, 2, columnMajor>::SparseMatrix(
-        std::unordered_map<T, std::vector<indexT>> maps[], uint32_t num_rows, uint32_t num_cols) {
-
-        // set class variables
-        if constexpr (columnMajor) {
-            innerDim = num_cols;
-            outerDim = num_rows;
-        }
-        else {
-            innerDim = num_rows;
-            outerDim = num_cols;
-        }
+// Private Tranpose Constructor
+template <typename T, typename indexT, bool columnMajor>
+SparseMatrix<T, indexT, 2, columnMajor>::SparseMatrix(
+    std::map<T, std::vector<indexT>> maps[], uint32_t num_rows, uint32_t num_cols) {
+  
+  // set class variables
+  if constexpr (columnMajor) {
+    innerDim = num_cols;
+    outerDim = num_rows;
+  } else {
+    innerDim = num_rows;
+    outerDim = num_cols;
+  }
 
         numRows = num_cols;
         numCols = num_rows;
         encodeValueType();
         index_t = sizeof(indexT);
 
-        // allocate the vectors
-        try {
-            values = (T**)malloc(sizeof(T*) * outerDim);
-            counts = (indexT**)malloc(sizeof(indexT*) * outerDim);
-            indices = (indexT**)malloc(sizeof(indexT*) * outerDim);
-            valueSizes = (indexT*)malloc(sizeof(indexT) * outerDim);
-            indexSizes = (indexT*)malloc(sizeof(indexT) * outerDim);
-        }
-        catch (std::bad_alloc& ba) {
-            std::cerr << "bad_alloc caught: " << ba.what() << '\n';
-            throw std::runtime_error("Error: Could not allocate memory");
-        }
-
-        // loop through the array
-        #ifdef IVSPARSE_HAS_OPENMP
-        #pragma omp parallel for
-        #endif
-        for (size_t i = 0; i < outerDim; i++) {
-            // check if the column is empty
-            if (maps[i].empty()) [[unlikely]] {
-                values[i] = nullptr;
-                counts[i] = nullptr;
-                indices[i] = nullptr;
-                valueSizes[i] = 0;
-                indexSizes[i] = 0;
-                continue;
-                }
-            size_t byteSize = 0;
-            size_t numInidces = 0;
-
-            // loop through the vectors of the map
-            for (auto& val : maps[i]) {
-                // add the size of the vector to the byteSize
-                byteSize += (sizeof(indexT) * val.second.size());
-
-                // add the size of the vector to the numIndices
-                numInidces += val.second.size();
-            }
-
-            try {
-                values[i] = (T*)malloc(sizeof(T) * maps[i].size());
-                counts[i] = (indexT*)malloc(sizeof(indexT) * maps[i].size());
-                indices[i] = (indexT*)malloc(sizeof(indexT) * numInidces);
-            }
-            catch (std::bad_alloc& ba) {
-                std::cerr << "bad_alloc caught: " << ba.what() << '\n';
-                throw std::runtime_error("Error: Could not allocate memory");
-            }
-
-            valueSizes[i] = maps[i].size();
-            indexSizes[i] = numInidces;
-            nnz += numInidces;
-
-            size_t index = 0;
-            size_t valIndex = 0;
-
-            for (auto& val : maps[i]) {
-                values[i][valIndex] = val.first;
-                counts[i][valIndex] = val.second.size();
-
-                for (auto& indexVal : val.second) {
-                    indices[i][index] = indexVal;
-                    index++;
-                }
-
-                valIndex++;
-            }
-
-        }  // end of loop through the array
+  data = maps;
 
         // set the metadata
         metadata = new uint32_t[NUM_META_DATA];

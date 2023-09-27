@@ -62,26 +62,19 @@ namespace IVSparse {
         // add the size of the metadata
         // compSize += META_DATA_SIZE;
 
-        // pointers * cols 
+  // iterate through the map and add the size of each column
+  for (uint32_t i = 0; i < outerDim; i++) {
+    compSize += sizeof(T) * data[i].size(); //values
+    compSize += sizeof(indexT) * data[i].size(); // counts
 
-
-        // add pointers to arrays
-        // compSize += (sizeof(T*) * outerDim);       // values 8
-        // compSize += (sizeof(indexT*) * outerDim);  // counts 4
-        // compSize += (sizeof(indexT*) * outerDim);  // indices 4
-
-        compSize += (sizeof(indexT) * outerDim);  // valueSizes 4
-        std::cout << "valueSizes: " << (sizeof(indexT) * outerDim) << std::endl;
-        compSize += (sizeof(indexT) * outerDim);  // indexSizes 4
-        std::cout << "indexSizes: " << (sizeof(indexT) * outerDim) << std::endl;
-
-        for (uint32_t i = 0; i < outerDim; i++) {
-
-            compSize += (sizeof(T) * valueSizes[i]);       // values 8 -> 8 per value
-            compSize += (sizeof(indexT) * valueSizes[i]);  // counts 4 -> 4 per value
-            compSize += (sizeof(indexT) * indexSizes[i]);  // indices 4 -> 4 per index
-        }
+    // iterate over the map and get all the indices
+    for (auto it = data[i].begin(); it != data[i].end(); ++it) {
+      compSize += sizeof(indexT) * it->second.size();
     }
+
+    compSize += sizeof(indexT); // len
+  }
+}
 
     // Compression Algorithm for going from CSC to IVCSC
     template <typename T, typename indexT, bool columnMajor>
@@ -107,98 +100,42 @@ namespace IVSparse {
         userChecks();
         #endif
 
-        // allocate space for the 2D Run lenngth encoded CSC matrix
-        try {
-            values = (T**)malloc(sizeof(T*) * outerDim);
-            counts = (indexT**)malloc(sizeof(indexT*) * outerDim);
-            indices = (indexT**)malloc(sizeof(indexT*) * outerDim);
-
-            valueSizes = (indexT*)malloc(sizeof(indexT) * outerDim);
-            indexSizes = (indexT*)malloc(sizeof(indexT) * outerDim);
-        }
-        catch (std::bad_alloc& e) {
-            std::cerr << "Error: Could not allocate memory for the matrix" << std::endl;
-            exit(1);
-        }
+  data.reserve(outerDim);
 
         // ---- Stage 2: Construct the Dictionary For Each Column ---- //
 
-        // Loop through each column and construct a middle data structre for the matrix
-        #ifdef IVSPARSE_HAS_OPENMP
-        #pragma omp parallel for
-        #endif
-        for (uint32_t i = 0; i < outerDim; i++) {
-            // create the data structure to temporarily hold the data
-            std::map<T2, std::vector<indexT2>>
-                dict;  // Key = value, Value = vector of indices
+  // Loop through each column and construct a middle data structre for the matrix
+  #ifdef IVSPARSE_HAS_OPENMP
+  #pragma omp parallel for
+  #endif
+  for (uint32_t i = 0; i < outerDim; i++) {
 
-            // check if the current column is empty
-            if (outerPointers[i] == outerPointers[i + 1]) {
-                valueSizes[i] = 0;
-                indexSizes[i] = 0;
+    // get the map for the current column
+    data[i] = std::unordered_map<T, std::vector<indexT>>();
 
-                values[i] = nullptr;
-                counts[i] = nullptr;
-                indices[i] = nullptr;
-                continue;
-            }
 
-            // create a variable to hold the size of the column
-            size_t numIndices = 0;
+    // check if the current column is empty
+    if (outerPointers[i] == outerPointers[i + 1]) {
+      continue;
+    }
 
-            // loop through each value in the column and add it to dict
-            for (indexT2 j = outerPointers[i]; j < outerPointers[i + 1]; j++) {
-                // check if the value is already in the dictionary or not
-                if (dict.find(vals[j]) != dict.end()) {
-                    // add the index
-                    dict[vals[j]].push_back(innerIndices[j]);
+    // loop through each value in the column and add it to dict
+    for (indexT2 j = outerPointers[i]; j < outerPointers[i + 1]; j++) {
 
-                    numIndices++;
-                }
-                else {
-                    // if value not already in the dictionary add it
+      // check if the value is already in the dictionary or not
+      if (data[i].find(vals[j]) != data[i].end()) {
 
-                    // create a new vector for the indices
-                    dict[vals[j]] = std::vector<indexT2>{ innerIndices[j] };
+        // add the index
+        data[i][vals[j]].push_back(innerIndices[j]);
 
-                    numIndices++;
-                }
+      } else {
+        // add the value
+        data[i][vals[j]] = std::vector<indexT>{innerIndices[j]};
+      }
 
             }  // end value loop
 
-            // ---- Stage 3: Allocate Size of Column Data ---- //
-
-            try {
-                values[i] = (T*)malloc(sizeof(T) * dict.size());
-                counts[i] = (indexT*)malloc(sizeof(indexT) * dict.size());
-                indices[i] = (indexT*)malloc(sizeof(indexT) * numIndices);
-            }
-            catch (std::bad_alloc& e) {
-                std::cerr << "Error: Could not allocate memory for the matrix"
-                    << std::endl;
-                exit(1);
-            }
-
-            // set the size of the column
-            valueSizes[i] = dict.size();
-            indexSizes[i] = numIndices;
-            size_t performanceVecSize = 0;
-            size_t indexSize = 0;
-
-            // ---- Stage 4: Populate the Column Data ---- //
-
-            for (auto& pair : dict) {
-                values[i][performanceVecSize] = pair.first;
-                counts[i][performanceVecSize] = pair.second.size();
-
-                for (uint32_t j = 0; j < pair.second.size(); j++) {
-                    indices[i][indexSize] = pair.second[j];
-                    indexSize++;
-                }
-                performanceVecSize++;
-            }
-
-        }  // end column loop
+  }  // end column loop
 
         calculateCompSize();
 

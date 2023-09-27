@@ -22,12 +22,16 @@ namespace IVSparse {
         private:
         //* The Matrix Data *//
 
-        T** values = nullptr;        // The values of the matrix
-        indexT** counts = nullptr;   // The counts of the matrix
-        indexT** indices = nullptr;  // The indices of the matrix
+//   T **values = nullptr;        // The values of the matrix
+//   indexT **counts = nullptr;   // The counts of the matrix
+//   indexT **indices = nullptr;  // The indices of the matrix
 
-        indexT* valueSizes = nullptr;  // The sizes of the value arrays
-        indexT* indexSizes = nullptr;  // The sizes of the index arrays
+//   indexT *valueSizes = nullptr;  // The sizes of the value arrays
+//   indexT *indexSizes = nullptr;  // The sizes of the index arrays
+
+  std::vector<std::unordered_map<T, std::vector<indexT>>> data; // The data of the matrix
+
+    // std::array<std::unordered_map<T, std::vector<indexT>>, 2> data;
 
         //* Private Methods *//
 
@@ -47,9 +51,9 @@ namespace IVSparse {
         // Calculates the current byte size of the matrix in memory
         void calculateCompSize();
 
-        // Private Helper Constructor for tranposing a IVSparse matrix
-        SparseMatrix(std::unordered_map<T, std::vector<indexT>> maps[],
-                     uint32_t num_rows, uint32_t num_cols);
+  // Private Helper Constructor for tranposing a IVSparse matrix
+  SparseMatrix(std::map<T, std::vector<indexT>> maps[],
+               uint32_t num_rows, uint32_t num_cols);
 
         // Scalar Multiplication
         inline IVSparse::SparseMatrix<T, indexT, 2, columnMajor> scalarMultiply(
@@ -215,23 +219,23 @@ namespace IVSparse {
          */
         bool isColumnMajor() const;
 
-        /**
-         * @param vec The vector to get the values for
-         * @returns A pointer to the values of a given vector in a VCSC Matrix
-         */
-        T* getValues(uint32_t vec) const;
+  /**
+   * @param vec The vector to get the values for
+   * @returns A pointer to the values of a given vector in a VCSC Matrix
+   */
+  std::vector<T> getValues(uint32_t vec) const;
 
-        /**
-         * @param vec The vector to get the counts for
-         * @returns A pointer to the value counts of a given vector in a VCSC Matrix
-         */
-        indexT* getCounts(uint32_t vec) const;
+  /**
+   * @param vec The vector to get the counts for
+   * @returns A pointer to the value counts of a given vector in a VCSC Matrix
+   */
+  std::vector<indexT> getCounts(uint32_t vec) const;
 
-        /**
-         * @param vec The vector to get the indices for
-         * @returns A pointer to the indices of a given vector in a VCSC Matrix
-         */
-        indexT* getIndices(uint32_t vec) const;
+  /**
+   * @param vec The vector to get the indices for
+   * @returns A pointer to the indices of a given vector in a VCSC Matrix
+   */
+  std::vector<indexT> getIndices(uint32_t vec) const;
 
         /**
          * @param vec The vector to get the unique values for
@@ -258,7 +262,16 @@ namespace IVSparse {
         typename IVSparse::SparseMatrix<T, indexT, 2, columnMajor>::Vector getVector(
             uint32_t vec);
 
-        ///@}
+    
+    /**
+     * @param vec The vector to get the map for
+     * @returns The map representing the data in the vector
+     * 
+     * Get the map representing the data in the vector
+    */
+    std::unordered_map<T, std::vector<indexT>>* getMap(uint32_t vec);
+
+  ///@}
 
         //* Calculations *//
         /**
