@@ -22,13 +22,10 @@ namespace IVSparse {
         #ifdef IVSPARSE_HAS_OPENMP
         #pragma omp parallel for
         #endif
-        for (int i = 0; i < outerDim; i++) {
-            std::unordered_map<T, std::vector<indexT>> newValues;
-            for (const auto& [key, value] : data[i]) {
-                newValues[key * scalar] = value;
+        for (uint32_t i = 0; i < outerDim; i++) {
+            for (auto& [key, value] : newMatrix.data[i]) {
+                key *= scalar;
             }
-
-            newMatrix.data[i] = newValues;
         }
         return newMatrix;
     }
@@ -36,17 +33,15 @@ namespace IVSparse {
     // In Place Scalar Multiply
     template <typename T, typename indexT, bool columnMajor>
     inline void SparseMatrix<T, indexT, 2, columnMajor>::inPlaceScalarMultiply(T scalar) {
+        
         // if performance vectors are active use them for the scalar multiplication
         #ifdef IVSPARSE_HAS_OPENMP
         #pragma omp parallel for
         #endif
-        for (int i = 0; i < outerDim; i++) {
-            std::unordered_map<T, std::vector<indexT>> newValues;
-            for (const auto& [key, value] : data[i]) {
-                newValues[key * scalar] = value;
+        for (uint32_t i = 0; i < outerDim; i++) {
+            for (auto& [key, value] : data[i]) {
+                key *= scalar;
             }
-
-            data[i] = newValues;
         }
     }
 

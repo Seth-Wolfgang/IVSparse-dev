@@ -383,11 +383,13 @@ std::unordered_map<T, std::vector<indexT>>* SparseMatrix<T, indexT, 2, columnMaj
 
     }  // end append
 
+
 // tranposes the ivsparse matrix
 template <typename T, typename indexT, bool columnMajor>
 IVSparse::SparseMatrix<T, indexT, 2, columnMajor> SparseMatrix<T, indexT, 2, columnMajor>::transpose() {
+  
   // make a data structure to store the tranpose
-  std::unordered_map<T, std::vector<indexT>> mapsT[innerDim];
+  std::vector<std::unordered_map<T, std::vector<indexT>>> mapsT(innerDim);
 
         // populate the transpose data structure
         for (uint32_t i = 0; i < outerDim; ++i) {
@@ -413,25 +415,28 @@ IVSparse::SparseMatrix<T, indexT, 2, columnMajor> SparseMatrix<T, indexT, 2, col
 // Transpose In Place Method
 template <typename T, typename indexT, bool columnMajor>
 void SparseMatrix<T, indexT, 2, columnMajor>::inPlaceTranspose() {
-  // make a data structure to store the tranpose
-  std::unordered_map<T, std::vector<indexT>> mapsT[innerDim];
 
-        // populate the transpose data structure
-        for (uint32_t i = 0; i < outerDim; ++i) {
-            for (typename SparseMatrix<T, indexT, 2>::InnerIterator it(*this, i); it;
-                 ++it) {
-                // add the value to the map
-                if constexpr (columnMajor) {
-                    mapsT[it.row()][it.value()].push_back(it.col());
-                }
-                else {
-                    mapsT[it.col()][it.value()].push_back(it.row());
-                }
+  // make a data structure to store the tranpose
+  std::vector<std::unordered_map<T, std::vector<indexT>>> mapsT(innerDim);
+
+    // populate the transpose data structure
+    for (uint32_t i = 0; i < outerDim; ++i) {
+        for (typename SparseMatrix<T, indexT, 2>::InnerIterator it(*this, i); it;
+                ++it) {
+            // add the value to the map
+            if constexpr (columnMajor) {
+                mapsT[it.row()][it.value()].push_back(it.col());
+            }
+            else {
+                mapsT[it.col()][it.value()].push_back(it.row());
             }
         }
+    }
 
   // swap data with mapsT transposed data
-  data.swap(mapsT);
+  for (uint32_t i = 0; i < outerDim; ++i) {
+    data[i].swap(mapsT[i]);
+  }
 
   // set class variables
   if constexpr (columnMajor) {

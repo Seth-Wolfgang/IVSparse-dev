@@ -90,6 +90,10 @@ int main() {
   IVSparse::SparseMatrix<int, int, 2, true> myMatrix(myMatrix_e);
 
   myMatrix.print();
+
+  IVSparse::SparseMatrix<int, int, 2, true> myMatrix2 = myMatrix.transpose();
+
+  myMatrix2.print();
   
   return 0;
 }

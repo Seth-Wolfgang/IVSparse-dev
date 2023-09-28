@@ -22,20 +22,20 @@ namespace IVSparse {
         private:
         //* The Matrix Data *//
 
-//   T **values = nullptr;        // The values of the matrix
-//   indexT **counts = nullptr;   // The counts of the matrix
-//   indexT **indices = nullptr;  // The indices of the matrix
+        //   T **values = nullptr;        // The values of the matrix
+        //   indexT **counts = nullptr;   // The counts of the matrix
+        //   indexT **indices = nullptr;  // The indices of the matrix
 
-//   indexT *valueSizes = nullptr;  // The sizes of the value arrays
-//   indexT *indexSizes = nullptr;  // The sizes of the index arrays
+        //   indexT *valueSizes = nullptr;  // The sizes of the value arrays
+        //   indexT *indexSizes = nullptr;  // The sizes of the index arrays
 
         std::vector<std::unordered_map<T, std::vector<indexT>>> data; // The data of the matrix
 
         // std::array<std::unordered_map<T, std::vector<indexT>>, 2> data;
 
-            //* Private Methods *//
+        //* Private Methods *//
 
-            // Compression Algorithm for going from CSC to VCSC or IVCSCC
+        // Compression Algorithm for going from CSC to VCSC or IVCSCC
         template <typename T2, typename indexT2>
         void compressCSC(T2* vals, indexT2* innerIndices, indexT2* outerPointers);
 
@@ -52,7 +52,7 @@ namespace IVSparse {
         void calculateCompSize();
 
         // Private Helper Constructor for tranposing a IVSparse matrix
-        SparseMatrix(std::unordered_map<T, std::vector<indexT>> maps[],
+        SparseMatrix(std::vector<std::unordered_map<T, std::vector<indexT>>> &maps,
                      uint32_t num_rows, uint32_t num_cols);
 
         // Scalar Multiplication

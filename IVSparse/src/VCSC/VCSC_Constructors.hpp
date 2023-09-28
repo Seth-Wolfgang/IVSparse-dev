@@ -380,7 +380,7 @@ namespace IVSparse {
 
 // Private Tranpose Constructor
     template <typename T, typename indexT, bool columnMajor>
-    SparseMatrix<T, indexT, 2, columnMajor>::SparseMatrix(std::unordered_map<T, std::vector<indexT>> maps[], uint32_t num_rows, uint32_t num_cols) {
+    SparseMatrix<T, indexT, 2, columnMajor>::SparseMatrix(std::vector<std::unordered_map<T, std::vector<indexT>>> &maps, uint32_t num_rows, uint32_t num_cols) {
 
         // set class variables
         if constexpr (columnMajor) {
@@ -397,9 +397,10 @@ namespace IVSparse {
         encodeValueType();
         index_t = sizeof(indexT);
         
+        data.reserve(outerDim);
 
         for(uint32_t i = 0; i < outerDim; i++) {
-            data[i] = maps[i];
+            data[i].swap(maps[i]);
         }
 
         // data = maps;
