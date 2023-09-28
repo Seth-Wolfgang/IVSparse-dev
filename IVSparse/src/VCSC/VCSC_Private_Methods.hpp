@@ -104,14 +104,14 @@ namespace IVSparse {
 
         // ---- Stage 2: Construct the Dictionary For Each Column ---- //
 
-  // Loop through each column and construct a middle data structre for the matrix
+        // Loop through each column and construct a middle data structre for the matrix
         #ifdef IVSPARSE_HAS_OPENMP
         #pragma omp parallel for
         #endif
         for (uint32_t i = 0; i < outerDim; i++) {
 
             // get the map for the current column
-            data.push_back(std::unordered_map<T, std::vector<indexT>>());
+            data[i] = std::unordered_map<T, std::vector<indexT>>();
 
 
             // check if the current column is empty

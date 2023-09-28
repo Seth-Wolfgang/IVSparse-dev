@@ -91,9 +91,10 @@ int main() {
 
   myMatrix.print();
 
-  IVSparse::SparseMatrix<int, int, 2, true> myMatrix2 = myMatrix.transpose();
+  // IVSparse::SparseMatrix<int, int, 2, true> myMatrix2 = myMatrix * 2;
+  myMatrix *= 2;
 
-  myMatrix2.print();
+  myMatrix.print();
   
   return 0;
 }

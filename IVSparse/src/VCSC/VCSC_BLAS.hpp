@@ -23,9 +23,19 @@ namespace IVSparse {
         #pragma omp parallel for
         #endif
         for (uint32_t i = 0; i < outerDim; i++) {
-            for (auto& [key, value] : newMatrix.data[i]) {
-                key *= scalar;
-            }
+            
+            // create a new map
+            std::unordered_map<T, std::vector<indexT>> newMap;
+
+            // use transform to scalar multiply each key in the map
+            std::transform(newMatrix.data[i].begin(), newMatrix.data[i].end(), std::inserter(newMap, newMap.begin()),
+                           [scalar](std::pair<T, std::vector<indexT>> pair) {
+                               return std::make_pair(pair.first * scalar, pair.second);
+                           });
+            
+            // set the new map to the old map
+            newMatrix.data[i] = newMap;
+
         }
         return newMatrix;
     }
@@ -39,9 +49,18 @@ namespace IVSparse {
         #pragma omp parallel for
         #endif
         for (uint32_t i = 0; i < outerDim; i++) {
-            for (auto& [key, value] : data[i]) {
-                key *= scalar;
-            }
+
+            // new map
+            std::unordered_map<T, std::vector<indexT>> newMap;
+
+            // use transform to scalar multiply each key in the map
+            std::transform(data[i].begin(), data[i].end(), std::inserter(newMap, newMap.begin()),
+                           [scalar](std::pair<T, std::vector<indexT>> pair) {
+                               return std::make_pair(pair.first * scalar, pair.second);
+                           });
+            
+            // set the new map to the old map
+            data[i] = newMap;
         }
     }
 
