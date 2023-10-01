@@ -717,9 +717,25 @@ namespace IVSparse {
                         *(uint16_t*)helpPtr = (uint16_t)val.second[k];
                         helpPtr = (uint16_t*)helpPtr + 1;
                         break;
+                    case 3:
+                        *(uint32_t*)helpPtr = (uint32_t)val.second[k] & 0xFFFFFF;
+                        helpPtr = (uint8_t*)helpPtr + 3;
+                        break;
                     case 4:
                         *(uint32_t*)helpPtr = (uint32_t)val.second[k];
                         helpPtr = (uint32_t*)helpPtr + 1;
+                        break;
+                    case 5:
+                        *(uint64_t*)helpPtr = (uint64_t)val.second[k] & 0xFFFFFFFFFF;
+                        helpPtr = (uint8_t*)helpPtr + 5;
+                        break;
+                    case 6:
+                        *(uint64_t*)helpPtr = (uint64_t)val.second[k] & 0xFFFFFFFFFFFF;
+                        helpPtr = (uint8_t*)helpPtr + 6;
+                        break;
+                    case 7:
+                        *(uint64_t*)helpPtr = (uint64_t)val.second[k] & 0xFFFFFFFFFFFFFF;
+                        helpPtr = (uint8_t*)helpPtr + 7;
                         break;
                     case 8:
                         *(uint64_t*)helpPtr = (uint64_t)val.second[k];
@@ -729,24 +745,26 @@ namespace IVSparse {
                 }
 
                 // write a delimiter of the correct width
-                switch (val.second[val.second.size() - 1]) {
-                case 1:
-                    *(uint8_t*)helpPtr = (uint8_t)DELIM;
-                    helpPtr = (uint8_t*)helpPtr + 1;
-                    break;
-                case 2:
-                    *(uint16_t*)helpPtr = (uint16_t)DELIM;
-                    helpPtr = (uint16_t*)helpPtr + 1;
-                    break;
-                case 4:
-                    *(uint32_t*)helpPtr = (uint32_t)DELIM;
-                    helpPtr = (uint32_t*)helpPtr + 1;
-                    break;
-                case 8:
-                    *(uint64_t*)helpPtr = (uint64_t)DELIM;
-                    helpPtr = (uint64_t*)helpPtr + 1;
-                    break;
-                }
+                // switch (val.second[val.second.size() - 1]) {
+                // case 1:
+                //     *(uint8_t*)helpPtr = (uint8_t)DELIM;
+                //     helpPtr = (uint8_t*)helpPtr + 1;
+                //     break;
+                // case 2:
+                //     *(uint16_t*)helpPtr = (uint16_t)DELIM;
+                //     helpPtr = (uint16_t*)helpPtr + 1;
+                //     break;
+                // case 4:
+                //     *(uint32_t*)helpPtr = (uint32_t)DELIM;
+                //     helpPtr = (uint32_t*)helpPtr + 1;
+                //     break;
+                // case 8:
+                //     *(uint64_t*)helpPtr = (uint64_t)DELIM;
+                //     helpPtr = (uint64_t*)helpPtr + 1;
+                //     break;
+                // }
+                memset(helpPtr, 0, val.second[val.second.size() - 1]);
+                helpPtr = (uint8_t*)helpPtr + val.second[val.second.size() - 1];
             }
         }
 

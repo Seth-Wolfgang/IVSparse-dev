@@ -111,7 +111,7 @@ namespace IVSparse {
         for (uint32_t i = 0; i < outerDim; i++) {
 
             // get the map for the current column
-            data[i] = std::unordered_map<T, std::vector<indexT>>();
+            data.push_back(std::unordered_map<T, std::vector<indexT>>());
 
 
             // check if the current column is empty
