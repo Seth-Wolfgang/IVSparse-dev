@@ -37,7 +37,7 @@ namespace IVSparse {
             encodeValueType();
             index_t = other.index_t;
 
-            data.reserve(outerDim);
+            data.resize(outerDim);
 
             // copy the data
             for (uint32_t i = 0; i < outerDim; i++) {

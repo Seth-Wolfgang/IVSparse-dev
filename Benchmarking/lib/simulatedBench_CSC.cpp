@@ -228,7 +228,7 @@ void readCSC(const char* valsPath, const char* innerPath, const char* outerPath,
     double val, in, out;
 
     while (valsFile >> std::scientific >> val) {
-        cscValues.push_back(val+1);
+        cscValues.push_back(val + 1);
     }
 
 
@@ -245,26 +245,6 @@ void readCSC(const char* valsPath, const char* innerPath, const char* outerPath,
     valsFile.close();
     innerFile.close();
     outerFile.close();
-
-    // std::cout << "values.size(): " << cscValues.size() << std::endl;
-    // std::cout << "innerInt.size(): " << cscInner.size() << std::endl;
-    // std::cout << "outerInt.size(): " << cscOuter.size() << std::endl;
-
-    // for(int i = 0; i < 20; i++) {
-    //     std::cout << cscValues.at(i) << " ";
-    // }
-    // std::cout << std::endl;
-    // for(int i = 0; i < 20; i++) {
-    //     std::cout << cscInner.at(i) << " ";
-    // }
-    // std::cout << std::endl;
-    // for(int i = 0; i < 20; i++) {
-    //     std::cout << cscOuter.at(i) << " ";
-    // }
-
-    // assert(values.size() == NNZ);
-    // assert(innerInt.size() == ROWS);
-    // assert(outerInt.size() == COLS);
 
 
 }

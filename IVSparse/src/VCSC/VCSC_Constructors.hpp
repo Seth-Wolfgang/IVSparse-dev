@@ -182,7 +182,7 @@ namespace IVSparse {
                   });
 
 
-        data.reserve(outerDim);
+        data.resize(outerDim);
 
         // loop through the tuples
         for (size_t i = 0; i < nnz; i++) {
