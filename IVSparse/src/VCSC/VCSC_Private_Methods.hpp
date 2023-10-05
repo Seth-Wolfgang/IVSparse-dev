@@ -59,21 +59,9 @@ namespace IVSparse {
         // set compSize to zero
         compSize = 0;
 
-        // add the size of the metadata
-        // compSize += META_DATA_SIZE;
-
-        // pointers * cols 
-
-
-        // add pointers to arrays
-        // compSize += (sizeof(T*) * outerDim);       // values 8
-        // compSize += (sizeof(indexT*) * outerDim);  // counts 4
-        // compSize += (sizeof(indexT*) * outerDim);  // indices 4
-
         compSize += (sizeof(indexT) * outerDim);  // valueSizes 4
         std::cout << "valueSizes: " << (sizeof(indexT) * outerDim) << std::endl;
-        compSize += (sizeof(indexT) * outerDim);  // indexSizes 4
-        std::cout << "indexSizes: " << (sizeof(indexT) * outerDim) << std::endl;
+
 
         for (uint32_t i = 0; i < outerDim; i++) {
 
