@@ -194,7 +194,7 @@ namespace IVSparse {
             }
         }
 
-        // return a IVCSC matrix from the CSC vectors
+        // return a VCSC matrix from the CSC vectors
         IVSparse::SparseMatrix<T, indexT, 2, columnMajor> mat(
             values, indices, colPtrs, numRows, numCols, nnz);
 
@@ -337,13 +337,13 @@ namespace IVSparse {
     IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor> SparseMatrix<T, indexT, compressionLevel, columnMajor>::transpose() {
 
         // make a data structure to store the tranpose
-        std::unordered_map<T, std::vector<indexT>> mapsT[innerDim];
-
+        // std::unordered_map<T, std::vector<indexT>> mapsT[innerDim];
+        std::vector<std::unordered_map<T, std::vector<indexT>>> mapsT;
+        // mapsT.reserve(innerDim);
+        mapsT.resize(innerDim);
         // populate the transpose data structure
         for (uint32_t i = 0; i < outerDim; ++i) {
-            for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(
-                *this, i);
-                it; ++it) {
+            for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(*this, i); it; ++it) {
                 // add the value to the map
                 if constexpr (columnMajor) {
                     mapsT[it.row()][it.value()].push_back(it.col());
@@ -372,7 +372,7 @@ namespace IVSparse {
         }
 
         // create a new matrix passing in transposedMap
-        IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor> temp(mapsT, numRows, numCols);
+        IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor> temp(mapsT.data(), numRows, numCols);
 
         // return the new matrix
         return temp;
@@ -386,9 +386,7 @@ namespace IVSparse {
 
         // populate the transpose data structure
         for (uint32_t i = 0; i < outerDim; ++i) {
-            for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(
-                *this, i);
-                it; ++it) {
+            for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(*this, i); it; ++it) {
                 // add the value to the map
                 if constexpr (columnMajor) {
                     mapsT[it.row()][it.value()].push_back(it.col());

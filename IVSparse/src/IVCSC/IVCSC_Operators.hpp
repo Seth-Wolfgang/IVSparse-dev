@@ -12,9 +12,7 @@ namespace IVSparse {
 
     // Assignment Operator
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    SparseMatrix<T, indexT, compressionLevel, columnMajor>&
-        SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator=(
-            const IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>& other) {
+    SparseMatrix<T, indexT, compressionLevel, columnMajor>& SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator=(const IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>& other) {
 
         if (this != &other) {
             // free old data
