@@ -60,7 +60,6 @@ namespace IVSparse {
         compSize = 0;
 
         compSize += (sizeof(indexT) * outerDim);  // valueSizes 4
-        std::cout << "valueSizes: " << (sizeof(indexT) * outerDim) << std::endl;
 
 
         for (uint32_t i = 0; i < outerDim; i++) {
@@ -71,7 +70,7 @@ namespace IVSparse {
         }
     }
 
-    // Compression Algorithm for going from CSC to IVCSC
+    // Compression Algorithm for going from CSC to VCSC
     template <typename T, typename indexT, bool columnMajor>
     template <typename T2, typename indexT2>
     void SparseMatrix<T, indexT, 2, columnMajor>::compressCSC(T2* vals, indexT2* innerIndices, indexT2* outerPointers) {
@@ -116,9 +115,9 @@ namespace IVSparse {
         #pragma omp parallel for
         #endif
         for (uint32_t i = 0; i < outerDim; i++) {
+            
             // create the data structure to temporarily hold the data
-            std::map<T2, std::vector<indexT2>>
-                dict;  // Key = value, Value = vector of indices
+            std::map<T2, std::vector<indexT2>> dict;  // Key = value, Value = vector of indices
 
             // check if the current column is empty
             if (outerPointers[i] == outerPointers[i + 1]) {
@@ -179,10 +178,11 @@ namespace IVSparse {
                 values[i][performanceVecSize] = pair.first;
                 counts[i][performanceVecSize] = pair.second.size();
 
-                for (uint32_t j = 0; j < pair.second.size(); j++) {
-                    indices[i][indexSize] = pair.second[j];
-                    indexSize++;
-                }
+                // memcpy the indices into the indices array and increment the indexSize
+                memcpy(&indices[i][indexSize], &pair.second[0], sizeof(indexT) * pair.second.size());
+                indexSize += pair.second.size();
+
+
                 performanceVecSize++;
             }
 

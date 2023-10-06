@@ -13,6 +13,7 @@ namespace IVSparse {
     // Destructor
     template <typename T, typename indexT, bool columnMajor>
     SparseMatrix<T, indexT, 2, columnMajor>::~SparseMatrix() {
+
         // delete the meta data
         if (metadata != nullptr) {
             delete[] metadata;
@@ -525,8 +526,7 @@ namespace IVSparse {
 
     // Private Tranpose Constructor
     template <typename T, typename indexT, bool columnMajor>
-    SparseMatrix<T, indexT, 2, columnMajor>::SparseMatrix(
-        std::unordered_map<T, std::vector<indexT>> maps[], uint32_t num_rows, uint32_t num_cols) {
+    SparseMatrix<T, indexT, 2, columnMajor>::SparseMatrix(std::unordered_map<T, std::vector<indexT>> maps[], uint32_t num_rows, uint32_t num_cols) {
 
         // set class variables
         if constexpr (columnMajor) {
@@ -603,10 +603,8 @@ namespace IVSparse {
                 values[i][valIndex] = val.first;
                 counts[i][valIndex] = val.second.size();
 
-                for (auto& indexVal : val.second) {
-                    indices[i][index] = indexVal;
-                    index++;
-                }
+                memcpy(&indices[i][index], val.second.data(), sizeof(indexT) * val.second.size());
+                index += val.second.size();
 
                 valIndex++;
             }
