@@ -1,10 +1,16 @@
 #!/bin/bash
 # clear
 # Step 1: Compile simulatedBench_CSC.cpp with g++ -O2
- g++ -O2 -I ~/eigen simulatedBench_COO.cpp -o a.out
+ g++ -O2 -I ~/eigen simulatedBench_COO.cpp -o a.out                                                   # may need to remove -I ~/eigen
 
 # Step 2: Iterate through folders in ~/matrices
-matrix_dir="/home/sethwolfgang/matrices"
+
+
+
+matrix_dir="/home/sethwolfgang/matrices"                                                                     # Change this to your directory
+
+
+
 
 if [ ! -d "$matrix_dir" ]; then
     echo "Error: $matrix_dir directory does not exist."
@@ -24,7 +30,7 @@ for folder in "$matrix_dir"/*; do
 
         # Calculate the values
         # ROWS=$(wc -l "$inner_csv" | awk '{print $1}')
-        # COLS=$(($(wc -l "$outer_csv" | awk '{print $1}') - 1))
+        # COLS=$(($(wc -l "$outer_csv" | awk '{print $1}') - 1))                                # starter code for changing the number of columns, rows, etc for the benchmarking code. I don't know if it works
         # NNZ=$(wc -l "$vals_csv" | awk '{print $1}')
 
         # Search and replace in the input file (e.g., input_file.txt)
@@ -33,7 +39,7 @@ for folder in "$matrix_dir"/*; do
         # sed -i "s/#define COLS <value>/#define COLS $COLS/g" "$input_file"
         # sed -i "s/#define NNZ <value>/#define NNZ $NNZ/g" "$input_file"
 
-        g++ -O2 -I ~/eigen simulatedBench_COO.cpp -o a.out
+        # g++ -O2 -I ~/eigen simulatedBench_COO.cpp -o a.out
 
 
         if [ -f "$vals_csv" ] && [ -f "$inner_csv" ] && [ -f "$outer_csv" ]; then
