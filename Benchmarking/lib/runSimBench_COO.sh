@@ -39,7 +39,7 @@ for folder in "$matrix_dir"/*; do
         sed -i "/#define COLS/c\#define COLS $COLS" "$input_file"
         sed -i "/#define NNZ/c\#define NNZ $NNZ" "$input_file"
 
-        g++ -O2 -I ~/eigen simulatedBench_COO.cpp -o a.out
+        g++ -O2 -I ~/eigen simulatedBench_COO.cpp -o a.out                                             # may need to remove -I ~/eigen                              
 
 
         if [ -f "$vals_csv" ] && [ -f "$inner_csv" ] && [ -f "$outer_csv" ]; then

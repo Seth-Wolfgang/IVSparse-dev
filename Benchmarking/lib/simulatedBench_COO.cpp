@@ -51,8 +51,8 @@
 #include <fstream>
 
  // General 
-#define NUM_ITERATIONS 1
-#define NUM_COLD_STARTS 1
+#define NUM_ITERATIONS 10
+#define NUM_COLD_STARTS 3
 #define VALUE_TYPE double
 #define CHECK_VALUES
 
