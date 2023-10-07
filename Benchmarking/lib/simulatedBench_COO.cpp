@@ -50,20 +50,24 @@
 #include <random>
 #include <fstream>
 
-
+ // General 
 #define NUM_ITERATIONS 1
-#define NUM_COLD_STARTS 3
+#define NUM_COLD_STARTS 1
 #define VALUE_TYPE double
 #define CHECK_VALUES
+
+#define ROWS 1'000'000
+#define COLS 10'000
+#define NNZ 10'000'000
 
 template <typename T, typename indexType, int compressionLevel> double averageRedundancy(IVSparse::SparseMatrix<T, indexType, compressionLevel>& matrix);
 template <typename T, typename indexType, int compressionLevel> double averageRedundancy(Eigen::SparseMatrix<T>& matrix);
 template <typename T> inline T getMax(std::vector<T> data);
 void printDataToFile(std::vector<uint64_t>& data, std::vector<std::vector<uint64_t>>& timeData, const char* filename);
 
-void  VCSC_Benchmark(std::vector<std::tuple<int, int, VALUE_TYPE>>& data);
-void IVCSC_Benchmark(std::vector<std::tuple<int, int, VALUE_TYPE>>& data);
-void eigen_Benchmark(std::vector<std::tuple<int, int, VALUE_TYPE>>& data);
+void  VCSC_Benchmark();
+void IVCSC_Benchmark();
+void eigen_Benchmark();
 
 void VCSC_outerSumBenchmark(IVSparse::SparseMatrix<VALUE_TYPE, int, 2>& matrix, std::vector<std::vector<uint64_t>>& resultData);
 void VCSC_CSCConstructorBenchmark(std::vector<std::tuple<int, int, VALUE_TYPE>>& data, std::vector<std::vector<uint64_t>>& resultData, int rows, int cols);
@@ -96,9 +100,9 @@ template <typename T> inline Eigen::Matrix<T, -1, 1> eigen_fair_spmv(Eigen::Spar
 template <typename T, typename indexType, int compressionLevel> inline Eigen::Matrix<T, -1, -1> IVSparse_fair_spmm(IVSparse::SparseMatrix<T, indexType, compressionLevel>& leftMat, Eigen::Matrix<T, -1, -1>& rightMat);
 template <typename T, typename indexType, int compressionLevel> inline Eigen::Matrix<T, -1, 1> IVSparse_fair_spmv(IVSparse::SparseMatrix<T, indexType, compressionLevel>& matrix, Eigen::Matrix<T, -1, 1>& vector);
 
-void readCSC(const char* valsPath, const char* innerPath, const char* outerPath, std::vector<VALUE_TYPE>& cscValues, std::vector<int>& cscInner, std::vector<int>& cscOuter);
+void readCSC(const char* valsPath, const char* innerPath, const char* outerPath);
 
-
+// Global values for checking sums
 VALUE_TYPE VCSC_ScalarSum;
 VALUE_TYPE VCSC_SpmvSum;
 VALUE_TYPE VCSC_SpmmSum;
@@ -125,51 +129,24 @@ Eigen::Matrix<VALUE_TYPE, -1, 1> eigenVector;
 
 int id;
 double redundancy;
-uint32_t ROWS;
-uint32_t COLS;
-uint32_t NNZ;
 std::vector<std::tuple<int, int, VALUE_TYPE>> data;
 
 
 int main(int argc, char** argv) {
-    // file paths
     char* vals = argv[1];
     char* innerPath = argv[2];
     char* outerPath = argv[3];
     redundancy = atof(argv[4]);
     id = atoi(argv[5]);
     srand(1);
+
     // char* vals = "/home/sethwolfgang/matrices/0.6739517619101313/vals.csv";
     // char* innerPath = "/home/sethwolfgang/matrices/0.6739517619101313/inner.csv";
     // char* outerPath = "/home/sethwolfgang/matrices/0.6739517619101313/outer.csv";
     // double redundancy = 1;
     // int id = 0;
 
-    // char* vals = "/home/sethwolfgang/newMatrices/1.0/vals.csv";
-    // char* innerPath = "/home/sethwolfgang/newMatrices/1.0/inner.csv";
-    // char* outerPath = "/home/sethwolfgang/newMatrices/1.0/outer.csv";
-    // double redundancy = 1;
-    // int id = 0;
-
-    // VALUE_TYPE* values = (VALUE_TYPE*)calloc(NNZ, sizeof(VALUE_TYPE));
-    // int* inner = (int*)calloc(ROWS, sizeof(int));
-    // int* outer = (int*)calloc(COLS, sizeof(int));
-
-    std::vector<VALUE_TYPE> values;
-    std::vector<int> inner;
-    std::vector<int> outer;
-
-    readCSC(vals, innerPath, outerPath, values, inner, outer);
-
-    // std::vector<std::tuple<int, int, VALUE_TYPE>> data;
-
-    // for (int i = 0; i < values.size(); i++) {
-    //     data.push_back(std::make_tuple(inner.at(i), outer.at(i), values.at(i)));
-    // }
-
-    values.clear();
-    inner.clear();
-    outer.clear();
+    readCSC(vals, innerPath, outerPath);
 
     eigenMatrix = Eigen::Matrix<VALUE_TYPE, -1, -1>::Random(COLS, 1000);
     eigenVector = Eigen::Matrix<VALUE_TYPE, -1, 1>::Random(COLS, 1);
@@ -197,15 +174,12 @@ int main(int argc, char** argv) {
     Eigen_TransposeSum = 0;
     #endif
 
-
-
-
     std::cout << "\033[34;42;1;4mStarting VCSC Benchmark\033[0m" << std::endl;
-    VCSC_Benchmark(data);
+    VCSC_Benchmark();
     std::cout << "\033[34;42;1;4mStarting IVCSC Benchmark\033[0m" << std::endl;
-    IVCSC_Benchmark(data);
+    IVCSC_Benchmark();
     std::cout << "\033[34;42;1;4mStarting Eigen Benchmark\033[0m" << std::endl;
-    eigen_Benchmark(data);
+    eigen_Benchmark();
 
 
 
@@ -221,7 +195,11 @@ int main(int argc, char** argv) {
  *                                                                                                           *
  ************************************************************************************************************/
 
-void readCSC(const char* valsPath, const char* innerPath, const char* outerPath, std::vector<VALUE_TYPE>& cscValues, std::vector<int>& cscInner, std::vector<int>& cscOuter) {
+void readCSC(const char* valsPath, const char* innerPath, const char* outerPath) {
+
+     std::vector<VALUE_TYPE> cscValues; 
+     std::vector<int> cscInner; 
+     std::vector<int> cscOuter;
 
     // std::ifstream valsFile(valsPath);
     // std::ifstream innerFile(innerPath);
@@ -277,12 +255,10 @@ void readCSC(const char* valsPath, const char* innerPath, const char* outerPath,
     innerFile.close();
     outerFile.close();
 
-    ROWS = 1'000'000;
-    COLS = 10000;
-    NNZ = 10'000'000;
+    Eigen::SparseMatrix<VALUE_TYPE> matrix = Eigen::Map<Eigen::SparseMatrix<VALUE_TYPE> >(ROWS, COLS, NNZ, cscOuter.data(), cscInner.data(), cscValues.data());
 
-    Eigen::SparseMatrix<VALUE_TYPE> matrix = Eigen::Map<Eigen::SparseMatrix<VALUE_TYPE> >(1'000'000, 10000, 10'000'000, cscOuter.data(), cscInner.data(), cscValues.data());
-
+    // also global
+    data.reserve(NNZ);
 
     for (int i = 0; i < matrix.outerSize(); i++) {
         for (Eigen::SparseMatrix<VALUE_TYPE>::InnerIterator it(matrix, i); it; ++it) {
@@ -372,7 +348,7 @@ void printDataToFile(std::vector<double>& data, std::vector<std::vector<uint64_t
  * @param nonzeros
  */
 
-void  VCSC_Benchmark(std::vector<std::tuple<int, int, VALUE_TYPE>>& data) {
+void  VCSC_Benchmark() {
     std::vector<double> matrixData(1);
     std::vector<std::vector<uint64_t>> timeData(NUM_ITERATIONS);
 
@@ -392,7 +368,7 @@ void  VCSC_Benchmark(std::vector<std::tuple<int, int, VALUE_TYPE>>& data) {
 
     // matrix.print();
 
-    // VCSC_constructorBenchmark(data, timeData, ROWS, COLS);
+    VCSC_constructorBenchmark(data, timeData, ROWS, COLS);
     std::cout << "VCSC constructor done" << std::endl;
     VCSC_scalarBenchmark(matrix, timeData);
     std::cout << "VCSC scalar done" << std::endl;
@@ -400,11 +376,11 @@ void  VCSC_Benchmark(std::vector<std::tuple<int, int, VALUE_TYPE>>& data) {
     // std::cout << "VCSC column sums done" << std::endl;
     VCSC_spmvBenchmark(matrix, timeData, COLS);
     std::cout << "VCSC spmv done" << std::endl;
-    // VCSC_spmmBenchmark(matrix, timeData, ROWS, COLS);
+    VCSC_spmmBenchmark(matrix, timeData, ROWS, COLS);
     std::cout << "VCSC spmm done" << std::endl;
     VCSC_iteratorBenchmark(matrix, timeData, ROWS, COLS);
     std::cout << "VCSC iterator done\n" << std::endl;
-    // VCSC_transposeBenchmark(matrix, timeData, ROWS, COLS);
+    VCSC_transposeBenchmark(matrix, timeData, ROWS, COLS);
     std::cout << "VCSC transpose done\n" << std::endl;
 
     std::stringstream path;
@@ -423,7 +399,7 @@ void  VCSC_Benchmark(std::vector<std::tuple<int, int, VALUE_TYPE>>& data) {
  * @param nonzeros
  */
 
-void   IVCSC_Benchmark(std::vector<std::tuple<int, int, VALUE_TYPE>>& data) {
+void   IVCSC_Benchmark() {
     std::vector<double> matrixData(1);
     std::vector<std::vector<uint64_t>> timeData(NUM_ITERATIONS);
     // adjustValues(data, 1, 1);
@@ -442,19 +418,19 @@ void   IVCSC_Benchmark(std::vector<std::tuple<int, int, VALUE_TYPE>>& data) {
         timeData.at(j).resize(7);
     }
 
-    // IVCSC_constructorBenchmark(data, timeData, ROWS, COLS);
+    IVCSC_constructorBenchmark(data, timeData, ROWS, COLS);
     std::cout << "IVCSC constructor done" << std::endl;
     IVCSC_scalarBenchmark(matrix, timeData);
     std::cout << "IVCSC scalar done" << std::endl;
     // IVCSC_outerSumBenchmark(matrix, timeData);
-    std::cout << "IVCSC column sums done" << std::endl;
+    // std::cout << "IVCSC column sums done" << std::endl;
     IVCSC_spmvBenchmark(matrix, timeData, COLS);
     std::cout << "IVCSC spmv done" << std::endl;
-    // IVCSC_spmmBenchmark(matrix, timeData, ROWS, COLS);
+    IVCSC_spmmBenchmark(matrix, timeData, ROWS, COLS);
     std::cout << "IVCSC spmm done" << std::endl;
     IVCSC_iteratorBenchmark(matrix, timeData, ROWS, COLS);
     std::cout << "IVCSC iterator done" << std::endl;
-    // IVCSC_transposeBenchmark(matrix, timeData, ROWS, COLS);
+    IVCSC_transposeBenchmark(matrix, timeData, ROWS, COLS);
     std::cout << "IVCSC transpose done" << std::endl;
 
     #ifdef CHECK_VALUES
@@ -483,7 +459,7 @@ void   IVCSC_Benchmark(std::vector<std::tuple<int, int, VALUE_TYPE>>& data) {
  * @param nonzeros
  */
 
-void eigen_Benchmark(std::vector<std::tuple<int, int, VALUE_TYPE>>& data) {
+void eigen_Benchmark() {
     Eigen::SparseMatrix<VALUE_TYPE> matrix(ROWS, COLS);
     matrix.reserve(data.size());
     std::vector<Eigen::Triplet<VALUE_TYPE>> triplet;
@@ -510,7 +486,7 @@ void eigen_Benchmark(std::vector<std::tuple<int, int, VALUE_TYPE>>& data) {
         timeData.at(k).resize(7);
     }
 
-    // eigen_constructorBenchmark(data, timeData, ROWS, COLS);
+    eigen_constructorBenchmark(data, timeData, ROWS, COLS);
     std::cout << "Eigen constructor done" << std::endl;
     eigen_scalarBenchmark(matrix, timeData);
     std::cout << "Eigen scalar done" << std::endl;
@@ -518,11 +494,11 @@ void eigen_Benchmark(std::vector<std::tuple<int, int, VALUE_TYPE>>& data) {
     // std::cout << "Eigen column sums done" << std::endl;
     eigen_spmvBenchmark(matrix, timeData, COLS);
     std::cout << "Eigen spmv done" << std::endl;
-    // eigen_spmmBenchmark(matrix, timeData, ROWS, COLS);
+    eigen_spmmBenchmark(matrix, timeData, ROWS, COLS);
     std::cout << "Eigen spmm done" << std::endl;
     eigen_iteratorBenchmark(matrix, timeData, ROWS, COLS);
     std::cout << "Eigen iterator done" << std::endl;
-    // eigen_transposeBenchmark(matrix, timeData, ROWS, COLS);
+    eigen_transposeBenchmark(matrix, timeData, ROWS, COLS);
     std::cout << "Eigen transpose done" << std::endl;
 
     #ifdef CHECK_VALUES

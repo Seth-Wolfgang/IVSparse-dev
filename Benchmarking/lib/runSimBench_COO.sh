@@ -1,7 +1,7 @@
 #!/bin/bash
-clear
+# clear
 # Step 1: Compile simulatedBench_CSC.cpp with g++ -O2
-g++ -O2 -I ~/eigen simulatedBench_COO.cpp -o a.out
+ g++ -O2 -I ~/eigen simulatedBench_COO.cpp -o a.out
 
 # Step 2: Iterate through folders in ~/matrices
 matrix_dir="/home/sethwolfgang/matrices"
@@ -21,6 +21,20 @@ for folder in "$matrix_dir"/*; do
         inner_csv="$folder/inner.csv"
         outer_csv="$folder/outer.csv"
         folder_name="$(basename "$folder")"
+
+        # Calculate the values
+        # ROWS=$(wc -l "$inner_csv" | awk '{print $1}')
+        # COLS=$(($(wc -l "$outer_csv" | awk '{print $1}') - 1))
+        # NNZ=$(wc -l "$vals_csv" | awk '{print $1}')
+
+        # Search and replace in the input file (e.g., input_file.txt)
+        # input_file="simulatedBench_COO.cpp"
+        # sed -i "s/#define ROWS <value>/#define ROWS $ROWS/g" "$input_file"
+        # sed -i "s/#define COLS <value>/#define COLS $COLS/g" "$input_file"
+        # sed -i "s/#define NNZ <value>/#define NNZ $NNZ/g" "$input_file"
+
+        g++ -O2 -I ~/eigen simulatedBench_COO.cpp -o a.out
+
 
         if [ -f "$vals_csv" ] && [ -f "$inner_csv" ] && [ -f "$outer_csv" ]; then
             ./a.out "$vals_csv" "$inner_csv" "$outer_csv" "$folder_name" "$a"
