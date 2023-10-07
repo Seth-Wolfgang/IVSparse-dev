@@ -1,7 +1,7 @@
 #!/bin/bash
 # clear
 # Step 1: Compile simulatedBench_CSC.cpp with g++ -O2
- g++ -O2 -I ~/eigen simulatedBench_COO.cpp -o a.out                                                   # may need to remove -I ~/eigen
+#  g++ -O2 -I ~/eigen simulatedBench_COO.cpp -o a.out                                                   # may need to remove -I ~/eigen
 
 # Step 2: Iterate through folders in ~/matrices
 
@@ -29,17 +29,17 @@ for folder in "$matrix_dir"/*; do
         folder_name="$(basename "$folder")"
 
         # Calculate the values
-        # ROWS=$(wc -l "$inner_csv" | awk '{print $1}')
-        # COLS=$(($(wc -l "$outer_csv" | awk '{print $1}') - 1))                                # starter code for changing the number of columns, rows, etc for the benchmarking code. I don't know if it works
-        # NNZ=$(wc -l "$vals_csv" | awk '{print $1}')
+        ROWS=$(wc -l "$inner_csv" | awk '{print $1}')
+        COLS=$(($(wc -l "$outer_csv" | awk '{print $1}') - 1))                                # starter code for changing the number of columns, rows, etc for the benchmarking code. I don't know if it works
+        NNZ=$(wc -l "$vals_csv" | awk '{print $1}')
 
-        # Search and replace in the input file (e.g., input_file.txt)
-        # input_file="simulatedBench_COO.cpp"
-        # sed -i "s/#define ROWS <value>/#define ROWS $ROWS/g" "$input_file"
-        # sed -i "s/#define COLS <value>/#define COLS $COLS/g" "$input_file"
-        # sed -i "s/#define NNZ <value>/#define NNZ $NNZ/g" "$input_file"
+        # Search and replace the values in the benchmarking code
+        input_file="simulatedBench_COO.cpp"
+        sed -i "/#define ROWS/c\#define ROWS $ROWS" "$input_file"
+        sed -i "/#define COLS/c\#define COLS $COLS" "$input_file"
+        sed -i "/#define NNZ/c\#define NNZ $NNZ" "$input_file"
 
-        # g++ -O2 -I ~/eigen simulatedBench_COO.cpp -o a.out
+        g++ -O2 -I ~/eigen simulatedBench_COO.cpp -o a.out
 
 
         if [ -f "$vals_csv" ] && [ -f "$inner_csv" ] && [ -f "$outer_csv" ]; then

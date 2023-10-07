@@ -56,9 +56,9 @@
 #define VALUE_TYPE double
 #define CHECK_VALUES
 
-#define ROWS 1'000'000
-#define COLS 10'000
-#define NNZ 10'000'000
+#define ROWS 10000000
+#define COLS 10000
+#define NNZ 10000000
 
 template <typename T, typename indexType, int compressionLevel> double averageRedundancy(IVSparse::SparseMatrix<T, indexType, compressionLevel>& matrix);
 template <typename T, typename indexType, int compressionLevel> double averageRedundancy(Eigen::SparseMatrix<T>& matrix);
@@ -139,7 +139,7 @@ int main(int argc, char** argv) {
     redundancy = atof(argv[4]);
     id = atoi(argv[5]);
     srand(1);
-
+    std::cout << "Rows: " << ROWS << " Cols: " << COLS << " NNZ: " << NNZ << " Redundancy: " << redundancy << std::endl;
     // char* vals = "/home/sethwolfgang/matrices/0.6739517619101313/vals.csv";
     // char* innerPath = "/home/sethwolfgang/matrices/0.6739517619101313/inner.csv";
     // char* outerPath = "/home/sethwolfgang/matrices/0.6739517619101313/outer.csv";
