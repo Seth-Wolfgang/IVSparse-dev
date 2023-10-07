@@ -22,6 +22,10 @@ library(stringr)
 
 plotSavePath = "~/vscode/CSF-Figures/plots/"
 
+largeEigenResults10 = read.csv("~/results/EigenResults_0.1_large.csv")
+largeVCSCResults10 = read.csv("~/results/VCSCResults_0.1_large.csv")
+largeIVCSCResults10 = read.csv("~/results/IVCSCResults_0.1_large.csv")
+
 eigenResults1 = read.csv("~/results/EigenResults_0.01.csv")
 VCSCResults1 = read.csv("~/results/VCSCResults_0.01.csv")
 IVCSCResults1 = read.csv("~/results/IVCSCResults_0.01.csv")
@@ -31,8 +35,8 @@ VCSCResults5 = read.csv("~/results/VCSCResults_0.05.csv")
 IVCSCResults5 = read.csv("~/results/IVCSCResults_0.05.csv")
 
 eigenResults10 = read.csv("~/results/EigenResults_0.1.csv")
-VCSCResults10 = read.csv("~/results/VCSCResults_0.1.csv")
-IVCSCResults10 = read.csv("~/results/IVCSCResults_0.1.csv")
+VCSCResults10 = read.csv("~/results/goodresults/VCSCResults_0.1.csv")
+IVCSCResults10 = read.csv("~/results/goodresults/IVCSCResults_0.1.csv")
 
 density_VCSCResults10 = read.csv("~/results/density_VCSCResults_0.1.csv")
 density_IVCSCResults10 = read.csv("~/results/density_IVCSCResults_0.1.csv")
@@ -290,9 +294,9 @@ triple_plot_ratio_over_eigen_no_legend <- function(dataset1_results, dataset1_na
   
   # Combine the data frames for all three datasets and eigenResults
   combined_data <- rbind(
-    data.frame(redundancy = eigen_first_data_1$redundancy, ratio = ratio1, dataset = dataset1_name, eigenResult = "eigen1"),
-    data.frame(redundancy = eigen_first_data_2$redundancy, ratio = ratio2, dataset = dataset2_name, eigenResult = "eigen2"),
-    data.frame(redundancy = eigen_first_data_3$redundancy, ratio = ratio3, dataset = dataset3_name, eigenResult = "eigen3")
+    data.frame(redundancy = dataset1_first_data$redundancy, ratio = ratio1, dataset = dataset1_name, eigenResult = "eigen1"),
+    data.frame(redundancy = dataset2_first_data$redundancy, ratio = ratio2, dataset = dataset2_name, eigenResult = "eigen2"),
+    data.frame(redundancy = dataset2_first_data$redundancy, ratio = ratio3, dataset = dataset3_name, eigenResult = "eigen3")
   )
 
   # Convert the dataset variable to a factor and set custom levels to control the order of appearance
@@ -312,7 +316,7 @@ triple_plot_ratio_over_eigen_no_legend <- function(dataset1_results, dataset1_na
   # Create the scatter plot for the dataset ratio over Eigen
 p <- ggplot(combined_data, aes(x = redundancy, y = ratio, color = dataset, shape = dataset)) +
     geom_point() +
-    labs(x = "Redundancy",
+    labs(x = "Mean Matrix Redundancy",
          y = paste0("Ratio of ", format_y_axis_label(y_axis_variable), " Over Eigen")) +
     theme_minimal() +
     theme(axis.title.y = element_text(size = 18),
@@ -425,9 +429,9 @@ triple_plot_ratio_over_eigen_bottom_legend <- function(dataset1_results, dataset
   
   # Combine the data frames for all three datasets and eigenResults
   combined_data <- rbind(
-    data.frame(redundancy = eigen_first_data_1$redundancy, ratio = ratio1, dataset = dataset1_name, eigenResult = "eigen1"),
-    data.frame(redundancy = eigen_first_data_2$redundancy, ratio = ratio2, dataset = dataset2_name, eigenResult = "eigen2"),
-    data.frame(redundancy = eigen_first_data_3$redundancy, ratio = ratio3, dataset = dataset3_name, eigenResult = "eigen3")
+    data.frame(redundancy = dataset1_first_data$redundancy, ratio = ratio1, dataset = dataset1_name, eigenResult = "eigen1"),
+    data.frame(redundancy = dataset2_first_data$redundancy, ratio = ratio2, dataset = dataset2_name, eigenResult = "eigen2"),
+    data.frame(redundancy = dataset3_first_data$redundancy, ratio = ratio3, dataset = dataset3_name, eigenResult = "eigen3")
   )
 
   # Convert the dataset variable to a factor and set custom levels to control the order of appearance
@@ -447,7 +451,7 @@ triple_plot_ratio_over_eigen_bottom_legend <- function(dataset1_results, dataset
   # Create the scatter plot for the dataset ratio over Eigen
 p <- ggplot(combined_data, aes(x = redundancy, y = ratio, color = dataset, shape = dataset)) +
     geom_point() +
-    labs(x = "Redundancy",
+    labs(x = "Mean Matrix Redundancy",
          y = paste0("Ratio of ", format_y_axis_label(y_axis_variable), " Over Eigen")) +
     theme_minimal() +
     theme(axis.title.y = element_text(size = 18),
@@ -508,38 +512,24 @@ triple_plot_ratio_over_eigen_bottom_legend(IVCSCResults10, "IVCSC", VCSCResults1
 ```{R}
 
 
-format_y_axis_label <- function(y_axis_variable) {
-  # Split the y-axis variable by underscores
-  words <- strsplit(y_axis_variable, "_")[[1]]
-  
-  # Check the number of words after splitting
-  num_words <- length(words)
-  
-  if (num_words == 2) {
-    if (words[1] == "spmv") {
-      formatted_label <- "SpMV Time"
-    } else if (words[1] == "spmm") {
-      formatted_label <- "SpMM Time"
-    } else {
-      formatted_label <- tools::toTitleCase(paste(words, collapse = " "))
-    }
-  } else {
-    formatted_label <- tools::toTitleCase(y_axis_variable)
-  }
-  
-  
-  return(formatted_label)
-}
-
 triple_plot_raw <- function(dataset1_results, dataset1_name, dataset2_results, dataset2_name, dataset3_results, dataset3_name, eigen1, eigen2, eigen3, y_axis_variable, name) {
   # Step 1: Call the pdf command to start the plot
     
     dir.create(file.path(paste0("~/vscode/CSF-Figures/plots/",name)), showWarnings = FALSE)
-    path <- paste0("~/vscode/CSF-Figures/plots/",name,"/","raw_",y_axis_variable,".pdf")
+    # path <- paste0("~/vscode/CSF-Figures/plots/",name,"/","raw_",y_axis_variable,".pdf")
+    path <- paste0("~/vscode/CSF-Figures/plots/",name,"/","raw_",y_axis_variable,".png")
 
-    pdf(file <- path,  
-    width = 6, # The width of the plot in inches
-    height = 6) # The height of the plot in inches
+    # png(file <- path,  
+    # width = 6, # The width of the plot in inches
+    # height = 6) # The height of the plot in inches
+    
+    png(filename = path,
+        width = 6,
+        height = 6,
+        units = "in",
+        res = 576 * 2
+        # type = "Xlib"
+        )
   
   # Select the first data point for each ID in eigenResults5, eigenResults10, and eigenResults3
   eigen_first_data_1 <- eigen1 %>%
@@ -577,9 +567,9 @@ triple_plot_raw <- function(dataset1_results, dataset1_name, dataset2_results, d
   
   # Combine the data frames for all three datasets and eigenResults
   combined_data <- rbind(
-    data.frame(redundancy = eigen_first_data_1$redundancy, ratio = ratio1, dataset = dataset1_name, eigenResult = "eigen1"),
-    data.frame(redundancy = eigen_first_data_2$redundancy, ratio = ratio2, dataset = dataset2_name, eigenResult = "eigen2"),
-    data.frame(redundancy = eigen_first_data_3$redundancy, ratio = ratio3, dataset = dataset3_name, eigenResult = "eigen3")
+    data.frame(redundancy = dataset1_first_data$redundancy, ratio = ratio1, dataset = dataset1_name, eigenResult = "eigen1"),
+    data.frame(redundancy = dataset2_first_data$redundancy, ratio = ratio2, dataset = dataset2_name, eigenResult = "eigen2"),
+    data.frame(redundancy = dataset3_first_data$redundancy, ratio = ratio3, dataset = dataset3_name, eigenResult = "eigen3")
   )
 
   # Convert the dataset variable to a factor and set custom levels to control the order of appearance
@@ -594,29 +584,36 @@ triple_plot_raw <- function(dataset1_results, dataset1_name, dataset2_results, d
       name <- paste0(name, " ")
       legend_name <- "Density"
     }
-  
-
-  # Create the scatter plot for the dataset ratio over Eigen
-  p <- ggplot(combined_data, aes(x = redundancy, y = ratio, color = dataset, shape = dataset)) +
-    geom_point() +
-    labs(x = "Redundancy",
-         y = paste0(format_y_axis_label(y_axis_variable), " (ms)")) +
-    theme_minimal() +
-    theme(axis.title.y = element_text(size = 18),
-          axis.title.x = element_text(size = 18),
-          axis.text = element_text(size = 18),
-          legend.text = element_text(size =18),    # Adjust the font size of legend labels
-          legend.title = element_text(size = 18)) +  # Adjust the font size here
-    scale_y_continuous(breaks = scales::pretty_breaks(n = 10)) +
-    scale_x_continuous(breaks = scales::pretty_breaks(n = 10)) +
-    scale_color_manual(values = c("#00C058", "#BF00F1", "#0000EE"), labels = c(dataset1_name, dataset2_name, dataset3_name), name = legend_name) +
-    scale_shape_manual(values = c(16, 17, 15), labels = c(dataset1_name, dataset2_name, dataset3_name), name = legend_name) +   
-    theme(
-      legend.direction = "horizontal", 
-      legend.text.align = 0.5, 
-      legend.position = "bottom", 
-      legend.spacing.x = unit(0.5, "mm"))
-  
+# Create the scatter plot for the dataset ratio over Eigen
+p <- ggplot(combined_data, aes(x = redundancy, y = ratio, color = dataset, shape = dataset)) +
+  geom_point() +
+  labs(x = "Mean Matrix Redundancy",
+       y = paste0(format_y_axis_label(y_axis_variable), " (ms)")) +
+  theme_minimal() +
+  theme(axis.title.y = element_text(size = 18),
+        axis.title.x = element_text(size = 18),
+        axis.text = element_text(size = 18),
+        legend.text = element_text(size = 18),    # Adjust the font size of legend labels
+        legend.title = element_text(size = 18)) +  # Adjust the font size here
+  scale_y_continuous(breaks = scales::pretty_breaks(n = 10)) +
+  scale_x_continuous(breaks = scales::pretty_breaks(n = 10)) +
+  scale_color_manual(values = c("#00C058", "#BF00F1", "#0000EE"),
+                     labels = c(dataset1_name, dataset2_name, dataset3_name),
+                     breaks = c(dataset1_name, dataset2_name, dataset3_name),  # Set the breaks for the legend
+                     guide = guide_legend(override.aes = list(size = 3), title = "Format: "),
+                     name = element_text(color = "black")) +  # Set legend text color
+  scale_shape_manual(values = c(16, 17, 15),
+                     labels = c(dataset1_name, dataset2_name, dataset3_name),
+                     breaks = c(dataset1_name, dataset2_name, dataset3_name),  # Set the breaks for the legend
+                     guide = guide_legend(override.aes = list(size = 3), title = "Format: "),
+                     name = element_text(color = "black")) +  # Set legend text color
+  theme( # All legend colors are made white as to be invisible. This keeps spacing for when there is a legend present -> all plots have the same dimension/layout
+    legend.direction = "horizontal", 
+    legend.text.align = 0.5, 
+    legend.position = "bottom", 
+    legend.spacing.x = unit(0.5, "mm"),
+    legend.text = element_text(size = 18, color = "black"),  # Set legend text color
+    legend.title = element_text(size = 18, color = "black"))  # Set legend title color
 
   
   
@@ -646,8 +643,24 @@ triple_plot_raw <- function(dataset1_results, dataset1_name, dataset2_results, d
   print(p)
   dev.off()
 }
+# VCSCResults102 = read.csv("/home/sethwolfgang/vscode/CSF-Matrix/Benchmarking/results/VCSCResults_CSC.csv")
+# eigenResults102 = read.csv("/home/sethwolfgang/vscode/CSF-Matrix/Benchmarking/results/EigenResults_CSC.csv")
+# IVCSCResults102 = read.csv("/home/sethwolfgang/vscode/CSF-Matrix/Benchmarking/results/IVCSCResults_CSC.csv")
 
-triple_plot_raw(VCSCResults1, "1%", VCSCResults5, "5%", VCSCResults10, "10%", eigenResults1, eigenResults5, eigenResults10, "constructor_time", "VCSC")
+# VCSCResults102 = read.csv("/home/sethwolfgang/vscode/resultsSPMV/VCSCResults_CSC.csv")
+# eigenResults102 = read.csv("/home/sethwolfgang/vscode/resultsSPMV/EigenResults_CSC.csv")
+# IVCSCResults102 = read.csv("/home/sethwolfgang/vscode/resultsSPMV/IVCSCResults_CSC.csv")
+
+# triple_plot_raw(IVCSCResults102, "IVCSC", VCSCResults102, "VCSC", eigenResults102, "Eigen" ,eigenResults102, eigenResults102, eigenResults102 ,"scalar_time","new2_All_10_density")
+# triple_plot_raw(IVCSCResults102, "IVCSC", VCSCResults102, "VCSC", eigenResults102, "Eigen" ,eigenResults102, eigenResults102, eigenResults102 ,"spmv_time","new2_All_10_density")
+# triple_plot_raw(IVCSCResults102, "IVCSC", VCSCResults102, "VCSC", eigenResults102, "Eigen" ,eigenResults102, eigenResults102, eigenResults102 ,"spmm_time","new2_All_10_density")
+# triple_plot_raw(IVCSCResults10, "IVCSC", VCSCResults10, "VCSC", eigenResults10, "Eigen" ,eigenResults102, eigenResults102, eigenResults102 ,"constructor_time","new2_All_10_density")
+# triple_size_plot(IVCSCResults102, "IVCSC",  VCSCResults102, "VCSC", eigenResults102, "CSC" , eigenResults102, eigenResults102, eigenResults102 ,"new2_All_10_density")
+# triple_plot_raw(IVCSCResults102, "IVCSC", VCSCResults102, "VCSC", eigenResults102, "Eigen" ,eigenResults102, eigenResults102, eigenResults102 ,"iterator_time","new2_All_10_density")
+# triple_size_plot(IVCSCResults102, "IVCSC",  VCSCResults102, "VCSC", eigenResults102, "CSC" , eigenResults102, eigenResults102, eigenResults102 ,"new2_All_10_density")
+# density_triple_size_plot(density_IVCSCResults10, "IVCSC",  density_VCSCResults10, "VCSC", density_eigenResults10, "CSC" ,"raw_All_10_density")
+
+# triple_plot_raw(VCSCResults1, "1%", VCSCResults5, "5%", VCSCResults10, "10%", eigenResults1, eigenResults5, eigenResults10, "constructor_time", "VCSC")
 
 ```
 
@@ -660,17 +673,28 @@ triple_size_plot <- function(dataset1_results, dataset1_name, dataset2_results, 
   firstNonzero <- eigenResults1[1, "nonzeros"]
   secondNonzero <- eigenResults5[1, "nonzeros"]
   thirdNonzero <- eigenResults10[1, "nonzeros"]
-  path = paste0("~/vscode/CSF-Figures/plots/", name, "/")
-  dir.create(file.path(path), showWarnings = FALSE)
-  pdf(paste0(path,name,"_",y_axis_variable, ".pdf"),
-      width = 6,
-      height = 6)
+    
+    dir.create(file.path(paste0("~/vscode/CSF-Figures/plots/",name)), showWarnings = FALSE)
+    # path <- paste0("~/vscode/CSF-Figures/plots/",name,"/","raw_",y_axis_variable,".pdf")
+    path <- paste0("~/vscode/CSF-Figures/plots/",name,"/","raw_",y_axis_variable,".png")
+
+    # png(file <- path,  
+    # width = 6, # The width of the plot in inches
+    # height = 6) # The height of the plot in inches
+    
+    png(filename = path,
+        width = 6,
+        height = 6,
+        units = "in",
+        res = 576 * 2
+        # type = "Xlib"
+        )
   
   
   # Select the first data point for each ID in eigenResults5, eigenResults10, and eigenResults3
   eigen_first_data_1 <- eigenResults1 %>%
     group_by(ID) %>%
-    summarise_at(vars(redundancy, y_axis_variable), ~ mean(., na.rm = TRUE))
+    summarise_at(vars(redundancy, y_axis_variable, rows, cols, nonzeros), ~ mean(., na.rm = TRUE))
   eigen_first_data_5 <- eigenResults5 %>%
     group_by(ID) %>%
     summarise_at(vars(redundancy, y_axis_variable), ~ mean(., na.rm = TRUE))
@@ -686,43 +710,57 @@ triple_size_plot <- function(dataset1_results, dataset1_name, dataset2_results, 
   dataset3_first_data <- dataset3_results %>%
     group_by(ID) %>%
     summarise_at(vars(redundancy, y_axis_variable), ~ mean(., na.rm = TRUE))
+  
+  COO_size <- dataset3_results %>%
+    group_by(ID) %>%
+    summarise_at(vars(redundancy, y_axis_variable), ~ mean(., na.rm = TRUE))
+  
+  
+  dense_size = ((eigen_first_data_1$rows * eigen_first_data_1$cols * 8) + (8 * eigen_first_data_1$rows) + 8)
+  COO_size <- 16 * eigen_first_data_1$nonzeros / dense_size
+
   # Calculate the ratio by dividing y_axis_variable in dataset1_results by 16 * the corresponding values in eigen_first_data_1
   ratio1 <-
-    dataset1_first_data[[y_axis_variable]] / (16 * firstNonzero)
+    dataset1_first_data[[y_axis_variable]] / dense_size
   # Calculate the ratio by dividing y_axis_variable in dataset2_results by 16 * the corresponding values in eigen_first_data_5
   ratio2 <-
-    dataset2_first_data[[y_axis_variable]] / (16 * secondNonzero)
+    dataset2_first_data[[y_axis_variable]] / dense_size
   # Calculate the ratio by dividing y_axis_variable in dataset3_results by 16 * the corresponding values in eigen_first_data_10
   ratio3 <-
-    dataset3_first_data[[y_axis_variable]] / (16 * thirdNonzero)
-  
-  print(ratio2)
+    dataset3_first_data[[y_axis_variable]] / dense_size
+  # print(ratio2)
   
   # Combine the data frames for all three datasets and eigenResults
   combined_data <- rbind(
     data.frame(
-      redundancy = eigen_first_data_1$redundancy,
+      redundancy = dataset1_first_data$redundancy,
       ratio = ratio1,
       dataset = dataset1_name,
       eigenResult = "eigenResults1"
     ),
     data.frame(
-      redundancy = eigen_first_data_5$redundancy,
+      redundancy = dataset2_first_data$redundancy,
       ratio = ratio2,
       dataset = dataset2_name,
       eigenResult = "eigenResults5"
     ),
     data.frame(
-      redundancy = eigen_first_data_10$redundancy,
+      redundancy = dataset3_first_data$redundancy,
       ratio = ratio3,
       dataset = dataset3_name,
+      eigenResult = "eigenResults10"
+    ),
+    data.frame(
+      redundancy = dataset3_first_data$redundancy,
+      ratio = COO_size,
+      dataset = "COO",
       eigenResult = "eigenResults10"
     )
   )
   # Convert the dataset variable to a factor and set custom levels to control the order of appearance
   combined_data$dataset <-
     factor(combined_data$dataset,
-           levels = c(dataset1_name, dataset2_name, dataset3_name))
+           levels = c(dataset1_name, dataset2_name, dataset3_name, "COO"))
   # Reorder the ratio variable based on the order of appearance of data sets
   combined_data$ratio <- with(combined_data, ratio[order(dataset)])
   # Create the scatter plot for the dataset ratio over Eigen
@@ -737,70 +775,51 @@ triple_size_plot <- function(dataset1_results, dataset1_name, dataset2_results, 
     }
   
   
-
-p <- ggplot(combined_data, aes(x = redundancy, y = ratio, color = dataset, shape = dataset)) +
-    geom_point() +
-    labs(x = "Redundancy",
-         y = paste0("Ratio of ", name, " Memory Usage Over COO")) +
+p <- ggplot(combined_data, aes(x = redundancy, y = ratio, color = dataset, linetype = dataset)) +
+    geom_line(size = 1.2) +
+    labs(x = "Mean Matrix Redundancy",
+         y = paste0("Ratio of ", name, " Memory Usage Over Dense")) +
     theme_minimal() +
-    theme(axis.title.y = element_text(size = 15),
+    theme(axis.title.y = element_text(size = 18),
           axis.title.x = element_text(size = 18),
           axis.text = element_text(size = 18),
-          legend.text = element_text(size = 18),
-          legend.title = element_text(size = 18)) +
-    scale_y_continuous(breaks = scales::pretty_breaks(n = 10), limits = c(0,1)) + # Set limits to start from 0.1
-    scale_x_continuous(breaks = scales::pretty_breaks(n = 5)) +
-    scale_color_manual(values = c("#00C058", "#BF00F1", "#0000EE"), labels = c(dataset1_name, dataset2_name, dataset3_name), name = legend_name) +
-    scale_shape_manual(values = c(16, 17, 15), labels = c(dataset1_name, dataset2_name, dataset3_name), name = legend_name) +   
-    theme(
-      legend.direction = "horizontal", 
-      legend.text.align = 0.5, 
-      legend.position = "bottom", 
-      legend.spacing.x = unit(0.5, "mm"))
+          legend.text = element_text(size =18),    # Adjust the font size of legend labels
+          legend.title = element_text(size = 18)) +  # Adjust the font size here
+    scale_y_continuous(breaks = scales::pretty_breaks(n = 10)) +
+    scale_x_continuous(breaks = scales::pretty_breaks(n = 10)) +
+    scale_color_manual(values = c("#00C058", "#BF00F1", "#0000EE", "#006f23"), 
+                       labels = c(dataset1_name, dataset2_name, dataset3_name, "COO"), 
+                       name = legend_name, 
+                     guide = guide_legend(override.aes = list(size = 3), title = "Format: ")) + 
+    scale_linetype_manual(values = c("solid", "dashed", "dotted", "dotdash"), 
+                          labels = c(dataset1_name, dataset2_name, dataset3_name, "COO"), 
+                          name = legend_name, 
+                     guide = guide_legend(override.aes = list(size = 3), title = "Format: ")) + 
+  theme( # All legend colors are made white as to be invisible. This keeps spacing for when there is a legend present -> all plots have the same dimension/layout
+    legend.direction = "horizontal", 
+    legend.text.align = 0.5, 
+    legend.position = "bottom", 
+    legend.spacing.x = unit(0.5, "mm"),
+    legend.text = element_text(size = 18, color = "black"),  # Set legend text color
+    legend.title = element_text(size = 18, color = "black"))  # Set legend title color
 
-  
-  # myManual <- ggplot(combined_data, aes(x = redundancy, y = ratio, color = dataset, shape = dataset)) +
-  #   geom_point() +
-  #   labs(x = "Redundancy",
-  #        y = paste0("Ratio of Memory Usage Over COO")) +
-  #   theme_minimal() +
-  #   theme(axis.title.y = element_text(size = 8),
-  #         axis.title.x = element_text(size = 8)) +  # Adjust the font size here
-  #   scale_color_manual(values = c("#00C058", "#BF00F1", "#0000EE"), labels = c(dataset1_name, dataset2_name, dataset3_name), name = "Format") +
-  #   scale_shape_manual(values = c(16, 17, 15), labels = c(dataset1_name, dataset2_name, dataset3_name), name = "Format") +   theme(
-  #     legend.direction = "horizontal", legend.text.align = 0.5)
-  # 
-  
-  # Add a label "1.0" on the y-axis at y=1
-  if (!grepl("All", name, ignore.case = TRUE)) {
-    p <- p + geom_hline(yintercept = 1,
-                        color = "blue",
-                        linetype = "solid")
-  }
-  # Count the number of markers (data points)
+
   num_markers <- nrow(combined_data)
   cat("Number of markers:", num_markers, "\n")
   # Set colors and labels for the legend using scale_color_manual and scale_shape_manual
 
   
-  # Extract the legend separately using cowplot::get_legend()
-  # legend <- get_legend(myManual)
-  
-  
-  # Arrange the plots and the legend in a grid with one row and two columns
-  # final_plot <- plot_grid(
-  #   p,
-  #   plot_grid(legend, ncol = 1, align = 'v'),  # Use 'v' for vertical center alignment
-  #   ncol = 2,
-  #   rel_heights = c(1, 1)
-  # )
-  # 
-  # Print the final combined plot with a single legend beside the plots
   print(p)
   dev.off()
 }
 
-triple_size_plot(IVCSCResults10, "IVCSC",  VCSCResults10, "VCSC", eigenResults10, "CSC" , eigenResults10, eigenResults10, eigenResults10 ,"All_10_density")
+# VCSCResults102 = read.csv("/home/sethwolfgang/vscode/resultsFixed/VCSCResults_CSC.csv")
+# eigenResults102 = read.csv("/home/sethwolfgang/vscode/resultsFixed/EigenResults_CSC.csv")
+# IVCSCResults102 = read.csv("/home/sethwolfgang/vscode/resultsFixed/IVCSCResults_CSC.csv")
+
+
+# triple_size_plot(IVCSCResults10, "IVCSC",  VCSCResults10, "VCSC", eigenResults10, "CSC" , eigenResults10, eigenResults10, eigenResults10 ,"All_10_density")
+# triple_size_plot(IVCSCResults102, "IVCSC",  VCSCResults102, "VCSC", eigenResults102, "CSC" , eigenResults102, eigenResults102, eigenResults102 ,"new2_All_10_density")
 
 
 ```
@@ -812,17 +831,27 @@ density_triple_size_plot <- function(dataset1_results, dataset1_name, dataset2_r
   
   y_axis_variable <- "size"
 
-  path = paste0("~/vscode/CSF-Figures/plots/", name, "/")
-  dir.create(file.path(path), showWarnings = FALSE)
-  pdf(paste0(path,name,"_","density_",y_axis_variable, ".pdf"),
-      width = 6,
-      height = 6)
+    dir.create(file.path(paste0("~/vscode/CSF-Figures/plots/",name)), showWarnings = FALSE)
+    # path <- paste0("~/vscode/CSF-Figures/plots/",name,"/","raw_",y_axis_variable,".pdf")
+    path <- paste0("~/vscode/CSF-Figures/plots/",name,"/","raw_",y_axis_variable,".png")
+
+    # png(file <- path,  
+    # width = 6, # The width of the plot in inches
+    # height = 6) # The height of the plot in inches
+    
+    png(filename = path,
+        width = 6,
+        height = 6,
+        units = "in",
+        res = 576 * 2
+        # type = "Xlib"
+        )
   
   
   # Select the first data point for each ID in eigenResults5, eigenResults10, and eigenResults3
   dataset1_first_data <- dataset1_results %>%
     group_by(ID) %>%
-    summarise_at(vars(sparsity, y_axis_variable, nonzeros), ~ mean(., na.rm = TRUE))
+    summarise_at(vars(sparsity, y_axis_variable, nonzeros, rows, cols), ~ mean(., na.rm = TRUE))
   dataset2_first_data <- dataset2_results %>%
     group_by(ID) %>%
     summarise_at(vars(sparsity, y_axis_variable, nonzeros), ~ mean(., na.rm = TRUE))
@@ -831,7 +860,10 @@ density_triple_size_plot <- function(dataset1_results, dataset1_name, dataset2_r
     summarise_at(vars(sparsity, y_axis_variable, nonzeros), ~ mean(., na.rm = TRUE))
   
   # Calculate the new ratios based on the modified formula
-  dense_size = (10000 * 100 * 8) + (8 * 10000) + 8 # rows * cols * value_type + pointer_size * rows + pointer_pointer_size 
+  # dense_size = (10000 * 100 * 8) + (8 * 10000) + 8 # rows * cols * value_type + pointer_size * rows + pointer_pointer_size 
+  dense_size = ((dataset1_first_data$rows * dataset1_first_data$cols * 8) + (8 * dataset1_first_data$rows) + 8)
+  COO_size <- 16 * dataset1_first_data$nonzeros / dense_size
+
   new_ratio1 <- dataset1_first_data[[y_axis_variable]] / dense_size
   new_ratio2 <- dataset2_first_data[[y_axis_variable]] / dense_size
   new_ratio3 <- dataset3_first_data[[y_axis_variable]] / dense_size
@@ -852,13 +884,18 @@ density_triple_size_plot <- function(dataset1_results, dataset1_name, dataset2_r
       sparsity = 1 - dataset3_first_data$sparsity,
       ratio = new_ratio3,
       dataset = dataset3_name
+    ),
+    data.frame(
+      sparsity = 1 - dataset1_first_data$sparsity,
+      ratio = COO_size,
+      dataset = "COO"
     )
   )
   
   # Convert the dataset variable to a factor and set custom levels to control the order of appearance
   combined_data$dataset <-
     factor(combined_data$dataset,
-           levels = c(dataset1_name, dataset2_name, dataset3_name))
+           levels = c(dataset1_name, dataset2_name, dataset3_name, "COO"))
   # Reorder the ratio variable based on the order of appearance of data sets
   combined_data$ratio <- with(combined_data, ratio[order(dataset)])
   
@@ -873,7 +910,6 @@ density_triple_size_plot <- function(dataset1_results, dataset1_name, dataset2_r
       legend_name <- "Density"
     }
   
-  
 
 p <- ggplot(combined_data, aes(x = sparsity, y = ratio, color = dataset, linetype = dataset)) +
     geom_line(size = 1.2) +
@@ -887,8 +923,8 @@ p <- ggplot(combined_data, aes(x = sparsity, y = ratio, color = dataset, linetyp
           legend.title = element_text(size = 18)) +
     scale_y_continuous(breaks = scales::pretty_breaks(n = 10)) + # Set limits to start from 0.1
     scale_x_continuous(breaks = scales::pretty_breaks(n = 5)) +
-    scale_color_manual(values = c("#00C058", "#BF00F1", "#0000EE"), labels = c(dataset1_name, dataset2_name, dataset3_name), name = legend_name) +
-    scale_linetype_manual(values = c("solid", "dashed", "dotted"), labels = c(dataset1_name, dataset2_name, dataset3_name), name = legend_name) +   
+    scale_color_manual(values = c("#00C058", "#BF00F1", "#0000EE", "#007058"), labels = c(dataset1_name, dataset2_name, dataset3_name, "COO"), name = legend_name) +
+    scale_linetype_manual(values = c("solid", "dashed", "dotted", "dotdash"), labels = c(dataset1_name, dataset2_name, dataset3_name, "COO"), name = legend_name) +   
     theme(
       legend.direction = "horizontal", 
       legend.text.align = 0.5, 
@@ -909,12 +945,12 @@ p <- ggplot(combined_data, aes(x = sparsity, y = ratio, color = dataset, linetyp
   # 
   
   # Add a label "1.0" on the y-axis at y=1
-  if (!grepl("All", name, ignore.case = TRUE)) {
-    p <- p + geom_hline(yintercept = 1,
-                        color = "blue",
-                        linetype = "solid")
-  }
-  # Count the number of markers (data points)
+  # if (!grepl("All", name, ignore.case = TRUE)) {
+  #   p <- p + geom_hline(yintercept = 1,
+  #                       color = "blue",
+  #                       linetype = "solid")
+  # }
+  # # Count the number of markers (data points)
   num_markers <- nrow(combined_data)
   cat("Number of markers:", num_markers, "\n")
   # Set colors and labels for the legend using scale_color_manual and scale_shape_manual
@@ -942,177 +978,6 @@ density_triple_size_plot(density_IVCSCResults10, "IVCSC",  density_VCSCResults10
 
 ```
 
-
-
-```{R}
-library(cowplot)
-
-triple_plot <- function(dataset1_results, dataset1_name, dataset2_results, dataset2_name, dataset3_results, dataset3_name, eigenResult, y_axis_variables, name) {
-  plots <- list()
-  path = paste0("~/vscode/CSF-Figures/plots/", name,"/")
-  dir.create(file.path(path), showWarnings = FALSE)
-  pdf(paste0(path, "combined", ".pdf"),
-      width = 15,
-      height = 5)
-  myManual <- 1
-  count <- length(y_axis_variables)
-  for (y_axis_variable in y_axis_variables) {
-    # Select the first data point for each ID in eigenResult and datasets
-    eigen_first_data <- eigenResult %>%
-      group_by(ID) %>%
-      summarise_at(vars(redundancy, all_of(y_axis_variable)), ~mean(., na.rm = TRUE))
-
-    dataset1_first_data <- dataset1_results %>%
-      group_by(ID) %>%
-      summarise_at(vars(redundancy, all_of(y_axis_variable)), ~mean(., na.rm = TRUE))
-
-    dataset2_first_data <- dataset2_results %>%
-      group_by(ID) %>%
-      summarise_at(vars(redundancy, all_of(y_axis_variable)), ~mean(., na.rm = TRUE))
-
-    dataset3_first_data <- dataset3_results %>%
-      group_by(ID) %>%
-      summarise_at(vars(redundancy, all_of(y_axis_variable)), ~mean(., na.rm = TRUE))
-
-    # Calculate the ratio by dividing y_axis_variable in each dataset_results by the corresponding values in eigen_first_data
-    ratio1 <- dataset1_first_data[[y_axis_variable]] / eigen_first_data[[y_axis_variable]]
-    ratio2 <- dataset2_first_data[[y_axis_variable]] / eigen_first_data[[y_axis_variable]]
-    ratio3 <- dataset3_first_data[[y_axis_variable]] / eigen_first_data[[y_axis_variable]]
-
-    # Combine the data frames for all three datasets and eigenResult
-    combined_data <- rbind(
-      data.frame(redundancy = eigen_first_data$redundancy, ratio = ratio1, dataset = dataset1_name, eigenResult = "eigenResult"),
-      data.frame(redundancy = eigen_first_data$redundancy, ratio = ratio2, dataset = dataset2_name, eigenResult = "eigenResult"),
-      data.frame(redundancy = eigen_first_data$redundancy, ratio = ratio3, dataset = dataset3_name, eigenResult = "eigenResult")
-    )
-
-    # Convert the dataset variable to a factor and set custom levels to control the order of appearance
-    combined_data$dataset <- factor(combined_data$dataset, levels = c(dataset1_name, dataset2_name, dataset3_name))
-
-    # Reorder the ratio variable based on the order of appearance of data sets
-    combined_data$ratio <- with(combined_data, ratio[order(dataset)])
-
-    # Create the scatter plot for the dataset ratio over Eigen
-
-      p <- ggplot(combined_data, aes(x = redundancy, y = ratio, color = dataset, shape = dataset)) +
-        geom_point() +
-        labs(x = "Redundancy",
-             y = paste0("Ratio of ", format_y_axis_label(y_axis_variable), " Over Eigen")) +
-        theme_minimal() +
-        theme(
-          axis.title.y = element_text(size = 15),   # Adjust the font size of y-axis text
-          axis.title.x = element_text(size = 15),   # Adjust the font size of x-axis text
-          axis.text.x = element_text(size = 15),    # Adjust the font size of x-axis tick labels
-          axis.text.y = element_text(size = 15),    # Adjust the font size of y-axis tick labels
-        ) +
-        scale_y_continuous(breaks = scales::pretty_breaks(n = 10)) +
-        scale_color_manual(values = c("#00C058", "#BF00F1", "#0000EE"), labels = c(dataset1_name, dataset2_name, dataset3_name), guide = "none") +
-        scale_shape_manual(values = c(16, 17, 15), labels = c(dataset1_name, dataset2_name, dataset3_name), guide = "none")
-      
-      # This is incredibly inefficient
-      myManual <- ggplot(combined_data, aes(x = redundancy, y = ratio, color = dataset, shape = dataset)) +
-        geom_point() +
-        labs(x = "Redundancy",
-             y = paste0("Ratio of ", format_y_axis_label(y_axis_variable), " Over Eigen")) +
-        theme_minimal() +
-        theme(
-          legend.text = element_text(size = 14),    # Adjust the font size of legend labels
-          legend.title = element_text(size = 14)    # Adjust the font size of legend title
-        ) +
-        scale_y_continuous(breaks = scales::pretty_breaks(n = 10)) +
-        scale_color_manual(values = c("#00C058", "#BF00F1", "#0000EE"), labels = c(dataset1_name, dataset2_name, dataset3_name), name = "Format") +
-        scale_shape_manual(values = c(16, 17, 15), labels = c(dataset1_name, dataset2_name, dataset3_name), name = "Format") +   theme(
-        legend.direction = "horizontal", legend.text.align = 0.5)
-
-
-    # Add a label "1.0" on the y-axis at y=1
-    if(!grepl("All", name, ignore.case = TRUE)) {
-      p <- p + geom_hline(yintercept = 1, color = "blue", linetype = "dashed") 
-    }
-
-    plots[[y_axis_variable]] <- p
-    count <- count - 1
-  }
-
-  # Combine the plots side by side
-  combined_plots <- plot_grid(plotlist = plots, ncol = 3)
-
-  # Extract the legend separately using cowplot::get_legend()
-  legend <- get_legend(myManual)
-
-
-# Arrange the plots and the legend in a grid with one row and two columns
-final_plot <- plot_grid(
-  combined_plots,
-  plot_grid(legend, ncol = 1, align = 'v'),  # Use 'v' for vertical center alignment
-  ncol = 1,
-  rel_heights = c(4, 1)
-)
-
-  # Print the final combined plot with a single legend beside the plots
-  print(final_plot)
-  dev.off()
-}
-
-triple_plot(IVCSCResults1, "IVCSC 1% Dense", VCSCResults1, "VCSC 1% Dense", eigenResults1, "Eigen 1% Dense" , eigenResults1, c("scalar_time","spmv_time","spmm_time"),"All_1_density")
-triple_plot(IVCSCResults5, "IVCSC 5% Dense", VCSCResults5, "VCSC 5% Dense", eigenResults5, "Eigen 5% Dense" , eigenResults5, c("scalar_time","spmv_time","spmm_time"),"All_5_density")
-triple_plot(IVCSCResults10, "IVCSC 10% Dense", VCSCResults10, "VCSC 10% Dense", eigenResults10, "Eigen 10% Dense" , eigenResults10, c("scalar_time","spmv_time","spmm_time"),"All_10_density")
-
-```
-
-
-```{R}
-
-
-triple_size_plot(VCSCResults1, "1%", VCSCResults5, "5%", VCSCResults10, "10%", eigenResults1, eigenResults5, eigenResults10, "VCSC")
-triple_plot_ratio_over_eigen_no_legend(VCSCResults1, "1%", VCSCResults5, "5%", VCSCResults10, "10%", eigenResults1, eigenResults5, eigenResults10, "constructor_time", "VCSC")
-triple_plot_raw(VCSCResults1, "1%", VCSCResults5, "5%", VCSCResults10, "10%", eigenResults1, eigenResults5, eigenResults10, "constructor_time", "VCSC")
-triple_plot_ratio_over_eigen_no_legend(VCSCResults1, "1%", VCSCResults5, "5%", VCSCResults10, "10%", eigenResults1, eigenResults5, eigenResults10, "scalar_time", "VCSC")
-triple_plot_ratio_over_eigen_no_legend(VCSCResults1, "1%", VCSCResults5, "5%", VCSCResults10, "10%", eigenResults1, eigenResults5, eigenResults10, "spmv_time", "VCSC")
-triple_plot_ratio_over_eigen_no_legend(VCSCResults1, "1%", VCSCResults5, "5%", VCSCResults10, "10%", eigenResults1, eigenResults5, eigenResults10, "spmm_time", "VCSC")
-triple_plot_ratio_over_eigen_no_legend(VCSCResults1, "1%", VCSCResults5, "5%", VCSCResults10, "10%", eigenResults1, eigenResults5, eigenResults10, "sum_time", "VCSC")
-```
-
-```{R}
-triple_size_plot(IVCSCResults1, "1%", IVCSCResults5, "5%", IVCSCResults10, "10%", eigenResults1, eigenResults5, eigenResults10, "IVCSC")
-triple_plot_ratio_over_eigen_no_legend(IVCSCResults1, "1%", IVCSCResults5, "5%", IVCSCResults10, "10%", eigenResults1, eigenResults5, eigenResults10, "constructor_time", "IVCSC")
-triple_plot_raw(IVCSCResults1, "1%", IVCSCResults5, "5%", IVCSCResults10, "10%", eigenResults1, eigenResults5, eigenResults10, "constructor_time", "IVCSC")
-triple_plot_ratio_over_eigen_no_legend(IVCSCResults1, "1%", IVCSCResults5, "5%", IVCSCResults10, "10%", eigenResults1, eigenResults5, eigenResults10, "scalar_time", "IVCSC")
-triple_plot_ratio_over_eigen_no_legend(IVCSCResults1, "1%", IVCSCResults5, "5%", IVCSCResults10, "10%", eigenResults1, eigenResults5, eigenResults10, "spmv_time", "IVCSC")
-triple_plot_ratio_over_eigen_no_legend(IVCSCResults1, "1%", IVCSCResults5, "5%", IVCSCResults10, "10%", eigenResults1, eigenResults5, eigenResults10, "spmm_time", "IVCSC")
-triple_plot_ratio_over_eigen_no_legend(IVCSCResults1, "1%", IVCSCResults5, "5%", IVCSCResults10, "10%", eigenResults1, eigenResults5, eigenResults10, "sum_time", "IVCSC")
-
-```
-
-
-```{R}
-
-triple_size_plot(IVCSCResults1, "IVCSC",  VCSCResults1, "VCSC", eigenResults1, "CSC" , eigenResults1, eigenResults1, eigenResults1,"All_1_density")
-triple_plot_ratio_over_eigen_no_legend(IVCSCResults1, "IVCSC", VCSCResults1, "VCSC", eigenResults1, "Eigen" ,eigenResults1, eigenResults1, eigenResults1 ,"constructor_time","All_1_density")
-triple_plot_raw(IVCSCResults1, "IVCSC", VCSCResults1, "VCSC", eigenResults1, "Eigen" ,eigenResults1, eigenResults1, eigenResults1 ,"constructor_time","All_1_density")
-triple_plot_ratio_over_eigen_no_legend(IVCSCResults1, "IVCSC", VCSCResults1, "VCSC", eigenResults1, "Eigen" ,eigenResults1, eigenResults1, eigenResults1 ,"scalar_time","All_1_density")
-triple_plot_ratio_over_eigen_no_legend(IVCSCResults1, "IVCSC", VCSCResults1, "VCSC", eigenResults1, "Eigen" ,eigenResults1, eigenResults1, eigenResults1 ,"spmv_time","All_1_density")
-triple_plot_ratio_over_eigen_no_legend(IVCSCResults1, "IVCSC", VCSCResults1, "VCSC", eigenResults1, "Eigen" ,eigenResults1, eigenResults1, eigenResults1 ,"spmm_time","All_1_density")
-triple_plot_ratio_over_eigen_no_legend(IVCSCResults1, "IVCSC", VCSCResults1, "VCSC", eigenResults1, "Eigen" ,eigenResults1, eigenResults1, eigenResults1 ,"sum_time","All_1_density")
-
-```
-
-
-
-## **Comparisons of IVCSC and VCSC Density as a Ratio Over Eigen**
-## **5% Dense**
-
-```{R}
-triple_size_plot(IVCSCResults5, "IVCSC",  VCSCResults5, "VCSC", eigenResults5, "CSC" , eigenResults5, eigenResults5, eigenResults5,"All_5_density")
-triple_plot_ratio_over_eigen_no_legend(IVCSCResults5, "IVCSC", VCSCResults5, "VCSC", eigenResults5, "Eigen" ,eigenResults5, eigenResults5, eigenResults5 ,"constructor_time","All_5_density")
-triple_plot_raw(IVCSCResults5, "IVCSC", VCSCResults5, "VCSC", eigenResults5, "Eigen" ,eigenResults5, eigenResults5, eigenResults5 ,"constructor_time","All_5_density")
-triple_plot_ratio_over_eigen_no_legend(IVCSCResults5, "IVCSC", VCSCResults5, "VCSC", eigenResults5, "Eigen" ,eigenResults5, eigenResults5, eigenResults5 ,"scalar_time","All_5_density")
-triple_plot_ratio_over_eigen_no_legend(IVCSCResults5, "IVCSC", VCSCResults5, "VCSC", eigenResults5, "Eigen" ,eigenResults5, eigenResults5, eigenResults5 ,"spmv_time","All_5_density")
-triple_plot_ratio_over_eigen_no_legend(IVCSCResults5, "IVCSC", VCSCResults5, "VCSC", eigenResults5, "Eigen" ,eigenResults5, eigenResults5, eigenResults5 ,"spmm_time","All_5_density")
-triple_plot_ratio_over_eigen_no_legend(IVCSCResults5, "IVCSC", VCSCResults5, "VCSC", eigenResults5, "Eigen" ,eigenResults5, eigenResults5, eigenResults5 ,"sum_time","All_5_density")
-
-```
-
 ## **10% Dense**
 
 ```{R}
@@ -1123,19 +988,85 @@ triple_plot_ratio_over_eigen_no_legend(IVCSCResults10, "IVCSC", VCSCResults10, "
 triple_plot_ratio_over_eigen_no_legend(IVCSCResults10, "IVCSC", VCSCResults10, "VCSC", eigenResults10, "Eigen" ,eigenResults10, eigenResults10, eigenResults10 ,"spmv_time","All_10_density")
 triple_plot_ratio_over_eigen_bottom_legend(IVCSCResults10, "IVCSC", VCSCResults10, "VCSC", eigenResults10, "Eigen" ,eigenResults10, eigenResults10, eigenResults10 ,"spmv_time","All_10_density")
 triple_plot_ratio_over_eigen_no_legend(IVCSCResults10, "IVCSC", VCSCResults10, "VCSC", eigenResults10, "Eigen" ,eigenResults10, eigenResults10, eigenResults10 ,"spmm_time","All_10_density")
-# triple_plot_ratio_over_eigen_bottom_legend(IVCSCResults10, "IVCSC", VCSCResults10, "VCSC", eigenResults10, "Eigen" ,eigenResults10, eigenResults10, eigenResults10 ,"spmm_time","All_10_density")
+triple_plot_ratio_over_eigen_bottom_legend(IVCSCResults10, "IVCSC", VCSCResults10, "VCSC", eigenResults10, "Eigen" ,eigenResults10, eigenResults10, eigenResults10 ,"transpose_time","All_10_density")
+triple_plot_raw(IVCSCResults10, "IVCSC", VCSCResults10, "VCSC", eigenResults10, "Eigen" ,eigenResults10, eigenResults10, eigenResults10 ,"transpose_time","All_10_density")
+triple_plot_raw(IVCSCResults10, "IVCSC", VCSCResults10, "VCSC", eigenResults10, "Eigen" ,eigenResults10, eigenResults10, eigenResults10 ,"iterator_time","All_10_density")
+triple_plot_ratio_over_eigen_bottom_legend(IVCSCResults10, "IVCSC", VCSCResults10, "VCSC", eigenResults10, "Eigen" ,eigenResults10, eigenResults10, eigenResults10 ,"iterator_time","All_10_density")
 
 triple_plot_ratio_over_eigen_no_legend(IVCSCResults10, "IVCSC", VCSCResults10, "VCSC", eigenResults10, "Eigen" ,eigenResults10, eigenResults10, eigenResults10 ,"sum_time","All_10_density")
+```
+```{r}
+triple_plot_raw(IVCSCResults10, "IVCSC", VCSCResults10, "VCSC", eigenResults10, "Eigen" ,eigenResults10, eigenResults10, eigenResults10 ,"scalar_time","raw_All_10_density")
+triple_plot_raw(IVCSCResults10, "IVCSC", VCSCResults10, "VCSC", eigenResults10, "Eigen" ,eigenResults10, eigenResults10, eigenResults10 ,"spmv_time","raw_All_10_density")
+triple_plot_raw(IVCSCResults10, "IVCSC", VCSCResults10, "VCSC", eigenResults10, "Eigen" ,eigenResults10, eigenResults10, eigenResults10 ,"spmm_time","raw_All_10_density")
+triple_plot_raw(IVCSCResults10, "IVCSC", VCSCResults10, "VCSC", eigenResults10, "Eigen" ,eigenResults10, eigenResults10, eigenResults10 ,"constructor_time","raw_All_10_density")
+triple_plot_raw(IVCSCResults10, "IVCSC", VCSCResults10, "VCSC", eigenResults10, "Eigen" ,eigenResults10, eigenResults10, eigenResults10 ,"iterator_time","raw_All_10_density")
+triple_size_plot(IVCSCResults10, "IVCSC",  VCSCResults10, "VCSC", eigenResults10, "CSC" , eigenResults10, eigenResults10, eigenResults10 ,"raw_All_10_density")
+# density_triple_size_plot(density_IVCSCResults10, "IVCSC",  density_VCSCResults10, "VCSC", density_eigenResults10, "CSC" ,"raw_All_10_density")
+
+
+```
+
+
+```{r}
+library(dplyr)
+library(ggplot2)
+
+VCSCResults102 = read.csv("/home/sethwolfgang/vscode/results/VCSCResults_COO.csv")
+eigenResults102 = read.csv("/home/sethwolfgang/vscode/results/EigenResults_COO.csv")
+IVCSCResults102 = read.csv("/home/sethwolfgang/vscode/results/IVCSCResults_COO.csv")
+
+# VCSCResults102 = read.csv("/home/sethwolfgang/vscode/resultsSPMM/VCSCResults_CSC.csv")
+# eigenResults102 = read.csv("/home/sethwolfgang/vscode/resultsSPMM/EigenResults_CSC.csv")
+# IVCSCResults102 = read.csv("/home/sethwolfgang/vscode/resultsSPMM/IVCSCResults_CSC.csv")
+
+triple_plot_raw(IVCSCResults102, "IVCSC", VCSCResults102, "VCSC", eigenResults102, "Eigen" ,eigenResults102, eigenResults102, eigenResults102 ,"scalar_time","old_VCSC")
+triple_plot_raw(IVCSCResults102, "IVCSC", VCSCResults102, "VCSC", eigenResults102, "Eigen" ,eigenResults102, eigenResults102, eigenResults102 ,"spmv_time","old_VCSC")
+# triple_plot_raw(IVCSCResults102, "IVCSC", VCSCResults102, "VCSC", eigenResults102, "Eigen" ,eigenResults102, eigenResults102, eigenResults102 ,"spmm_time","old_old_VCSC")
+triple_plot_raw(IVCSCResults102, "IVCSC", VCSCResults102, "VCSC", eigenResults102, "Eigen" ,eigenResults102, eigenResults102, eigenResults102 ,"constructor_time","old_VCSC")
+triple_size_plot(IVCSCResults102, "IVCSC",  VCSCResults102, "VCSC", eigenResults102, "CSC" , eigenResults102, eigenResults102, eigenResults102 ,"old_VCSC")
+triple_plot_raw(IVCSCResults102, "IVCSC", VCSCResults102, "VCSC", eigenResults102, "Eigen" ,eigenResults102, eigenResults102, eigenResults102 ,"iterator_time","old_VCSC")
+triple_plot_raw(IVCSCResults102, "IVCSC", VCSCResults102, "VCSC", eigenResults102, "Eigen" ,eigenResults102, eigenResults102, eigenResults102 ,"transpose_time","old_VCSC")
+# triple_size_plot(IVCSCResults102, "IVCSC",  VCSCResults102, "VCSC", eigenResults102, "CSC" , eigenResults102, eigenResults102, eigenResults102 ,"old_VCSC")
+# density_triple_size_plot(density_IVCSCResults10, "IVCSC",  density_VCSCResults10, "VCSC", density_eigenResults10, "CSC" ,"raw_All_10_density")
+
+
+```
+
+
+```{r}
+
+
+triple_plot_raw(largeIVCSCResults10, "IVCSC", largeVCSCResults10, "VCSC", largeEigenResults10, "Eigen" , largeEigenResults10, largeEigenResults10, largeEigenResults10 ,"iterator_time","large_All_10_density")
+
+
 ```
 
 ## Combined Plots
 
 ```{R}
 
+VCSCResultsMAP = read.csv("/home/sethwolfgang/vscode/resultsMAP/VCSCResults_COO.csv")
+eigenResultsMAP = read.csv("/home/sethwolfgang/vscode/resultsMAP/EigenResults_COO.csv")
+IVCSCResultsMAP = read.csv("/home/sethwolfgang/vscode/resultsMAP/IVCSCResults_COO.csv")
 
-density_triple_size_plot(density_IVCSCResults10, "IVCSC",  density_VCSCResults10, "VCSC", density_eigenResults10, "CSC" ,"All_10_redundancy")
+VCSCResultsO = read.csv("/home/sethwolfgang/vscode/resultsOriginalVCSC/VCSCResults_COO.csv")
+eigenResultsO = read.csv("/home/sethwolfgang/vscode/resultsOriginalVCSC/EigenResults_COO.csv")
+IVCSCResultsO = read.csv("/home/sethwolfgang/vscode/resultsOriginalVCSC/IVCSCResults_COO.csv")
 
-  
+
+triple_plot_raw(VCSCResultsMAP, "VCSC - map", VCSCResultsO, "VCSC - array", eigenResultsO, "Eigen" ,eigenResults102, eigenResults102, eigenResults102 ,"scalar_time","VCSC_comp")
+triple_plot_raw(VCSCResultsMAP, "VCSC - map", VCSCResultsO, "VCSC - array", eigenResultsO, "Eigen" ,eigenResults102, eigenResults102, eigenResults102 ,"spmv_time","VCSC_comp")
+# triple_plot_raw(IVCSCResults102, "IVCSC", VCSCResults102, "VCSC", eigenResults102, "Eigen" ,eigenResults102, eigenResults102, eigenResults102 ,"spmm_time","old_old_VCSC")
+triple_plot_raw(VCSCResultsMAP, "VCSC - map", VCSCResultsO, "VCSC - array", eigenResultsO, "Eigen" ,eigenResults102, eigenResults102, eigenResults102 ,"constructor_time","VCSC_comp")
+triple_size_plot(IVCSCResultsO, "IVCSC",  VCSCResultsO, "VCSC - array", eigenResultsO, "CSC" , eigenResults102, eigenResults102, eigenResults102 ,"VCSC_comp")
+triple_plot_raw(VCSCResultsMAP, "VCSC - map", VCSCResultsO, "VCSC - array", eigenResultsO, "Eigen" ,eigenResults102, eigenResults102, eigenResults102 ,"iterator_time","VCSC_comp")
+triple_plot_raw(VCSCResultsMAP, "VCSC - map", VCSCResultsO, "VCSC - array", eigenResultsO, "Eigen" ,eigenResults102, eigenResults102, eigenResults102 ,"transpose_time","VCSC_comp")
+# triple_size_plot(IVCSCResults102, "IVCSC",  VCSCResults102, "VCSC", eigenResults102, "CSC" , eigenResults102, eigenResults102, eigenResults102 ,"VCSC_comp")
+# density_triple_size_plot(density_IVCSCResults10, "IVCSC",  density_VCSCResults10, "VCSC", density_eigenResults10, "CSC" ,"raw_All_10_density")
+
+
+
 ```
 
 

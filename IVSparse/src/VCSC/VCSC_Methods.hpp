@@ -362,7 +362,9 @@ namespace IVSparse {
     template <typename T, typename indexT, bool columnMajor>
     IVSparse::SparseMatrix<T, indexT, 2, columnMajor> SparseMatrix<T, indexT, 2, columnMajor>::transpose() {
         // make a data structure to store the tranpose
-        std::unordered_map<T, std::vector<indexT>> mapsT[innerDim];
+        // std::unordered_map<T, std::vector<indexT>> mapsT[innerDim];
+        std::vector<std::unordered_map<T, std::vector<indexT>>> mapsT(innerDim);
+        mapsT.resize(innerDim);
 
         // populate the transpose data structure
         for (uint32_t i = 0; i < outerDim; ++i) {
@@ -379,7 +381,7 @@ namespace IVSparse {
         }
 
         // create a new matrix passing in transposedMap
-        IVSparse::SparseMatrix<T, indexT, 2, columnMajor> temp(mapsT, numRows, numCols);
+        IVSparse::SparseMatrix<T, indexT, 2, columnMajor> temp(mapsT.data(), numRows, numCols);
 
         // return the new matrix
         return temp;
@@ -389,7 +391,10 @@ namespace IVSparse {
     template <typename T, typename indexT, bool columnMajor>
     void SparseMatrix<T, indexT, 2, columnMajor>::inPlaceTranspose() {
         // make a data structure to store the tranpose
-        std::unordered_map<T, std::vector<indexT>> mapsT[innerDim];
+        // std::unordered_map<T, std::vector<indexT>> mapsT[innerDim];
+        std::vector<std::unordered_map<T, std::vector<indexT>>> mapsT(innerDim);
+        mapsT.resize(innerDim);
+
 
         // populate the transpose data structure
         for (uint32_t i = 0; i < outerDim; ++i) {
@@ -406,14 +411,12 @@ namespace IVSparse {
         }
 
         // set this to the transposed matrix
-        *this = IVSparse::SparseMatrix<T, indexT, 2, columnMajor>(mapsT, numRows,
-                                                                  numCols);
+        *this = IVSparse::SparseMatrix<T, indexT, 2, columnMajor>(mapsT.data(), numRows, numCols);
     }
 
     // slice method that returns a vector of IVSparse vectors
     template <typename T, typename indexT, bool columnMajor>
-    std::vector<typename IVSparse::SparseMatrix<T, indexT, 2, columnMajor>::Vector>
-        SparseMatrix<T, indexT, 2, columnMajor>::slice(uint32_t start, uint32_t end) {
+    std::vector<typename IVSparse::SparseMatrix<T, indexT, 2, columnMajor>::Vector> SparseMatrix<T, indexT, 2, columnMajor>::slice(uint32_t start, uint32_t end) {
 
         #ifdef IVSPARSE_DEBUG
         assert(start < outerDim && end <= outerDim && start < end &&
