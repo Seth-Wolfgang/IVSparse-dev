@@ -33,7 +33,7 @@
  *
  */
 
-
+#define _GNU_SOURCE
 #include <chrono> 
 #include "../../IVSparse/SparseMatrix"
 #include <unordered_set>
@@ -49,13 +49,17 @@
 #include <algorithm>
 #include <random>
 #include <fstream>
+#include <sched.h>
 
  // General 
 #define NUM_ITERATIONS 10
-#define NUM_COLD_STARTS 3
+#define NUM_COLD_STARTS 1
 #define VALUE_TYPE double
 #define CHECK_VALUES
 
+#define EIGEN_DONT_PARALLELIZE
+
+// Eigen needs to know size at compile time
 #define ROWS 10000000
 #define COLS 10000
 #define NNZ 10000000
@@ -65,9 +69,9 @@ template <typename T, typename indexType, int compressionLevel> double averageRe
 template <typename T> inline T getMax(std::vector<T> data);
 void printDataToFile(std::vector<uint64_t>& data, std::vector<std::vector<uint64_t>>& timeData, const char* filename);
 
-void  VCSC_Benchmark();
-void IVCSC_Benchmark();
-void eigen_Benchmark();
+void  VCSC_Benchmark(int);
+void IVCSC_Benchmark(int);
+void eigen_Benchmark(int);
 
 void VCSC_outerSumBenchmark(IVSparse::SparseMatrix<VALUE_TYPE, int, 2>& matrix, std::vector<std::vector<uint64_t>>& resultData);
 void VCSC_CSCConstructorBenchmark(std::vector<std::tuple<int, int, VALUE_TYPE>>& data, std::vector<std::vector<uint64_t>>& resultData, int rows, int cols);
@@ -129,6 +133,7 @@ Eigen::Matrix<VALUE_TYPE, -1, 1> eigenVector;
 
 int id;
 double redundancy;
+
 std::vector<std::tuple<int, int, VALUE_TYPE>> data;
 
 
@@ -138,13 +143,9 @@ int main(int argc, char** argv) {
     char* outerPath = argv[3];
     redundancy = atof(argv[4]);
     id = atoi(argv[5]);
+    int which = atoi(argv[6]);
     srand(1);
     std::cout << "Rows: " << ROWS << " Cols: " << COLS << " NNZ: " << NNZ << " Redundancy: " << redundancy << std::endl;
-    // char* vals = "/home/sethwolfgang/matrices/0.6739517619101313/vals.csv";
-    // char* innerPath = "/home/sethwolfgang/matrices/0.6739517619101313/inner.csv";
-    // char* outerPath = "/home/sethwolfgang/matrices/0.6739517619101313/outer.csv";
-    // double redundancy = 1;
-    // int id = 0;
 
     readCSC(vals, innerPath, outerPath);
 
@@ -174,14 +175,12 @@ int main(int argc, char** argv) {
     Eigen_TransposeSum = 0;
     #endif
 
-    std::cout << "\033[34;42;1;4mStarting VCSC Benchmark\033[0m" << std::endl;
-    VCSC_Benchmark();
-    std::cout << "\033[34;42;1;4mStarting IVCSC Benchmark\033[0m" << std::endl;
-    IVCSC_Benchmark();
-    std::cout << "\033[34;42;1;4mStarting Eigen Benchmark\033[0m" << std::endl;
-    eigen_Benchmark();
-
-
+    if (which == -1 || which == 0)
+        VCSC_Benchmark(0);
+    if (which == -1 || which == 1)
+        IVCSC_Benchmark(2);
+    if (which == -1 || which == 2)
+        eigen_Benchmark(4);
 
     return 0;
 }
@@ -197,57 +196,25 @@ int main(int argc, char** argv) {
 
 void readCSC(const char* valsPath, const char* innerPath, const char* outerPath) {
 
-     std::vector<VALUE_TYPE> cscValues; 
-     std::vector<int> cscInner; 
-     std::vector<int> cscOuter;
-
-    // std::ifstream valsFile(valsPath);
-    // std::ifstream innerFile(innerPath);
-    // std::ifstream outerFile(outerPath);
-
-    // double val, in, out;
-    // std::vector<int> tempOuter;
-
-    // while (valsFile >> std::scientific >> val) {
-    //     cscValues.push_back(val + 1);
-    // }
-
-
-    // while (innerFile >> std::scientific >> in) {
-    //     cscInner.push_back(static_cast<int>(in));
-
-    // }
-
-    // while (outerFile >> std::scientific >> out) {
-    //     cscOuter.push_back(static_cast<int>(out));
-    // }
-
-    // ROWS = getMax<int>(cscInner);
-    // COLS = getMax<int>(cscOuter);
-    // NNZ = cscValues.size();
-
-    // valsFile.close();
-    // innerFile.close();
-    // outerFile.close();
-
+    
+    data.resize(NNZ);
+        
     std::ifstream valsFile(valsPath);
     std::ifstream innerFile(innerPath);
     std::ifstream outerFile(outerPath);
 
-    double val, in, out;
 
-    while (valsFile >> std::scientific >> val) {
-        cscValues.push_back(val + 1);
-    }
-
-
-    while (innerFile >> std::scientific >> in) {
-        cscInner.push_back(static_cast<int>(in));
-
-    }
-
-    while (outerFile >> std::scientific >> out) {
-        cscOuter.push_back(static_cast<int>(out));
+    int idx = 0; int j = 0; int q = 0; int curr_row = 0;
+    VALUE_TYPE p = 0.;
+    outerFile >> q;
+    for (int i = 0; i < COLS; ++i) {
+        j = q;
+        outerFile >> q;
+        for (j; j < q; ++j, idx++) {
+            valsFile >> std::scientific >> p;
+            innerFile >> curr_row;
+            data.emplace_back(curr_row, i, p);
+        }
     }
 
 
@@ -255,16 +222,6 @@ void readCSC(const char* valsPath, const char* innerPath, const char* outerPath)
     innerFile.close();
     outerFile.close();
 
-    Eigen::SparseMatrix<VALUE_TYPE> matrix = Eigen::Map<Eigen::SparseMatrix<VALUE_TYPE> >(ROWS, COLS, NNZ, cscOuter.data(), cscInner.data(), cscValues.data());
-
-    // also global
-    data.reserve(NNZ);
-
-    for (int i = 0; i < matrix.outerSize(); i++) {
-        for (Eigen::SparseMatrix<VALUE_TYPE>::InnerIterator it(matrix, i); it; ++it) {
-            data.push_back(std::make_tuple(it.row(), it.col(), it.value()));
-        }
-    }
 
 }
 
@@ -348,7 +305,18 @@ void printDataToFile(std::vector<double>& data, std::vector<std::vector<uint64_t
  * @param nonzeros
  */
 
-void  VCSC_Benchmark() {
+void help_affinity(int aff) {
+    cpu_set_t  mask;
+    CPU_ZERO(&mask);
+    CPU_SET(aff, &mask);
+    int result = sched_setaffinity(0, sizeof(mask), &mask);
+    
+}
+
+void  VCSC_Benchmark(int aff) {
+    
+    help_affinity(aff);
+
     std::vector<double> matrixData(1);
     std::vector<std::vector<uint64_t>> timeData(NUM_ITERATIONS);
 
@@ -399,7 +367,10 @@ void  VCSC_Benchmark() {
  * @param nonzeros
  */
 
-void   IVCSC_Benchmark() {
+void   IVCSC_Benchmark(int aff) {
+    
+    help_affinity(aff);
+
     std::vector<double> matrixData(1);
     std::vector<std::vector<uint64_t>> timeData(NUM_ITERATIONS);
     // adjustValues(data, 1, 1);
@@ -459,7 +430,10 @@ void   IVCSC_Benchmark() {
  * @param nonzeros
  */
 
-void eigen_Benchmark() {
+void eigen_Benchmark(int aff) {
+    
+    help_affinity(aff);
+
     Eigen::SparseMatrix<VALUE_TYPE> matrix(ROWS, COLS);
     matrix.reserve(data.size());
     std::vector<Eigen::Triplet<VALUE_TYPE>> triplet;

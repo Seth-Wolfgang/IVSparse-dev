@@ -29,7 +29,7 @@ namespace IVSparse {
 
         uint32_t nnz = 0;  // The number of non-zero values in the matrix
 
-        size_t compSize = 0;  // The size of the compressed matrix in bytes
+        uint64_t compSize = 0;  // The size of the compressed matrix in bytes
 
         //* The Value and Index Types *//
 
