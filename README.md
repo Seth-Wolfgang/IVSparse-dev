@@ -1,74 +1,23 @@
-> "Most anyone would assert that this idea defies the laws of science.  But try it." -DeBruine, 2022 \
-> "Now this, this is pod racing" -Skyler, 2022
+# IVSparse Library
 
-# CSF
-# Compressed Sparse Fiber Matrices (CSF)
+The IVSparse Library is a C++ sparse matrix library optimized for the compression of sparse data in cases where non-zero values are highly redundant. IVSparse supports three main compression formats. 
 
+* The first format is Compressed Sparse Column (CSC), an industry standard for compressing and using sparse data, but not specialized for the compression of redundant data. The other two are novel formats which build upon the CSC format for the compression of redundant sparse data.
+* The second format modifies the CSC format by adding value compression to get Value Compressed Sparse Column (VCSC). This format compresses the value data of a matrix by only storing a unique value in a column once, meaning repeated values in a column only increase the size of index data. 
+  * ~2.25x fold compression over CSC  (*for redundant data*)
+* Next by adding index compression to VCSC we get Index and Value Compressed Sparse Column (IVCSC). This format takes the advantages of value compression and adds on compression of indices by positive-delta encoding the indices for unique values and then byte-packing them. 
+  * ~7.5x fold compression over CSC (*for redundant data*)
 
-> **Note:** This is a work in progress. The current version is a prototype and is not ready for production use.
+The details of the three formats can seen in the following image:
 
-> **Note:** Current development branch is `enlightenment` for those interested in seeing the latest changes and work. Main is updated semi-regularly with new features and the such. 
-___
+![Data Structure Figure](doc/images/data_structure_fig.jpg)
 
-## Abstract
-Large amounts of data take time and money to store, process, and compress. As data grows exponentially, we need better, cheaper tools to store and process it. 
+## Random Access is Unordered
 
-The Compressed Sparse Fiber (CSF) format is a way to take advantage of naturally redundant data and store it in a usable way. CSF works very well with redundant data, so much so that preliminary testing shows that we can beat common alternative formats in memory footprint by as much as 50%. 
+For the two new formats (VCSC and IVCSC) random access is unordered. Where CSC orders its values first by column and then by row index, VCSC and IVCSC order their values firstly by value and secondly by row index. This means the access of values in a column is not guaranteed to be in order. This is a trade-off for the compression of the data, providing low memory footprint and still fast sparse-dense operations at the cost of traversability.
 
-Our implementation of CSF also has variable compression levels that give the user options to lower this footprint even further at a small performance cost. Through our benchmarking we will collect data on the performance and data usage of our CSF format versus other popular, open-source alternatives, such as Compressed Sparse Column. 
+## C++ API
 
-CSF offers a novel solution to storing large amounts of data at little performance cost allowing otherwise bottlenecked systems to solve problems with large amounts of data.
+The `IVSparse::SparseMatrix<T_val, T_idx, comp_level, storage_order>` class is similar to the `Eigen::SparseMatrix<T_val, T_idx>` class in both the syntax and functionality. The `comp_level` template parameter for IVSparse takes an integer {1, 2, 3} where 1 is CSC, 2 is VCSC, and 3 is IVCSC. Use CSC for data that is small, non-redundant, or performing sparse-sparse operations. Use VCSC for data that is redundant and large but still requires performant procedures for sparse-dense operations, or if unsure which format to use and CSC is too large. IVCSC should then be used for data that is highly redundant and/or very large, and if a compromised random-access is acceptable for a steep reduction in memory footprint.
 
-___
-
-## What is CSF?
-
-
-Consider a dense vector:
-
-```
-x = {1, 0, 0, 0, 2, 0, 1, 0, 0, 2, 1, 1, 0, 1};
-```
-
-This can be stored in CSC format:
-
-```
-x = {1, 2, 1, 2,  1,  1,  1};
-i = {0, 4, 6, 9, 10, 11, 13};
-```
-
-However, the values are highly redundant and so we can adapt "run-length encoding" for paired vectors. We can order `x` and `i` first by value in `x` and second by value in `i`, then store only unique values in `x` and the runs of these unique values in `j`:
-
-```
-x = {1, 2}
-j = {5, 2};
-i = {0, 6, 10, 11, 13, 4, 9};
-```
-
-In vector form:
-
-```
-v = {1, 5, 0, 6, 10, 11, 13, 2, 2, 4, 9};
-//  /   \  |---------------| |   \ |---|
-// value run   indices    value run indices
-```
-
-Alternatively, store delimiters (`0`) between runs instead of run lengths:
-
-```
-v = {1, 0, 6, 10, 11, 13, 0, 2, 4, 9};
-//   |  |--------------|  /   \ |---|
-// value    indices  delimiter value indices
-```
-
-Each index run is a **fiber**. Fibers may be compressed using compression filters for integer arrays. 
-
-___
-## Future / In-Progress Work
-* Increasing iterator traversal speed
-* Non-Negative Matrix Factorization
-* Parallel Optimizations
-* GPU Acceleration
-* Further BLAS Support
-* Faster Scalar and Reduction Operations
-* Continued Benchmarking
+Documentation for the API can be found [here](https://seth-wolfgang.github.io/IVSparse/).

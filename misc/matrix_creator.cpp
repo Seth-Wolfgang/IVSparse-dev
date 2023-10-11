@@ -1,5 +1,6 @@
 #include <Eigen/Sparse>
 
+
 class rng {
 private:
     uint64_t state;
@@ -73,7 +74,11 @@ public:
 
     template <typename T>
     T sample(uint64_t i, uint64_t j, T max_value) {
-        return rand(i, j) % max_value;
+
+        if constexpr (std::is_floating_point<T>::value)
+            return fmod((double)rand(i, j), max_value);
+        else
+            return rand(i, j) % max_value;
     }
 
     template <typename T>
@@ -88,8 +93,10 @@ public:
 
     template <typename T>
     bool draw(uint64_t i, uint64_t j, T probability) {
-        sample(i, j, probability);
-        return sample(i, j, probability) == 0;
+        if constexpr (std::is_floating_point<T>::value)
+            return sample(i, j, probability) <= 0.003;
+        else
+            return sample(i, j, probability) == 0;
     }
 
     template <typename T>
@@ -111,24 +118,22 @@ public:
     }
 };
 
-// template <typename T>
-// Eigen::SparseMatrix<T> generateMatrix(int numRows, int numCols, int sparsity, uint64_t seed)
-// {
-//     // generate a random sparse matrix
-//     rng randMatrixGen = rng(seed);
+template <typename T>
+Eigen::SparseMatrix<T> generateMatrix(int numRows, int numCols, int sparsity, uint64_t seed, uint64_t maxValue) {
+    // generate a random sparse matrix
+    rng randMatrixGen = rng(seed);
 
-//     Eigen::SparseMatrix<T> myMatrix(numRows, numCols);
-//     myMatrix.reserve(Eigen::VectorXi::Constant(numRows, numCols));
+    Eigen::SparseMatrix<T> myMatrix(numRows, numCols);
+    myMatrix.reserve(Eigen::VectorXi::Constant(numCols, numRows));
 
-//     for (int i = 0; i < numRows; i++)
-//     {
-//         for (int j = 0; j < numCols; j++)
-//         {
-//             if (randMatrixGen.draw<int>(i, j, sparsity))
-//             {
-//                 myMatrix.insert(i, j) = 10 * randMatrixGen.uniform<double>(j);
-//             }
-//         }
-//     }
-//     return myMatrix;
-// }
+    for (int i = 0; i < numRows; i++) {
+        for (int j = 0; j < numCols; j++) {
+            if (randMatrixGen.draw<int>(i, j, sparsity)) {
+                myMatrix.insert(i, j) = rand() % maxValue + 1;
+            }
+        }
+    }
+
+    myMatrix.makeCompressed();
+    return myMatrix;
+}
