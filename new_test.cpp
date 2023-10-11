@@ -1,5 +1,6 @@
 #include <chrono>
 #include <iostream>
+
 #include "IVSparse/SparseMatrix"
 #include "misc/matrix_creator.cpp"
 
@@ -47,7 +48,7 @@ void getMat(Eigen::SparseMatrix<int>& myMatrix_e) {
   myMatrix_e.insert(8, 5) = 2;
 
   // col 6
-  myMatrix_e.insert(3, 6) = 8; // used to be a 6
+  myMatrix_e.insert(3, 6) = 8;  // used to be a 6
   myMatrix_e.insert(5, 6) = 1;
   myMatrix_e.insert(7, 6) = 3;
 
@@ -76,7 +77,6 @@ void getMat(Eigen::SparseMatrix<int>& myMatrix_e) {
 }
 
 int main() {
-
   // get a sparse matrix
   Eigen::SparseMatrix<int> myMatrix_e(10, 10);
 
@@ -85,16 +85,15 @@ int main() {
   std::cout << "myMatrix_e: " << std::endl;
   std::cout << myMatrix_e << std::endl;
 
-
   // make an IVSparse VCSC matrix
   IVSparse::SparseMatrix<int, int, 2, true> myMatrix(myMatrix_e);
 
   myMatrix.print();
 
-  // IVSparse::SparseMatrix<int, int, 2, true> myMatrix2 = myMatrix * 2;
-  myMatrix *= 2;
+  // transpose the matrix
+  IVSparse::SparseMatrix<int, int, 2, true> myMatrixT = myMatrix.transpose();
 
-  myMatrix.print();
-  
+  myMatrixT.print();
+
   return 0;
 }

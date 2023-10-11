@@ -382,7 +382,10 @@ namespace IVSparse {
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     void SparseMatrix<T, indexT, compressionLevel, columnMajor>::inPlaceTranspose() {
         // make a data structure to store the tranpose
-        std::unordered_map<T, std::vector<indexT>> mapsT[innerDim];
+        // std::unordered_map<T, std::vector<indexT>> mapsT[innerDim];
+        std::vector<std::unordered_map<T, std::vector<indexT>>> mapsT;
+        // mapsT.reserve(innerDim);
+        mapsT.resize(innerDim);
 
         // populate the transpose data structure
         for (uint32_t i = 0; i < outerDim; ++i) {
@@ -415,7 +418,7 @@ namespace IVSparse {
             }
         }
 
-        *this = IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>(mapsT, numRows, numCols);
+        *this = IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>(mapsT.data(), numRows, numCols);
     }
 
     // slice method that returns a vector of IVSparse vectors

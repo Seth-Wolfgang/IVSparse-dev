@@ -13,6 +13,7 @@ namespace IVSparse {
     // Destructor
     template <typename T, typename indexT, bool columnMajor>
     SparseMatrix<T, indexT, 2, columnMajor>::~SparseMatrix() {
+
         // delete the meta data
         if (metadata != nullptr) {
             delete[] metadata;
@@ -380,7 +381,7 @@ namespace IVSparse {
 
 // Private Tranpose Constructor
     template <typename T, typename indexT, bool columnMajor>
-    SparseMatrix<T, indexT, 2, columnMajor>::SparseMatrix(std::vector<std::unordered_map<T, std::vector<indexT>>> &maps, uint32_t num_rows, uint32_t num_cols) {
+    SparseMatrix<T, indexT, 2, columnMajor>::SparseMatrix(std::unordered_map<T, std::vector<indexT>> maps[], uint32_t num_rows, uint32_t num_cols) {
 
         // set class variables
         if constexpr (columnMajor) {
@@ -396,14 +397,74 @@ namespace IVSparse {
         numCols = num_rows;
         encodeValueType();
         index_t = sizeof(indexT);
-        
-        data.reserve(outerDim);
 
-        for(uint32_t i = 0; i < outerDim; i++) {
-            data[i].swap(maps[i]);
+        // allocate the vectors
+        try {
+            values = (T**)malloc(sizeof(T*) * outerDim);
+            counts = (indexT**)malloc(sizeof(indexT*) * outerDim);
+            indices = (indexT**)malloc(sizeof(indexT*) * outerDim);
+            valueSizes = (indexT*)malloc(sizeof(indexT) * outerDim);
+            indexSizes = (indexT*)malloc(sizeof(indexT) * outerDim);
+        }
+        catch (std::bad_alloc& ba) {
+            std::cerr << "bad_alloc caught: " << ba.what() << '\n';
+            throw std::runtime_error("Error: Could not allocate memory");
         }
 
-        // data = maps;
+        // loop through the array
+        #ifdef IVSPARSE_HAS_OPENMP
+        #pragma omp parallel for
+        #endif
+        for (size_t i = 0; i < outerDim; i++) {
+            // check if the column is empty
+            if (maps[i].empty()) [[unlikely]] {
+                values[i] = nullptr;
+                counts[i] = nullptr;
+                indices[i] = nullptr;
+                valueSizes[i] = 0;
+                indexSizes[i] = 0;
+                continue;
+                }
+            size_t byteSize = 0;
+            size_t numInidces = 0;
+
+            // loop through the vectors of the map
+            for (auto& val : maps[i]) {
+                // add the size of the vector to the byteSize
+                byteSize += (sizeof(indexT) * val.second.size());
+
+                // add the size of the vector to the numIndices
+                numInidces += val.second.size();
+            }
+
+            try {
+                values[i] = (T*)malloc(sizeof(T) * maps[i].size());
+                counts[i] = (indexT*)malloc(sizeof(indexT) * maps[i].size());
+                indices[i] = (indexT*)malloc(sizeof(indexT) * numInidces);
+            }
+            catch (std::bad_alloc& ba) {
+                std::cerr << "bad_alloc caught: " << ba.what() << '\n';
+                throw std::runtime_error("Error: Could not allocate memory");
+            }
+
+            valueSizes[i] = maps[i].size();
+            indexSizes[i] = numInidces;
+            nnz += numInidces;
+
+            size_t index = 0;
+            size_t valIndex = 0;
+
+            for (auto& val : maps[i]) {
+                values[i][valIndex] = val.first;
+                counts[i][valIndex] = val.second.size();
+
+                memcpy(&indices[i][index], val.second.data(), sizeof(indexT) * val.second.size());
+                index += val.second.size();
+
+                valIndex++;
+            }
+
+        }  // end of loop through the array
 
         // set the metadata
         metadata = new uint32_t[NUM_META_DATA];

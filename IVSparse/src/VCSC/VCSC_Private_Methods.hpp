@@ -59,10 +59,9 @@ namespace IVSparse {
         // set compSize to zero
         compSize = 0;
 
-        // add the size of the metadata
-        // compSize += META_DATA_SIZE;
+        compSize += (sizeof(indexT) * outerDim);  // valueSizes 4
 
-  // iterate through the map and add the size of each column
+
         for (uint32_t i = 0; i < outerDim; i++) {
             compSize += sizeof(T) * data[i].size(); //values
             compSize += sizeof(indexT) * data[i].size(); // counts
@@ -76,7 +75,7 @@ namespace IVSparse {
         }
     }
 
-    // Compression Algorithm for going from CSC to IVCSC
+    // Compression Algorithm for going from CSC to VCSC
     template <typename T, typename indexT, bool columnMajor>
     template <typename T2, typename indexT2>
     void SparseMatrix<T, indexT, 2, columnMajor>::compressCSC(T2* vals, indexT2* innerIndices, indexT2* outerPointers) {
@@ -109,10 +108,9 @@ namespace IVSparse {
         #pragma omp parallel for
         #endif
         for (uint32_t i = 0; i < outerDim; i++) {
-
-            // get the map for the current column
-            data.push_back(std::unordered_map<T, std::vector<indexT>>());
-
+            
+            // create the data structure to temporarily hold the data
+            std::map<T2, std::vector<indexT2>> dict;  // Key = value, Value = vector of indices
 
             // check if the current column is empty
             if (outerPointers[i] == outerPointers[i + 1]) {
@@ -135,6 +133,39 @@ namespace IVSparse {
                 }
 
             }  // end value loop
+
+            // ---- Stage 3: Allocate Size of Column Data ---- //
+
+            try {
+                values[i] = (T*)malloc(sizeof(T) * dict.size());
+                counts[i] = (indexT*)malloc(sizeof(indexT) * dict.size());
+                indices[i] = (indexT*)malloc(sizeof(indexT) * numIndices);
+            }
+            catch (std::bad_alloc& e) {
+                std::cerr << "Error: Could not allocate memory for the matrix"
+                    << std::endl;
+                exit(1);
+            }
+
+            // set the size of the column
+            valueSizes[i] = dict.size();
+            indexSizes[i] = numIndices;
+            size_t performanceVecSize = 0;
+            size_t indexSize = 0;
+
+            // ---- Stage 4: Populate the Column Data ---- //
+
+            for (auto& pair : dict) {
+                values[i][performanceVecSize] = pair.first;
+                counts[i][performanceVecSize] = pair.second.size();
+
+                // memcpy the indices into the indices array and increment the indexSize
+                memcpy(&indices[i][indexSize], &pair.second[0], sizeof(indexT) * pair.second.size());
+                indexSize += pair.second.size();
+
+
+                performanceVecSize++;
+            }
 
         }  // end column loop
 
