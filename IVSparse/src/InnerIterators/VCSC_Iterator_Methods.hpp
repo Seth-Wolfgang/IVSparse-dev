@@ -12,159 +12,193 @@ namespace IVSparse {
 
     //* Constructors *//
 
-  // Matrix Constructor
-  template <typename T, typename indexT, bool columnMajor>
-  inline SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::InnerIterator(IVSparse::SparseMatrix<T, indexT, 2, columnMajor>& matrix, uint32_t vec) {
+    // Matrix Constructor
+    template <typename T, typename indexT, bool columnMajor>
+    inline SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::InnerIterator(IVSparse::SparseMatrix<T, indexT, 2, columnMajor>& matrix, uint32_t vec) {
 
-  #ifdef IVSPARSE_DEBUG
-  assert(vec < matrix.outerDim && vec >= 0 && "The vector index is out of bounds!");
-  #endif
+        #ifdef IVSPARSE_DEBUG
+        assert(vec < matrix.outerDim && vec >= 0 && "The vector index is out of bounds!");
+        #endif
 
-  // check if the vector is empty
-  if (matrix.getMap(vec)->size() == 0) {
-    return;
-  }
+        // check if the vector is empty
+        if (matrix.getNumUniqueVals(vec) == 0) {
+            this->vals = nullptr;
+            this->counts = nullptr;
+            this->indices = nullptr;
+            this->val = nullptr;
+            this->index = 0;
+            this->count = 0;
 
-  // set the map to the internal map
-  data = matrix.getMap(vec);
+            countIndex = 0;
+            indexSize = 0;
 
-  valIter = data->begin();
-  idxIter = data->begin()->second.begin();
+            return;
+        }
 
-  // get the first value
-  val = valIter->first;
+        this->outer = vec;
 
-  // get the first value in the first vector
-  index = valIter->second.front();
+        // set the pointers to the correct locations
+        this->vals = matrix.getValues(vec);
+        this->counts = matrix.getCounts(vec);
+        this->indices = matrix.getIndices(vec);
 
-  outer = vec;
-}
+        this->valsSize = matrix.getNumUniqueVals(vec);
+        this->indexSize = matrix.getNumIndices(vec);
 
-// Vector Constructor
-template <typename T, typename indexT, bool columnMajor>
-SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::InnerIterator(SparseMatrix<T, indexT, 2, columnMajor>::Vector &vector) {
-  // check if the vector is empty
-  if (vector.nonZeros() == 0) {
-    return;
-  }
+        // set the values of the iterator
+        this->val = vals;
+        this->index = indices[0];
+        this->count = counts[0];
+    }
 
-  // set the map to the internal map
-  this->data = vector.getData();
+    // Vector Constructor
+    template <typename T, typename indexT, bool columnMajor>
+    SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::InnerIterator(SparseMatrix<T, indexT, 2, columnMajor>::Vector& vector) {
+        // check if the vector is empty
+        if (vector.nonZeros() == 0) {
+            this->vals = nullptr;
+            this->counts = nullptr;
+            this->indices = nullptr;
+            this->val = nullptr;
+            this->index = 0;
+            this->count = 0;
 
-  this->val = data->begin()->first;
-  this->index = *(data->begin()->second->begin());
+            countIndex = 0;
+            indexSize = 0;
 
-  this->valIter = data->begin();
-  this->idxIter = data->begin()->second->begin();
+            return;
+        }
 
-  outer = 0;
-}
+        this->outer = 0;
 
-//* Getters *//
+        // set the pointers to the correct locations
+        this->vals = vector.getValues();
+        this->counts = vector.getCounts();
+        this->indices = vector.getIndices();
 
+        this->valsSize = vector.uniqueVals();
+        this->indexSize = vector.nonZeros();
 
-// Get the value
-template <typename T, typename indexT, bool columnMajor>
-T SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::value() {
-  return val;
-}
+        // set the values of the iterator
+        this->val = vals;
+        this->index = indices[0];
+        this->count = counts[0];
+    }
 
-// Get the index
-template <typename T, typename indexT, bool columnMajor>
-indexT SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::getIndex() {
-    return index;
-}
+    //* Getters *//
 
-// Get a pointer to the value
-template <typename T, typename indexT, bool columnMajor>
-inline void SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::coeff(T newValue) {
-  // update the value being looked at to the new value
-  valIter->first = newValue;
-}
-
-// Get the current row
-template <typename T, typename indexT, bool columnMajor>
-indexT SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::row() {
-    if constexpr (!columnMajor) {
+    // Get the outer dimension
+    template <typename T, typename indexT, bool columnMajor>
+    indexT SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::outerDim() {
         return outer;
     }
-    else {
+
+    // Get the value
+    template <typename T, typename indexT, bool columnMajor>
+    T SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::value() {
+        return *val;
+    }
+
+    // Get the index
+    template <typename T, typename indexT, bool columnMajor>
+    indexT SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::getIndex() {
         return index;
     }
-}
 
-// Get the current column
-template <typename T, typename indexT, bool columnMajor>
-indexT SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::col() {
-    if constexpr (!columnMajor) {
-        return index;
-    }
-    else {
-        return outer;
-    }
-}
-
-//* Operator Overloads *//
-
-// Dereference Operator
-template <typename T, typename indexT, bool columnMajor>
-T& SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::operator*() {
-    return *val;
-}
-
-// Equality Operator
-template <typename T, typename indexT, bool columnMajor>
-bool SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::operator==(const InnerIterator &other) {
-  return data == other.data;
-}
-
-// Inequality Operator
-template <typename T, typename indexT, bool columnMajor>
-bool SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::operator!=(const InnerIterator &other) {
-  return data != other.data;
-}
-
-// Less Than Operator
-template <typename T, typename indexT, bool columnMajor>
-bool SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::operator<(const InnerIterator &other) {
-  return data < other.data;
-}
-
-// Greater Than Operator
-template <typename T, typename indexT, bool columnMajor>
-bool SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::operator>(const InnerIterator &other) {
-  return data > other.data;
-}
-
-// Increment Operator
-template <typename T, typename indexT, bool columnMajor>
-inline void SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::operator++() {
-  
-  // increment the index iterator
-  idxIter++;
-
-  // check if the index iterator is at the end of the current vector
-  if (idxIter == valIter->second.end()) {
-    // increment the value iterator
-    valIter++;
-
-    // check if the value iterator is at the end of the map
-    if (valIter == data->end()) {
-      // set the value iterator to the end of the map
-      valIter = data->end();
-      return;
+    // Get a pointer to the value
+    template <typename T, typename indexT, bool columnMajor>
+    inline void SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::coeff(
+        T newValue) {
+        *val = newValue;
     }
 
-    // set the index to the beginning of the next vector
-    index = *(valIter->second.begin());
-    idxIter = valIter->second.begin();
-    val = valIter->first;
-    return;
-  }
+    // Get the current row
+    template <typename T, typename indexT, bool columnMajor>
+    indexT SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::row() {
+        if constexpr (!columnMajor) {
+            return outer;
+        }
+        else {
+            return index;
+        }
+    }
 
-  // set the index to the next index in the current vector
-  index = *idxIter;
-  return;
+    // Get the current column
+    template <typename T, typename indexT, bool columnMajor>
+    indexT SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::col() {
+        if constexpr (!columnMajor) {
+            return index;
+        }
+        else {
+            return outer;
+        }
+    }
+
+    //* Operator Overloads *//
+
+    // Dereference Operator
+    template <typename T, typename indexT, bool columnMajor>
+    T& SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::operator*() {
+        return *val;
+    }
+
+    // Equality Operator
+    template <typename T, typename indexT, bool columnMajor>
+    bool SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::operator==(const InnerIterator& other) {
+        return values == other.values;
+    }
+
+    // Inequality Operator
+    template <typename T, typename indexT, bool columnMajor>
+    bool SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::operator!=(const InnerIterator& other) {
+        return values != other.values;
+    }
+
+    // Less Than Operator
+    template <typename T, typename indexT, bool columnMajor>
+    bool SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::operator<(const InnerIterator& other) {
+        return values < other.values;
+    }
+
+    // Greater Than Operator
+    template <typename T, typename indexT, bool columnMajor>
+    bool SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::operator>(const InnerIterator& other) {
+        return values > other.values;
+    }
+
+    // Increment Operator
+    template <typename T, typename indexT, bool columnMajor>
+    inline void SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::operator++() {
+
+        // decriment count
+        count--;
+
+        // if count is 0 then we need to move to the next value
+        if (count == 0) {
+            // Check if we are at the end of the values array
+            countIndex++;
+
+            if (countIndex >= indexSize) {
+                return;
+            }
+
+            // Move to the next value
+            val++;
+
+            // Get the new count
+            counts++;
+            count = *counts;
+
+            // Get the new index
+            indices++;
+            index = *indices;
+        }
+        else {
+            // Move to the next index
+            countIndex++;
+            indices++;
+            index = *indices;
+        }
 
     }  // end operator++
 
