@@ -23,19 +23,20 @@ namespace IVSparse {
         private:
         //* Private Class Variables *//
 
-  T val = 0;     // Current value
-  indexT index = 0;  // Current index
+        indexT outer = 0;     // Outer dimension
+        indexT index = 0;     // Current index
+        indexT newIndex = 0;  // Next index
+        T* val = nullptr;     // Current value
 
-  // pointer to the map of values being iterated over
-  std::unordered_map<T, std::vector<indexT>> *data = nullptr;
+        T* vals = nullptr;          // Pointer to values
+        indexT* counts = nullptr;   // Pointer to counts
+        indexT* indices = nullptr;  // Pointer to indices
 
-  // iterator for the values
-  typename std::unordered_map<T, std::vector<indexT>>::iterator valIter;
+        indexT valsSize = 0;   // Number of unique values
+        indexT indexSize = 0;  // Number of indices
 
-  // iterator for the indices
-  typename std::vector<indexT>::iterator idxIter;
-
-  indexT outer = 0;
+        indexT count = 0;       // Current count
+        indexT countIndex = 0;  // Current count of indices
 
         //* Private Class Methods *//
 
@@ -73,10 +74,15 @@ namespace IVSparse {
          */
          ///@{
 
-  /**
-   * @returns The current index of the iterator.
-   */
-  indexT getIndex();
+         /**
+          * @returns The current index of the iterator.
+          */
+        indexT getIndex();
+
+        /**
+         * @returns The current outer dimension of the iterator.
+         */
+        indexT outerDim();
 
         /**
          * @returns The current row of the iterator.
@@ -123,8 +129,8 @@ namespace IVSparse {
         // Greater than operator
         bool operator>(const InnerIterator& other);
 
-  // Boolean operator
-  inline __attribute__((hot)) operator bool() { return valIter != data->end(); }
+        // Boolean operator
+        inline __attribute__((hot)) operator bool() { return countIndex < indexSize; }
 
         // Dereference operator
         T& operator*();

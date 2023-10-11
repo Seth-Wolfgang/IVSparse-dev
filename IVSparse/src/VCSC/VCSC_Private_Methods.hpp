@@ -63,15 +63,10 @@ namespace IVSparse {
 
 
         for (uint32_t i = 0; i < outerDim; i++) {
-            compSize += sizeof(T) * data[i].size(); //values
-            compSize += sizeof(indexT) * data[i].size(); // counts
 
-            // iterate over the map and get all the indices
-            for (auto it = data[i].begin(); it != data[i].end(); ++it) {
-                compSize += sizeof(indexT) * it->second.size();
-            }
-
-            compSize += sizeof(indexT); // len
+            compSize += (sizeof(T) * valueSizes[i]);       // values 8 -> 8 per value
+            compSize += (sizeof(indexT) * valueSizes[i]);  // counts 4 -> 4 per value
+            compSize += (sizeof(indexT) * indexSizes[i]);  // indices 4 -> 4 per index
         }
     }
 
@@ -99,7 +94,19 @@ namespace IVSparse {
         userChecks();
         #endif
 
-        data.reserve(outerDim);
+        // allocate space for the 2D Run lenngth encoded CSC matrix
+        try {
+            values = (T**)malloc(sizeof(T*) * outerDim);
+            counts = (indexT**)malloc(sizeof(indexT*) * outerDim);
+            indices = (indexT**)malloc(sizeof(indexT*) * outerDim);
+
+            valueSizes = (indexT*)malloc(sizeof(indexT) * outerDim);
+            indexSizes = (indexT*)malloc(sizeof(indexT) * outerDim);
+        }
+        catch (std::bad_alloc& e) {
+            std::cerr << "Error: Could not allocate memory for the matrix" << std::endl;
+            exit(1);
+        }
 
         // ---- Stage 2: Construct the Dictionary For Each Column ---- //
 
@@ -114,22 +121,34 @@ namespace IVSparse {
 
             // check if the current column is empty
             if (outerPointers[i] == outerPointers[i + 1]) {
+                valueSizes[i] = 0;
+                indexSizes[i] = 0;
+
+                values[i] = nullptr;
+                counts[i] = nullptr;
+                indices[i] = nullptr;
                 continue;
             }
 
+            // create a variable to hold the size of the column
+            size_t numIndices = 0;
+
             // loop through each value in the column and add it to dict
             for (indexT2 j = outerPointers[i]; j < outerPointers[i + 1]; j++) {
-
                 // check if the value is already in the dictionary or not
-                if (data[i].find(vals[j]) != data[i].end()) {
-
+                if (dict.find(vals[j]) != dict.end()) {
                     // add the index
-                    data[i][vals[j]].push_back(innerIndices[j]);
+                    dict[vals[j]].push_back(innerIndices[j]);
 
+                    numIndices++;
                 }
                 else {
-                    // add the value
-                    data[i][vals[j]] = std::vector<indexT>{ innerIndices[j] };
+                    // if value not already in the dictionary add it
+
+                    // create a new vector for the indices
+                    dict[vals[j]] = std::vector<indexT2>{ innerIndices[j] };
+
+                    numIndices++;
                 }
 
             }  // end value loop

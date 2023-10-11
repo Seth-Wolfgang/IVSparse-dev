@@ -24,75 +24,51 @@ namespace IVSparse {
         return columnMajor;
     }
 
-// get the values vector
-template <typename T, typename indexT, bool columnMajor>
-std::vector<T> SparseMatrix<T, indexT, 2, columnMajor>::getValues(uint32_t vec) const {
-  //! Error checking here
-
-  // get an array of the values
-  std::vector<T> temp(data[vec].size());
-
-  // copy the values into the array
-  for (uint32_t i = 0; i < data[vec].size(); ++i) {
-    temp[i] = data[vec][i].first;
-  }
-
-  // return the array
-  return temp;
-}
-
-// get the counts vector
-template <typename T, typename indexT, bool columnMajor>
-std::vector<indexT> SparseMatrix<T, indexT, 2, columnMajor>::getCounts(uint32_t vec) const {
-  //! Error checking here
-
-  std::vector<indexT> temp(data[vec].size());
-  for(uint32_t i = 0; i < data[vec].size(); ++i) {
-    temp[i] = data[vec][i].second.size();
-  }
-  return temp;
-}
-
-// get the indices vector
-template <typename T, typename indexT, bool columnMajor>
-std::vector<indexT> SparseMatrix<T, indexT, 2, columnMajor>::getIndices( uint32_t vec) const {
-  //! Error checking here
-
-  std::vector<indexT> temp;
-  for(uint32_t i = 0; i < data[vec].size(); ++i) {
-    for(uint32_t j = 0; j < data[vec][i].second.size(); ++j) {
-      temp.push_back(data[vec][i].second[j]);
+    // get the values vector
+    template <typename T, typename indexT, bool columnMajor>
+    T* SparseMatrix<T, indexT, 2, columnMajor>::getValues(uint32_t vec) const {
+        return values[vec];
     }
-  }
-  return temp;
-}
 
-// get the number of unique values in a vector
-template <typename T, typename indexT, bool columnMajor>
-indexT SparseMatrix<T, indexT, 2, columnMajor>::getNumUniqueVals(uint32_t vec) const {
-  //! Error checking here
-  
-  return data[vec].size();
-}
+    // get the counts vector
+    template <typename T, typename indexT, bool columnMajor>
+    indexT* SparseMatrix<T, indexT, 2, columnMajor>::getCounts(uint32_t vec) const {
+        return counts[vec];
+    }
 
-// get the number of indices in a vector
-template <typename T, typename indexT, bool columnMajor>
-indexT SparseMatrix<T, indexT, 2, columnMajor>::getNumIndices(uint32_t vec) const {
-  return *this->getIndices(vec).size();
-}
+    // get the indices vector
+    template <typename T, typename indexT, bool columnMajor>
+    indexT* SparseMatrix<T, indexT, 2, columnMajor>::getIndices(
+        uint32_t vec) const {
+        return indices[vec];
+    }
 
-// get the vector at the given index
-template <typename T, typename indexT, bool columnMajor>
-typename IVSparse::SparseMatrix<T, indexT, 2, columnMajor>::Vector
-SparseMatrix<T, indexT, 2, columnMajor>::getVector(uint32_t vec) {
-  return (*this)[vec];
-}
+    // get the number of unique values in a vector
+    template <typename T, typename indexT, bool columnMajor>
+    indexT SparseMatrix<T, indexT, 2, columnMajor>::getNumUniqueVals(
+        uint32_t vec) const {
+        if (valueSizes == nullptr) {
+            return 0;
+        }
+        return valueSizes[vec];
+    }
 
-// get the underlying data for a given vector
-template <typename T, typename indexT, bool columnMajor>
-std::unordered_map<T, std::vector<indexT>>* SparseMatrix<T, indexT, 2, columnMajor>::getMap(uint32_t vec) {
-  return &data[vec];
-}
+    // get the number of indices in a vector
+    template <typename T, typename indexT, bool columnMajor>
+    indexT SparseMatrix<T, indexT, 2, columnMajor>::getNumIndices(
+        uint32_t vec) const {
+        if (indexSizes == nullptr) {
+            return 0;
+        }
+        return indexSizes[vec];
+    }
+
+    // get the vector at the given index
+    template <typename T, typename indexT, bool columnMajor>
+    typename IVSparse::SparseMatrix<T, indexT, 2, columnMajor>::Vector
+        SparseMatrix<T, indexT, 2, columnMajor>::getVector(uint32_t vec) {
+        return (*this)[vec];
+    }
 
     //* Utility Methods *//
 
@@ -105,29 +81,28 @@ std::unordered_map<T, std::vector<indexT>>* SparseMatrix<T, indexT, 2, columnMaj
         // Write the metadata
         fwrite(metadata, 1, NUM_META_DATA * sizeof(uint32_t), fp);
 
-  // loop through each column and write the data
-  for (uint32_t i = 0; i < outerDim; i++) {
+        // write the lengths of the vectors
+        for (uint32_t i = 0; i < outerDim; ++i) {
+            fwrite(&valueSizes[i], 1, sizeof(indexT), fp);
+        }
+        for (uint32_t i = 0; i < outerDim; ++i) {
+            fwrite(&indexSizes[i], 1, sizeof(indexT), fp);
+        }
 
-    // write the number of unique values in data[i]
-    indexT numUniquei = data[i].size();
-    fwrite(&numUniquei, 1, sizeof(indexT), fp);
+        // write the values
+        for (uint32_t i = 0; i < outerDim; ++i) {
+            fwrite(values[i], 1, valueSizes[i] * sizeof(T), fp);
+        }
 
-    // write the unique values in data[i]
-    for(auto &pair : data[i]) {
-      fwrite(&pair.first, 1, sizeof(T), fp);
-    }
+        // write the counts
+        for (uint32_t i = 0; i < outerDim; ++i) {
+            fwrite(counts[i], 1, valueSizes[i] * sizeof(indexT), fp);
+        }
 
-    // write the counts in data[i]
-    for(auto &pair : data[i]) {
-      uint64_t count = pair.second.size();
-      fwrite(&count, 1, sizeof(indexT), fp);
-    }
-
-    // write the indices in data[i]
-    for(auto &pair : data[i]) {
-      fwrite(pair.second.data(), 1, sizeof(indexT) * pair.second.size(), fp);
-    }
-  }
+        // write the indices
+        for (uint32_t i = 0; i < outerDim; ++i) {
+            fwrite(indices[i], 1, indexSizes[i] * sizeof(indexT), fp);
+        }
 
         // close the file
         fclose(fp);
@@ -199,7 +174,7 @@ std::unordered_map<T, std::vector<indexT>>* SparseMatrix<T, indexT, 2, columnMaj
         colPtrs[0] = 0;
 
         // make an array of ordered maps to hold the data
-        std::unordered_map<indexT, T> dict[outerDim];
+        std::map<indexT, T> dict[outerDim];
 
         // iterate through the data using the iterator
         for (uint32_t i = 0; i < outerDim; ++i) {
@@ -291,36 +266,37 @@ std::unordered_map<T, std::vector<indexT>>* SparseMatrix<T, indexT, 2, columnMaj
                 // update metadata
                 metadata[2] = outerDim;
 
-      // // realloc the vectors
-      // try {
-      //   values = (T **)realloc(values, outerDim * sizeof(T *));
-      //   counts = (indexT **)realloc(counts, outerDim * sizeof(indexT *));
-      //   indices = (indexT **)realloc(indices, outerDim * sizeof(indexT *));
-      //   valueSizes = (indexT *)realloc(valueSizes, outerDim * sizeof(indexT));
-      //   indexSizes = (indexT *)realloc(indexSizes, outerDim * sizeof(indexT));
-      // } catch (std::bad_alloc &e) {
-      //   std::cerr << "Error: " << e.what() << std::endl;
-      //   exit(1);
-      // }
+                // realloc the vectors
+                try {
+                    values = (T**)realloc(values, outerDim * sizeof(T*));
+                    counts = (indexT**)realloc(counts, outerDim * sizeof(indexT*));
+                    indices = (indexT**)realloc(indices, outerDim * sizeof(indexT*));
+                    valueSizes = (indexT*)realloc(valueSizes, outerDim * sizeof(indexT));
+                    indexSizes = (indexT*)realloc(indexSizes, outerDim * sizeof(indexT));
+                }
+                catch (std::bad_alloc& e) {
+                    std::cerr << "Error: " << e.what() << std::endl;
+                    exit(1);
+                }
 
-      // // set the last vector to be empty
-      // values[outerDim - 1] = nullptr;
-      // counts[outerDim - 1] = nullptr;
-      // indices[outerDim - 1] = nullptr;
-      // valueSizes[outerDim - 1] = 0;
-      // indexSizes[outerDim - 1] = 0;
+                // set the last vector to be empty
+                values[outerDim - 1] = nullptr;
+                counts[outerDim - 1] = nullptr;
+                indices[outerDim - 1] = nullptr;
+                valueSizes[outerDim - 1] = 0;
+                indexSizes[outerDim - 1] = 0;
 
-      calculateCompSize();
-      return;
-
-    } else {
-      #ifdef IVSPARSE_DEBUG
-      // check that the vector is the correct size
-      if ((vec.getLength() != innerDim))
-        throw std::invalid_argument(
-            "The vector must be the same size as the outer dimension of the "
-            "matrix!");
-      #endif
+                calculateCompSize();
+                return;
+            }
+            else {
+                #ifdef IVSPARSE_DEBUG
+                // check that the vector is the correct size
+                if ((vec.getLength() != innerDim))
+                    throw std::invalid_argument(
+                        "The vector must be the same size as the outer dimension of the "
+                        "matrix!");
+                #endif
 
                 outerDim++;
                 nnz += vec.nonZeros();
@@ -336,45 +312,44 @@ std::unordered_map<T, std::vector<indexT>>* SparseMatrix<T, indexT, 2, columnMaj
                 metadata[2] = outerDim;
                 metadata[3] = nnz;
 
-      // // realloc the vectors
-      // try {
-      //   values = (T **)realloc(values, outerDim * sizeof(T *));
-      //   counts = (indexT **)realloc(counts, outerDim * sizeof(indexT *));
-      //   indices = (indexT **)realloc(indices, outerDim * sizeof(indexT *));
-      //   valueSizes = (indexT *)realloc(valueSizes, outerDim * sizeof(indexT));
-      //   indexSizes = (indexT *)realloc(indexSizes, outerDim * sizeof(indexT));
-      // } catch (std::bad_alloc &e) {
-      //   std::cerr << "Error: " << e.what() << std::endl;
-      //   exit(1);
-      // }
+                // realloc the vectors
+                try {
+                    values = (T**)realloc(values, outerDim * sizeof(T*));
+                    counts = (indexT**)realloc(counts, outerDim * sizeof(indexT*));
+                    indices = (indexT**)realloc(indices, outerDim * sizeof(indexT*));
+                    valueSizes = (indexT*)realloc(valueSizes, outerDim * sizeof(indexT));
+                    indexSizes = (indexT*)realloc(indexSizes, outerDim * sizeof(indexT));
+                }
+                catch (std::bad_alloc& e) {
+                    std::cerr << "Error: " << e.what() << std::endl;
+                    exit(1);
+                }
 
-      // // set the sizes of the new vector
-      // valueSizes[outerDim - 1] = vec.uniqueVals();
-      // indexSizes[outerDim - 1] = vec.nonZeros();
+                // set the sizes of the new vector
+                valueSizes[outerDim - 1] = vec.uniqueVals();
+                indexSizes[outerDim - 1] = vec.nonZeros();
 
-      // // allocate the new vectors
-      // try {
-      //   values[outerDim - 1] =
-      //       (T *)malloc(valueSizes[outerDim - 1] * sizeof(T));
-      //   counts[outerDim - 1] =
-      //       (indexT *)malloc(sizeof(indexT) * valueSizes[outerDim - 1]);
-      //   indices[outerDim - 1] =
-      //       (indexT *)malloc(indexSizes[outerDim - 1] * sizeof(indexT));
-      // } catch (std::bad_alloc &e) {
-      //   std::cerr << "Error: " << e.what() << std::endl;
-      //   exit(1);
-      // }
+                // allocate the new vectors
+                try {
+                    values[outerDim - 1] =
+                        (T*)malloc(valueSizes[outerDim - 1] * sizeof(T));
+                    counts[outerDim - 1] =
+                        (indexT*)malloc(sizeof(indexT) * valueSizes[outerDim - 1]);
+                    indices[outerDim - 1] =
+                        (indexT*)malloc(indexSizes[outerDim - 1] * sizeof(indexT));
+                }
+                catch (std::bad_alloc& e) {
+                    std::cerr << "Error: " << e.what() << std::endl;
+                    exit(1);
+                }
 
-      // copy the data from the vector to the new vectors
-      // memcpy(values[outerDim - 1], vec.getValues(),
-      //        valueSizes[outerDim - 1] * sizeof(T));
-      // memcpy(counts[outerDim - 1], vec.getCounts(),
-      //        valueSizes[outerDim - 1] * sizeof(indexT));
-      // memcpy(indices[outerDim - 1], vec.getIndices(),
-      //        indexSizes[outerDim - 1] * sizeof(indexT));
-
-      // append the map of the vector to the data vector
-      data.push_back(vec.getMap());
+                // copy the data from the vector to the new vectors
+                memcpy(values[outerDim - 1], vec.getValues(),
+                       valueSizes[outerDim - 1] * sizeof(T));
+                memcpy(counts[outerDim - 1], vec.getCounts(),
+                       valueSizes[outerDim - 1] * sizeof(indexT));
+                memcpy(indices[outerDim - 1], vec.getIndices(),
+                       indexSizes[outerDim - 1] * sizeof(indexT));
 
                 // update the compressed size
                 calculateCompSize();
@@ -421,19 +396,19 @@ std::unordered_map<T, std::vector<indexT>>* SparseMatrix<T, indexT, 2, columnMaj
         mapsT.resize(innerDim);
 
 
-    // populate the transpose data structure
-    for (uint32_t i = 0; i < outerDim; ++i) {
-        for (typename SparseMatrix<T, indexT, 2>::InnerIterator it(*this, i); it;
-                ++it) {
-            // add the value to the map
-            if constexpr (columnMajor) {
-                mapsT[it.row()][it.value()].push_back(it.col());
-            }
-            else {
-                mapsT[it.col()][it.value()].push_back(it.row());
+        // populate the transpose data structure
+        for (uint32_t i = 0; i < outerDim; ++i) {
+            for (typename SparseMatrix<T, indexT, 2>::InnerIterator it(*this, i); it;
+                 ++it) {
+                // add the value to the map
+                if constexpr (columnMajor) {
+                    mapsT[it.row()][it.value()].push_back(it.col());
+                }
+                else {
+                    mapsT[it.col()][it.value()].push_back(it.row());
+                }
             }
         }
-    }
 
         // set this to the transposed matrix
         *this = IVSparse::SparseMatrix<T, indexT, 2, columnMajor>(mapsT.data(), numRows, numCols);
@@ -448,8 +423,10 @@ std::unordered_map<T, std::vector<indexT>>* SparseMatrix<T, indexT, 2, columnMaj
                "Invalid start and end values!");
         #endif
 
-  // make a vector of IVSparse vectors
-  std::vector<typename IVSparse::SparseMatrix<T, indexT, 2, columnMajor>::Vector> vecs(end - start);
+        // make a vector of IVSparse vectors
+        std::vector<
+            typename IVSparse::SparseMatrix<T, indexT, 2, columnMajor>::Vector>
+            vecs(end - start);
 
         // grab the vectors and add them to vecs
         for (uint32_t i = start; i < end; ++i) {

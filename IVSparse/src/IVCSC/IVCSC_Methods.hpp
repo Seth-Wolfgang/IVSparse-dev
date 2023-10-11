@@ -338,9 +338,10 @@ namespace IVSparse {
 
         // make a data structure to store the tranpose
         // std::unordered_map<T, std::vector<indexT>> mapsT[innerDim];
-        std::vector<std::unordered_map<T, std::vector<indexT>>> mapsT;
+        std::unordered_map<T, std::vector<indexT>>* mapsT = (std::unordered_map<T, std::vector<indexT>>*)malloc(innerDim * sizeof(std::unordered_map<T, std::vector<indexT>>));
+        // std::vector<std::unordered_map<T, std::vector<indexT>>> mapsT;
         // mapsT.reserve(innerDim);
-        mapsT.resize(innerDim);
+        // mapsT.resize(innerDim);
         // populate the transpose data structure
         for (uint32_t i = 0; i < outerDim; ++i) {
             for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(*this, i); it; ++it) {
@@ -354,8 +355,9 @@ namespace IVSparse {
             }
         }
 
-        for (auto& row : mapsT) {
-            for (auto& col : row) {
+
+        for(int i = 0; i < innerDim; ++i) {
+            for (auto& col : mapsT[i]) {
                 // find the max value in the vector
                 size_t max = col.second[0];
 
@@ -372,7 +374,7 @@ namespace IVSparse {
         }
 
         // create a new matrix passing in transposedMap
-        IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor> temp(mapsT.data(), numRows, numCols);
+        IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor> temp(mapsT, numRows, numCols);
 
         // return the new matrix
         return temp;
@@ -400,9 +402,8 @@ namespace IVSparse {
             }
         }
 
-        // indices need to be encoded and packed
-        for (auto& row : mapsT) {
-            for (auto& col : row) {
+        for(int i = 0; i < innerDim; ++i) {
+            for (auto& col : mapsT[i]) {
                 // find the max value in the vector
                 size_t max = col.second[0];
 
@@ -418,7 +419,7 @@ namespace IVSparse {
             }
         }
 
-        *this = IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>(mapsT.data(), numRows, numCols);
+        *this = IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>(mapsT, numRows, numCols);
     }
 
     // slice method that returns a vector of IVSparse vectors
