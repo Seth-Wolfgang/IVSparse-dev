@@ -175,7 +175,7 @@ int main(int argc, char** argv) {
     #endif
 
     std::cout << "\033[34;42;1;4mStarting VCSC Benchmark\033[0m" << std::endl;
-    VCSC_Benchmark();
+    // VCSC_Benchmark();
     std::cout << "\033[34;42;1;4mStarting IVCSC Benchmark\033[0m" << std::endl;
     IVCSC_Benchmark();
     std::cout << "\033[34;42;1;4mStarting Eigen Benchmark\033[0m" << std::endl;
