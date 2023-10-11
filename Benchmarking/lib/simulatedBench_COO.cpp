@@ -50,9 +50,9 @@
 #include <random>
 #include <fstream>
 
- // General 
+ // General parameters for benchmarking
 #define NUM_ITERATIONS 10
-#define NUM_COLD_STARTS 3
+#define NUM_COLD_STARTS 1
 #define VALUE_TYPE double
 #define CHECK_VALUES
 
@@ -133,18 +133,18 @@ std::vector<std::tuple<int, int, VALUE_TYPE>> data;
 
 
 int main(int argc, char** argv) {
-    char* vals = argv[1];
-    char* innerPath = argv[2];
-    char* outerPath = argv[3];
-    redundancy = atof(argv[4]);
-    id = atoi(argv[5]);
-    srand(1);
+    // char* vals = argv[1];
+    // char* innerPath = argv[2];
+    // char* outerPath = argv[3];
+    // redundancy = atof(argv[4]);
+    // id = atoi(argv[5]);
+    // srand(1);
     std::cout << "Rows: " << ROWS << " Cols: " << COLS << " NNZ: " << NNZ << " Redundancy: " << redundancy << std::endl;
-    // char* vals = "/home/sethwolfgang/matrices/0.6739517619101313/vals.csv";
-    // char* innerPath = "/home/sethwolfgang/matrices/0.6739517619101313/inner.csv";
-    // char* outerPath = "/home/sethwolfgang/matrices/0.6739517619101313/outer.csv";
-    // double redundancy = 1;
-    // int id = 0;
+    char* vals = "/home/sethwolfgang/matrices/0.6739517619101313/vals.csv";
+    char* innerPath = "/home/sethwolfgang/matrices/0.6739517619101313/inner.csv";
+    char* outerPath = "/home/sethwolfgang/matrices/0.6739517619101313/outer.csv";
+    double redundancy = 1;
+    int id = 0;
 
     readCSC(vals, innerPath, outerPath);
 
@@ -183,7 +183,7 @@ int main(int argc, char** argv) {
 
 
 
-    return 0;
+    return 1;
 }
 
 /*************************************************************************************************************
@@ -368,17 +368,17 @@ void  VCSC_Benchmark() {
 
     // matrix.print();
 
-    VCSC_constructorBenchmark(data, timeData, ROWS, COLS);
-    std::cout << "VCSC constructor done" << std::endl;
-    VCSC_scalarBenchmark(matrix, timeData);
-    std::cout << "VCSC scalar done" << std::endl;
+    // VCSC_constructorBenchmark(data, timeData, ROWS, COLS);
+    // std::cout << "VCSC constructor done" << std::endl;
+    // VCSC_scalarBenchmark(matrix, timeData);
+    // std::cout << "VCSC scalar done" << std::endl;
     // VCSC_outerSumBenchmark(matrix, timeData);
     // std::cout << "VCSC column sums done" << std::endl;
-    VCSC_spmvBenchmark(matrix, timeData, COLS);
-    std::cout << "VCSC spmv done" << std::endl;
-    VCSC_spmmBenchmark(matrix, timeData, ROWS, COLS);
-    std::cout << "VCSC spmm done" << std::endl;
-    VCSC_iteratorBenchmark(matrix, timeData, ROWS, COLS);
+    // VCSC_spmvBenchmark(matrix, timeData, COLS);
+    // std::cout << "VCSC spmv done" << std::endl;
+    // VCSC_spmmBenchmark(matrix, timeData, ROWS, COLS);
+    // std::cout << "VCSC spmm done" << std::endl;
+    // VCSC_iteratorBenchmark(matrix, timeData, ROWS, COLS);
     std::cout << "VCSC iterator done\n" << std::endl;
     VCSC_transposeBenchmark(matrix, timeData, ROWS, COLS);
     std::cout << "VCSC transpose done\n" << std::endl;
