@@ -58,6 +58,8 @@
 #define CHECK_VALUES
 
 #define EIGEN_DONT_PARALLELIZE
+//#define SET_AFFINITY
+
 
 // Eigen needs to know size at compile time
 #define ROWS 10000
@@ -70,8 +72,8 @@ template <typename T> inline T getMax(std::vector<T> data);
 void printDataToFile(std::vector<uint64_t>& data, std::vector<std::vector<uint64_t>>& timeData, const char* filename);
 
 void  VCSC_Benchmark(int, char*);
-void IVCSC_Benchmark(int, char*);
-void eigen_Benchmark(int, char*);
+void IVCSC_Benchmark(int, char*, int);
+void eigen_Benchmark(int, char*, int);
 
 void VCSC_outerSumBenchmark(IVSparse::SparseMatrix<VALUE_TYPE, int, 2>& matrix, std::vector<std::vector<uint64_t>>& resultData);
 void VCSC_CSCConstructorBenchmark(std::vector<std::tuple<int, int, VALUE_TYPE>>& data, std::vector<std::vector<uint64_t>>& resultData, int rows, int cols);
@@ -176,19 +178,25 @@ int main(int argc, char** argv) {
     Eigen_TransposeSum = 0;
     #endif
 
-    if (which == -1 || which == 0)
+    std::cout << "which: " << which << "\n";
+
+    if (which == -1 || which == 0) {
 		std::cout << "starting with vcsc\n";
         VCSC_Benchmark(0, resultsPath);
 		std::cout << "done with vcsc\n";
-	if (which == -1 || which == 1)
+    }
+	if (which == -1 || which == 1) {
 		std::cout << "starting with ivcsc\n";
-		IVCSC_Benchmark(2, resultsPath);
+		IVCSC_Benchmark(2, resultsPath, which);
 		std::cout << "done with ivcsc\n";
-    if (which == -1 || which == 2)
+    }
+    if (which == -1 || which == 2) {
 		std::cout << "starting with eigen\n";
-        eigen_Benchmark(4, resultsPath);
+        eigen_Benchmark(4, resultsPath, which);
 		std::cout << "done with eigen\n";
+    }
 
+    std::cout << "all finished\n";
     return 0;
 }
 
@@ -215,19 +223,20 @@ void readCSC(const char* valsPath, const char* innerPath, const char* outerPath)
     VALUE_TYPE p = 0.;
     outerFile >> j;
 	outerFile >> q;
-	std::cout << "here\n";
-	std::cout << j << " " << q << "\n";
+	//std::cout << "here\n";
+	//std::cout << j << " " << q << "\n";
     for (int i = 0; i < COLS; ++i) {
         for (j; j < q; ++j, idx++) {
             valsFile >> p;
             innerFile >> curr_row;
             data.emplace_back(curr_row, i, p);
-			std::cout << curr_row << " " << i << " " << p << "\n";
+			//std::cout << curr_row << " " << i << " " << p << "\n";
 		}
 		outerFile >> q;
         j = q;
     }
-
+    
+    std::cout << "done reading in matrix\n";
 
     valsFile.close();
     innerFile.close();
@@ -317,11 +326,12 @@ void printDataToFile(std::vector<double>& data, std::vector<std::vector<uint64_t
  */
 
 void help_affinity(int aff) {
+    #ifdef SET_AFFINITY
     cpu_set_t  mask;
     CPU_ZERO(&mask);
     CPU_SET(aff, &mask);
     int result = sched_setaffinity(0, sizeof(mask), &mask);
-    
+    #endif
 }
 
 void  VCSC_Benchmark(int aff, char *path) {
@@ -383,7 +393,7 @@ void  VCSC_Benchmark(int aff, char *path) {
  * @param nonzeros
  */
 
-void   IVCSC_Benchmark(int aff, char *path) {
+void   IVCSC_Benchmark(int aff, char *path, int which) {
     
     help_affinity(aff);
 
@@ -421,12 +431,14 @@ void   IVCSC_Benchmark(int aff, char *path) {
     std::cout << "IVCSC transpose done" << std::endl;
 
     #ifdef CHECK_VALUES
-    assert(0.1 > IVCSC_ScalarSum - VCSC_ScalarSum);
-    assert(0.1 > IVCSC_SpmvSum - VCSC_SpmvSum);
-    assert(0.1 > IVCSC_SpmmSum - VCSC_SpmmSum);
-    assert(0.1 > IVCSC_ConstructorSum - VCSC_ConstructorSum);
-    assert(0.1 > IVCSC_IteratorSum - VCSC_IteratorSum);
-    assert(0.1 > IVCSC_TransposeSum - VCSC_TransposeSum);
+    if (which == -1) {
+        assert(0.1 > IVCSC_ScalarSum - VCSC_ScalarSum);
+        assert(0.1 > IVCSC_SpmvSum - VCSC_SpmvSum);
+        assert(0.1 > IVCSC_SpmmSum - VCSC_SpmmSum);
+        assert(0.1 > IVCSC_ConstructorSum - VCSC_ConstructorSum);
+        assert(0.1 > IVCSC_IteratorSum - VCSC_IteratorSum);
+        assert(0.1 > IVCSC_TransposeSum - VCSC_TransposeSum);
+    }
     #endif
 
 	/*
@@ -451,7 +463,7 @@ void   IVCSC_Benchmark(int aff, char *path) {
  * @param nonzeros
  */
 
-void eigen_Benchmark(int aff, char *path) {
+void eigen_Benchmark(int aff, char *path, int which) {
     
     help_affinity(aff);
 
@@ -497,12 +509,14 @@ void eigen_Benchmark(int aff, char *path) {
     std::cout << "Eigen transpose done" << std::endl;
 
     #ifdef CHECK_VALUES
-    assert(0.1 > Eigen_ScalarSum - VCSC_ScalarSum);
-    assert(0.1 > Eigen_SpmvSum - VCSC_SpmvSum);
-    assert(0.1 > Eigen_SpmmSum - VCSC_SpmmSum);
-    assert(0.1 > Eigen_ConstructorSum - VCSC_ConstructorSum);
-    assert(0.1 > Eigen_IteratorSum - VCSC_IteratorSum);
-    assert(0.1 > Eigen_TransposeSum - VCSC_TransposeSum);
+    if (which == -1) {
+        assert(0.1 > Eigen_ScalarSum - VCSC_ScalarSum);
+        assert(0.1 > Eigen_SpmvSum - VCSC_SpmvSum);
+        assert(0.1 > Eigen_SpmmSum - VCSC_SpmmSum);
+        assert(0.1 > Eigen_ConstructorSum - VCSC_ConstructorSum);
+        assert(0.1 > Eigen_IteratorSum - VCSC_IteratorSum);
+        assert(0.1 > Eigen_TransposeSum - VCSC_TransposeSum);
+    }
     #endif
 
 	/*
