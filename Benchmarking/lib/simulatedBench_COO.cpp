@@ -219,25 +219,29 @@ void readCSC(const char* valsPath, const char* innerPath, const char* outerPath)
     std::ifstream outerFile(outerPath);
 	
 
-    int idx = 0; int j = 0; int q = 0; int curr_row = 0;
+    int idx = 0; 
+    int cur_col_start_idx = 0; 
+    int next_col_start_idx = 0;
+    int curr_row = 0;
+
     VALUE_TYPE p = 0.;
-    outerFile >> j;
-	outerFile >> q;
+    outerFile >> cur_col_start_idx;
+	outerFile >> next_col_start_idx;
 	//std::cout << "here\n";
 	//std::cout << j << " " << q << "\n";
     for (int i = 0; i < COLS; ++i) {
-        for (j; j < q; ++j, idx++) {
+        for (int j=cur_col_start_idx; j < next_col_start_idx; ++j, idx++) {
             valsFile >> p;
             innerFile >> curr_row;
             data.emplace_back(curr_row, i, p);
 			//std::cout << curr_row << " " << i << " " << p << "\n";
 		}
-		outerFile >> q;
-        j = q;
+        cur_col_start_idx = next_col_start_idx;
+		outerFile >> next_col_start_idx;
     }
     
     std::cout << "done reading in matrix\n";
-
+    std::cout << "num vals read in: " << idx << "\n";
     valsFile.close();
     innerFile.close();
     outerFile.close();
