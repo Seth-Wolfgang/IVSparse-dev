@@ -214,7 +214,7 @@ int main(int argc, char** argv) {
 void readCSC(const char* valsPath, const char* innerPath, const char* outerPath) {
 
     
-    data.resize(NNZ);
+    data.reserve(NNZ);
         
     std::ifstream valsFile(valsPath);
     std::ifstream innerFile(innerPath);
