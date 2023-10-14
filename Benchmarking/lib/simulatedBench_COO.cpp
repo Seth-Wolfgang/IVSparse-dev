@@ -49,6 +49,7 @@
 #include <algorithm>
 #include <random>
 #include <fstream>
+#include <sys/stat.h>
 
  // General parameters for benchmarking
 #define NUM_ITERATIONS 10
@@ -197,9 +198,9 @@ int main(int argc, char** argv) {
 
 void readCSC(const char* valsPath, const char* innerPath, const char* outerPath) {
 
-     std::vector<VALUE_TYPE> cscValues; 
-     std::vector<int> cscInner; 
-     std::vector<int> cscOuter;
+    std::vector<VALUE_TYPE> cscValues;
+    std::vector<int> cscInner;
+    std::vector<int> cscOuter;
 
     // std::ifstream valsFile(valsPath);
     // std::ifstream innerFile(innerPath);
@@ -269,29 +270,29 @@ void readCSC(const char* valsPath, const char* innerPath, const char* outerPath)
     }
 
     // data.resize(NNZ);
-        
+
     // std::ifstream valsFile(valsPath);
     // std::ifstream innerFile(innerPath);
     // std::ifstream outerFile(outerPath);
-	
+
 
     // int idx = 0; int j = 0; int q = 0; int curr_row = 0;
     // VALUE_TYPE p = 0.;
     // outerFile >> j;
-	// outerFile >> q;
-	// //std::cout << "here\n";
-	// //std::cout << j << " " << q << "\n";
+    // outerFile >> q;
+    // //std::cout << "here\n";
+    // //std::cout << j << " " << q << "\n";
     // for (int i = 0; i < COLS; ++i) {
     //     for (j; j < q; ++j, idx++) {
     //         valsFile >> p;
     //         innerFile >> curr_row;
     //         data.emplace_back(curr_row, i, p);
-	// 		//std::cout << curr_row << " " << i << " " << p << "\n";
-	// 	}
-	// 	outerFile >> q;
+    // 		//std::cout << curr_row << " " << i << " " << p << "\n";
+    // 	}
+    // 	outerFile >> q;
     //     j = q;
     // }
-        
+
     // std::cout << "done reading in matrix\n";
     // std::cout << "Data size: " << data.size() << std::endl;
     // valsFile.close();
@@ -328,6 +329,18 @@ inline T getMax(std::vector<T> data) {
 
 void printDataToFile(std::vector<double>& data, std::vector<std::vector<uint64_t>>& timeData, const char* filename) {
     FILE* file;
+
+    struct stat st;
+    if (stat("../results", &st) == 0 && S_ISDIR(st.st_mode)) {
+        // Folder already exists.
+    }
+    else {
+        // Folder does not exist, create it.
+        if (mkdir("../results", 0755) != 0) {
+            perror("Error creating results directory");
+        }
+    }
+
 
     //check if file exists
     int fileExists = access(filename, F_OK);
