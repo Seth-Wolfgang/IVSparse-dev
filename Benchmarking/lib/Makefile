@@ -11,7 +11,7 @@ debuglaptop: simulatedBench_COO.cpp
 	g++-12 -g --std=c++17 -I ~/misc-software/eigen simulatedBench_COO.cpp -o a.out
 
 run: a.out
-	./a.out matrices/mat_10000_50_values.csv matrices/mat_10000_50_rowinds.csv matrices/mat_10000_50_colptrs.csv 0.0001 0 -1 ~/results/
+	./a.out matrices/mat_10000_50_values.csv matrices/mat_10000_50_rowinds.csv matrices/mat_10000_50_colptrs.csv 0.0001 0 -1 results/
 
 runvcsc: a.out
 	./a.out matrices/mat_10000_50_values.csv matrices/mat_10000_50_rowinds.csv matrices/mat_10000_50_colptrs.csv 0.0001 0 0 results/
