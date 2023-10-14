@@ -48,18 +48,20 @@
 #include <algorithm>
 #include <random>
 #include <fstream>
-#include <sched.h>
 #include <cmath>
 
  // General 
 #define NUM_ITERATIONS 10
 #define NUM_COLD_STARTS 1
 #define VALUE_TYPE double
-#define CHECK_VALUES
+//#define CHECK_VALUES
 
 #define EIGEN_DONT_PARALLELIZE
 //#define SET_AFFINITY
 
+#ifdef SET_AFFINITY
+#include <sched.h>
+#endif
 
 // Eigen needs to know size at compile time
 #define ROWS 10000
