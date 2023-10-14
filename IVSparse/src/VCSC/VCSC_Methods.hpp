@@ -146,7 +146,7 @@ namespace IVSparse {
 
         // iterate over the matrix
         for (uint32_t i = 0; i < outerDim; ++i) {
-            for (typename SparseMatrix<T, indexT, 2>::InnerIterator it(*this, i); it;
+            for (typename SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator it(*this, i); it;
                  ++it) {
                 // add the value to the matrix
                 eigenMatrix.insert(it.row(), it.col()) = it.value();
@@ -180,7 +180,7 @@ namespace IVSparse {
         for (uint32_t i = 0; i < outerDim; ++i) {
             size_t count = 0;
 
-            for (typename SparseMatrix<T, indexT, 2>::InnerIterator it(*this, i); it; ++it) {
+            for (typename SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator it(*this, i); it; ++it) {
                 dict[i][it.getIndex()] = it.value();
                 count++;
             }
@@ -222,7 +222,7 @@ namespace IVSparse {
 
         // iterate over the matrix
         for (uint32_t i = 0; i < outerDim; ++i) {
-            for (typename SparseMatrix<T, indexT, 2>::InnerIterator it(*this, i); it; ++it) {
+            for (typename SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator it(*this, i); it; ++it) {
                 // add the value to the matrix
                 eigenMatrix.insert(it.row(), it.col()) = it.value();
             }
@@ -368,7 +368,7 @@ namespace IVSparse {
 
         // populate the transpose data structure
         for (uint32_t i = 0; i < outerDim; ++i) {
-            for (typename SparseMatrix<T, indexT, 2>::InnerIterator it(*this, i); it;
+            for (typename SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator it(*this, i); it;
                  ++it) {
                 // add the value to the map
                 if constexpr (columnMajor) {
@@ -398,7 +398,7 @@ namespace IVSparse {
 
         // populate the transpose data structure
         for (uint32_t i = 0; i < outerDim; ++i) {
-            for (typename SparseMatrix<T, indexT, 2>::InnerIterator it(*this, i); it;
+            for (typename SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator it(*this, i); it;
                  ++it) {
                 // add the value to the map
                 if constexpr (columnMajor) {

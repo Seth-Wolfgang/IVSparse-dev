@@ -338,10 +338,10 @@ namespace IVSparse {
 
         // make a data structure to store the tranpose
         // std::unordered_map<T, std::vector<indexT>> mapsT[innerDim];
-        std::unordered_map<T, std::vector<indexT>>* mapsT = (std::unordered_map<T, std::vector<indexT>>*)malloc(innerDim * sizeof(std::unordered_map<T, std::vector<indexT>>));
-        // std::vector<std::unordered_map<T, std::vector<indexT>>> mapsT;
+        // std::unordered_map<T, std::vector<indexT>>* mapsT = (std::unordered_map<T, std::vector<indexT>>*)malloc(innerDim * sizeof(std::unordered_map<T, std::vector<indexT>>));
+        std::vector<std::unordered_map<T, std::vector<indexT>>> mapsT;
         // mapsT.reserve(innerDim);
-        // mapsT.resize(innerDim);
+        mapsT.resize(innerDim);
         // populate the transpose data structure
         for (uint32_t i = 0; i < outerDim; ++i) {
             for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(*this, i); it; ++it) {
@@ -374,7 +374,7 @@ namespace IVSparse {
         }
 
         // create a new matrix passing in transposedMap
-        IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor> temp(mapsT, numRows, numCols);
+        IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor> temp(mapsT.data(), numRows, numCols);
 
         // return the new matrix
         return temp;
