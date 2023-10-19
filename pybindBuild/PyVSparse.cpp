@@ -7,355 +7,95 @@
 
 namespace py = pybind11;
 
+template <typename T, typename indexT, int compressionLevel, bool isColMajor>
+void declareBase(py::module &m, const char* name);
+
+template <typename T, typename indexT, int compressionLevel, bool isColMajor>
+void declareSelfFunc(py::module &m, const char* name);
+
+template <typename... Ts, typename... indexTs, typename... compLevels, typename... isColMajors>
+void generateCombinations(const char* name);
+
+// holds a list of types -> declared at compile time
 
 
-// template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-// class PySparseMatrixBase{
-//     using IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix;
-//     // using IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator=;
-//     // using IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator==;
-//     // using IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator!=;
-//     // using IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator*;
-//     // using IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator*=;
+template <typename... Ts>
+struct typeList {};
 
-//     // template <typename T2, typename indexT2>
-//     // void compressCSC(T2* vals, indexT2* innerIndices, indexT2* outerPointers) override {
-//     //     PYBIND11_OVERRIDE_PURE(
-//     //         void,
-//     //         IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>,
-//     //         compressCSC,
-//     //         vals,
-//     //         innerIndices,
-//     //         outerPointers
-//     //     );
-//     // }
+template <typename... ITs>
+struct indexTypeList {};
 
-//     void encodeValueType() override {
-//         PYBIND11_OVERRIDE_PURE(
-//             void,
-//             IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>,
-//             encodeValueType,
-//         );
-//     }
+template <int... Cs>
+struct compressionLevelList {};
 
-//     void checkValueType() override {
-//         PYBIND11_OVERRIDE_PURE(
-//             void,
-//             IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>,
-//             checkValueType
-//         );
-//     }
-
-//     void userChecks() override {
-//         PYBIND11_OVERRIDE_PURE(
-//             void,
-//             IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>,
-//             userChecks
-//         );
-//     }
-
-//     // void calculateCompSize() override {
-//     //     PYBIND11_OVERRIDE_PURE(
-//     //         void,
-//     //         IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>,
-//     //         calculateCompSize
-//     //     );
-//     // }
-
-//     // void inPlaceScalarMultiply(T scalar) {
-//     //     PYBIND11_OVERRIDE_PURE(
-//     //         void,
-//     //         IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>,
-//     //         inPlaceScalarMultiply,
-//     //         scalar
-//     //     );
-//     // }
-
-//     // IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor> scalarMultiply(T scalar) {
-//     //     PYBIND11_OVERRIDE_PURE(
-//     //         IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>,
-//     //         IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>,
-//     //         scalarMultiply,
-//     //         scalar
-//     //     );
-//     // }
-
-//     // Eigen::Matrix<T, -1, 1> vectorMultiply(Eigen::Matrix<T, -1, 1> vec) {
-//     //     PYBIND11_OVERRIDE_PURE(
-//     //         Eigen::Matrix<T, -1, 1>,
-//     //         IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>,
-//     //         vectorMultiply,
-//     //         vec
-//     //     );
-//     // }
-
-//     public:
-
-//     void write(const char* filename) {
-//         PYBIND11_OVERRIDE_PURE(
-//             void,
-//             IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>,
-//             write,
-//             filename
-//         );
-//     }
-
-//     // T coeff(uint32_t row, uint32_t col) {
-//     //     PYBIND11_OVERRIDE_PURE(
-//     //         T,
-//     //         IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>,
-//     //         coeff,
-//     //         row,
-//     //         col
-//     //     );
-//     // }
-
-//     // uint32_t rows() const {
-//     //     PYBIND11_OVERRIDE_PURE(
-//     //         uint32_t,
-//     //         IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>,
-//     //         rows
-//     //     );
-//     // }
-
-//     // uint32_t cols() const {
-//     //     PYBIND11_OVERRIDE_PURE(
-//     //         uint32_t,
-//     //         IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>,
-//     //         cols
-//     //     );
-//     // }
-
-//     // uint32_t innerSize() const {
-//     //     PYBIND11_OVERRIDE_PURE(
-//     //         uint32_t,
-//     //         IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>,
-//     //         innerSize
-//     //     );
-//     // }
-
-//     // uint32_t outerSize() const {
-//     //     PYBIND11_OVERRIDE_PURE(
-//     //         uint32_t,
-//     //         IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>,
-//     //         outerSize
-//     //     );
-//     // }
-
-//     // uint32_t nonZeros() const {
-//     //     PYBIND11_OVERRIDE_PURE(
-//     //         uint32_t,
-//     //         IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>,
-//     //         nonZeros
-//     //     );
-//     // }
-
-//     // uint64_t byteSize() const {
-//     //     PYBIND11_OVERRIDE_PURE(
-//     //         uint64_t,
-//     //         IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>,
-//     //         byteSize
-//     //     );
-//     // }
-
-//     // void print() {
-//     //     PYBIND11_OVERRIDE_PURE(
-//     //         void,
-//     //         IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>,
-//     //         print
-//     //     );
-//     // }
-
-//     // bool isColumnMajor() const {
-//     //     PYBIND11_OVERRIDE_PURE(
-//     //         bool,
-//     //         IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>,
-//     //         isColumnMajor
-//     //     );
-//     // }
-
-//     // T* getValues(uint32_t vec) const {
-//     //     PYBIND11_OVERRIDE_PURE(
-//     //         T*,
-//     //         IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>,
-//     //         getValues,
-//     //         vec
-//     //     );
-//     // }
-
-//     // indexT* getCounts(uint32_t vec) const {
-//     //     PYBIND11_OVERRIDE_PURE(
-//     //         indexT*,
-//     //         IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>,
-//     //         getCounts,
-//     //         vec
-//     //     );
-//     // }
-
-//     // indexT* getIndices(uint32_t vec) const {
-//     //     PYBIND11_OVERRIDE_PURE(
-//     //         indexT*,
-//     //         IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>,
-//     //         getIndices,
-//     //         vec
-//     //     );
-//     // }
-
-//     // uint32_t getNumUniqueVals(uint32_t vec) const {
-//     //     PYBIND11_OVERRIDE_PURE(
-//     //         uint32_t,
-//     //         IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>,
-//     //         getNumUniqueVals,
-//     //         vec
-//     //     );
-//     // }
-
-//     // uint32_t getNumIndices(uint32_t vec) const {
-//     //     PYBIND11_OVERRIDE_PURE(
-//     //         uint32_t,
-//     //         IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>,
-//     //         getNumIndices,
-//     //         vec
-//     //     );
-//     // }
-
-//     // std::vector<T> outerSum(uint32_t vec) override {
-//     //     PYBIND11_OVERRIDE_PURE(
-//     //         std::vector<T>,
-//     //         IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>,
-//     //         outerSum,
-//     //         vec
-//     //     );
-//     // }
-
-//     // std::vector<T> innerSum(uint32_t vec) override {
-//     //     PYBIND11_OVERRIDE_PURE(
-//     //         std::vector<T>,
-//     //         IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>,
-//     //         innerSum,
-//     //         vec
-//     //     );
-//     // }
-
-//     // std::vector<T> MaxColCoeff(uint32_t vec) override {
-//     //     PYBIND11_OVERRIDE_PURE(
-//     //         std::vector<T>,
-//     //         IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>,
-//     //         MaxColCoeff,
-//     //         vec
-//     //     );
-//     // }
-
-//     // std::vector<T> MaxRowCoeff(uint32_t vec) override {
-//     //     PYBIND11_OVERRIDE_PURE(
-//     //         std::vector<T>,
-//     //         IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>,
-//     //         MaxRowCoeff,
-//     //         vec
-//     //     );
-//     // }
-
-//     // std::vector<T> minRowCoeff(uint32_t vec) override {
-//     //     PYBIND11_OVERRIDE_PURE(
-//     //         std::vector<T>,
-//     //         IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>,
-//     //         minRowCoeff,
-//     //         vec
-//     //     );
-//     // }
-
-//     // std::vector<T> minColCoeff(uint32_t vec) override {
-//     //     PYBIND11_OVERRIDE_PURE(
-//     //         std::vector<T>,
-//     //         IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>,
-//     //         minColCoeff,
-//     //         vec
-//     //     );
-//     // }
-
-//     // T trace() override {
-//     //     PYBIND11_OVERRIDE_PURE(
-//     //         T,
-//     //         IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>,
-//     //         trace
-//     //     );
-//     // }
-
-//     // T sum() override {
-//     //     PYBIND11_OVERRIDE_PURE(
-//     //         T,
-//     //         IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>,
-//     //         sum
-//     //     );
-//     // }
-
-//     // double norm() override {
-//     //     PYBIND11_OVERRIDE_PURE(
-//     //         T,
-//     //         IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>,
-//     //         norm
-//     //     );
-//     // }
-
-//     // double vectorLength() override {
-//     //     PYBIND11_OVERRIDE_PURE(
-//     //         T,
-//     //         IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>,
-//     //         vectorLength
-//     //     );
-//     // }
-
-//     // IVSparse::SparseMatrix<T, indexT, 1, columnMajor> toCSC() override {
-//     //     PYBIND11_OVERRIDE_PURE(
-//     //         Eigen::SparseMatrix<T, columnMajor>,
-//     //         IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>,
-//     //         toCSC
-//     //     );
-//     // }
-
-//     // Eigen::SparseMatrix<T, !columnMajor> toEigen() override {
-//     //     PYBIND11_OVERRIDE_PURE(
-//     //         Eigen::SparseMatrix<T, !columnMajor>,
-//     //         IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>,
-//     //         toEigen
-//     //     );
-//     // }
-
-//     // IVSparse::SparseMatrix<T, indexT, compressionLevel, !columnMajor> transpose() override {
-//     //     PYBIND11_OVERRIDE_PURE(
-//     //         IVSparse::SparseMatrix<T, indexT, compressionLevel, !columnMajor>,
-//     //         IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>,
-//     //         transpose
-//     //     );
-//     // }
-
-//     // void inPlaceTranspose() override {
-//     //     PYBIND11_OVERRIDE_PURE(
-//     //         void,
-//     //         IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>,
-//     //         inPlaceTranspose
-//     //     );
-//     // }
-// };
-
-
-
-
-
+template <bool... Cm>
+struct isColMajorList {};
 
 PYBIND11_MODULE(PyVSparse, m) {
     m.doc() = "pybind11 example plugin"; // optional module docstring
 
-    py::class_<IVSparse::SparseMatrixBase, IVSparse::SparseMatrix<int8_t, int8_t, 2, false>>(m, "VCSC_int8t_int8_t_colMaj")
-        // .def(py::init<Eigen::SparseMatrix<int8_t>& >())
-        // .def(py::init<Eigen::SparseMatrix<int8_t, Eigen::RowMajor>& >())
+// VCSC_int8t_int8_t_colMaj
+
+    // const char* myType = "VCSC_int8t_int8_t_colMaj";
+
+
+// VCSC
+// IVCSC
+
+// int8_t
+// uint8_t
+// int16_t
+// uint16_t
+// int32_t
+// uint32_t
+// int64_t
+// uint64_t
+// float
+// double
+
+// int8_t
+// uint8_t
+// int16_t
+// uint16_t
+// int32_t
+// uint32_t
+// int64_t
+// uint64_t
+
+// true
+// false
+
+    const typeList<int8_t, uint8_t, int16_t, uint16_t, int32_t, uint32_t, int64_t, uint64_t, float, double> myTypes;
+    const indexTypeList<int8_t, uint8_t, int16_t, uint16_t, int32_t, uint32_t, int64_t, uint64_t> myIndexTypes;
+    const compressionLevelList<2,3> myCompLevels;
+    const isColMajorList<true, false> myColMajors;
+    
+
+
+    generateCombinations<>("test");
+
+
+    // declareBase<T, indexT, (2 options), (2 options) >(m, myType);
+    // declareSelfFunc<int8_t, int8_t, 2, true>(m, myType);
+
+
+
         // .def(py::init<IVSparse::SparseMatrix<uint8_t, int8_t, 2, false>& >())
         // .def(py::init<IVSparse::SparseMatrix<uint8_t, int8_t, 2 >& >())
         // .def(py::init<IVSparse::SparseMatrix<int8_t, int8_t, 3, false>& >())
         // .def(py::init<IVSparse::SparseMatrix<int8_t, int8_t, 3 >& >())
-        // .def(py::init<int8_t*, int8_t*, int8_t*, uint32_t, uint32_t, uint32_t>())
-        // .def(py::init<std::vector<std::tuple<int8_t, int8_t, int8_t>>&, uint32_t, uint32_t, uint32_t>())
-        // .def(py::init<const char*>())
+
+};
+
+template <typename T, typename indexT, int compressionLevel, bool isColMajor>
+void declareBase(py::module &m, const char* name){
+    
+    py::class_<IVSparse::SparseMatrixBase, IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor>>(m, name)
+        .def(py::init<Eigen::SparseMatrix<T>& >())
+        .def(py::init<Eigen::SparseMatrix<T, Eigen::RowMajor>& >())
+        .def(py::init<T*, T*, T*, uint32_t, uint32_t, uint32_t>())
+        .def(py::init<std::vector<std::tuple<indexT, indexT, T>>&, uint32_t, uint32_t, uint32_t>())
+        .def(py::init<const char*>())
         .def(py::init<>())
         .def("rows", &IVSparse::SparseMatrixBase::rows, " ", py::return_value_policy::copy)
         .def("cols", &IVSparse::SparseMatrixBase::cols, py::return_value_policy::copy)
@@ -364,69 +104,427 @@ PYBIND11_MODULE(PyVSparse, m) {
         .def("nonZeros", &IVSparse::SparseMatrixBase::nonZeros, py::return_value_policy::copy)
         .def("byteSize", &IVSparse::SparseMatrixBase::byteSize, py::return_value_policy::copy)
         .def("write", &IVSparse::SparseMatrixBase::write, py::arg("filename"))
-        .def("print", &IVSparse::SparseMatrixBase::print)
-        // .def("coeff", &IVSparse::SparseMatrixBase::coeff, py::return_value_policy::copy, py::arg("row"), py::arg("col"))
-        .def("isColumnMajor", &IVSparse::SparseMatrix<int8_t, int8_t, 2, false>::isColumnMajor, py::return_value_policy::copy)
-        .def("getValues", &IVSparse::SparseMatrix<int8_t, int8_t, 2, false>::getValues, py::return_value_policy::copy)
-        .def("getCounts", &IVSparse::SparseMatrix<int8_t, int8_t, 2, false>::getCounts, py::return_value_policy::copy)
-        .def("getIndices", &IVSparse::SparseMatrix<int8_t, int8_t, 2, false>::getIndices, py::return_value_policy::copy)
-        .def("getNumUniqueVals", &IVSparse::SparseMatrix<int8_t, int8_t, 2, false>::getNumUniqueVals, py::return_value_policy::copy)
-        .def("getNumIndices", &IVSparse::SparseMatrix<int8_t, int8_t, 2, false>::getNumIndices, py::return_value_policy::copy)
-        .def("outerSum", &IVSparse::SparseMatrix<int8_t, int8_t, 2, false>::outerSum, py::return_value_policy::copy)
-        .def("innerSum", &IVSparse::SparseMatrix<int8_t, int8_t, 2, false>::innerSum, py::return_value_policy::copy)
-        .def("MaxColCoeff", &IVSparse::SparseMatrix<int8_t, int8_t, 2, false>::maxColCoeff, py::return_value_policy::copy)
-        .def("MaxRowCoeff", &IVSparse::SparseMatrix<int8_t, int8_t, 2, false>::maxRowCoeff, py::return_value_policy::copy)
-        .def("minRowCoeff", &IVSparse::SparseMatrix<int8_t, int8_t, 2, false>::minRowCoeff, py::return_value_policy::copy)
-        .def("minColCoeff", &IVSparse::SparseMatrix<int8_t, int8_t, 2, false>::minColCoeff, py::return_value_policy::copy)
-        .def("trace", &IVSparse::SparseMatrix<int8_t, int8_t, 2, false>::trace, py::return_value_policy::copy)
-        .def("sum", &IVSparse::SparseMatrix<int8_t, int8_t, 2, false>::sum, py::return_value_policy::copy)
-        .def("norm", &IVSparse::SparseMatrix<int8_t, int8_t, 2, false>::norm, py::return_value_policy::copy)
-        .def("vectorLength", &IVSparse::SparseMatrix<int8_t, int8_t, 2, false>::vectorLength, py::return_value_policy::copy)
-        .def("toCSC", &IVSparse::SparseMatrix<int8_t, int8_t, 2, false>::toCSC, py::return_value_policy::copy)
-        .def("toEigen", &IVSparse::SparseMatrix<int8_t, int8_t, 2, false>::toEigen, py::return_value_policy::copy)
-        .def("transpose", &IVSparse::SparseMatrix<int8_t, int8_t, 2, false>::transpose, py::return_value_policy::copy)
-        .def("inPlaceTranspose", &IVSparse::SparseMatrix<int8_t, int8_t, 2, false>::inPlaceTranspose);
-        // .def(py::self = py::self, py::return_value_policy::copy)
-        // .def(py::self == py::self, py::return_value_policy::copy)
-        // .def(py::self != py::self, py::return_value_policy::copy)
-        // .def(py::self * int8_t(), py::return_value_policy::copy)
-        // .def(py::self * uint8_t(), py::return_value_policy::copy)
-        // .def(py::self * int16_t(), py::return_value_policy::copy)
-        // .def(py::self * uint16_t(), py::return_value_policy::copy)
-        // .def(py::self * int32_t(), py::return_value_policy::copy)
-        // .def(py::self * uint32_t(), py::return_value_policy::copy)
-        // .def(py::self * int64_t(), py::return_value_policy::copy)
-        // .def(py::self * uint64_t(), py::return_value_policy::copy)
-        // .def(py::self *= int8_t())
-        // .def(py::self *= uint8_t())
-        // .def(py::self *= int16_t())
-        // .def(py::self *= uint16_t())
-        // .def(py::self *= int32_t())
-        // .def(py::self *= uint32_t())
-        // .def(py::self *= int64_t())
-        // .def(py::self *= uint64_t())
-        // .def(py::self * Eigen::Matrix<int8_t, Eigen::Dynamic, Eigen::Dynamic>(), py::return_value_policy::copy)
-        // .def(py::self * Eigen::Matrix<uint8_t, Eigen::Dynamic, Eigen::Dynamic>(), py::return_value_policy::copy)
-        // .def(py::self * Eigen::Matrix<int16_t, Eigen::Dynamic, Eigen::Dynamic>(), py::return_value_policy::copy)
-        // .def(py::self * Eigen::Matrix<uint16_t, Eigen::Dynamic, Eigen::Dynamic>(), py::return_value_policy::copy)
-        // .def(py::self * Eigen::Matrix<int32_t, Eigen::Dynamic, Eigen::Dynamic>(), py::return_value_policy::copy)
-        // .def(py::self * Eigen::Matrix<uint32_t, Eigen::Dynamic, Eigen::Dynamic>(), py::return_value_policy::copy)
-        // .def(py::self * Eigen::Matrix<int64_t, Eigen::Dynamic, Eigen::Dynamic>(), py::return_value_policy::copy)
-        // .def(py::self * Eigen::Matrix<uint64_t, Eigen::Dynamic, Eigen::Dynamic>(), py::return_value_policy::copy)
-        // .def(py::self * Eigen::Matrix < int8_t, Eigen::Dynamic, 1, py::return_value_policy::copy)
-        // .def(py::self * Eigen::Matrix < uint8_t, Eigen::Dynamic, 1, py::return_value_policy::copy)
-        // .def(py::self * Eigen::Matrix < int16_t, Eigen::Dynamic, 1, py::return_value_policy::copy)
-        // .def(py::self * Eigen::Matrix < uint16_t, Eigen::Dynamic, 1, py::return_value_policy::copy)
-        // .def(py::self * Eigen::Matrix < int32_t, Eigen::Dynamic, 1, py::return_value_policy::copy)
-        // .def(py::self * Eigen::Matrix < uint32_t, Eigen::Dynamic, 1, py::return_value_policy::copy)
-        // .def(py::self * Eigen::Matrix < int64_t, Eigen::Dynamic, 1, py::return_value_policy::copy)
-        // .def(py::self * Eigen::Matrix < uint64_t, Eigen::Dynamic, 1, py::return_value_policy::copy)
+        .def("print", &IVSparse::SparseMatrixBase::print);
+}
 
 
+// self as in self types T = T 
+template <typename T, typename indexT, int compressionLevel, bool isColMajor>
+void declareSelfFunc(py::module &m, const char* name){
+    py::class_<IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor>, IVSparse::SparseMatrixBase>(m, name)
+        .def("isColumnMajor", &IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor>::isColumnMajor, py::return_value_policy::copy)
+        .def("coeff", &IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor>::coeff, py::return_value_policy::copy, "Sets value at run of coefficient", py::arg("row").none(false), py::arg("col").none(false))
+        .def("isColumnMajor", &IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor>::isColumnMajor, py::return_value_policy::copy)
+        .def("getValues", &IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor>::getValues, py::return_value_policy::copy)
+        .def("getCounts", &IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor>::getCounts, py::return_value_policy::copy)
+        .def("getIndices", &IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor>::getIndices, py::return_value_policy::copy)
+        .def("getNumUniqueVals", &IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor>::getNumUniqueVals, py::return_value_policy::copy)
+        .def("getNumIndices", &IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor>::getNumIndices, py::return_value_policy::copy)
+        .def("outerSum", &IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor>::outerSum, py::return_value_policy::copy)
+        .def("innerSum", &IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor>::innerSum, py::return_value_policy::copy)
+        .def("MaxColCoeff", &IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor>::maxColCoeff, py::return_value_policy::copy)
+        .def("MaxRowCoeff", &IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor>::maxRowCoeff, py::return_value_policy::copy)
+        .def("minRowCoeff", &IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor>::minRowCoeff, py::return_value_policy::copy)
+        .def("minColCoeff", &IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor>::minColCoeff, py::return_value_policy::copy)
+        .def("trace", &IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor>::trace, py::return_value_policy::copy)
+        .def("sum", &IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor>::sum, py::return_value_policy::copy)
+        .def("norm", &IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor>::norm, py::return_value_policy::copy)
+        .def("vectorLength", &IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor>::vectorLength, py::return_value_policy::copy)
+        .def("toCSC", &IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor>::toCSC, py::return_value_policy::copy)
+        .def("toEigen", &IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor>::toEigen, py::return_value_policy::copy)
+        .def("transpose", &IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor>::transpose, py::return_value_policy::copy)
+        .def("inPlaceTranspose", &IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor>::inPlaceTranspose)
+        .def(py::self *= int8_t())
+        .def(py::self *= uint8_t())
+        .def(py::self *= int16_t())
+        .def(py::self *= uint16_t())
+        .def(py::self *= int32_t())
+        .def(py::self *= uint32_t())
+        .def(py::self *= int64_t())
+        .def(py::self *= uint64_t())
+        .def("__copy__", [](const IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor>& self) {
+                return IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor>(self);
+        })
+        .def("__deepcopy__", [](const IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor>& self, py::dict) {                  //TODO: NEED TO CHECK
+                 return IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor>(self);
+        })
+        .def("__eq__", [](const IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor>& self, const IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor>& other) {
+            return self == other;
+        }, py::is_operator())
+        .def("__ne__", [](const IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor>& self, const IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor>& other) {
+            return !(self == other);
+        }, py::is_operator())
+        .def("__mul__", [](IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor> self, int8_t a) {
+            return self * a;
+        }, py::is_operator())
+        .def("__mul__", [](IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor> self, uint8_t a) {
+            return self * a;
+        }, py::is_operator())
+        .def("__mul__", [](IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor> self, int16_t a) {
+            return self * a;
+        }, py::is_operator())
+        .def("__mul__", [](IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor> self, uint16_t a) {
+            return self * a;
+        }, py::is_operator())
+        .def("__mul__", [](IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor> self, int32_t a) {
+            return self * a;
+        }, py::is_operator())
+        .def("__mul__", [](IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor> self, uint32_t a) {
+            return self * a;
+        }, py::is_operator())
+        .def("__mul__", [](IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor> self, int64_t a) {
+            return self * a;
+        }, py::is_operator())
+        .def("__mul__", [](IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor> self, uint64_t a) {
+            return self * a;
+        }, py::is_operator())
+        .def("__mul__", [](IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor> self, double a) {
+            return self * a;
+        }, py::is_operator())
+        .def("__mul__", [](IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor> self, float a) {
+            return self * a;
+        }, py::is_operator())
+        .def("__mul__", [](IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor> self, Eigen::Matrix<T, Eigen::Dynamic, Eigen::Dynamic>& a) {
+            return self * a;
+        }, py::is_operator())
+        .def("__mul__", [](IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor> self, Eigen::Matrix<T, Eigen::Dynamic, 1>& a) {
+            return self * a;
+        }, py::is_operator());
+}
 
-        // .def("slice", &IVSparse::SparseMatrix::slice, py::return_value_policy::copy, py::arg("start"), py::arg("end"))
+
+// other as in other types (Other constructors like IVCSC -> VCSC)
+// template <typename T, typename indexT, int compressionLevel, bool isColMajor>
+// void declareOtherFunc(py::module &m, std::string& name){
 
 
+// }
 
 
-};
+template <typename... Ts, typename... indexTs, typename... compLevels, typename... isColMajors>
+void generateCombinations(const char* name) {
+    // Generate combinations for all types
+    (declareBase<Ts, indexTs, compLevels, isColMajors>(name), ...);
+}
+
+
+// const char** myTypes = [["VCSC_int8t_int8t_true"],
+// ["VCSC_int8t_int8t_false"],
+// ["VCSC_int8t_uint8t_true"],
+// ["VCSC_int8t_uint8t_false"],
+// ["VCSC_int8t_int16t_true"],
+// ["VCSC_int8t_int16t_false"],
+// ["VCSC_int8t_uint16t_true"],
+// ["VCSC_int8t_uint16t_false"],
+// ["VCSC_int8t_int32t_true"],
+// ["VCSC_int8t_int32t_false"],
+// ["VCSC_int8t_uint32t_true"],
+// ["VCSC_int8t_uint32t_false"],
+// ["VCSC_int8t_int64t_true"],
+// ["VCSC_int8t_int64t_false"],
+// ["VCSC_int8t_uint64t_true"],
+// ["VCSC_int8t_uint64t_false"],
+// ["VCSC_uint8t_int8t_true"],
+// ["VCSC_uint8t_int8t_false"],
+// ["VCSC_uint8t_uint8t_true"],
+// ["VCSC_uint8t_uint8t_false"],
+// ["VCSC_uint8t_int16t_true"],
+// ["VCSC_uint8t_int16t_false"],
+// ["VCSC_uint8t_uint16t_true"],
+// ["VCSC_uint8t_uint16t_false"],
+// ["VCSC_uint8t_int32t_true"],
+// ["VCSC_uint8t_int32t_false"],
+// ["VCSC_uint8t_uint32t_true"],
+// ["VCSC_uint8t_uint32t_false"],
+// ["VCSC_uint8t_int64t_true"],
+// ["VCSC_uint8t_int64t_false"],
+// ["VCSC_uint8t_uint64t_true"],
+// ["VCSC_uint8t_uint64t_false"],
+// ["VCSC_int16t_int8t_true"],
+// ["VCSC_int16t_int8t_false"],
+// ["VCSC_int16t_uint8t_true"],
+// ["VCSC_int16t_uint8t_false"],
+// ["VCSC_int16t_int16t_true"],
+// ["VCSC_int16t_int16t_false"],
+// ["VCSC_int16t_uint16t_true"],
+// ["VCSC_int16t_uint16t_false"],
+// ["VCSC_int16t_int32t_true"],
+// ["VCSC_int16t_int32t_false"],
+// ["VCSC_int16t_uint32t_true"],
+// ["VCSC_int16t_uint32t_false"],
+// ["VCSC_int16t_int64t_true"],
+// ["VCSC_int16t_int64t_false"],
+// ["VCSC_int16t_uint64t_true"],
+// ["VCSC_int16t_uint64t_false"],
+// ["VCSC_uint16t_int8t_true"],
+// ["VCSC_uint16t_int8t_false"],
+// ["VCSC_uint16t_uint8t_true"],
+// ["VCSC_uint16t_uint8t_false"],
+// ["VCSC_uint16t_int16t_true"],
+// ["VCSC_uint16t_int16t_false"],
+// ["VCSC_uint16t_uint16t_true"],
+// ["VCSC_uint16t_uint16t_false"],
+// ["VCSC_uint16t_int32t_true"],
+// ["VCSC_uint16t_int32t_false"],
+// ["VCSC_uint16t_uint32t_true"],
+// ["VCSC_uint16t_uint32t_false"],
+// ["VCSC_uint16t_int64t_true"],
+// ["VCSC_uint16t_int64t_false"],
+// ["VCSC_uint16t_uint64t_true"],
+// ["VCSC_uint16t_uint64t_false"],
+// ["VCSC_int32t_int8t_true"],
+// ["VCSC_int32t_int8t_false"],
+// ["VCSC_int32t_uint8t_true"],
+// ["VCSC_int32t_uint8t_false"],
+// ["VCSC_int32t_int16t_true"],
+// ["VCSC_int32t_int16t_false"],
+// ["VCSC_int32t_uint16t_true"],
+// ["VCSC_int32t_uint16t_false"],
+// ["VCSC_int32t_int32t_true"],
+// ["VCSC_int32t_int32t_false"],
+// ["VCSC_int32t_uint32t_true"],
+// ["VCSC_int32t_uint32t_false"],
+// ["VCSC_int32t_int64t_true"],
+// ["VCSC_int32t_int64t_false"],
+// ["VCSC_int32t_uint64t_true"],
+// ["VCSC_int32t_uint64t_false"],
+// ["VCSC_uint32t_int8t_true"],
+// ["VCSC_uint32t_int8t_false"],
+// ["VCSC_uint32t_uint8t_true"],
+// ["VCSC_uint32t_uint8t_false"],
+// ["VCSC_uint32t_int16t_true"],
+// ["VCSC_uint32t_int16t_false"],
+// ["VCSC_uint32t_uint16t_true"],
+// ["VCSC_uint32t_uint16t_false"],
+// ["VCSC_uint32t_int32t_true"],
+// ["VCSC_uint32t_int32t_false"],
+// ["VCSC_uint32t_uint32t_true"],
+// ["VCSC_uint32t_uint32t_false"],
+// ["VCSC_uint32t_int64t_true"],
+// ["VCSC_uint32t_int64t_false"],
+// ["VCSC_uint32t_uint64t_true"],
+// ["VCSC_uint32t_uint64t_false"],
+// ["VCSC_int64t_int8t_true"],
+// ["VCSC_int64t_int8t_false"],
+// ["VCSC_int64t_uint8t_true"],
+// ["VCSC_int64t_uint8t_false"],
+// ["VCSC_int64t_int16t_true"],
+// ["VCSC_int64t_int16t_false"],
+// ["VCSC_int64t_uint16t_true"],
+// ["VCSC_int64t_uint16t_false"],
+// ["VCSC_int64t_int32t_true"],
+// ["VCSC_int64t_int32t_false"],
+// ["VCSC_int64t_uint32t_true"],
+// ["VCSC_int64t_uint32t_false"],
+// ["VCSC_int64t_int64t_true"],
+// ["VCSC_int64t_int64t_false"],
+// ["VCSC_int64t_uint64t_true"],
+// ["VCSC_int64t_uint64t_false"],
+// ["VCSC_uint64t_int8t_true"],
+// ["VCSC_uint64t_int8t_false"],
+// ["VCSC_uint64t_uint8t_true"],
+// ["VCSC_uint64t_uint8t_false"],
+// ["VCSC_uint64t_int16t_true"],
+// ["VCSC_uint64t_int16t_false"],
+// ["VCSC_uint64t_uint16t_true"],
+// ["VCSC_uint64t_uint16t_false"],
+// ["VCSC_uint64t_int32t_true"],
+// ["VCSC_uint64t_int32t_false"],
+// ["VCSC_uint64t_uint32t_true"],
+// ["VCSC_uint64t_uint32t_false"],
+// ["VCSC_uint64t_int64t_true"],
+// ["VCSC_uint64t_int64t_false"],
+// ["VCSC_uint64t_uint64t_true"],
+// ["VCSC_uint64t_uint64t_false"],
+// ["VCSC_float_int8t_true"],
+// ["VCSC_float_int8t_false"],
+// ["VCSC_float_uint8t_true"],
+// ["VCSC_float_uint8t_false"],
+// ["VCSC_float_int16t_true"],
+// ["VCSC_float_int16t_false"],
+// ["VCSC_float_uint16t_true"],
+// ["VCSC_float_uint16t_false"],
+// ["VCSC_float_int32t_true"],
+// ["VCSC_float_int32t_false"],
+// ["VCSC_float_uint32t_true"],
+// ["VCSC_float_uint32t_false"],
+// ["VCSC_float_int64t_true"],
+// ["VCSC_float_int64t_false"],
+// ["VCSC_float_uint64t_true"],
+// ["VCSC_float_uint64t_false"],
+// ["VCSC_double_int8t_true"],
+// ["VCSC_double_int8t_false"],
+// ["VCSC_double_uint8t_true"],
+// ["VCSC_double_uint8t_false"],
+// ["VCSC_double_int16t_true"],
+// ["VCSC_double_int16t_false"],
+// ["VCSC_double_uint16t_true"],
+// ["VCSC_double_uint16t_false"],
+// ["VCSC_double_int32t_true"],
+// ["VCSC_double_int32t_false"],
+// ["VCSC_double_uint32t_true"],
+// ["VCSC_double_uint32t_false"],
+// ["VCSC_double_int64t_true"],
+// ["VCSC_double_int64t_false"],
+// ["VCSC_double_uint64t_true"],
+// ["VCSC_double_uint64t_false"],
+// ["IVCSC_int8t_int8t_true"],
+// ["IVCSC_int8t_int8t_false"],
+// ["IVCSC_int8t_uint8t_true"],
+// ["IVCSC_int8t_uint8t_false"],
+// ["IVCSC_int8t_int16t_true"],
+// ["IVCSC_int8t_int16t_false"],
+// ["IVCSC_int8t_uint16t_true"],
+// ["IVCSC_int8t_uint16t_false"],
+// ["IVCSC_int8t_int32t_true"],
+// ["IVCSC_int8t_int32t_false"],
+// ["IVCSC_int8t_uint32t_true"],
+// ["IVCSC_int8t_uint32t_false"],
+// ["IVCSC_int8t_int64t_true"],
+// ["IVCSC_int8t_int64t_false"],
+// ["IVCSC_int8t_uint64t_true"],
+// ["IVCSC_int8t_uint64t_false"],
+// ["IVCSC_uint8t_int8t_true"],
+// ["IVCSC_uint8t_int8t_false"],
+// ["IVCSC_uint8t_uint8t_true"],
+// ["IVCSC_uint8t_uint8t_false"],
+// ["IVCSC_uint8t_int16t_true"],
+// ["IVCSC_uint8t_int16t_false"],
+// ["IVCSC_uint8t_uint16t_true"],
+// ["IVCSC_uint8t_uint16t_false"],
+// ["IVCSC_uint8t_int32t_true"],
+// ["IVCSC_uint8t_int32t_false"],
+// ["IVCSC_uint8t_uint32t_true"],
+// ["IVCSC_uint8t_uint32t_false"],
+// ["IVCSC_uint8t_int64t_true"],
+// ["IVCSC_uint8t_int64t_false"],
+// ["IVCSC_uint8t_uint64t_true"],
+// ["IVCSC_uint8t_uint64t_false"],
+// ["IVCSC_int16t_int8t_true"],
+// ["IVCSC_int16t_int8t_false"],
+// ["IVCSC_int16t_uint8t_true"],
+// ["IVCSC_int16t_uint8t_false"],
+// ["IVCSC_int16t_int16t_true"],
+// ["IVCSC_int16t_int16t_false"],
+// ["IVCSC_int16t_uint16t_true"],
+// ["IVCSC_int16t_uint16t_false"],
+// ["IVCSC_int16t_int32t_true"],
+// ["IVCSC_int16t_int32t_false"],
+// ["IVCSC_int16t_uint32t_true"],
+// ["IVCSC_int16t_uint32t_false"],
+// ["IVCSC_int16t_int64t_true"],
+// ["IVCSC_int16t_int64t_false"],
+// ["IVCSC_int16t_uint64t_true"],
+// ["IVCSC_int16t_uint64t_false"],
+// ["IVCSC_uint16t_int8t_true"],
+// ["IVCSC_uint16t_int8t_false"],
+// ["IVCSC_uint16t_uint8t_true"],
+// ["IVCSC_uint16t_uint8t_false"],
+// ["IVCSC_uint16t_int16t_true"],
+// ["IVCSC_uint16t_int16t_false"],
+// ["IVCSC_uint16t_uint16t_true"],
+// ["IVCSC_uint16t_uint16t_false"],
+// ["IVCSC_uint16t_int32t_true"],
+// ["IVCSC_uint16t_int32t_false"],
+// ["IVCSC_uint16t_uint32t_true"],
+// ["IVCSC_uint16t_uint32t_false"],
+// ["IVCSC_uint16t_int64t_true"],
+// ["IVCSC_uint16t_int64t_false"],
+// ["IVCSC_uint16t_uint64t_true"],
+// ["IVCSC_uint16t_uint64t_false"],
+// ["IVCSC_int32t_int8t_true"],
+// ["IVCSC_int32t_int8t_false"],
+// ["IVCSC_int32t_uint8t_true"],
+// ["IVCSC_int32t_uint8t_false"],
+// ["IVCSC_int32t_int16t_true"],
+// ["IVCSC_int32t_int16t_false"],
+// ["IVCSC_int32t_uint16t_true"],
+// ["IVCSC_int32t_uint16t_false"],
+// ["IVCSC_int32t_int32t_true"],
+// ["IVCSC_int32t_int32t_false"],
+// ["IVCSC_int32t_uint32t_true"],
+// ["IVCSC_int32t_uint32t_false"],
+// ["IVCSC_int32t_int64t_true"],
+// ["IVCSC_int32t_int64t_false"],
+// ["IVCSC_int32t_uint64t_true"],
+// ["IVCSC_int32t_uint64t_false"],
+// ["IVCSC_uint32t_int8t_true"],
+// ["IVCSC_uint32t_int8t_false"],
+// ["IVCSC_uint32t_uint8t_true"],
+// ["IVCSC_uint32t_uint8t_false"],
+// ["IVCSC_uint32t_int16t_true"],
+// ["IVCSC_uint32t_int16t_false"],
+// ["IVCSC_uint32t_uint16t_true"],
+// ["IVCSC_uint32t_uint16t_false"],
+// ["IVCSC_uint32t_int32t_true"],
+// ["IVCSC_uint32t_int32t_false"],
+// ["IVCSC_uint32t_uint32t_true"],
+// ["IVCSC_uint32t_uint32t_false"],
+// ["IVCSC_uint32t_int64t_true"],
+// ["IVCSC_uint32t_int64t_false"],
+// ["IVCSC_uint32t_uint64t_true"],
+// ["IVCSC_uint32t_uint64t_false"],
+// ["IVCSC_int64t_int8t_true"],
+// ["IVCSC_int64t_int8t_false"],
+// ["IVCSC_int64t_uint8t_true"],
+// ["IVCSC_int64t_uint8t_false"],
+// ["IVCSC_int64t_int16t_true"],
+// ["IVCSC_int64t_int16t_false"],
+// ["IVCSC_int64t_uint16t_true"],
+// ["IVCSC_int64t_uint16t_false"],
+// ["IVCSC_int64t_int32t_true"],
+// ["IVCSC_int64t_int32t_false"],
+// ["IVCSC_int64t_uint32t_true"],
+// ["IVCSC_int64t_uint32t_false"],
+// ["IVCSC_int64t_int64t_true"],
+// ["IVCSC_int64t_int64t_false"],
+// ["IVCSC_int64t_uint64t_true"],
+// ["IVCSC_int64t_uint64t_false"],
+// ["IVCSC_uint64t_int8t_true"],
+// ["IVCSC_uint64t_int8t_false"],
+// ["IVCSC_uint64t_uint8t_true"],
+// ["IVCSC_uint64t_uint8t_false"],
+// ["IVCSC_uint64t_int16t_true"],
+// ["IVCSC_uint64t_int16t_false"],
+// ["IVCSC_uint64t_uint16t_true"],
+// ["IVCSC_uint64t_uint16t_false"],
+// ["IVCSC_uint64t_int32t_true"],
+// ["IVCSC_uint64t_int32t_false"],
+// ["IVCSC_uint64t_uint32t_true"],
+// ["IVCSC_uint64t_uint32t_false"],
+// ["IVCSC_uint64t_int64t_true"],
+// ["IVCSC_uint64t_int64t_false"],
+// ["IVCSC_uint64t_uint64t_true"],
+// ["IVCSC_uint64t_uint64t_false"],
+// ["IVCSC_float_int8t_true"],
+// ["IVCSC_float_int8t_false"],
+// ["IVCSC_float_uint8t_true"],
+// ["IVCSC_float_uint8t_false"],
+// ["IVCSC_float_int16t_true"],
+// ["IVCSC_float_int16t_false"],
+// ["IVCSC_float_uint16t_true"],
+// ["IVCSC_float_uint16t_false"],
+// ["IVCSC_float_int32t_true"],
+// ["IVCSC_float_int32t_false"],
+// ["IVCSC_float_uint32t_true"],
+// ["IVCSC_float_uint32t_false"],
+// ["IVCSC_float_int64t_true"],
+// ["IVCSC_float_int64t_false"],
+// ["IVCSC_float_uint64t_true"],
+// ["IVCSC_float_uint64t_false"],
+// ["IVCSC_double_int8t_true"],
+// ["IVCSC_double_int8t_false"],
+// ["IVCSC_double_uint8t_true"],
+// ["IVCSC_double_uint8t_false"],
+// ["IVCSC_double_int16t_true"],
+// ["IVCSC_double_int16t_false"],
+// ["IVCSC_double_uint16t_true"],
+// ["IVCSC_double_uint16t_false"],
+// ["IVCSC_double_int32t_true"],
+// ["IVCSC_double_int32t_false"],
+// ["IVCSC_double_uint32t_true"],
+// ["IVCSC_double_uint32t_false"],
+// ["IVCSC_double_int64t_true"],
+// ["IVCSC_double_int64t_false"],
+// ["IVCSC_double_uint64t_true"],
+// ["IVCSC_double_uint64t_false"]];
