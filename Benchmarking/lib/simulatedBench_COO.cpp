@@ -53,11 +53,13 @@
  // General 
 #define NUM_ITERATIONS 10
 #define NUM_COLD_STARTS 1
-#define VALUE_TYPE double
+#define VALUE_TYPE float
+
 //#define CHECK_VALUES
+//#define DEBUG
 
 #define EIGEN_DONT_PARALLELIZE
-//#define SET_AFFINITY
+#define SET_AFFINITY
 
 #ifdef SET_AFFINITY
 #include <sched.h>
@@ -111,26 +113,26 @@ template <typename T, typename indexType, int compressionLevel> inline Eigen::Ma
 void readCSC(const char* valsPath, const char* innerPath, const char* outerPath);
 
 // Global values for checking sums
-VALUE_TYPE VCSC_ScalarSum;
-VALUE_TYPE VCSC_SpmvSum;
-VALUE_TYPE VCSC_SpmmSum;
-VALUE_TYPE VCSC_ConstructorSum;
-VALUE_TYPE VCSC_IteratorSum;
-VALUE_TYPE VCSC_TransposeSum;
+volatile VALUE_TYPE VCSC_ScalarSum;
+volatile VALUE_TYPE VCSC_SpmvSum;
+volatile VALUE_TYPE VCSC_SpmmSum;
+volatile VALUE_TYPE VCSC_ConstructorSum;
+volatile VALUE_TYPE VCSC_IteratorSum;
+volatile VALUE_TYPE VCSC_TransposeSum;
 
-VALUE_TYPE IVCSC_ScalarSum;
-VALUE_TYPE IVCSC_SpmvSum;
-VALUE_TYPE IVCSC_SpmmSum;
-VALUE_TYPE IVCSC_ConstructorSum;
-VALUE_TYPE IVCSC_IteratorSum;
-VALUE_TYPE IVCSC_TransposeSum;
+volatile VALUE_TYPE IVCSC_ScalarSum;
+volatile VALUE_TYPE IVCSC_SpmvSum;
+volatile VALUE_TYPE IVCSC_SpmmSum;
+volatile VALUE_TYPE IVCSC_ConstructorSum;
+volatile VALUE_TYPE IVCSC_IteratorSum;
+volatile VALUE_TYPE IVCSC_TransposeSum;
 
-VALUE_TYPE Eigen_ScalarSum;
-VALUE_TYPE Eigen_SpmvSum;
-VALUE_TYPE Eigen_SpmmSum;
-VALUE_TYPE Eigen_ConstructorSum;
-VALUE_TYPE Eigen_IteratorSum;
-VALUE_TYPE Eigen_TransposeSum;
+volatile VALUE_TYPE Eigen_ScalarSum;
+volatile VALUE_TYPE Eigen_SpmvSum;
+volatile VALUE_TYPE Eigen_SpmmSum;
+volatile VALUE_TYPE Eigen_ConstructorSum;
+volatile VALUE_TYPE Eigen_IteratorSum;
+volatile VALUE_TYPE Eigen_TransposeSum;
 
 Eigen::Matrix<VALUE_TYPE, -1, -1> eigenMatrix;
 Eigen::Matrix<VALUE_TYPE, -1, 1> eigenVector;
@@ -150,14 +152,13 @@ int main(int argc, char** argv) {
     int which = atoi(argv[6]);
 	char* resultsPath = argv[7];
     srand(1);
-    std::cout << "Rows: " << ROWS << " Cols: " << COLS << " NNZ: " << NNZ << " Redundancy: " << redundancy << std::endl;
+    std::cout << "Rows: " << ROWS << " Cols: " << COLS << " NNZ: " << NNZ << " Redundancy: " << redundancy << "\n";
 
     readCSC(vals, innerPath, outerPath);
 
     eigenMatrix = Eigen::Matrix<VALUE_TYPE, -1, -1>::Random(COLS, 1000);
     eigenVector = Eigen::Matrix<VALUE_TYPE, -1, 1>::Random(COLS, 1);
 
-    #ifdef CHECK_VALUES
     VCSC_ScalarSum = 0;
     VCSC_SpmvSum = 0;
     VCSC_SpmmSum = 0;
@@ -178,7 +179,6 @@ int main(int argc, char** argv) {
     Eigen_ConstructorSum = 0;
     Eigen_IteratorSum = 0;
     Eigen_TransposeSum = 0;
-    #endif
 
     std::cout << "which: " << which << "\n";
 
@@ -198,7 +198,28 @@ int main(int argc, char** argv) {
 		std::cout << "done with eigen\n";
     }
 
-    std::cout << "all finished\n";
+	std::cout << "VCSC_ScalarSum: " << VCSC_ScalarSum << "\n";
+	std::cout << "VCSC_SpmvSum: " << VCSC_SpmvSum << "\n";
+	std::cout << "VCSC_SpmmSum: " << VCSC_SpmmSum << "\n";
+	std::cout << "VCSC_ConstructorSum: " << VCSC_ConstructorSum << "\n";
+	std::cout << "VCSC_IteratorSum: " << VCSC_IteratorSum << "\n";
+	std::cout << "VCSC_TransposeSum: " << VCSC_TransposeSum << "\n";
+	
+	std::cout << "IVCSC_ScalarSum: " << IVCSC_ScalarSum << "\n";
+	std::cout << "IVCSC_SpmvSum: " << IVCSC_SpmvSum << "\n";
+	std::cout << "IVCSC_SpmmSum: " << IVCSC_SpmmSum << "\n";
+	std::cout << "IVCSC_ConstructorSum: " << IVCSC_ConstructorSum << "\n";
+	std::cout << "IVCSC_IteratorSum: " << IVCSC_IteratorSum << "\n";
+	std::cout << "IVCSC_TransposeSum: " << IVCSC_TransposeSum << "\n";
+	
+	std::cout << "Eigen_ScalarSum: " << Eigen_ScalarSum << "\n";
+	std::cout << "Eigen_SpmvSum: " << Eigen_SpmvSum << "\n";
+	std::cout << "Eigen_SpmmSum: " << Eigen_SpmmSum << "\n";
+	std::cout << "Eigen_ConstructorSum: " << Eigen_ConstructorSum << "\n";
+	std::cout << "Eigen_IteratorSum: " << Eigen_IteratorSum << "\n";
+	std::cout << "Eigen_TransposeSum: " << Eigen_TransposeSum << "\n";
+    
+	std::cout << "all finished\n";
     return 0;
 }
 
@@ -242,8 +263,8 @@ void readCSC(const char* valsPath, const char* innerPath, const char* outerPath)
 		outerFile >> next_col_start_idx;
     }
     
-    std::cout << "done reading in matrix\n";
-    std::cout << "num vals read in: " << idx << "\n";
+    //std::cout << "done reading in matrix\n";
+    //std::cout << "num vals read in: " << idx << "\n";
     valsFile.close();
     innerFile.close();
     outerFile.close();
@@ -277,12 +298,17 @@ inline T getMax(std::vector<T> data) {
  */
 
 void printDataToFile(std::vector<double>& data, std::vector<std::vector<uint64_t>>& timeData, const char* filename) {
-    FILE* file;
+
+	FILE* file;
 
     //check if file exists
     int fileExists = access(filename, F_OK);
     if (fileExists == -1) {
         file = fopen(filename, "a");
+		if (file == NULL) {
+			std::cerr << "FAILED TO OPEN RESULTS FILE -- QUITTING\n";
+			exit(-1);
+		}
         fprintf(file, "%s\n", "ID,rows,cols,nonzeros,sparsity,redundancy,size,constructor_time,scalar_time,spmv_time,spmm_time,sum_time,transpose_time,iterator_time");
         fclose(file);
     }
@@ -291,7 +317,7 @@ void printDataToFile(std::vector<double>& data, std::vector<std::vector<uint64_t
     // for (uint64_t i = 0; i < timeData[i].size(); i++) {
     //     std::cout << data.at(4) << " ";
     //     std::cout << timeData.at(i).at(0) << " " << timeData.at(i).at(1) << " " << timeData.at(i).at(2) << " " <<
-    //         timeData.at(i).at(3) << " " << timeData.at(i).at(4) << " " << timeData.at(i).at(5) << " " << timeData.at(i).at(6) << std::endl;
+    //         timeData.at(i).at(3) << " " << timeData.at(i).at(4) << " " << timeData.at(i).at(5) << " " << timeData.at(i).at(6) << "\n";
     // }
 
     /**
@@ -364,26 +390,44 @@ void  VCSC_Benchmark(int aff, char *path) {
     // matrix.print();
 
     VCSC_constructorBenchmark(data, timeData, ROWS, COLS);
-    std::cout << "VCSC constructor done" << std::endl;
-    VCSC_scalarBenchmark(matrix, timeData);
-    std::cout << "VCSC scalar done" << std::endl;
-    // VCSC_outerSumBenchmark(matrix, timeData);
-    // std::cout << "VCSC column sums done" << std::endl;
-    VCSC_spmvBenchmark(matrix, timeData, COLS);
-    std::cout << "VCSC spmv done" << std::endl;
-    VCSC_spmmBenchmark(matrix, timeData, ROWS, COLS);
-    std::cout << "VCSC spmm done" << std::endl;
-    VCSC_iteratorBenchmark(matrix, timeData, ROWS, COLS);
-    std::cout << "VCSC iterator done\n" << std::endl;
-    VCSC_transposeBenchmark(matrix, timeData, ROWS, COLS);
-    std::cout << "VCSC transpose done\n" << std::endl;
+	#ifdef DEBUG
+		std::cout << "VCSC constructor done" << "\n";
+	#endif
+
+	VCSC_scalarBenchmark(matrix, timeData);
+	#ifdef DEBUG
+		std::cout << "VCSC scalar done" << "\n";
+	#endif
+
+	// VCSC_outerSumBenchmark(matrix, timeData);
+    // std::cout << "VCSC column sums done" << "\n";
+    
+	VCSC_spmvBenchmark(matrix, timeData, COLS);
+	#ifdef DEBUG
+		std::cout << "VCSC spmv done" << "\n";
+	#endif
+	
+	VCSC_spmmBenchmark(matrix, timeData, ROWS, COLS);
+	#ifdef DEBUG
+	std::cout << "VCSC spmm done" << "\n";
+	#endif
+	
+	VCSC_iteratorBenchmark(matrix, timeData, ROWS, COLS);
+	#ifdef DEBUG
+	std::cout << "VCSC iterator done\n" << "\n";
+	#endif
+
+	VCSC_transposeBenchmark(matrix, timeData, ROWS, COLS);
+	#ifdef DEBUG
+	std::cout << "VCSC transpose done\n" << "\n";
+	#endif
 
 	/*
     std::stringstream path;
     path << "../results/VCSCResults_COO.csv";
 	printDataToFile(matrixData, timeData, path.str().c_str());
 	*/
-	std::string fullpath = "/vcsc-results.csv";
+	std::string fullpath = "vcsc-results.csv";
 	fullpath = path + fullpath;
 	printDataToFile(matrixData, timeData, fullpath.c_str());
     // adjustValues(data, static_cast<int>(((double)numRows / (double)MATRICES) * (i + 1)), i);
@@ -422,28 +466,46 @@ void   IVCSC_Benchmark(int aff, char *path, int which) {
     }
 
     IVCSC_constructorBenchmark(data, timeData, ROWS, COLS);
-    std::cout << "IVCSC constructor done" << std::endl;
-    IVCSC_scalarBenchmark(matrix, timeData);
-    std::cout << "IVCSC scalar done" << std::endl;
-    // IVCSC_outerSumBenchmark(matrix, timeData);
-    // std::cout << "IVCSC column sums done" << std::endl;
-    IVCSC_spmvBenchmark(matrix, timeData, COLS);
-    std::cout << "IVCSC spmv done" << std::endl;
-    IVCSC_spmmBenchmark(matrix, timeData, ROWS, COLS);
-    std::cout << "IVCSC spmm done" << std::endl;
-    IVCSC_iteratorBenchmark(matrix, timeData, ROWS, COLS);
-    std::cout << "IVCSC iterator done" << std::endl;
-    IVCSC_transposeBenchmark(matrix, timeData, ROWS, COLS);
-    std::cout << "IVCSC transpose done" << std::endl;
+	#ifdef DEBUG
+		std::cout << "IVCSC constructor done" << "\n";
+	#endif
+
+	IVCSC_scalarBenchmark(matrix, timeData);
+	#ifdef DEBUG
+	std::cout << "IVCSC scalar done" << "\n";
+    #endif
+
+	// IVCSC_outerSumBenchmark(matrix, timeData);
+    // std::cout << "IVCSC column sums done" << "\n";
+    
+	IVCSC_spmvBenchmark(matrix, timeData, COLS);
+	#ifdef DEBUG
+		std::cout << "IVCSC spmv done" << "\n";
+	#endif
+
+	IVCSC_spmmBenchmark(matrix, timeData, ROWS, COLS);
+	#ifdef DEBUG
+	std::cout << "IVCSC spmm done" << "\n";
+	#endif
+
+	IVCSC_iteratorBenchmark(matrix, timeData, ROWS, COLS);
+	#ifdef DEBUG
+	std::cout << "IVCSC iterator done" << "\n";
+	#endif
+	
+	IVCSC_transposeBenchmark(matrix, timeData, ROWS, COLS);
+	#ifdef DEBUG
+	std::cout << "IVCSC transpose done" << "\n";
+	#endif
 
     #ifdef CHECK_VALUES
     if (which == -1) {
-        assert(0.1 > IVCSC_ScalarSum - VCSC_ScalarSum);
-        assert(0.1 > IVCSC_SpmvSum - VCSC_SpmvSum);
-        assert(0.1 > IVCSC_SpmmSum - VCSC_SpmmSum);
-        assert(0.1 > IVCSC_ConstructorSum - VCSC_ConstructorSum);
-        assert(0.1 > IVCSC_IteratorSum - VCSC_IteratorSum);
-        assert(0.1 > IVCSC_TransposeSum - VCSC_TransposeSum);
+        assert(0.1 > std::abs(IVCSC_ScalarSum - VCSC_ScalarSum));
+        assert(0.1 > std::abs(IVCSC_SpmvSum - VCSC_SpmvSum));
+        assert(0.1 > std::abs(IVCSC_SpmmSum - VCSC_SpmmSum));
+        assert(0.1 > std::abs(IVCSC_ConstructorSum - VCSC_ConstructorSum));
+        assert(0.1 > std::abs(IVCSC_IteratorSum - VCSC_IteratorSum));
+        assert(0.1 > std::abs(IVCSC_TransposeSum - VCSC_TransposeSum));
     }
     #endif
 
@@ -452,7 +514,7 @@ void   IVCSC_Benchmark(int aff, char *path, int which) {
     path << "../results/IVCSCResults_COO.csv";
     printDataToFile(matrixData, timeData, path.str().c_str());
 	*/
-	std::string fullpath = "/ivcsc_results.csv";
+	std::string fullpath = "ivcsc_results.csv";
 	fullpath = path + fullpath;
 	printDataToFile(matrixData, timeData, fullpath.c_str());
     // adjustValues(data, static_cast<int>(((double)numRows / (double)MATRICES) * (i + 1)), i);
@@ -500,28 +562,45 @@ void eigen_Benchmark(int aff, char *path, int which) {
     }
 
     eigen_constructorBenchmark(data, timeData, ROWS, COLS);
-    std::cout << "Eigen constructor done" << std::endl;
-    eigen_scalarBenchmark(matrix, timeData);
-    std::cout << "Eigen scalar done" << std::endl;
-    // eigen_outerSumBenchmark(matrix, timeData);
-    // std::cout << "Eigen column sums done" << std::endl;
-    eigen_spmvBenchmark(matrix, timeData, COLS);
-    std::cout << "Eigen spmv done" << std::endl;
-    eigen_spmmBenchmark(matrix, timeData, ROWS, COLS);
-    std::cout << "Eigen spmm done" << std::endl;
-    eigen_iteratorBenchmark(matrix, timeData, ROWS, COLS);
-    std::cout << "Eigen iterator done" << std::endl;
-    eigen_transposeBenchmark(matrix, timeData, ROWS, COLS);
-    std::cout << "Eigen transpose done" << std::endl;
+	#ifdef DEBUG
+	std::cout << "Eigen constructor done" << "\n";
+	#endif
+
+	eigen_scalarBenchmark(matrix, timeData);
+	#ifdef DEBUG
+	std::cout << "Eigen scalar done" << "\n";
+	#endif
+
+	// eigen_outerSumBenchmark(matrix, timeData);
+    // std::cout << "Eigen column sums done" << "\n";
+	eigen_spmvBenchmark(matrix, timeData, COLS);
+	#ifdef DEBUG
+	std::cout << "Eigen spmv done" << "\n";
+	#endif
+    
+	eigen_spmmBenchmark(matrix, timeData, ROWS, COLS);
+	#ifdef DEBUG
+	std::cout << "Eigen spmm done" << "\n";
+	#endif
+	
+	eigen_iteratorBenchmark(matrix, timeData, ROWS, COLS);
+	#ifdef DEBUG
+	std::cout << "Eigen iterator done" << "\n";
+	#endif
+	
+	eigen_transposeBenchmark(matrix, timeData, ROWS, COLS);
+	#ifdef DEBUG
+	std::cout << "Eigen transpose done" << "\n";
+	#endif
 
     #ifdef CHECK_VALUES
     if (which == -1) {
-        assert(0.1 > Eigen_ScalarSum - VCSC_ScalarSum);
-        assert(0.1 > Eigen_SpmvSum - VCSC_SpmvSum);
-        assert(0.1 > Eigen_SpmmSum - VCSC_SpmmSum);
-        assert(0.1 > Eigen_ConstructorSum - VCSC_ConstructorSum);
-        assert(0.1 > Eigen_IteratorSum - VCSC_IteratorSum);
-        assert(0.1 > Eigen_TransposeSum - VCSC_TransposeSum);
+        assert(0.1 > std::abs(Eigen_ScalarSum - VCSC_ScalarSum));
+        assert(0.1 > std::abs(Eigen_SpmvSum - VCSC_SpmvSum));
+        assert(0.1 > std::abs(Eigen_SpmmSum - VCSC_SpmmSum));
+        assert(0.1 > std::abs(Eigen_ConstructorSum - VCSC_ConstructorSum));
+        assert(0.1 > std::abs(Eigen_IteratorSum - VCSC_IteratorSum));
+        assert(0.1 > std::abs(Eigen_TransposeSum - VCSC_TransposeSum));
     }
     #endif
 
@@ -530,7 +609,7 @@ void eigen_Benchmark(int aff, char *path, int which) {
     path << "../results/EigenResults_COO.csv";
 	printDataToFile(matrixData, timeData, path.str().c_str());
 	*/
-	std::string fullpath = "/eigen_results.csv";
+	std::string fullpath = "eigen_results.csv";
 	fullpath = path + fullpath;
 	printDataToFile(matrixData, timeData, fullpath.c_str());
 
@@ -561,17 +640,19 @@ void   VCSC_constructorBenchmark(std::vector<std::tuple<int, int, VALUE_TYPE>>& 
     //cold start
     for (int i = 0; i < NUM_COLD_STARTS; i++) {
         IVSparse::SparseMatrix<VALUE_TYPE, int, 2> matrix(data, rows, cols, data.size());
-        std::cout << matrix.sum() << std::endl;
-        VCSC_ConstructorSum = matrix.sum();
+        VCSC_ConstructorSum += matrix.sum();
     }
 
     for (int i = 0; i < NUM_ITERATIONS; i++) {
         start = std::chrono::high_resolution_clock::now();
         IVSparse::SparseMatrix<VALUE_TYPE, int, 2> matrix(data, rows, cols, data.size());
         end = std::chrono::high_resolution_clock::now();
+		
+		VCSC_ConstructorSum += matrix.sum();
         resultData.at(i).at(0) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
-        std::cout << matrix.sum() << std::endl;
-        VCSC_ConstructorSum = matrix.sum();
+		#ifdef DEBUG
+        std::cout << VCSC_ConstructorSum << "\n";
+		#endif
     }
 }
 
@@ -588,18 +669,20 @@ void   VCSC_scalarBenchmark(IVSparse::SparseMatrix<VALUE_TYPE, int, 2> matrix, s
 
     for (int i = 0; i < NUM_COLD_STARTS; i++) {
         matrix *= 2;
-        std::cout << "sum: " << matrix.sum() << std::endl;
+		VCSC_ScalarSum += matrix.sum();
     }
 
     for (int i = 0; i < NUM_ITERATIONS; i++) {
         start = std::chrono::high_resolution_clock::now();
         matrix *= 2;
         end = std::chrono::high_resolution_clock::now();
-        std::cout << "sum: " << matrix.sum() << std::endl;
-        resultData.at(i).at(1) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+		VCSC_ScalarSum += matrix.sum();
+		#ifdef DEBUG
+        std::cout << "sum: " << VCSC_ScalarSum << "\n";
+		#endif
+		resultData.at(i).at(1) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
     }
 
-    VCSC_ScalarSum = matrix.sum();
 }
 
 /**
@@ -616,18 +699,20 @@ void   VCSC_spmvBenchmark(IVSparse::SparseMatrix<VALUE_TYPE, int, 2>& matrix, st
     //cold start
     for (int i = 0; i < NUM_COLD_STARTS; i++) {
         result = IVSparse_fair_spmv<VALUE_TYPE, int, 2>(matrix, eigenVector);
-        std::cout << "sum: " << result.sum() << std::endl;
+		VCSC_SpmvSum += result.sum();
     }
 
     for (int i = 0; i < NUM_ITERATIONS; i++) {
         start = std::chrono::high_resolution_clock::now();
         result = IVSparse_fair_spmv<VALUE_TYPE, int, 2>(matrix, eigenVector);
         end = std::chrono::high_resolution_clock::now();
-        std::cout << "sum: " << result.sum() << std::endl;
-        resultData.at(i).at(2) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+		VCSC_SpmvSum += result.sum();
+		#ifdef DEBUG
+        std::cout << "sum: " << VCSC_SpmvSum << "\n";
+		#endif
+		resultData.at(i).at(2) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
     }
 
-    VCSC_SpmvSum = result.sum();
 }
 
 /**
@@ -645,18 +730,20 @@ void VCSC_spmmBenchmark(IVSparse::SparseMatrix<VALUE_TYPE, int, 2>& matrix, std:
     //cold start
     for (int i = 0; i < NUM_COLD_STARTS; i++) {
         result = IVSparse_fair_spmm<VALUE_TYPE, int, 2>(matrix, eigenMatrix);
-        std::cout << "sum: " << result.sum() << std::endl;
+		VCSC_SpmmSum += result.sum();
     }
 
     for (int i = 0; i < NUM_ITERATIONS; i++) {
         start = std::chrono::high_resolution_clock::now();
         result = IVSparse_fair_spmm<VALUE_TYPE, int, 2>(matrix, eigenMatrix);
         end = std::chrono::high_resolution_clock::now();
-        std::cout << "sum: " << result.sum() << std::endl;
-        resultData.at(i).at(3) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+		VCSC_SpmmSum += result.sum();
+		#ifdef DEBUG
+        std::cout << "sum: " << VCSC_SpmmSum << "\n";
+		#endif
+		resultData.at(i).at(3) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
     }
 
-    VCSC_SpmmSum = result.sum();
 }
 
 /**
@@ -674,18 +761,18 @@ void VCSC_outerSumBenchmark(IVSparse::SparseMatrix<VALUE_TYPE, int, 2>& matrix, 
     //cold start
     for (int i = 0; i < NUM_COLD_STARTS; i++) {
         sum = matrix.sum();
-        std::cout << "sum: " << sum;
-
     }
 
     for (int i = 0; i < NUM_ITERATIONS; i++) {
         start = std::chrono::high_resolution_clock::now();
         sum = matrix.sum();
         end = std::chrono::high_resolution_clock::now();
-        std::cout << "sum: " << sum;
+		exit(-1);
+		#ifdef DEBUG
+		std::cout << "sum: " << sum;
+		#endif
         resultData.at(i).at(4) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
     }
-    // std::cout << "Sum: " << sum << std::endl;
 }
 
 /**
@@ -703,20 +790,26 @@ void VCSC_transposeBenchmark(IVSparse::SparseMatrix<VALUE_TYPE, int, 2>& matrix,
     //cold start
     for (int i = 0; i < NUM_COLD_STARTS; i++) {
         result = matrix.transpose();
-		std::cout << std::setprecision(16) << result.sum() << " " << matrix.sum() << "\n";
+		VCSC_TransposeSum += result.sum();
+		#ifdef CHECK_VALUES
 		assert(std::abs(result.sum() -  matrix.sum()) < 1e-8);
-    }
+		#endif
+	}
 
     for (int i = 0; i < NUM_ITERATIONS; i++) {
         start = std::chrono::high_resolution_clock::now();
         result = matrix.transpose();
         end = std::chrono::high_resolution_clock::now();
-        std::cout << "sum: " << result.sum() << std::endl;
+		VCSC_TransposeSum += result.sum();
+		#ifdef DEBUG
+        std::cout << "sum: " << VCSC_TransposeSum << "\n";
+		#endif
+		#ifdef CHECK_VALUES
 		assert(std::abs(result.sum() -  matrix.sum()) < 1e-8);
-        resultData.at(i).at(5) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+		#endif
+		resultData.at(i).at(5) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
     }
 
-    VCSC_TransposeSum = result.sum();
 }
 
 /**
@@ -737,7 +830,8 @@ void VCSC_iteratorBenchmark(IVSparse::SparseMatrix<VALUE_TYPE, int, 2>& matrix, 
             for (IVSparse::SparseMatrix<VALUE_TYPE, int, 2>::InnerIterator it(matrix, j); it; ++it) {
                 sum += it.value();
             }
-        std::cout << "sum: " << sum << std::endl;
+		VCSC_IteratorSum += sum;
+		sum = 0;
     }
 
     for (int i = 0; i < NUM_ITERATIONS; i++) {
@@ -748,11 +842,14 @@ void VCSC_iteratorBenchmark(IVSparse::SparseMatrix<VALUE_TYPE, int, 2>& matrix, 
             }
 
         end = std::chrono::high_resolution_clock::now();
-        std::cout << "sum: " << sum << std::endl;
-        resultData.at(i).at(6) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+		VCSC_IteratorSum += sum;
+		sum = 0;
+		#ifdef DEBUG
+        std::cout << "sum: " << sum << "\n";
+		#endif
+		resultData.at(i).at(6) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
     }
 
-    VCSC_IteratorSum = sum;
 }
 
 
@@ -771,18 +868,18 @@ void IVCSC_constructorBenchmark(std::vector<std::tuple<int, int, VALUE_TYPE>>& d
     //cold start
     for (int i = 0; i < NUM_COLD_STARTS; i++) {
         IVSparse::SparseMatrix<VALUE_TYPE, int, 3> matrix(data, rows, cols, data.size());
-        std::cout << "sum: " << matrix.sum() << std::endl;
-        IVCSC_ConstructorSum = matrix.sum();
-
+        IVCSC_ConstructorSum += matrix.sum();
     }
 
     for (int i = 0; i < NUM_ITERATIONS; i++) {
         start = std::chrono::high_resolution_clock::now();
         IVSparse::SparseMatrix<VALUE_TYPE, int, 3> matrix(data, rows, cols, data.size());
         end = std::chrono::high_resolution_clock::now();
-        std::cout << "sum: " << matrix.sum() << std::endl;
-        resultData.at(i).at(0) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
-        IVCSC_ConstructorSum = matrix.sum();
+        IVCSC_ConstructorSum += matrix.sum();
+		#ifdef DEBUG
+        std::cout << "sum: " << IVCSC_ConstructorSum << "\n";
+		#endif
+		resultData.at(i).at(0) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
     }
 }
 
@@ -797,18 +894,20 @@ void IVCSC_scalarBenchmark(IVSparse::SparseMatrix<VALUE_TYPE, int, 3> matrix, st
 
     for (int i = 0; i < NUM_COLD_STARTS; i++) {
         matrix *= 2;
-        std::cout << "sum: " << matrix.sum() << std::endl;
+		IVCSC_ScalarSum += matrix.sum();
     }
 
     for (int i = 0; i < NUM_ITERATIONS; i++) {
         start = std::chrono::high_resolution_clock::now();
         matrix *= 2;
         end = std::chrono::high_resolution_clock::now();
-        std::cout << "sum: " << matrix.sum() << std::endl;
-        resultData.at(i).at(1) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+		IVCSC_ScalarSum += matrix.sum();
+		#ifdef DEBUG
+        std::cout << "sum: " << IVCSC_ScalarSum << "\n";
+		#endif
+		resultData.at(i).at(1) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
     }
 
-    IVCSC_ScalarSum = matrix.sum();
 }
 
 /**
@@ -826,19 +925,19 @@ void   IVCSC_spmvBenchmark(IVSparse::SparseMatrix<VALUE_TYPE, int, 3>& matrix, s
     //cold start
     for (int i = 0; i < NUM_COLD_STARTS; i++) {
         result = IVSparse_fair_spmv<VALUE_TYPE, int, 3>(matrix, eigenVector);
-        std::cout << "sum: " << result.sum() << std::endl;
-
+		IVCSC_SpmvSum += result.sum();
     }
 
     for (int i = 0; i < NUM_ITERATIONS; i++) {
         start = std::chrono::high_resolution_clock::now();
         result = IVSparse_fair_spmv<VALUE_TYPE, int, 3>(matrix, eigenVector);
         end = std::chrono::high_resolution_clock::now();
-        std::cout << "sum: " << result.sum() << std::endl;
-        resultData.at(i).at(2) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+		IVCSC_SpmvSum += result.sum();
+		#ifdef DEBUG
+		std::cout << "sum: " << IVCSC_SpmvSum << "\n";
+		#endif
+		resultData.at(i).at(2) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
     }
-
-    IVCSC_SpmvSum = result.sum();
 }
 
 
@@ -857,18 +956,20 @@ void IVCSC_spmmBenchmark(IVSparse::SparseMatrix<VALUE_TYPE, int, 3>& matrix, std
     //cold start
     for (int i = 0; i < NUM_COLD_STARTS; i++) {
         result = IVSparse_fair_spmm<VALUE_TYPE, int, 3>(matrix, eigenMatrix);
-        std::cout << "sum: " << result.sum() << std::endl;
+		IVCSC_SpmmSum += result.sum();
     }
 
     for (int i = 0; i < NUM_ITERATIONS; i++) {
         start = std::chrono::high_resolution_clock::now();
         result = IVSparse_fair_spmm<VALUE_TYPE, int, 3>(matrix, eigenMatrix);
         end = std::chrono::high_resolution_clock::now();
-        std::cout << "sum: " << result.sum() << std::endl;
-        resultData.at(i).at(3) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+		IVCSC_SpmmSum += result.sum();
+		#ifdef DEBUG
+        std::cout << "sum: " << IVCSC_SpmmSum << "\n";
+		#endif
+		resultData.at(i).at(3) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
     }
 
-    IVCSC_SpmmSum = result.sum();
 }
 
 /**
@@ -888,7 +989,6 @@ void IVCSC_outerSumBenchmark(IVSparse::SparseMatrix<VALUE_TYPE, int, 3>& matrix,
     //cold start
     for (int i = 0; i < NUM_COLD_STARTS; i++) {
         sum = matrix.sum();
-        std::cout << "sum: " << sum;
     }
 
 
@@ -896,8 +996,11 @@ void IVCSC_outerSumBenchmark(IVSparse::SparseMatrix<VALUE_TYPE, int, 3>& matrix,
         start = std::chrono::high_resolution_clock::now();
         sum = matrix.sum();
         end = std::chrono::high_resolution_clock::now();
+		exit(-1);
+		#ifdef DEBUG
         std::cout << "sum: " << sum;
-        resultData.at(i).at(4) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+		#endif
+		resultData.at(i).at(4) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
     }
 
 }
@@ -919,21 +1022,25 @@ void IVCSC_transposeBenchmark(IVSparse::SparseMatrix<VALUE_TYPE, int, 3>& matrix
     //cold start
     for (int i = 0; i < NUM_COLD_STARTS; i++) {
         result = matrix.transpose();
+		IVCSC_TransposeSum += result.sum();
+		#ifdef CHECK_VALUES
 		assert(std::abs(result.sum() -  matrix.sum()) < 1e-8);
-        std::cout << "sum: " << result.sum() << std::endl;
-
-    }
+		#endif
+	}
 
     for (int i = 0; i < NUM_ITERATIONS; i++) {
         start = std::chrono::high_resolution_clock::now();
         result = matrix.transpose();
         end = std::chrono::high_resolution_clock::now();
-        std::cout << "sum: " << result.sum() << std::endl;
+		IVCSC_TransposeSum += result.sum();
+		#ifdef DEBUG
+        std::cout << "sum: " << IVCSC_TransposeSum << "\n";
+		#endif	
+		#ifdef CHECK_VALUES
 		assert(std::abs(result.sum() -  matrix.sum()) < 1e-8);
-        resultData.at(i).at(5) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+		#endif
+		resultData.at(i).at(5) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
     }
-
-    IVCSC_TransposeSum = result.sum();
 }
 
 /**
@@ -955,7 +1062,8 @@ void IVCSC_iteratorBenchmark(IVSparse::SparseMatrix<VALUE_TYPE, int, 3>& matrix,
             for (IVSparse::SparseMatrix<VALUE_TYPE, int, 3>::InnerIterator it(matrix, j); it; ++it) {
                 sum += it.value();
             }
-        std::cout << "sum: " << sum << std::endl;
+		IVCSC_IteratorSum += sum;
+		sum = 0;
     }
 
     for (int i = 0; i < NUM_ITERATIONS; i++) {
@@ -965,11 +1073,14 @@ void IVCSC_iteratorBenchmark(IVSparse::SparseMatrix<VALUE_TYPE, int, 3>& matrix,
                 sum += it.value();
             }
         end = std::chrono::high_resolution_clock::now();
-        std::cout << "sum: " << sum << std::endl;
-        resultData.at(i).at(6) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+		IVCSC_IteratorSum += sum;
+		sum = 0;
+		#ifdef DEBUG
+        std::cout << "sum: " << sum << "\n";
+		#endif
+		resultData.at(i).at(6) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
     }
 
-    IVCSC_IteratorSum = sum;
 }
 
 
@@ -995,8 +1106,7 @@ void   eigen_constructorBenchmark(std::vector<std::tuple<int, int, VALUE_TYPE>>&
     for (int i = 0; i < NUM_COLD_STARTS; i++) {
         Eigen::SparseMatrix<VALUE_TYPE> matrix(rows, cols);
         matrix.setFromTriplets(triplet.begin(), triplet.end());
-        std::cout << "sum: " << matrix.sum() << std::endl;
-        Eigen_ConstructorSum = matrix.sum();
+        Eigen_ConstructorSum += matrix.sum();
 
     }
 
@@ -1006,12 +1116,12 @@ void   eigen_constructorBenchmark(std::vector<std::tuple<int, int, VALUE_TYPE>>&
         Eigen::SparseMatrix<VALUE_TYPE> matrix(rows, cols);
         matrix.setFromTriplets(triplet.begin(), triplet.end());
         end = std::chrono::high_resolution_clock::now();
-        std::cout << "sum: " << matrix.sum() << std::endl;
-        Eigen_ConstructorSum = matrix.sum();
+		Eigen_ConstructorSum += matrix.sum();
+		#ifdef DEBUG
+        std::cout << "sum: " << Eigen_ConstructorSum << "\n";
+		#endif
         resultData.at(i).at(0) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
     }
-
-    Eigen_ConstructorSum = matrix.sum();
 }
 
 /**
@@ -1025,18 +1135,20 @@ void   eigen_scalarBenchmark(Eigen::SparseMatrix<VALUE_TYPE> matrix, std::vector
 
     for (int i = 0; i < NUM_COLD_STARTS; i++) {
         matrix *= 2;
-        std::cout << "sum: " << matrix.sum() << std::endl;
+		Eigen_ScalarSum += matrix.sum();
     }
 
     for (int i = 0; i < NUM_ITERATIONS; i++) {
         start = std::chrono::high_resolution_clock::now();
         matrix *= 2;
         end = std::chrono::high_resolution_clock::now();
-        std::cout << "sum: " << matrix.sum() << std::endl;
-        resultData.at(i).at(1) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+		Eigen_ScalarSum += matrix.sum();
+		#ifdef DEBUG
+        std::cout << "sum: " << Eigen_ScalarSum << "\n";
+		#endif
+		resultData.at(i).at(1) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
     }
 
-    Eigen_ScalarSum = matrix.sum();
 }
 
 /**
@@ -1053,18 +1165,19 @@ void eigen_spmvBenchmark(Eigen::SparseMatrix<VALUE_TYPE>& matrix, std::vector<st
     //cold start
     for (int i = 0; i < NUM_COLD_STARTS; i++) {
         result = eigen_fair_spmv<VALUE_TYPE>(matrix, eigenVector);
-        std::cout << "sum: " << result.sum() << std::endl;
+		Eigen_SpmvSum += result.sum();
     }
 
     for (int i = 0; i < NUM_ITERATIONS; i++) {
         start = std::chrono::high_resolution_clock::now();
         result = eigen_fair_spmv<VALUE_TYPE>(matrix, eigenVector);
         end = std::chrono::high_resolution_clock::now();
-        std::cout << "sum: " << result.sum() << std::endl;
+		Eigen_SpmvSum += result.sum();
+		#ifdef DEBUG
+		std::cout << "sum: " << EigenSpmvSum << "\n";
+		#endif
         resultData.at(i).at(2) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
     }
-
-    Eigen_SpmvSum = result.sum();
 }
 
 
@@ -1084,18 +1197,19 @@ void eigen_spmmBenchmark(Eigen::SparseMatrix<VALUE_TYPE>& matrix, std::vector<st
     //cold start
     for (int i = 0; i < NUM_COLD_STARTS; i++) {
         result = eigen_fair_spmm<VALUE_TYPE>(matrix, eigenMatrix);
-        std::cout << result.sum() << std::endl;
+		Eigen_SpmmSum += result.sum();
     }
 
     for (int i = 0; i < NUM_ITERATIONS; i++) {
         start = std::chrono::high_resolution_clock::now();
         result = eigen_fair_spmm<VALUE_TYPE>(matrix, eigenMatrix);
         end = std::chrono::high_resolution_clock::now();
-        std::cout << result.sum() << std::endl;
-        resultData.at(i).at(3) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+		Eigen_SpmmSum += result.sum();
+		#ifdef DEBUG
+        std::cout << Eigen_SpmmmSum << "\n";
+		#endif
+		resultData.at(i).at(3) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
     }
-
-    Eigen_SpmmSum = result.sum();
 }
 
 /**
@@ -1113,15 +1227,17 @@ void eigen_outerSumBenchmark(Eigen::SparseMatrix<VALUE_TYPE>& matrix, std::vecto
     //cold start
     for (int i = 0; i < NUM_COLD_STARTS; i++) {
         sum = matrix.sum();
-        std::cout << sum << std::endl;
     }
 
     for (int i = 0; i < NUM_ITERATIONS; i++) {
         start = std::chrono::high_resolution_clock::now();
         sum = matrix.sum();
         end = std::chrono::high_resolution_clock::now();
-        std::cout << sum << std::endl;
-        resultData.at(i).at(4) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+		exit(-1);
+		#ifdef DEBUG
+		std::cout << sum << "\n";
+		#endif
+		resultData.at(i).at(4) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
     }
 
 }
@@ -1142,19 +1258,26 @@ void eigen_transposeBenchmark(Eigen::SparseMatrix<VALUE_TYPE>& matrix, std::vect
     //cold start
     for (int i = 0; i < NUM_COLD_STARTS; i++) {
         result = matrix.transpose().eval();
+		Eigen_TransposeSum += result.sum();
+		#ifdef CHECK_VALUES
 		assert(std::abs(result.sum() -  matrix.sum()) < 1e-8);
-    }
+		#endif
+	}
 
     for (int i = 0; i < NUM_ITERATIONS; i++) {
         start = std::chrono::high_resolution_clock::now();
         result = matrix.transpose().eval();
         end = std::chrono::high_resolution_clock::now();
-        std::cout << "sum: " << result.sum() << std::endl;
+		Eigen_TransposeSum += result.sum();
+		#ifdef DEBUG
+        std::cout << "sum: " << Eigen_TransposeSum << "\n";
+		#endif
+		#ifdef CHECK_VALUES
 		assert(std::abs(result.sum() -  matrix.sum()) < 1e-8);
-        resultData.at(i).at(5) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+		#endif
+		resultData.at(i).at(5) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
     }
 
-    Eigen_TransposeSum = result.sum();
 }
 
 /**
@@ -1176,7 +1299,8 @@ void eigen_iteratorBenchmark(Eigen::SparseMatrix<VALUE_TYPE>& matrix, std::vecto
             for (Eigen::SparseMatrix<VALUE_TYPE>::InnerIterator it(matrix, j); it; ++it) {
                 sum += it.value();
             }
-        std::cout << "sum: " << sum << std::endl;
+		Eigen_IteratorSum += sum;
+		sum = 0;
     }
 
     for (int i = 0; i < NUM_ITERATIONS; i++) {
@@ -1186,11 +1310,14 @@ void eigen_iteratorBenchmark(Eigen::SparseMatrix<VALUE_TYPE>& matrix, std::vecto
                 sum += it.value();
             }
         end = std::chrono::high_resolution_clock::now();
-        std::cout << "sum: " << sum << std::endl;
-        resultData.at(i).at(6) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
+		Eigen_IteratorSum += sum;
+		sum = 0;
+		#ifdef DEBUG
+		std::cout << "sum: " << sum << "\n";
+		#endif
+		resultData.at(i).at(6) = std::chrono::duration_cast<std::chrono::nanoseconds>(end - start).count();
     }
 
-    Eigen_IteratorSum = sum;
 }
 
 
@@ -1220,7 +1347,7 @@ double averageRedundancy(IVSparse::SparseMatrix<T, indexType, compressionLevel>&
         totalRedundancy += redundancy;
         colsWithValues++;
     }
-    std::cout << totalRedundancy << std::endl;
+    std::cout << totalRedundancy << "\n";
     return totalRedundancy / static_cast<double>(colsWithValues);
 }
 
