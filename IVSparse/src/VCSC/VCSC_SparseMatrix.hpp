@@ -186,6 +186,7 @@ namespace IVSparse {
          */
          ///@{
 
+
          /**
           * @returns T The value at the specified row and column. Returns 0 if the
           * value is not found.
@@ -399,7 +400,7 @@ namespace IVSparse {
             const IVSparse::SparseMatrix<T, indexT, 2, columnMajor>& other);
 
         // Equality Operator
-        bool operator==(const SparseMatrix<T, indexT, 2, columnMajor>& other);
+        bool operator==(const SparseMatrix<T, indexT, 2, columnMajor>& other) const;
 
         // Inequality Operator
         bool operator!=(const SparseMatrix<T, indexT, 2, columnMajor>& other);

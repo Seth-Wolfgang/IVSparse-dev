@@ -70,12 +70,6 @@ namespace IVSparse {
         //* Getters *//
 
         /**
-         * @returns The element at the given row and column.
-         */
-        template <typename T>
-        T coeff(uint32_t row, uint32_t col);
-
-        /**
          * @returns The number of rows in the matrix.
          */
         uint32_t rows() const;
