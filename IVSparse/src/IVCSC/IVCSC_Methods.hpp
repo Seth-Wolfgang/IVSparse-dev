@@ -131,9 +131,7 @@ namespace IVSparse {
 
         // iterate over the matrix
         for (uint32_t i = 0; i < outerDim; ++i) {
-            for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(
-                *this, i);
-                it; ++it) {
+            for (typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator it(*this, i);it; ++it) {
                 // add the value to the matrix
                 eigenMatrix.insert(it.row(), it.col()) = it.value();
             }
@@ -173,7 +171,7 @@ namespace IVSparse {
         for (uint32_t i = 0; i < outerDim; ++i) {
             size_t count = 0;
 
-            for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(
+            for (typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator it(
                 *this, i);
                 it; ++it) {
                 dict[i][it.getIndex()] = it.value();
@@ -224,9 +222,7 @@ namespace IVSparse {
                 continue;
             }
 
-            for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(
-                *this, i);
-                it; ++it) {
+            for (typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator it(*this, i);it; ++it) {
                 // add the value to the matrix
                 eigenMatrix.insert(it.row(), it.col()) = it.value();
             }
@@ -344,7 +340,7 @@ namespace IVSparse {
         mapsT.resize(innerDim);
         // populate the transpose data structure
         for (uint32_t i = 0; i < outerDim; ++i) {
-            for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(*this, i); it; ++it) {
+            for (typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator it(*this, i); it; ++it) {
                 // add the value to the map
                 if constexpr (columnMajor) {
                     mapsT[it.row()][it.value()].push_back(it.col());
@@ -356,7 +352,7 @@ namespace IVSparse {
         }
 
 
-        for(int i = 0; i < innerDim; ++i) {
+        for (int i = 0; i < innerDim; ++i) {
             for (auto& col : mapsT[i]) {
                 // find the max value in the vector
                 size_t max = col.second[0];
@@ -391,7 +387,7 @@ namespace IVSparse {
 
         // populate the transpose data structure
         for (uint32_t i = 0; i < outerDim; ++i) {
-            for (typename SparseMatrix<T, indexT, compressionLevel>::InnerIterator it(*this, i); it; ++it) {
+            for (typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator it(*this, i); it; ++it) {
                 // add the value to the map
                 if constexpr (columnMajor) {
                     mapsT[it.row()][it.value()].push_back(it.col());
@@ -402,7 +398,7 @@ namespace IVSparse {
             }
         }
 
-        for(int i = 0; i < innerDim; ++i) {
+        for (int i = 0; i < innerDim; ++i) {
             for (auto& col : mapsT[i]) {
                 // find the max value in the vector
                 size_t max = col.second[0];
@@ -419,13 +415,12 @@ namespace IVSparse {
             }
         }
 
-        *this = IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>(mapsT, numRows, numCols);
+        *this = IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>(mapsT.data(), numRows, numCols);
     }
 
     // slice method that returns a vector of IVSparse vectors
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    std::vector<typename IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector>
-        SparseMatrix<T, indexT, compressionLevel, columnMajor>::slice(uint32_t start, uint32_t end) {
+    std::vector<typename IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector>SparseMatrix<T, indexT, compressionLevel, columnMajor>::slice(uint32_t start, uint32_t end) {
 
         #ifdef IVSPARSE_DEBUG
         assert(start < outerDim && end <= outerDim && start < end &&

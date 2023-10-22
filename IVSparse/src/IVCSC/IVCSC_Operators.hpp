@@ -85,9 +85,9 @@ namespace IVSparse {
 
     // Equality Operator
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    bool SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator==(
-        const SparseMatrix<T, indexT, compressionLevel, columnMajor>& other) {
-
+    bool SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator==(const SparseMatrix<T, indexT, compressionLevel, columnMajor>& other) const {
+    // bool SparseMatrix<T, indexT, 2               , columnMajor>::operator==(const SparseMatrix<T, indexT,                2, columnMajor>& other) const {
+        
         // check if the two matrices are equal
 
         // first check the metadata using memcompare
@@ -104,8 +104,7 @@ namespace IVSparse {
 
     // Inequality Operator
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    bool SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator!=(
-        const SparseMatrix<T, indexT, compressionLevel, columnMajor>& other) {
+    bool SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator!=(const SparseMatrix<T, indexT, compressionLevel, columnMajor>& other) {
 
         return !(*this == other);
     }

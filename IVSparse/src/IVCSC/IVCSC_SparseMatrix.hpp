@@ -53,8 +53,7 @@ namespace IVSparse {
         void calculateCompSize();
 
         // Private Helper Constructor for tranposing a IVSparse matrix
-        SparseMatrix(std::unordered_map<T, std::vector<indexT>> maps[],
-                     uint32_t num_rows, uint32_t num_cols);
+        SparseMatrix(std::unordered_map<T, std::vector<indexT>> maps[], uint32_t num_rows, uint32_t num_cols);
 
         // Scalar Multiplication
         inline IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>
@@ -412,16 +411,13 @@ namespace IVSparse {
         //* Operator Overloads *//
 
         // Assignment Operator
-        IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>& operator=(
-            const IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>& other);
+        IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>& operator=(const IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>& other);
 
         // Equality Operator
-        bool operator==(
-            const SparseMatrix<T, indexT, compressionLevel, columnMajor>& other);
+        bool operator==(const SparseMatrix<T, indexT, compressionLevel, columnMajor>& other) const;
 
         // Inequality Operator
-        bool operator!=(
-            const SparseMatrix<T, indexT, compressionLevel, columnMajor>& other);
+        bool operator!=(const SparseMatrix<T, indexT, compressionLevel, columnMajor>& other);
 
         // Coefficient Access Operator
         T operator()(uint32_t row, uint32_t col);

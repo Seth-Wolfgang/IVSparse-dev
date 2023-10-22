@@ -13,31 +13,73 @@ void declareBase(py::module &m, const char* name);
 template <typename T, typename indexT, int compressionLevel, bool isColMajor>
 void declareSelfFunc(py::module &m, const char* name);
 
-template <typename... Ts, typename... indexTs, typename... compLevels, typename... isColMajors>
-void generateCombinations(const char* name);
+template <typename Ts, typename... indexTs, typename compLevels, typename isColMajors>
+void generatePyBindClasses(const char* name);
+
+template <typename T, typename indexT, int compressionLevel, bool isColMajor>
+void declareOtherFunc(py::module &m, const char* name);
+
+template <typename T, int compLevel>
+void generateForEachIndexType(py::module &m, const char* name);
+
+template <typename T, int compLevel>
+void generateForEachOtherType(py::module &m, const char* name);
 
 // holds a list of types -> declared at compile time
+//  typename IT, typename... Ts,
 
 
-template <typename... Ts>
-struct typeList {};
 
-template <typename... ITs>
-struct indexTypeList {};
+// template <typename T, typename IT>
+// struct Generate {
+//     static void generateBase(py::module &m, const char* name) {
+//         declareBase<T, IT, 2, false>(m, name);
+//         declareBase<T, IT, 2, true>(m, name);
+//         declareBase<T, IT, 3, false>(m, name);
+//         declareBase<T, IT, 3, true>(m, name);
+//     }
+// };
 
-template <int... Cs>
-struct compressionLevelList {};
 
-template <bool... Cm>
-struct isColMajorList {};
+// template <typename T, typename... ITs>
+// struct GenerateGenerater {
+
+//     Generate <T, ITs...> generater;
+
+//     static void generate(py::module &m, const char* name) {
+//         generater = Generate<T, ITs...>();
+//         generater<T, ITs...>::generate(m, name);
+//     }
+// };
+
+//    static void generateBase(py::module &m, const char* name) {
+//         Generate<T, Ts...> generate = Generate<T, Ts...>(); 
+//         generate.generateBase(m, name);
+//     }
+
+//     static void generateSelfFunc(py::module &m, const char* name) {
+//         Generate<T, Ts...> generate = Generate<T, Ts...>(); 
+//         generate.generateSelfFunc(m, name);
+//     }
+
+
+
+//     static void generateSelfFunc(py::module &m, const char* name) {
+//         declareSelfFunc<T, ITs, 2, false>(m, name);
+//         declareSelfFunc<T, ITs, 2, true>(m, name);
+//         declareSelfFunc<T, ITs, 3, false>(m, name);
+//         declareSelfFunc<T, ITs, 3, true>(m, name);
+//     }
+
+    // static void generateOtherFunc() {
+        // declareOtherFunc<T, ITs..., 2, false>();
+        // declareOtherFunc<T, ITs..., 2, true>();
+        // declareOtherFunc<T, ITs..., 3, false>();
+        // declareOtherFunc<T, ITs..., 3, true>();
+    // }
 
 PYBIND11_MODULE(PyVSparse, m) {
     m.doc() = "pybind11 example plugin"; // optional module docstring
-
-// VCSC_int8t_int8_t_colMaj
-
-    // const char* myType = "VCSC_int8t_int8_t_colMaj";
-
 
 // VCSC
 // IVCSC
@@ -65,20 +107,57 @@ PYBIND11_MODULE(PyVSparse, m) {
 // true
 // false
 
-    const typeList<int8_t, uint8_t, int16_t, uint16_t, int32_t, uint32_t, int64_t, uint64_t, float, double> myTypes;
-    const indexTypeList<int8_t, uint8_t, int16_t, uint16_t, int32_t, uint32_t, int64_t, uint64_t> myIndexTypes;
-    const compressionLevelList<2,3> myCompLevels;
-    const isColMajorList<true, false> myColMajors;
+    const char* vcsc = "VCSC";
+    generateForEachIndexType<int8_t, 2>(m, vcsc);
+    generateForEachIndexType<uint8_t, 2>(m, vcsc);
+    generateForEachIndexType<int16_t, 2>(m, vcsc);
+    generateForEachIndexType<uint16_t, 2>(m, vcsc);
+    generateForEachIndexType<int32_t, 2>(m, vcsc);
+    generateForEachIndexType<uint32_t, 2>(m, vcsc);
+    generateForEachIndexType<int64_t, 2>(m, vcsc);
+    generateForEachIndexType<uint64_t, 2>(m, vcsc);
+    generateForEachIndexType<float, 2>(m, vcsc);
+    generateForEachIndexType<double, 2>(m, vcsc);
+
+    const char* ivcsc = "IVCSC";
+    generateForEachIndexType<int8_t, 3>(m, ivcsc);
+    generateForEachIndexType<uint8_t, 3>(m, ivcsc);
+    generateForEachIndexType<int16_t, 3>(m, ivcsc);
+    generateForEachIndexType<uint16_t, 3>(m, ivcsc);
+    generateForEachIndexType<int32_t, 3>(m, ivcsc);
+    generateForEachIndexType<uint32_t, 3>(m, ivcsc);
+    generateForEachIndexType<int64_t, 3>(m, ivcsc);
+    generateForEachIndexType<uint64_t, 3>(m, ivcsc);
+    generateForEachIndexType<float, 3>(m, ivcsc);
+    generateForEachIndexType<double, 3>(m, ivcsc);
+
+    // VCSC
+    generateForEachIndexType<int8_t, 2>(m, vcsc);
+    generateForEachIndexType<uint8_t, 2>(m, vcsc);
+    generateForEachIndexType<int16_t, 2>(m, vcsc);
+    generateForEachIndexType<uint16_t, 2>(m, vcsc);
+    generateForEachIndexType<int32_t, 2>(m, vcsc);
+    generateForEachIndexType<uint32_t, 2>(m, vcsc);
+    generateForEachIndexType<int64_t, 2>(m, vcsc);
+    generateForEachIndexType<uint64_t, 2>(m, vcsc);
+    generateForEachIndexType<float, 2>(m, vcsc);
+    generateForEachIndexType<double, 2>(m, vcsc);
+
+    // IVCSC
+    generateForEachIndexType<int8_t, 3>(m, ivcsc);
+    generateForEachIndexType<uint8_t, 3>(m, ivcsc);
+    generateForEachIndexType<int16_t, 3>(m, ivcsc);
+    generateForEachIndexType<uint16_t, 3>(m, ivcsc);
+    generateForEachIndexType<int32_t, 3>(m, ivcsc);
+    generateForEachIndexType<uint32_t, 3>(m, ivcsc);
+    generateForEachIndexType<int64_t, 3>(m, ivcsc);
+    generateForEachIndexType<uint64_t, 3>(m, ivcsc);
+    generateForEachIndexType<float, 3>(m, ivcsc);
+    generateForEachIndexType<double, 3>(m, ivcsc);
     
 
-
-    generateCombinations<>("test");
-
-
-    // declareBase<T, indexT, (2 options), (2 options) >(m, myType);
-    // declareSelfFunc<int8_t, int8_t, 2, true>(m, myType);
-
-
+    
+    
 
         // .def(py::init<IVSparse::SparseMatrix<uint8_t, int8_t, 2, false>& >())
         // .def(py::init<IVSparse::SparseMatrix<uint8_t, int8_t, 2 >& >())
@@ -93,8 +172,9 @@ void declareBase(py::module &m, const char* name){
     py::class_<IVSparse::SparseMatrixBase, IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor>>(m, name)
         .def(py::init<Eigen::SparseMatrix<T>& >())
         .def(py::init<Eigen::SparseMatrix<T, Eigen::RowMajor>& >())
-        .def(py::init<T*, T*, T*, uint32_t, uint32_t, uint32_t>())
+        .def(py::init<T*, indexT*, indexT*, uint32_t, uint32_t, uint32_t>())
         .def(py::init<std::vector<std::tuple<indexT, indexT, T>>&, uint32_t, uint32_t, uint32_t>())
+        // .def(py::init<std::unordered_map<T, std::vector<indexT>>[], uint32_t, uint32_t>()) //<std::unordered_map<T, std::vector<indexT>>[], uint32_t, uint32_t>
         .def(py::init<const char*>())
         .def(py::init<>())
         .def("rows", &IVSparse::SparseMatrixBase::rows, " ", py::return_value_policy::copy)
@@ -105,6 +185,24 @@ void declareBase(py::module &m, const char* name){
         .def("byteSize", &IVSparse::SparseMatrixBase::byteSize, py::return_value_policy::copy)
         .def("write", &IVSparse::SparseMatrixBase::write, py::arg("filename"))
         .def("print", &IVSparse::SparseMatrixBase::print);
+
+    // if constexpr (compressionLevel == 2){
+            // py::class_<IVSparse::SparseMatrixBase, IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor>::InnerIterator>(m, "InnerIterator")
+            //     .def(py::init<>)
+            //     .def(py::init<IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor>&, uint32_t>())
+            //     .def("getIndex", &IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor>::InnerIterator::getIndex, py::return_value_policy::copy)
+            //     .def("outerDim", &IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor>::InnerIterator::outerDim, py::return_value_policy::copy)
+            //     .def("row", &IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor>::InnerIterator::row, py::return_value_policy::copy)
+            //     .def("col", &IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor>::InnerIterator::col, py::return_value_policy::copy)
+            //     .def("value", &IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor>::InnerIterator::value, py::return_value_policy::copy)
+            //     .def_readwrite("value", &IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor>::InnerIterator, "Changes the value of the run", py::arg("newValue"))
+            //     .def("isNewRun", &IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor>::InnerIterator::isNewRun, py::return_value_policy::copy);
+
+    // }
+    // if constexpr(compressionLevel == 3){
+    //     py::class<IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor>::InnerIterator>(m, "InnerIterator")
+
+    // }
 }
 
 
@@ -115,11 +213,6 @@ void declareSelfFunc(py::module &m, const char* name){
         .def("isColumnMajor", &IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor>::isColumnMajor, py::return_value_policy::copy)
         .def("coeff", &IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor>::coeff, py::return_value_policy::copy, "Sets value at run of coefficient", py::arg("row").none(false), py::arg("col").none(false))
         .def("isColumnMajor", &IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor>::isColumnMajor, py::return_value_policy::copy)
-        .def("getValues", &IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor>::getValues, py::return_value_policy::copy)
-        .def("getCounts", &IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor>::getCounts, py::return_value_policy::copy)
-        .def("getIndices", &IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor>::getIndices, py::return_value_policy::copy)
-        .def("getNumUniqueVals", &IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor>::getNumUniqueVals, py::return_value_policy::copy)
-        .def("getNumIndices", &IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor>::getNumIndices, py::return_value_policy::copy)
         .def("outerSum", &IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor>::outerSum, py::return_value_policy::copy)
         .def("innerSum", &IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor>::innerSum, py::return_value_policy::copy)
         .def("MaxColCoeff", &IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor>::maxColCoeff, py::return_value_policy::copy)
@@ -190,22 +283,97 @@ void declareSelfFunc(py::module &m, const char* name){
         .def("__mul__", [](IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor> self, Eigen::Matrix<T, Eigen::Dynamic, 1>& a) {
             return self * a;
         }, py::is_operator());
+
+
+        if constexpr(compressionLevel == 2) {
+            py::class_<IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor>, IVSparse::SparseMatrixBase>(m, name)
+                .def("getNumUniqueVals", &IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor>::getNumUniqueVals, py::return_value_policy::copy)
+                .def("getValues", &IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor>::getValues, py::return_value_policy::copy)
+                .def("getCounts", &IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor>::getCounts, py::return_value_policy::copy)
+                .def("getNumIndices", &IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor>::getNumIndices, py::return_value_policy::copy)
+                .def("getIndices", &IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor>::getIndices, py::return_value_policy::copy);
+        }
+        else if constexpr(compressionLevel == 3){
+                py::class_<IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor>, IVSparse::SparseMatrixBase>(m, name)
+                    .def("vectorPointer", &IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor>::vectorPointer, py::return_value_policy::reference)
+                    .def("getVectorSize", &IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor>::getVectorSize, py::return_value_policy::copy);
+        }
 }
 
+// For other adding other constructors, basically conversions
+template <typename T, typename indexT, int compressionLevel, bool isColMajor>
+void declareForOtherTypes(py::module &m, const char* name){
+    py::class_<IVSparse::SparseMatrixBase, IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor>>(m, name)
+        .def(py::init<IVSparse::SparseMatrix<T, uint8_t, 2, false>& >())
+        .def(py::init<IVSparse::SparseMatrix<T, uint8_t, 2 >& >())
+        .def(py::init<IVSparse::SparseMatrix<T, uint8_t, 3, false>& >())
+        .def(py::init<IVSparse::SparseMatrix<T, uint8_t, 3 >& >())
+        .def(py::init<IVSparse::SparseMatrix<T, uint16_t, 2, false>& >())
+        .def(py::init<IVSparse::SparseMatrix<T, uint16_t, 2 >& >())
+        .def(py::init<IVSparse::SparseMatrix<T, uint16_t, 3, false>& >())
+        .def(py::init<IVSparse::SparseMatrix<T, uint16_t, 3 >& >())
+        .def(py::init<IVSparse::SparseMatrix<T, uint32_t, 2, false>& >())
+        .def(py::init<IVSparse::SparseMatrix<T, uint32_t, 2 >& >())
+        .def(py::init<IVSparse::SparseMatrix<T, uint32_t, 3, false>& >())
+        .def(py::init<IVSparse::SparseMatrix<T, uint32_t, 3 >& >())
+        .def(py::init<IVSparse::SparseMatrix<T, uint64_t, 2, false>& >())
+        .def(py::init<IVSparse::SparseMatrix<T, uint64_t, 2 >& >())
+        .def(py::init<IVSparse::SparseMatrix<T, uint64_t, 3, false>& >())
+        .def(py::init<IVSparse::SparseMatrix<T, uint64_t, 3 >& >());
+}
 
-// other as in other types (Other constructors like IVCSC -> VCSC)
-// template <typename T, typename indexT, int compressionLevel, bool isColMajor>
-// void declareOtherFunc(py::module &m, std::string& name){
+template <typename T, int compLevel>
+void generateForEachIndexType(py::module &m, const char* name) {
+    
+    // base functions
+    declareBase<T, uint8_t, compLevel, false>(m, name);
+    declareBase<T, uint8_t, compLevel, true>(m, name);
+    declareBase<T, uint16_t, compLevel, false>(m, name);
+    declareBase<T, uint16_t, compLevel, true>(m, name);
+    declareBase<T, uint32_t, compLevel, false>(m, name);
+    declareBase<T, uint32_t, compLevel, true>(m, name);
+    declareBase<T, uint64_t, compLevel, false>(m, name);
+    declareBase<T, uint64_t, compLevel, true>(m, name);
+
+    // self functions
+    declareSelfFunc<T, uint8_t, compLevel, false>(m, name);
+    declareSelfFunc<T, uint8_t, compLevel, true>(m, name);
+    declareSelfFunc<T, uint16_t, compLevel, false>(m, name);
+    declareSelfFunc<T, uint16_t, compLevel, true>(m, name);
+    declareSelfFunc<T, uint32_t, compLevel, false>(m, name);
+    declareSelfFunc<T, uint32_t, compLevel, true>(m, name);
+    declareSelfFunc<T, uint64_t, compLevel, false>(m, name);
+    declareSelfFunc<T, uint64_t, compLevel, true>(m, name);
+}
+
+template <typename T, int compLevel>
+void generateForEachOtherType(py::module &m, const char* name) {
+    
+    declareOtherFunc<T, uint8_t, compLevel, false>(m, name);
+    declareOtherFunc<T, uint8_t, compLevel, true>(m, name);
+    declareOtherFunc<T, uint16_t, compLevel, false>(m, name);
+    declareOtherFunc<T, uint16_t, compLevel, true>(m, name);
+    declareOtherFunc<T, uint32_t, compLevel, false>(m, name);
+    declareOtherFunc<T, uint32_t, compLevel, true>(m, name);
+    declareOtherFunc<T, uint64_t, compLevel, false>(m, name);
+    declareOtherFunc<T, uint64_t, compLevel, true>(m, name);
+}
+
+// template <typename T, int compressionLevel, bool isColMajor>
+// void generateForEachOtherType(py::module &m, const char* name) {
+    
+//     // base functions
+//     declareOtherFunc<T, uint8_t, compressionLevel, isColMajor>(m, name);
+//     declareOtherFunc<T, uint16_t, compressionLevel, isColMajor>(m, name);
+//     declareOtherFunc<T, uint32_t, compressionLevel, isColMajor>(m, name);
+//     declareOtherFunc<T, uint64_t, compressionLevel, isColMajor>(m, name);
 
 
+        //TO VCSC
+        // TO IVCSC
 // }
 
 
-template <typename... Ts, typename... indexTs, typename... compLevels, typename... isColMajors>
-void generateCombinations(const char* name) {
-    // Generate combinations for all types
-    (declareBase<Ts, indexTs, compLevels, isColMajors>(name), ...);
-}
 
 
 // const char** myTypes = [["VCSC_int8t_int8t_true"],

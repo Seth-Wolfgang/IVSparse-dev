@@ -396,8 +396,7 @@ namespace IVSparse {
         //* Operator Overloads *//
 
         // Assignment Operator
-        IVSparse::SparseMatrix<T, indexT, 2, columnMajor>& operator=(
-            const IVSparse::SparseMatrix<T, indexT, 2, columnMajor>& other);
+        IVSparse::SparseMatrix<T, indexT, 2, columnMajor>& operator=(const IVSparse::SparseMatrix<T, indexT, 2, columnMajor>& other);
 
         // Equality Operator
         bool operator==(const SparseMatrix<T, indexT, 2, columnMajor>& other) const;
