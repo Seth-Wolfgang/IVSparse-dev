@@ -1,7 +1,0 @@
-setup.py
-PyVSparse.egg-info/PKG-INFO
-PyVSparse.egg-info/SOURCES.txt
-PyVSparse.egg-info/dependency_links.txt
-PyVSparse.egg-info/not-zip-safe
-PyVSparse.egg-info/requires.txt
-PyVSparse.egg-info/top_level.txt

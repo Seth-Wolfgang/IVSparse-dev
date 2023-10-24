@@ -22,3 +22,5 @@ Benchmarking/datasets
 /Benchmarking/sparseMatrices
 /Benchmarking/matrices
 *.mtx
+PyVSparse
+PyVSparse/*

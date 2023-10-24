@@ -20,10 +20,10 @@ template <typename T, typename indexT, int compressionLevel, bool isColMajor>
 void declareOtherFunc(py::module &m, const char* name);
 
 template <typename T, int compLevel>
-void generateForEachIndexType(py::module &m, const char* name);
+void generateForEachIndexType(py::module &m);
 
 template <typename T, int compLevel>
-void generateForEachOtherType(py::module &m, const char* name);
+void generateForEachOtherType(py::module &m);
 
 // holds a list of types -> declared at compile time
 //  typename IT, typename... Ts,
@@ -81,79 +81,61 @@ void generateForEachOtherType(py::module &m, const char* name);
 PYBIND11_MODULE(PyVSparse, m) {
     m.doc() = "pybind11 example plugin"; // optional module docstring
 
-// VCSC
-// IVCSC
+[[VCSC],[IVCSC]]
 
-// int8_t
-// uint8_t
-// int16_t
-// uint16_t
-// int32_t
-// uint32_t
-// int64_t
-// uint64_t
-// float
-// double
+[[int8_t], [uint8_t], [int16_t], [uint16_t], [int32_t], [uint32_t], [int64_t], [uint64_t], [float], [double]]
 
-// int8_t
-// uint8_t
-// int16_t
-// uint16_t
-// int32_t
-// uint32_t
-// int64_t
-// uint64_t
+[[int8_t], [uint8_t], [int16_t], [uint16_t], [int32_t], [uint32_t], [int64_t], [uint64_t]]
 
-// true
-// false
-
-    const char* vcsc = "VCSC";
-    generateForEachIndexType<int8_t, 2>(m, vcsc);
-    generateForEachIndexType<uint8_t, 2>(m, vcsc);
-    generateForEachIndexType<int16_t, 2>(m, vcsc);
-    generateForEachIndexType<uint16_t, 2>(m, vcsc);
-    generateForEachIndexType<int32_t, 2>(m, vcsc);
-    generateForEachIndexType<uint32_t, 2>(m, vcsc);
-    generateForEachIndexType<int64_t, 2>(m, vcsc);
-    generateForEachIndexType<uint64_t, 2>(m, vcsc);
-    generateForEachIndexType<float, 2>(m, vcsc);
-    generateForEachIndexType<double, 2>(m, vcsc);
-
-    const char* ivcsc = "IVCSC";
-    generateForEachIndexType<int8_t, 3>(m, ivcsc);
-    generateForEachIndexType<uint8_t, 3>(m, ivcsc);
-    generateForEachIndexType<int16_t, 3>(m, ivcsc);
-    generateForEachIndexType<uint16_t, 3>(m, ivcsc);
-    generateForEachIndexType<int32_t, 3>(m, ivcsc);
-    generateForEachIndexType<uint32_t, 3>(m, ivcsc);
-    generateForEachIndexType<int64_t, 3>(m, ivcsc);
-    generateForEachIndexType<uint64_t, 3>(m, ivcsc);
-    generateForEachIndexType<float, 3>(m, ivcsc);
-    generateForEachIndexType<double, 3>(m, ivcsc);
+[[true],[false]]
 
     // VCSC
-    generateForEachIndexType<int8_t, 2>(m, vcsc);
-    generateForEachIndexType<uint8_t, 2>(m, vcsc);
-    generateForEachIndexType<int16_t, 2>(m, vcsc);
-    generateForEachIndexType<uint16_t, 2>(m, vcsc);
-    generateForEachIndexType<int32_t, 2>(m, vcsc);
-    generateForEachIndexType<uint32_t, 2>(m, vcsc);
-    generateForEachIndexType<int64_t, 2>(m, vcsc);
-    generateForEachIndexType<uint64_t, 2>(m, vcsc);
-    generateForEachIndexType<float, 2>(m, vcsc);
-    generateForEachIndexType<double, 2>(m, vcsc);
+    generateForEachIndexType<int8_t, 2>(m);
+    generateForEachIndexType<uint8_t, 2>(m);
+    generateForEachIndexType<int16_t, 2>(m);
+    generateForEachIndexType<uint16_t, 2>(m);
+    generateForEachIndexType<int32_t, 2>(m);
+    generateForEachIndexType<uint32_t, 2>(m);
+    generateForEachIndexType<int64_t, 2>(m);
+    generateForEachIndexType<uint64_t, 2>(m);
+    generateForEachIndexType<float, 2>(m);
+    generateForEachIndexType<double, 2>(m);
 
     // IVCSC
-    generateForEachIndexType<int8_t, 3>(m, ivcsc);
-    generateForEachIndexType<uint8_t, 3>(m, ivcsc);
-    generateForEachIndexType<int16_t, 3>(m, ivcsc);
-    generateForEachIndexType<uint16_t, 3>(m, ivcsc);
-    generateForEachIndexType<int32_t, 3>(m, ivcsc);
-    generateForEachIndexType<uint32_t, 3>(m, ivcsc);
-    generateForEachIndexType<int64_t, 3>(m, ivcsc);
-    generateForEachIndexType<uint64_t, 3>(m, ivcsc);
-    generateForEachIndexType<float, 3>(m, ivcsc);
-    generateForEachIndexType<double, 3>(m, ivcsc);
+    generateForEachIndexType<int8_t, 3>(m);
+    generateForEachIndexType<uint8_t, 3>(m);
+    generateForEachIndexType<int16_t, 3>(m);
+    generateForEachIndexType<uint16_t, 3>(m);
+    generateForEachIndexType<int32_t, 3>(m);
+    generateForEachIndexType<uint32_t, 3>(m);
+    generateForEachIndexType<int64_t, 3>(m);
+    generateForEachIndexType<uint64_t, 3>(m);
+    generateForEachIndexType<float, 3>(m);
+    generateForEachIndexType<double, 3>(m);
+
+    // VCSC
+    generateForEachOtherType<int8_t, 2>(m);
+    generateForEachOtherType<uint8_t, 2>(m);
+    generateForEachOtherType<int16_t, 2>(m);
+    generateForEachOtherType<uint16_t, 2>(m);
+    generateForEachOtherType<int32_t, 2>(m);
+    generateForEachOtherType<uint32_t, 2>(m);
+    generateForEachOtherType<int64_t, 2>(m);
+    generateForEachOtherType<uint64_t, 2>(m);
+    generateForEachOtherType<float, 2>(m);
+    generateForEachOtherType<double, 2>(m);
+
+    // IVCSC
+    generateForEachOtherType<int8_t, 3>(m);
+    generateForEachOtherType<uint8_t, 3>(m);
+    generateForEachOtherType<int16_t, 3>(m);
+    generateForEachOtherType<uint16_t, 3>(m);
+    generateForEachOtherType<int32_t, 3>(m);
+    generateForEachOtherType<uint32_t, 3>(m);
+    generateForEachOtherType<int64_t, 3>(m);
+    generateForEachOtherType<uint64_t, 3>(m);
+    generateForEachOtherType<float, 3>(m);
+    generateForEachOtherType<double, 3>(m);
     
 
     
@@ -323,41 +305,70 @@ void declareForOtherTypes(py::module &m, const char* name){
 }
 
 template <typename T, int compLevel>
-void generateForEachIndexType(py::module &m, const char* name) {
-    
+void generateForEachIndexType(py::module &m) {
+
+    const char* format = (compLevel == 2) ? "VCSC_" : "IVCSC_";
+    const char* underScore = "_";
+
+    // Builds strings in the format: "[FORMAT]_[TYPE]_[INDEX_TYPE]_[COL/ROW]"
+    const char* name1 = std::string(std::string(format) + std::string(typeid(T).name()) + underScore + std::string(typeid(uint8_t).name())+ underScore + std::to_string(compLevel) + std::string("_Row")).data();
+    const char* name2 = std::string(std::string(format) + std::string(typeid(T).name()) + underScore + std::string(typeid(uint8_t).name())+ underScore + std::to_string(compLevel) + std::string("_Col")).data();
+    const char* name3 = std::string(std::string(format) + std::string(typeid(T).name()) + underScore + std::string(typeid(uint16_t).name())+ underScore + std::to_string(compLevel) + std::string("_Row")).data();
+    const char* name4 = std::string(std::string(format) + std::string(typeid(T).name()) + underScore + std::string(typeid(uint16_t).name())+ underScore + std::to_string(compLevel) + std::string("_Col")).data();
+    const char* name5 = std::string(std::string(format) + std::string(typeid(T).name()) + underScore + std::string(typeid(uint32_t).name())+ underScore + std::to_string(compLevel) + std::string("_Row")).data();
+    const char* name6 = std::string(std::string(format) + std::string(typeid(T).name()) + underScore + std::string(typeid(uint32_t).name())+ underScore + std::to_string(compLevel) + std::string("_Col")).data();
+    const char* name7 = std::string(std::string(format) + std::string(typeid(T).name()) + underScore + std::string(typeid(uint64_t).name())+ underScore + std::to_string(compLevel) + std::string("_Row")).data();
+    const char* name8 = std::string(std::string(format) + std::string(typeid(T).name()) + underScore + std::string(typeid(uint64_t).name())+ underScore + std::to_string(compLevel) + std::string("_Col")).data();
+
+
     // base functions
-    declareBase<T, uint8_t, compLevel, false>(m, name);
-    declareBase<T, uint8_t, compLevel, true>(m, name);
-    declareBase<T, uint16_t, compLevel, false>(m, name);
-    declareBase<T, uint16_t, compLevel, true>(m, name);
-    declareBase<T, uint32_t, compLevel, false>(m, name);
-    declareBase<T, uint32_t, compLevel, true>(m, name);
-    declareBase<T, uint64_t, compLevel, false>(m, name);
-    declareBase<T, uint64_t, compLevel, true>(m, name);
+    declareBase<T, uint8_t, compLevel, false>(m, name1);
+    declareBase<T, uint8_t, compLevel, true>(m, name2);
+    declareBase<T, uint16_t, compLevel, false>(m, name3);
+    declareBase<T, uint16_t, compLevel, true>(m, name4);
+    declareBase<T, uint32_t, compLevel, false>(m, name5);
+    declareBase<T, uint32_t, compLevel, true>(m, name6);
+    declareBase<T, uint64_t, compLevel, false>(m, name7);
+    declareBase<T, uint64_t, compLevel, true>(m, name8);
 
     // self functions
-    declareSelfFunc<T, uint8_t, compLevel, false>(m, name);
-    declareSelfFunc<T, uint8_t, compLevel, true>(m, name);
-    declareSelfFunc<T, uint16_t, compLevel, false>(m, name);
-    declareSelfFunc<T, uint16_t, compLevel, true>(m, name);
-    declareSelfFunc<T, uint32_t, compLevel, false>(m, name);
-    declareSelfFunc<T, uint32_t, compLevel, true>(m, name);
-    declareSelfFunc<T, uint64_t, compLevel, false>(m, name);
-    declareSelfFunc<T, uint64_t, compLevel, true>(m, name);
+    declareSelfFunc<T, uint8_t, compLevel, false>(m, name1);
+    declareSelfFunc<T, uint8_t, compLevel, true>(m, name2);
+    declareSelfFunc<T, uint16_t, compLevel, false>(m, name3);
+    declareSelfFunc<T, uint16_t, compLevel, true>(m, name4);
+    declareSelfFunc<T, uint32_t, compLevel, false>(m, name5);
+    declareSelfFunc<T, uint32_t, compLevel, true>(m, name6);
+    declareSelfFunc<T, uint64_t, compLevel, false>(m, name7);
+    declareSelfFunc<T, uint64_t, compLevel, true>(m, name8);
 }
 
 template <typename T, int compLevel>
-void generateForEachOtherType(py::module &m, const char* name) {
-    
-    declareOtherFunc<T, uint8_t, compLevel, false>(m, name);
-    declareOtherFunc<T, uint8_t, compLevel, true>(m, name);
-    declareOtherFunc<T, uint16_t, compLevel, false>(m, name);
-    declareOtherFunc<T, uint16_t, compLevel, true>(m, name);
-    declareOtherFunc<T, uint32_t, compLevel, false>(m, name);
-    declareOtherFunc<T, uint32_t, compLevel, true>(m, name);
-    declareOtherFunc<T, uint64_t, compLevel, false>(m, name);
-    declareOtherFunc<T, uint64_t, compLevel, true>(m, name);
+void generateForEachOtherType(py::module &m) {
+
+    const char* format = (compLevel == 2) ? "VCSC_" : "IVCSC_";
+    const char* underScore = "_";
+
+    // Builds strings in the format: "[FORMAT]_[TYPE]_[INDEX_TYPE]_[COL/ROW]"
+    const char* name1 = std::string(std::string(format) + std::string(typeid(T).name()) + underScore + std::string(typeid(uint8_t).name())+ underScore + std::to_string(compLevel) + std::string("_Row")).data();
+    const char* name2 = std::string(std::string(format) + std::string(typeid(T).name()) + underScore + std::string(typeid(uint8_t).name())+ underScore + std::to_string(compLevel) + std::string("_Col")).data();
+    const char* name3 = std::string(std::string(format) + std::string(typeid(T).name()) + underScore + std::string(typeid(uint16_t).name())+ underScore + std::to_string(compLevel) + std::string("_Row")).data();
+    const char* name4 = std::string(std::string(format) + std::string(typeid(T).name()) + underScore + std::string(typeid(uint16_t).name())+ underScore + std::to_string(compLevel) + std::string("_Col")).data();
+    const char* name5 = std::string(std::string(format) + std::string(typeid(T).name()) + underScore + std::string(typeid(uint32_t).name())+ underScore + std::to_string(compLevel) + std::string("_Row")).data();
+    const char* name6 = std::string(std::string(format) + std::string(typeid(T).name()) + underScore + std::string(typeid(uint32_t).name())+ underScore + std::to_string(compLevel) + std::string("_Col")).data();
+    const char* name7 = std::string(std::string(format) + std::string(typeid(T).name()) + underScore + std::string(typeid(uint64_t).name())+ underScore + std::to_string(compLevel) + std::string("_Row")).data();
+    const char* name8 = std::string(std::string(format) + std::string(typeid(T).name()) + underScore + std::string(typeid(uint64_t).name())+ underScore + std::to_string(compLevel) + std::string("_Col")).data();
+
+    declareOtherFunc<T, uint8_t, compLevel, false>(m, name1);
+    declareOtherFunc<T, uint8_t, compLevel, true>(m, name2);
+    declareOtherFunc<T, uint16_t, compLevel, false>(m, name3);
+    declareOtherFunc<T, uint16_t, compLevel, true>(m, name4);
+    declareOtherFunc<T, uint32_t, compLevel, false>(m, name5);
+    declareOtherFunc<T, uint32_t, compLevel, true>(m, name6);
+    declareOtherFunc<T, uint64_t, compLevel, false>(m, name7);
+    declareOtherFunc<T, uint64_t, compLevel, true>(m, name8);
 }
+
+
 
 // template <typename T, int compressionLevel, bool isColMajor>
 // void generateForEachOtherType(py::module &m, const char* name) {

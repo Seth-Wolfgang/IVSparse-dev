@@ -429,7 +429,9 @@ namespace IVSparse {
 
         // read the metadata
         metadata = new uint32_t[NUM_META_DATA];
-        fread(metadata, sizeof(uint32_t), NUM_META_DATA, fp);
+        if (fread(metadata, sizeof(uint32_t), NUM_META_DATA, fp) != 1) [[unlikely]] {
+            throw std::runtime_error("Error: Could not read metadata");
+        }
 
         // set the matrix info
         innerDim = metadata[1];
@@ -466,12 +468,16 @@ namespace IVSparse {
 
         // read in the value sizes
         for (size_t i = 0; i < outerDim; i++) {
-            fread(&valueSizes[i], sizeof(indexT), 1, fp);
+            if (fread(&valueSizes[i], sizeof(indexT), 1, fp) != 1) [[unlikely]] {
+                throw std::runtime_error("Error: Could not read valueSizes");
+            }
         }
 
         // read in the index sizes
         for (size_t i = 0; i < outerDim; i++) {
-            fread(&indexSizes[i], sizeof(indexT), 1, fp);
+            if (fread(&indexSizes[i], sizeof(indexT), 1, fp) != 1) [[unlikely]] {
+                throw std::runtime_error("Error: Could not read indexSizes");
+                }
         }
 
         // read in the values
@@ -483,7 +489,9 @@ namespace IVSparse {
                 std::cerr << "bad_alloc caught: " << ba.what() << '\n';
                 throw std::runtime_error("Error: Could not allocate memory");
             }
-            fread(values[i], sizeof(T), valueSizes[i], fp);
+            if (fread(values[i], sizeof(T), valueSizes[i], fp) != 1) [[unlikely]] {
+                throw std::runtime_error("Error: Could not read values");
+                }
         }
 
         // read in the counts
@@ -495,7 +503,9 @@ namespace IVSparse {
                 std::cerr << "bad_alloc caught: " << ba.what() << '\n';
                 throw std::runtime_error("Error: Could not allocate memory");
             }
-            fread(counts[i], sizeof(indexT), valueSizes[i], fp);
+            if (fread(counts[i], sizeof(indexT), valueSizes[i], fp) != 1) [[unlikely]] {
+                throw std::runtime_error("Error: Could not read counts");
+                }
         }
 
         // read in the indices
@@ -507,7 +517,9 @@ namespace IVSparse {
                 std::cerr << "bad_alloc caught: " << ba.what() << '\n';
                 throw std::runtime_error("Error: Could not allocate memory");
             }
-            fread(indices[i], sizeof(indexT), indexSizes[i], fp);
+            if(fread(indices[i], sizeof(indexT), indexSizes[i], fp) != 1) [[unlikely]] {
+                throw std::runtime_error("Error: Could not read indices");
+            }
         }
 
         // close the file

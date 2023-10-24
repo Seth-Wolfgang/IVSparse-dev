@@ -543,7 +543,9 @@ namespace IVSparse {
 
         // read the metadata
         metadata = new uint32_t[NUM_META_DATA];
-        fread(metadata, sizeof(uint32_t), NUM_META_DATA, fp);
+        if(fread(metadata, sizeof(uint32_t), NUM_META_DATA, fp) != 1) [[unlikely]] {
+            throw std::runtime_error("Error: Could not read file");
+        }
 
         // set the matrix info
         innerDim = metadata[1];
@@ -581,7 +583,10 @@ namespace IVSparse {
         for (size_t i = 0; i < outerDim; i++) {
             // get the size of the column
             uint64_t size;
-            fread(&size, sizeof(uint64_t), 1, fp);
+
+            if(fread(&size, sizeof(uint64_t), 1, fp) != 1) [[unlikely]] {
+                throw std::runtime_error("Error: Could not read file");
+            }
 
             // if the size is 0, set the data and endpointer to nullptr
             if (size == 0) {
@@ -602,7 +607,9 @@ namespace IVSparse {
 
         // read the data
         for (size_t i = 0; i < outerDim; i++) {
-            fread(data[i], 1, (uint8_t*)endPointers[i] - (uint8_t*)data[i], fp);
+            if(fread(data[i], 1, (uint8_t*)endPointers[i] - (uint8_t*)data[i], fp) != 1) [[unlikely]] {
+                throw std::runtime_error("Error: Could not read file");
+            }
         }
 
         // close the file
