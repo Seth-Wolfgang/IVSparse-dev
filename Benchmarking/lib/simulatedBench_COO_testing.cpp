@@ -1402,9 +1402,10 @@ template <typename T, typename indexType, int compressionLevel>
 inline Eigen::Matrix<T, -1, 1> IVSparse_fair_spmv(IVSparse::SparseMatrix<T, indexType, compressionLevel>& matrix, Eigen::Matrix<T, -1, 1>& vector) {
     Eigen::Matrix<T, -1, 1> result = Eigen::Matrix<T, -1, 1>::Zero(matrix.rows(), 1);
 
-    for (int j = 0; j < matrix.outerSize(); ++j) {
-        for (typename IVSparse::SparseMatrix<T, indexType, compressionLevel>::InnerIterator it(matrix, j); it; ++it) {
-            result(it.row()) += it.value() * vector(j);
+    // iterate over the vector and multiply the corresponding row of the matrix by the vecIter value
+    for (uint32_t i = 0; i < matrix.cols(); i++) {
+        for (typename IVSparse::SparseMatrix<T, indexType, compressionLevel>::InnerIterator matIter(matrix, i); matIter; ++matIter) {
+            result(matIter.row()) += vector(matIter.col()) * matIter.value();
         }
     }
     return result;
@@ -1416,40 +1417,46 @@ template <typename T>
 inline Eigen::Matrix<T, -1, 1> eigen_fair_spmv(Eigen::SparseMatrix<T>& matrix, Eigen::Matrix<T, -1, 1>& vector) {
     Eigen::Matrix<T, -1, 1> result = Eigen::Matrix<T, -1, 1>::Zero(matrix.rows(), 1);
 
-    for (int j = 0; j < matrix.outerSize(); ++j) {
-        for (typename Eigen::SparseMatrix<T>::InnerIterator it(matrix, j); it; ++it) {
-            result(it.row()) += it.value() * vector(j);
+    // iterate over the vector and multiply the corresponding row of the matrix by the vecIter value
+    for (uint32_t i = 0; i < matrix.cols(); i++) {
+        for (typename Eigen::SparseMatrix<T>::InnerIterator matIter(matrix, i); matIter; ++matIter) {
+            result(matIter.row()) += vector(matIter.col()) * matIter.value();
         }
     }
     return result;
+
 }
 
 template <typename T>
 inline Eigen::Matrix<T, -1, -1> eigen_fair_spmm(Eigen::SparseMatrix<T>& leftMat, Eigen::Matrix<T, -1, -1>& rightMat) {
-    Eigen::Matrix<T, -1, -1> result = Eigen::Matrix<T, -1, -1>::Zero(leftMat.rows(), rightMat.cols());
+    Eigen::Matrix<T, -1, -1> newMatrix = Eigen::Matrix<T, -1, -1>::Zero(rightMat.cols(), leftMat.rows());
+    Eigen::Matrix<T, -1, -1> matTranspose = rightMat.transpose();
 
-    for (int col = 0; col < rightMat.cols(); col++) {
-        for (int row = 0; row < rightMat.rows(); row++) {
-            for (typename Eigen::SparseMatrix<T>::InnerIterator matIter(leftMat, row); matIter; ++matIter) {
-                result.coeffRef(matIter.row(), col) += matIter.value() * rightMat(row, col);
-            }
+    // Fix Parallelism issue (race condition because of partial sums and
+    // orientation of Sparse * Dense)
+    for (uint32_t col = 0; col < leftMat.cols(); col++) {
+        for (typename Eigen::SparseMatrix<T>::InnerIterator matIter(leftMat, col); matIter; ++matIter) {
+            newMatrix.col(matIter.row()) += matTranspose.col(col) * matIter.value();
         }
-    }
-
-    return result;
+    } 
+    
+    return newMatrix.transpose();
 }
 
 template <typename T, typename indexType, int compressionLevel>
 inline Eigen::Matrix<T, -1, -1> IVSparse_fair_spmm(IVSparse::SparseMatrix<T, indexType, compressionLevel>& leftMat, Eigen::Matrix<T, -1, -1>& rightMat) {
-    Eigen::Matrix<T, -1, -1> result = Eigen::Matrix<T, -1, -1>::Zero(leftMat.rows(), rightMat.cols());
+    Eigen::Matrix<T, -1, -1> newMatrix = Eigen::Matrix<T, -1, -1>::Zero(rightMat.cols(), leftMat.rows());
+    Eigen::Matrix<T, -1, -1> matTranspose = rightMat.transpose();
 
-    for (int col = 0; col < rightMat.cols(); col++) {
-        for (int row = 0; row < rightMat.rows(); row++) {
-            for (typename IVSparse::SparseMatrix<T, indexType, compressionLevel>::InnerIterator matIter(leftMat, row); matIter; ++matIter) {
-                result.coeffRef(matIter.row(), col) += matIter.value() * rightMat(row, col);
-            }
+    // Fix Parallelism issue (race condition because of partial sums and
+    // orientation of Sparse * Dense)
+    for (uint32_t col = 0; col < leftMat.cols(); col++) {
+        for (typename IVSparse::SparseMatrix<T, indexType, compressionLevel>::InnerIterator matIter(leftMat, col); matIter; ++matIter) {
+            newMatrix.col(matIter.row()) += matTranspose.col(col) * matIter.value();
         }
     }
 
-    return result;
+    return newMatrix.transpose();
 }
+
+
