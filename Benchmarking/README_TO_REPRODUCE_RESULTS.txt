@@ -7,7 +7,7 @@ Default paramters for simulated benchmarks:
 ROWS = 1'000'000 -> handled by slurm script
 COLS = 25
 
-For runFullSimulatedBench.sh,
+For ivsparse-benchmark.sh,
 
 *   #define NUM_ITERATIONS 10 
 *   #define DENSITY 0.01 -> handled by slurm script
@@ -19,24 +19,19 @@ To run the real data benchmarks, you will need to download the data from the fol
 
 Web of Science: https://paperswithcode.com/dataset/web-of-science-dataset
     - Note: This data was run through a count vectorizer, the script is provided in helpful_scripts/
-            and later CSC_to_COO.py was used to convert the data to COO format.
+            
+            
 MovieLens: https://grouplens.org/datasets/movielens/
-    - Note: We used the ratings.csv file, as part of their 25 million data set. Some finangling may be required to
-            get the data to run properly in /lib/datasetSizeBench.cpp
+    - Note: We used the ratings.csv file, as part of their 25 million data set. 
 
 Single-cell: https://www.10xgenomics.com/resources/datasets/aggregate-of-900k-human-non-small-cell-lung-cancer-and-normal-adjacent-cells-multiplexed-samples-16-probe-barcodes-1-standard
-    - Note: this one is a matrix market file and source code should be provided. 
-            It is rather large (20gb). We used filtered_feature_bc_matrix.mtx and 
-            used nearly 40gb of ram on my machine.
+    - Note: We used filtered_feature_bc_matrix.mtx and 
+
 
 PR02R: https://www.cise.ufl.edu/research/sparse/matrices/Fluorem/PR02R.html
-    - Note: this may be found on either the official SuiteSparse website or the University of Florida site.
-            We used the PR02R.mtx NOT PR02R_b.mtx or PR02R_x.mtx.
+    - Note: We used the PR02R.mtx NOT PR02R_b.mtx or PR02R_x.mtx.
 
-Sim Unique/Binary:
-    - Note: These were generated matrices. The dimensions and density are listed on Table 1, the only 
-            difference is all values in Sim Binary were 1, and all values in Sim Unique had values generated
-            with rand() and allowed for values between 1 and INT64_MAX
+com-orkut: https://sparse.tamu.edu/SNAP/com-Orkut
 
 All data was run on a HPC. The provided slurm script (ivsparse-benchmark.sh) should create the necessary files. 
 Some work, mainly creating directories in /lib/, may need to be done for a generalized run, as the script is written for our specific machine.
