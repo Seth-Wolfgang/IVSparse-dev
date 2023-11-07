@@ -15,7 +15,7 @@
 #include <unordered_set>
 #include "suiteSparseBenchmarkAnalysis.cpp"
 #include "mmio.c"
-#include "armadillo" // https://arma.sourceforge.net/
+// #include "armadillo" // https://arma.sourceforge.net/
 #include <Eigen/Dense>
 #include <Eigen/Sparse>
 #include <iterator>
@@ -49,8 +49,8 @@ void CSF2ConstructorBenchmark(std::vector<Eigen::Triplet<T>> &eigenTriplet, std:
 template <typename T>
 void CSF3ConstructorBenchmark(std::vector<Eigen::Triplet<T>> &eigenTriplet, std::vector<uint64_t> &data, int rows, int cols);
 
-template <typename T>
-void ArmadilloConstructorBenchmark(std::vector<Eigen::Triplet<T>> &eigenTriplet, std::vector<uint64_t> &data, int rows, int cols);
+// template <typename T>
+// void ArmadilloConstructorBenchmark(std::vector<Eigen::Triplet<T>> &eigenTriplet, std::vector<uint64_t> &data, int rows, int cols);
 
 template <typename T>
 void EigenInnerIteratorBenchmark(Eigen::SparseMatrix<T> eigen, std::vector<uint64_t> &data);
@@ -64,8 +64,8 @@ void CSF2InnerIteratorBenchmark(IVSparse::SparseMatrix<T, INDEX_TYPE, 2> &csf2, 
 template <typename T>
 void CSF3InnerIteratorBenchmark(IVSparse::SparseMatrix<T, INDEX_TYPE, 3> csf3, std::vector<uint64_t> &data);
 
-template <typename T>
-void ArmadilloInnerIteratorBenchmark(arma::sp_mat &mat, std::vector<uint64_t> &data);
+// template <typename T>
+// void ArmadilloInnerIteratorBenchmark(arma::sp_mat &mat, std::vector<uint64_t> &data);
 
 template <typename T>
 void EigenScalarMultiplicationBenchmark(Eigen::SparseMatrix<T> eigen, std::vector<uint64_t> &data);
@@ -79,8 +79,8 @@ void CSF2ScalarMultiplicationBenchmark(IVSparse::SparseMatrix<T, INDEX_TYPE, 2> 
 template <typename T>
 void CSF3scalarMultiplicationBenchmark(IVSparse::SparseMatrix<T, INDEX_TYPE, 3> csf3, std::vector<uint64_t> &data);
 
-template <typename T>
-void ArmadilloScalarMultiplicationBenchmark(arma::sp_mat mat, std::vector<uint64_t> &data);
+// template <typename T>
+// void ArmadilloScalarMultiplicationBenchmark(arma::sp_mat mat, std::vector<uint64_t> &data);
 
 template <typename T>
 void EigenVectorMultiplicationBenchmark(Eigen::SparseMatrix<T> &eigen, std::vector<uint64_t> &data);
@@ -94,8 +94,8 @@ void CSF2VectorMultiplicationBenchmark(Eigen::SparseMatrix<T> &eigen, IVSparse::
 template <typename T>
 void CSF3VectorMultiplicationBenchmark(Eigen::SparseMatrix<T> &eigen, IVSparse::SparseMatrix<T, INDEX_TYPE, 3> &csf3, std::vector<uint64_t> &data);
 
-template <typename T>
-void ArmadilloVectorMultiplicationBenchmark(arma::sp_mat &mat, std::vector<uint64_t> &data);
+// template <typename T>
+// void ArmadilloVectorMultiplicationBenchmark(arma::sp_mat &mat, std::vector<uint64_t> &data);
 
 template <typename T>
 void EigenMemoryFootprintBenchmark(std::vector<uint64_t> &data, std::vector<Eigen::Triplet<T>> &eigenTriplet, uint32_t inner, uint32_t outer);
@@ -109,8 +109,8 @@ void CSF2MemoryFootprintBenchmark(std::vector<uint64_t> &data, std::vector<Eigen
 template <typename T>
 void CSF3MemoryFootprintBenchmark(std::vector<uint64_t> &data, std::vector<Eigen::Triplet<T>> &eigenTriplet, uint32_t inner, uint32_t outer);
 
-template <typename T>
-void ArmadilloMemoryFootprintBenchmark(std::vector<uint64_t> &data, std::vector<Eigen::Triplet<T>> &eigenTriplet, uint32_t inner, uint32_t outer);
+// template <typename T>
+// void ArmadilloMemoryFootprintBenchmark(std::vector<uint64_t> &data, std::vector<Eigen::Triplet<T>> &eigenTriplet, uint32_t inner, uint32_t outer);
 
 template <typename T>
 void eigenTransposeBenchmark(Eigen::SparseMatrix<T> &eigen, std::vector<uint64_t> &data);
@@ -124,8 +124,8 @@ void CSF2TransposeBenchmark(IVSparse::SparseMatrix<T, INDEX_TYPE, 2> &csf2, std:
 template <typename T>
 void CSF3TransposeBenchmark(IVSparse::SparseMatrix<T, INDEX_TYPE, 3> &csf3, std::vector<uint64_t> &data);
 
-template <typename T>
-void ArmadilloTransposeBenchmark(arma::sp_mat &mat, std::vector<uint64_t> &data);
+// template <typename T>
+// void ArmadilloTransposeBenchmark(arma::sp_mat &mat, std::vector<uint64_t> &data);
 
 template <typename T>
 void eigenMatrixMultiplicationBenchmark(Eigen::SparseMatrix<T> &eigen, std::vector<uint64_t> &data);
@@ -139,8 +139,8 @@ void CSF2MatrixMultiplicationBenchmark(Eigen::SparseMatrix<T> &eigen, IVSparse::
 template <typename T>
 void CSF3MatrixMultiplicationBenchmark(Eigen::SparseMatrix<T> &eigen, IVSparse::SparseMatrix<T, INDEX_TYPE, 3> &csf3, std::vector<uint64_t> &data);
 
-template <typename T>
-void ArmadilloMatrixMultiplicationBenchmark(arma::sp_mat &mat, std::vector<uint64_t> &data);
+// template <typename T>
+// void ArmadilloMatrixMultiplicationBenchmark(arma::sp_mat &mat, std::vector<uint64_t> &data);
 
 template <typename T>
 void eigenOuterSumBenchmark(Eigen::SparseMatrix<T> &eigen, std::vector<uint64_t> &data);
@@ -154,8 +154,8 @@ void CSF2OuterSumBenchmark(IVSparse::SparseMatrix<T, INDEX_TYPE, 2> &csf2, std::
 template <typename T>
 void CSF3OuterSumBenchmark(IVSparse::SparseMatrix<T, INDEX_TYPE, 3> &csf3, std::vector<uint64_t> &data);
 
-template <typename T>
-void ArmadilloOuterSumBenchmark(arma::sp_mat &mat, std::vector<uint64_t> &data);
+// template <typename T>
+// void ArmadilloOuterSumBenchmark(arma::sp_mat &mat, std::vector<uint64_t> &data);
 
 template <typename T>
 void eigenSumBenchmark(Eigen::SparseMatrix<T> &eigen, std::vector<uint64_t> &data);
@@ -169,8 +169,8 @@ void CSF2SumBenchmark(IVSparse::SparseMatrix<T, INDEX_TYPE, 2> &csf2, std::vecto
 template <typename T>
 void CSF3SumBenchmark(IVSparse::SparseMatrix<T, INDEX_TYPE, 3> &csf3, std::vector<uint64_t> &data);
 
-template <typename T>
-void ArmadilloSumBenchmark(arma::sp_mat &mat, std::vector<uint64_t> &data);
+// template <typename T>
+// void ArmadilloSumBenchmark(arma::sp_mat &mat, std::vector<uint64_t> &data);
 
 template <typename T>
 void eigenNormBenchmark(Eigen::SparseMatrix<T> &eigen, std::vector<uint64_t> &data);
@@ -184,5 +184,5 @@ void CSF2NormBenchmark(IVSparse::SparseMatrix<T, INDEX_TYPE, 2> &csf2, std::vect
 template <typename T>
 void CSF3NormBenchmark(IVSparse::SparseMatrix<T, INDEX_TYPE, 3> &csf3, std::vector<uint64_t> &data);
 
-template <typename T>
-void ArmadilloNormBenchmark(arma::sp_mat &mat, std::vector<uint64_t> &data);
+// template <typename T>
+// void ArmadilloNormBenchmark(arma::sp_mat &mat, std::vector<uint64_t> &data);
