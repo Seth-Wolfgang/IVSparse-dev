@@ -12,25 +12,6 @@
  * @copyright Copyright (c) 2023
  *
  *
- * STEPS FOR REPRODUCABILITY:
- * 1. Run this program using runFullSimulatedBench.sh with the desired number of rows and columns, and the desired density.
- *  - The paper uses 10,000x100 matrices
- *  - The following should be defined as such:
-    NUM_ITERATIONS 10
-    DENSITY 0.01 -> THIS WILL CHANGE IF YOU RUN WITH runFullSimulatedBench.sh. This is intentional.
-    MATRICES 1000
-    VALUE_TYPE double
-
- *
- * 2. Run the R script in the R folder. Look for simulated_bench_visualizations.Rmd in /Benchmarking/R.
- *  - This will create the plots used in the paper.
- *  - Some additional packages may be required for the Rmd file. See Rmd file for what you may need to install.
- *    Look for the library() calls.
- *  - You may need to change the path of where plots are saved, or you may comment out dev.off() and pdf() calls.
- *  - It is enough to simply run all cells in the rmd file if you ran the program with runFullSimulatedBench.sh
- *
- *
- *
  */
 
 
