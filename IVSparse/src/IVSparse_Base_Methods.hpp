@@ -55,6 +55,6 @@ namespace IVSparse {
     uint32_t SparseMatrixBase::nonZeros() const { return nnz; }
 
     // Gets the number of bytes needed to store the matrix
-    size_t SparseMatrixBase::byteSize() const { return compSize; }
+    uint64_t SparseMatrixBase::byteSize() const { return compSize; }
 
 }  // namespace IVSparse

@@ -7,6 +7,7 @@ date: "2023-07-21"
 ---
 
 This code is not pretty - it was meant to be done quickly.
+# This was not used in the paper, but has some R code to generate plots for an older version of the preprint. Plots on the paper used the provided python code.
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
@@ -20,7 +21,7 @@ library(patchwork)
 library(stringr)
 
 
-plotSavePath = "~/vscode/CSF-Figures/plots/"
+plotSavePath = "~/vscode/IVSparse-Figures/plots/"
 
 largeEigenResults10 = read.csv("~/results/EigenResults_0.1_large.csv")
 largeVCSCResults10 = read.csv("~/results/VCSCResults_0.1_large.csv")
@@ -251,8 +252,8 @@ format_y_axis_label <- function(y_axis_variable) {
 triple_plot_ratio_over_eigen_no_legend <- function(dataset1_results, dataset1_name, dataset2_results, dataset2_name, dataset3_results, dataset3_name, eigen1, eigen2, eigen3, y_axis_variable, name) {
   # Step 1: Call the pdf command to start the plot
     
-    dir.create(file.path(paste0("~/vscode/CSF-Figures/plots/",name)), showWarnings = FALSE)
-    path <- paste0("~/vscode/CSF-Figures/plots/",name,"/",y_axis_variable,".pdf")
+    dir.create(file.path(paste0("~/vscode/IVSparse-Figures/plots/",name)), showWarnings = FALSE)
+    path <- paste0("~/vscode/IVSparse-Figures/plots/",name,"/",y_axis_variable,".pdf")
 
     pdf(file <- path,  
     width = 6, # The width of the plot in inches
@@ -386,8 +387,8 @@ triple_plot_ratio_over_eigen_no_legend(IVCSCResults10, "IVCSC", VCSCResults10, "
 triple_plot_ratio_over_eigen_bottom_legend <- function(dataset1_results, dataset1_name, dataset2_results, dataset2_name, dataset3_results, dataset3_name, eigen1, eigen2, eigen3, y_axis_variable, name) {
   # Step 1: Call the pdf command to start the plot
     
-    dir.create(file.path(paste0("~/vscode/CSF-Figures/plots/",name)), showWarnings = FALSE)
-    path <- paste0("~/vscode/CSF-Figures/plots/",name,"/",y_axis_variable,".pdf")
+    dir.create(file.path(paste0("~/vscode/IVSparse-Figures/plots/",name)), showWarnings = FALSE)
+    path <- paste0("~/vscode/IVSparse-Figures/plots/",name,"/",y_axis_variable,".pdf")
 
     pdf(file <- path,  
     width = 6, # The width of the plot in inches
@@ -515,9 +516,9 @@ triple_plot_ratio_over_eigen_bottom_legend(IVCSCResults10, "IVCSC", VCSCResults1
 triple_plot_raw <- function(dataset1_results, dataset1_name, dataset2_results, dataset2_name, dataset3_results, dataset3_name, eigen1, eigen2, eigen3, y_axis_variable, name) {
   # Step 1: Call the pdf command to start the plot
     
-    dir.create(file.path(paste0("~/vscode/CSF-Figures/plots/",name)), showWarnings = FALSE)
-    # path <- paste0("~/vscode/CSF-Figures/plots/",name,"/","raw_",y_axis_variable,".pdf")
-    path <- paste0("~/vscode/CSF-Figures/plots/",name,"/","raw_",y_axis_variable,".png")
+    dir.create(file.path(paste0("~/vscode/IVSparse-Figures/plots/",name)), showWarnings = FALSE)
+    # path <- paste0("~/vscode/IVSparse-Figures/plots/",name,"/","raw_",y_axis_variable,".pdf")
+    path <- paste0("~/vscode/IVSparse-Figures/plots/",name,"/","raw_",y_axis_variable,".png")
 
     # png(file <- path,  
     # width = 6, # The width of the plot in inches
@@ -643,13 +644,13 @@ p <- ggplot(combined_data, aes(x = redundancy, y = ratio, color = dataset, shape
   print(p)
   dev.off()
 }
-# VCSCResults102 = read.csv("/home/sethwolfgang/vscode/CSF-Matrix/Benchmarking/results/VCSCResults_CSC.csv")
-# eigenResults102 = read.csv("/home/sethwolfgang/vscode/CSF-Matrix/Benchmarking/results/EigenResults_CSC.csv")
-# IVCSCResults102 = read.csv("/home/sethwolfgang/vscode/CSF-Matrix/Benchmarking/results/IVCSCResults_CSC.csv")
+# VCSCResults102 = read.csv("~/IVSparse/Benchmarking/results/VCSCResults_CSC.csv")
+# eigenResults102 = read.csv("~/IVSparse/Benchmarking/results/EigenResults_CSC.csv")
+# IVCSCResults102 = read.csv("~/IVSparse/Benchmarking/results/IVCSCResults_CSC.csv")
 
-# VCSCResults102 = read.csv("/home/sethwolfgang/vscode/resultsSPMV/VCSCResults_CSC.csv")
-# eigenResults102 = read.csv("/home/sethwolfgang/vscode/resultsSPMV/EigenResults_CSC.csv")
-# IVCSCResults102 = read.csv("/home/sethwolfgang/vscode/resultsSPMV/IVCSCResults_CSC.csv")
+# VCSCResults102 = read.csv("~/resultsSPMV/VCSCResults_CSC.csv")
+# eigenResults102 = read.csv("~/resultsSPMV/EigenResults_CSC.csv")
+# IVCSCResults102 = read.csv("~/resultsSPMV/IVCSCResults_CSC.csv")
 
 # triple_plot_raw(IVCSCResults102, "IVCSC", VCSCResults102, "VCSC", eigenResults102, "Eigen" ,eigenResults102, eigenResults102, eigenResults102 ,"scalar_time","new2_All_10_density")
 # triple_plot_raw(IVCSCResults102, "IVCSC", VCSCResults102, "VCSC", eigenResults102, "Eigen" ,eigenResults102, eigenResults102, eigenResults102 ,"spmv_time","new2_All_10_density")
@@ -674,9 +675,9 @@ triple_size_plot <- function(dataset1_results, dataset1_name, dataset2_results, 
   secondNonzero <- eigenResults5[1, "nonzeros"]
   thirdNonzero <- eigenResults10[1, "nonzeros"]
     
-    dir.create(file.path(paste0("~/vscode/CSF-Figures/plots/",name)), showWarnings = FALSE)
-    # path <- paste0("~/vscode/CSF-Figures/plots/",name,"/","raw_",y_axis_variable,".pdf")
-    path <- paste0("~/vscode/CSF-Figures/plots/",name,"/","raw_",y_axis_variable,".png")
+    dir.create(file.path(paste0("~/vscode/IVSparse-Figures/plots/",name)), showWarnings = FALSE)
+    # path <- paste0("~/vscode/IVSparse-Figures/plots/",name,"/","raw_",y_axis_variable,".pdf")
+    path <- paste0("~/vscode/IVSparse-Figures/plots/",name,"/","raw_",y_axis_variable,".png")
 
     # png(file <- path,  
     # width = 6, # The width of the plot in inches
@@ -813,9 +814,9 @@ p <- ggplot(combined_data, aes(x = redundancy, y = ratio, color = dataset, linet
   dev.off()
 }
 
-# VCSCResults102 = read.csv("/home/sethwolfgang/vscode/resultsFixed/VCSCResults_CSC.csv")
-# eigenResults102 = read.csv("/home/sethwolfgang/vscode/resultsFixed/EigenResults_CSC.csv")
-# IVCSCResults102 = read.csv("/home/sethwolfgang/vscode/resultsFixed/IVCSCResults_CSC.csv")
+# VCSCResults102 = read.csv("~/resultsFixed/VCSCResults_CSC.csv")
+# eigenResults102 = read.csv("~/resultsFixed/EigenResults_CSC.csv")
+# IVCSCResults102 = read.csv("~/resultsFixed/IVCSCResults_CSC.csv")
 
 
 # triple_size_plot(IVCSCResults10, "IVCSC",  VCSCResults10, "VCSC", eigenResults10, "CSC" , eigenResults10, eigenResults10, eigenResults10 ,"All_10_density")
@@ -831,9 +832,9 @@ density_triple_size_plot <- function(dataset1_results, dataset1_name, dataset2_r
   
   y_axis_variable <- "size"
 
-    dir.create(file.path(paste0("~/vscode/CSF-Figures/plots/",name)), showWarnings = FALSE)
-    # path <- paste0("~/vscode/CSF-Figures/plots/",name,"/","raw_",y_axis_variable,".pdf")
-    path <- paste0("~/vscode/CSF-Figures/plots/",name,"/","raw_",y_axis_variable,".png")
+    dir.create(file.path(paste0("~/vscode/IVSparse-Figures/plots/",name)), showWarnings = FALSE)
+    # path <- paste0("~/vscode/IVSparse-Figures/plots/",name,"/","raw_",y_axis_variable,".pdf")
+    path <- paste0("~/vscode/IVSparse-Figures/plots/",name,"/","raw_",y_axis_variable,".png")
 
     # png(file <- path,  
     # width = 6, # The width of the plot in inches
@@ -1012,13 +1013,13 @@ triple_size_plot(IVCSCResults10, "IVCSC",  VCSCResults10, "VCSC", eigenResults10
 library(dplyr)
 library(ggplot2)
 
-VCSCResults102 = read.csv("/home/sethwolfgang/vscode/results/VCSCResults_COO.csv")
-eigenResults102 = read.csv("/home/sethwolfgang/vscode/results/EigenResults_COO.csv")
-IVCSCResults102 = read.csv("/home/sethwolfgang/vscode/results/IVCSCResults_COO.csv")
+VCSCResults102 = read.csv("~/results/VCSCResults_COO.csv")
+eigenResults102 = read.csv("~/results/EigenResults_COO.csv")
+IVCSCResults102 = read.csv("~/results/IVCSCResults_COO.csv")
 
-# VCSCResults102 = read.csv("/home/sethwolfgang/vscode/resultsSPMM/VCSCResults_CSC.csv")
-# eigenResults102 = read.csv("/home/sethwolfgang/vscode/resultsSPMM/EigenResults_CSC.csv")
-# IVCSCResults102 = read.csv("/home/sethwolfgang/vscode/resultsSPMM/IVCSCResults_CSC.csv")
+# VCSCResults102 = read.csv("~/resultsSPMM/VCSCResults_CSC.csv")
+# eigenResults102 = read.csv("~/resultsSPMM/EigenResults_CSC.csv")
+# IVCSCResults102 = read.csv("~/resultsSPMM/IVCSCResults_CSC.csv")
 
 triple_plot_raw(IVCSCResults102, "IVCSC", VCSCResults102, "VCSC", eigenResults102, "Eigen" ,eigenResults102, eigenResults102, eigenResults102 ,"scalar_time","old_VCSC")
 triple_plot_raw(IVCSCResults102, "IVCSC", VCSCResults102, "VCSC", eigenResults102, "Eigen" ,eigenResults102, eigenResults102, eigenResults102 ,"spmv_time","old_VCSC")
@@ -1046,13 +1047,13 @@ triple_plot_raw(largeIVCSCResults10, "IVCSC", largeVCSCResults10, "VCSC", largeE
 
 ```{R}
 
-VCSCResultsMAP = read.csv("/home/sethwolfgang/vscode/resultsMAP/VCSCResults_COO.csv")
-eigenResultsMAP = read.csv("/home/sethwolfgang/vscode/resultsMAP/EigenResults_COO.csv")
-IVCSCResultsMAP = read.csv("/home/sethwolfgang/vscode/resultsMAP/IVCSCResults_COO.csv")
+VCSCResultsMAP = read.csv("~/resultsMAP/VCSCResults_COO.csv")
+eigenResultsMAP = read.csv("~/resultsMAP/EigenResults_COO.csv")
+IVCSCResultsMAP = read.csv("~/resultsMAP/IVCSCResults_COO.csv")
 
-VCSCResultsO = read.csv("/home/sethwolfgang/vscode/resultsOriginalVCSC/VCSCResults_COO.csv")
-eigenResultsO = read.csv("/home/sethwolfgang/vscode/resultsOriginalVCSC/EigenResults_COO.csv")
-IVCSCResultsO = read.csv("/home/sethwolfgang/vscode/resultsOriginalVCSC/IVCSCResults_COO.csv")
+VCSCResultsO = read.csv("~/resultsOriginalVCSC/VCSCResults_COO.csv")
+eigenResultsO = read.csv("~/resultsOriginalVCSC/EigenResults_COO.csv")
+IVCSCResultsO = read.csv("~/resultsOriginalVCSC/IVCSCResults_COO.csv")
 
 
 triple_plot_raw(VCSCResultsMAP, "VCSC - map", VCSCResultsO, "VCSC - array", eigenResultsO, "Eigen" ,eigenResults102, eigenResults102, eigenResults102 ,"scalar_time","VCSC_comp")

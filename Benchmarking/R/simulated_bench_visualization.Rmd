@@ -6,6 +6,8 @@ output:
 date: "2023-07-21"
 ---
 
+# This was not used in the paper, but has some R code to generate plots for an older version of the preprint. Plots on the paper used the provided python code.
+
 This code is not pretty - it was meant to be done quickly.
 
 ```{r setup, include=FALSE}
@@ -245,8 +247,8 @@ format_y_axis_label <- function(y_axis_variable) {
 triple_plot_ratio_over_eigen_no_legend <- function(dataset1_results, dataset1_name, dataset2_results, dataset2_name, dataset3_results, dataset3_name, eigen1, eigen2, eigen3, y_axis_variable, name) {
   # Step 1: Call the pdf command to start the plot
     
-    dir.create(file.path(paste0("~/vscode/CSF-Figures/plots/",name)), showWarnings = FALSE)
-    path <- paste0("~/vscode/CSF-Figures/plots/",name,"/",y_axis_variable,".pdf")
+    dir.create(file.path(paste0("~/vscode/IVSparse-Figures/plots/",name)), showWarnings = FALSE)
+    path <- paste0("~/vscode/IVSparse-Figures/plots/",name,"/",y_axis_variable,".pdf")
 
     pdf(file <- path,  
     width = 6, # The width of the plot in inches
@@ -380,8 +382,8 @@ triple_plot_ratio_over_eigen_no_legend(IVCSCResults10, "IVCSC", VCSCResults10, "
 triple_plot_ratio_over_eigen_bottom_legend <- function(dataset1_results, dataset1_name, dataset2_results, dataset2_name, dataset3_results, dataset3_name, eigen1, eigen2, eigen3, y_axis_variable, name) {
   # Step 1: Call the pdf command to start the plot
     
-    dir.create(file.path(paste0("~/vscode/CSF-Figures/plots/",name)), showWarnings = FALSE)
-    path <- paste0("~/vscode/CSF-Figures/plots/",name,"/",y_axis_variable,".pdf")
+    dir.create(file.path(paste0("~/vscode/IVSparse-Figures/plots/",name)), showWarnings = FALSE)
+    path <- paste0("~/vscode/IVSparse-Figures/plots/",name,"/",y_axis_variable,".pdf")
 
     pdf(file <- path,  
     width = 6, # The width of the plot in inches
@@ -532,8 +534,8 @@ format_y_axis_label <- function(y_axis_variable) {
 triple_plot_raw <- function(dataset1_results, dataset1_name, dataset2_results, dataset2_name, dataset3_results, dataset3_name, eigen1, eigen2, eigen3, y_axis_variable, name) {
   # Step 1: Call the pdf command to start the plot
     
-    dir.create(file.path(paste0("~/vscode/CSF-Figures/plots/",name)), showWarnings = FALSE)
-    path <- paste0("~/vscode/CSF-Figures/plots/",name,"/","raw_",y_axis_variable,".pdf")
+    dir.create(file.path(paste0("~/vscode/IVSparse-Figures/plots/",name)), showWarnings = FALSE)
+    path <- paste0("~/vscode/IVSparse-Figures/plots/",name,"/","raw_",y_axis_variable,".pdf")
 
     pdf(file <- path,  
     width = 6, # The width of the plot in inches
@@ -658,7 +660,7 @@ triple_size_plot <- function(dataset1_results, dataset1_name, dataset2_results, 
   firstNonzero <- eigenResults1[1, "nonzeros"]
   secondNonzero <- eigenResults5[1, "nonzeros"]
   thirdNonzero <- eigenResults10[1, "nonzeros"]
-  path = paste0("~/vscode/CSF-Figures/plots/", name, "/")
+  path = paste0("~/vscode/IVSparse-Figures/plots/", name, "/")
   dir.create(file.path(path), showWarnings = FALSE)
   pdf(paste0(path,name,"_",y_axis_variable, ".pdf"),
       width = 6,
@@ -810,7 +812,7 @@ density_triple_size_plot <- function(dataset1_results, dataset1_name, dataset2_r
   
   y_axis_variable <- "size"
 
-  path = paste0("~/vscode/CSF-Figures/plots/", name, "/")
+  path = paste0("~/vscode/IVSparse-Figures/plots/", name, "/")
   dir.create(file.path(path), showWarnings = FALSE)
   pdf(paste0(path,name,"_","density_",y_axis_variable, ".pdf"),
       width = 6,
@@ -947,7 +949,7 @@ library(cowplot)
 
 triple_plot <- function(dataset1_results, dataset1_name, dataset2_results, dataset2_name, dataset3_results, dataset3_name, eigenResult, y_axis_variables, name) {
   plots <- list()
-  path = paste0("~/vscode/CSF-Figures/plots/", name,"/")
+  path = paste0("~/vscode/IVSparse-Figures/plots/", name,"/")
   dir.create(file.path(path), showWarnings = FALSE)
   pdf(paste0(path, "combined", ".pdf"),
       width = 15,
