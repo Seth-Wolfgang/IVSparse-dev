@@ -18,8 +18,7 @@ def update_cpp_file(fname, nrows, ncols, density_pct):
     replace_with_sed(fname, 'ROWS', nrows)
     replace_with_sed(fname, 'COLS', ncols)
     replace_with_sed(fname, 'NNZ', int(density_pct/100 * nrows))
-    subprocess.call(f'g++ -O2 --std=c++17 -I ~/eigen {fname} -o {fname[:-4]}.out', shell=True)
-    cmd_list = ['g++', '-O2', '--std=c++17', '-I', '~/eigen', fname, '-o', fname[:-4] + '.out']
+    subprocess.call(f'g++ -O3 --std=c++17 -I ~/eigen {fname} -o {fname[:-4]}.out', shell=True)
 
 def run_cpp(mat, redundancy, idnum, cpp_results_path, cpp_fname, which='all'):
     rowinds_fname = '/tmp/rowinds.csv'
@@ -163,7 +162,6 @@ def variable_mmr(nrows, ncols, density, nmats=50, save_data=False, start_mmr=0):
     csc_sizes = []
     coo_sizes = []
     avg_difflogs = []
-    new_ivcscs = []
     temp1 = np.linspace(start_mmr, .6, nmats // 2)
     temp2 = np.linspace(0.6, 0.8, nmats // 2)
     temp3 = np.linspace(0.8, 0.9, nmats // 2)
@@ -176,14 +174,13 @@ def variable_mmr(nrows, ncols, density, nmats=50, save_data=False, start_mmr=0):
     # for mmr in np.linspace(start_mmr, 1, nmats):
     for mmr in mmrs_to_run:
         adjust(mat, mmr)
-        computed_mmr, vcsc_size, ivcsc_size, avg_difflog, new_ivcsc = compute_mmr(mat)
+        computed_mmr, vcsc_size, ivcsc_size, avg_difflog = compute_mmr(mat)
         mmrs.append(mmr)
         vcsc_sizes.append(vcsc_size)
         ivcsc_sizes.append(ivcsc_size)
         csc_sizes.append(calc_csc_size(mat))
         coo_sizes.append(calc_coo_size(mat))
         avg_difflogs.append(avg_difflog)
-        new_ivcscs.append(new_ivcsc)
         print('target mmr = {}, actual mmr = {}, diff = {}'.format(mmr, computed_mmr, abs(mmr - computed_mmr)))
         if save_data:
             os.makedirs(f"./mmr/{computed_mmr}", exist_ok=True)
@@ -192,7 +189,7 @@ def variable_mmr(nrows, ncols, density, nmats=50, save_data=False, start_mmr=0):
             np.savetxt(f"./mmr/{computed_mmr}/vals.csv", mat.data, delimiter=',')
 
     size_names = ['vcsc', 'ivcsc', 'csc', 'coo']
-    return mmrs, (vcsc_sizes, ivcsc_sizes, csc_sizes, coo_sizes, new_ivcscs), size_names, avg_difflogs
+    return mmrs, (vcsc_sizes, ivcsc_sizes, csc_sizes, coo_sizes), size_names, avg_difflogs
 
 
 def nuniq_adjust(spmat, prev_nuniq=None):
@@ -201,10 +198,14 @@ def nuniq_adjust(spmat, prev_nuniq=None):
         nnz_col = len(colvals)
         if prev_nuniq is None:
             nuniq_col = nnz_col
-        elif prev_nuniq < 50:
+        elif prev_nuniq < 5:
             nuniq_col = prev_nuniq - 1
+        elif prev_nuniq < 15:
+            nuniq_col = prev_nuniq - 3
+        elif prev_nuniq < 40:
+            nuniq_col = prev_nuniq - 5
         elif prev_nuniq < 2500:
-            nuniq_col = prev_nuniq - 10
+            nuniq_col = prev_nuniq - 20
         else:
             nuniq_col = math.floor(.85 * min(prev_nuniq, nnz_col)) + 1
         spmat.data[spmat.indptr[i]:spmat.indptr[i + 1]] = np.random.permutation(nnz_col) % nuniq_col + 1
@@ -212,7 +213,7 @@ def nuniq_adjust(spmat, prev_nuniq=None):
 
 
 
-def variable_nuniq(nrows, ncols, density, save_data=False, bytes_per_index=4, bytes_per_val=8, benchmark=False, offset=0, cpp_results_path=None, cpp_fname='simulatedBench_COO.cpp'):
+def variable_nuniq(nrows, ncols, density, save_data=False, bytes_per_index=4, bytes_per_val=8, benchmark=False, offset=0, cpp_results_path=None, cpp_fname='simulatedBench_COO.cpp', which='all'):
     state = offset
 
     mat = spp.rand(nrows, ncols, density=density, format='csc', random_state=state)
@@ -222,7 +223,6 @@ def variable_nuniq(nrows, ncols, density, save_data=False, bytes_per_index=4, by
     csc_sizes = []
     coo_sizes = []
     avg_difflogs = []
-    new_ivcscs = []
     first = True
     prev_nuniq_cpp = -1
     prev_bytes_needed = (-1,-1,-1)
@@ -241,14 +241,14 @@ def variable_nuniq(nrows, ncols, density, save_data=False, bytes_per_index=4, by
 
         computed_mmr, vcsc_size, ivcsc_size, avg_difflog, bytes_needed_info = compute_mmr(mat)
 
-        skipped_too_many = abs(prev_nuniq_cpp - nuniq_col) > 0.1*nuniq_col
-        changed_bytes_needed = abs(bytes_needed_info[2] - prev_bytes_needed[2]) > 5e-2
+        skipped_too_many = abs(prev_nuniq_cpp - nuniq_col) > 0.15*nuniq_col
+        changed_bytes_needed = abs(bytes_needed_info[2] - prev_bytes_needed[2]) > 7.5e-2
 
         if benchmark and (skipped_too_many or changed_bytes_needed):
             prev_nuniq_cpp = nuniq_col
             prev_bytes_needed = bytes_needed_info
             # Run C++ code
-            run_cpp(mat, avg_difflog, state, cpp_results_path, cpp_fname, which='all')
+            run_cpp(mat, avg_difflog, state, cpp_results_path, cpp_fname, which)
 
         mmrs.append(computed_mmr)
         vcsc_sizes.append(vcsc_size)
@@ -309,11 +309,12 @@ if __name__ == "__main__":
     parser.add_argument('density', help='density in [0,100]')
     parser.add_argument('cpp_results_path', help='path of results file')
     parser.add_argument('cpp_fname', help='cpp filename')
+    parser.add_argument('which', help='-1 for all, 0 for vcsc, 1 for ivcsc, 2 for eigen')
     args = parser.parse_args()
 
     bytes_per_index=4
     bytes_per_val=4
-    ncols = 100
+    ncols = 25
     # variable_density()
     # for num_rows in [1e2, 5e2, 1e3, 1e4, 1e5, 5e5, 1e6, 5e6, 1e7, 5e7]:
     #for num_rows in [1e4]:
@@ -335,7 +336,8 @@ if __name__ == "__main__":
                                                            benchmark=True,
                                                            offset=nrows,
                                                            cpp_results_path=args.cpp_results_path,
-                                                           cpp_fname=args.cpp_fname)
+                                                           cpp_fname=args.cpp_fname,
+                                                           which=args.which)
     # mmrs, sizes, size_names, avg_difflogs = variable_nuniq(nrows, ncols, density_pct/100, 40, start_mmr=0)
     plt.figure()
     for i in range(len(sizes)):

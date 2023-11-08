@@ -33,12 +33,6 @@
  *
  */
 
-#define EIGEN_DONT_PARALLELIZE
-#define EIGEN_NO_CUDA
-#define EIGEN_UNROLLING_LIMIT 0
-#define EIGEN_FAST_MATH 0
-#define EIGEN_DONT_VECTORIZE
-#define EIGEN_MAX_ALIGN_BYTES 0
 
 #include <chrono> 
 #include "../../IVSparse/SparseMatrix"
