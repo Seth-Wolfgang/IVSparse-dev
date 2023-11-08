@@ -16,17 +16,6 @@ def read_pr02r(prefix='./'):
     spmat = spp.csc_matrix(mat, dtype=np.float64)
     return spmat
 
-def read_engine(prefix='./'):
-    mat = spio.mmread(prefix + 'engine/engine.mtx')
-    spmat = spp.csc_matrix(mat, dtype=np.float64)
-    return spmat
-
-def read_wikipedia(prefix='./'):
-    mat = spio.mmread(prefix + 'wikipedia-20070206.mtx')
-    spmat = spp.csc_matrix(mat, dtype=np.uint8)
-    print(f'nrows = {spmat.shape[0]}, ncols = {spmat.shape[1]}, nnz = {spmat.nnz}\n')
-    return spmat
-
 def read_orkut(prefix='./'):
     mat = spio.mmread(prefix + 'com-Orkut/com-Orkut.mtx')
     spmat = spp.csc_matrix(mat, dtype=np.uint8)
@@ -40,27 +29,7 @@ def read_wos(prefix='./'):
     spmat = spp.csc_matrix((vals, rowinds, colptrs), dtype=np.uint8)
     return spmat
 
-def read_movielens(prefix='./'):
-    mat = np.loadtxt(prefix + 'bigratings-movielens.csv', skiprows=1, delimiter=',')
-    rows = mat[:,0].astype(np.uint32)
-    cols = mat[:,1].astype(np.uint32)
-    vals = mat[:,2].astype(np.uint8)
-    rows = rows-1 # indexing in file starts at 1
-    spmat = spp.csc_matrix((vals, (rows, cols)),dtype=np.uint8)
-    print(f'nrows = {spmat.shape[0]}, ncols = {spmat.shape[1]}, nnz = {spmat.nnz}\n')
-    return spmat
-
 def read_movielens_25mil(prefix='./'):
-    mat = np.loadtxt(prefix + 'movielens-ratings-25mil.csv', skiprows=1, delimiter=',')
-    rows = mat[:,0].astype(np.uint32)
-    cols = mat[:,1].astype(np.uint32)
-    vals = mat[:,2].astype(np.float32)
-    rows = rows-1 # indexing in file starts at 1
-    spmat = spp.csc_matrix((vals, (rows, cols)),dtype=np.float32)
-    print(f'nrows = {spmat.shape[0]}, ncols = {spmat.shape[1]}, nnz = {spmat.nnz}\n')
-    return spmat
-
-def read_movielens_25mil_graph(prefix='./'):
     alldata = np.loadtxt(prefix + 'movielens-ratings-25mil.csv', skiprows=1, delimiter=',')
     rows = alldata[:,0].astype(np.uint32)
     cols = alldata[:,1].astype(np.uint32)
@@ -94,16 +63,8 @@ if __name__ == '__main__':
     header += ',coo_dense_ratio,csc_dense_ratio,vcsc_dense_ratio,ivcsc_dense_ratio'
     f.write(header + '\n')
 
-    func_lst = [read_pr02r, read_wos, read_movielens_25mil_graph, read_single_cell, read_orkut]
+    func_lst = [read_pr02r, read_wos, read_movielens_25mil, read_single_cell, read_orkut]
     name_lst = ['pr02r', 'web of science', 'movie lens', 'single cell', 'com-Orkut']
-    '''
-    func_lst = [read_movielens_25mil_graph, read_wikipedia]
-    name_lst = ['movie lens', 'wikipedia-20070206']
-    func_lst = [read_movielens_25mil_graph]
-    name_lst = ['movie lens']
-    func_lst = [read_orkut]
-    name_lst = ['com-Orkut']
-    '''
 
     for func, name in zip(func_lst, name_lst):
         spmat = func(PREFIX)
