@@ -1,5 +1,6 @@
 CMakeLists.txt
 PyVSparse.cpp
+PyVSparse.cpython-310-x86_64-linux-gnu.so
 setup.py
 PyVSparse.egg-info/PKG-INFO
 PyVSparse.egg-info/SOURCES.txt
