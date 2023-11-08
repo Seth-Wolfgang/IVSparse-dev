@@ -1,5 +1,0 @@
-if(EXISTS "/home/sethwolfgang/vscode/research/SRLE/tests/testingMain[1]_tests.cmake")
-  include("/home/sethwolfgang/vscode/research/SRLE/tests/testingMain[1]_tests.cmake")
-else()
-  add_test(testingMain_NOT_BUILT testingMain_NOT_BUILT)
-endif()
