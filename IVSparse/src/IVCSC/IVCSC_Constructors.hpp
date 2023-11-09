@@ -157,8 +157,7 @@ namespace IVSparse {
 
     // Deep Copy Constructor
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(
-        const IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>& other) {
+    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(const IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>& other) {
 
         *this = other;
     }
@@ -166,8 +165,7 @@ namespace IVSparse {
     // Conversion Constructor
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     template <uint8_t otherCompressionLevel>
-    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(
-        IVSparse::SparseMatrix<T, indexT, otherCompressionLevel, columnMajor>& other) {
+    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(IVSparse::SparseMatrix<T, indexT, otherCompressionLevel, columnMajor>& other) {
 
         // if already the right compression level
         if constexpr (otherCompressionLevel == compressionLevel) {
@@ -198,8 +196,7 @@ namespace IVSparse {
     // Raw CSC Constructor
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     template <typename T2, typename indexT2>
-    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(
-        T2* vals, indexT2* innerIndices, indexT2* outerPtr, uint32_t num_rows, uint32_t num_cols, uint32_t nnz) {
+    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(T2* vals, indexT2* innerIndices, indexT2* outerPtr, uint32_t num_rows, uint32_t num_cols, uint32_t nnz) {
 
         #ifdef IVSPARSE_DEBUG
         assert(num_rows > 0 && num_cols > 0 &&
@@ -442,8 +439,7 @@ namespace IVSparse {
 
     // IVSparse Vector Constructor
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(
-        typename IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector& vec) {
+    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(typename IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector& vec) {
 
 
         // if it is the matrix is empty and we need to construct it
@@ -629,7 +625,7 @@ namespace IVSparse {
 
     // Private Tranpose Constructor
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(std::unordered_map<T, std::vector<indexT>> maps[], uint32_t num_rows, uint32_t num_cols) {
+    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(std::unordered_map<T, std::vector<indexT>>* maps, uint32_t num_rows, uint32_t num_cols) {
 
         // set class variables
         if constexpr (columnMajor) {

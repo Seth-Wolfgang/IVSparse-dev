@@ -9,8 +9,6 @@ set(SPARSE_MATRIX "${IVSPARSE}/SparseMatrix")
 
 link_directories(${PROJECT_ROOT})
 
-add_compile_options(fopenmp)
-
 pybind11_add_module(PyVSparse ${CMAKE_SOURCE_DIR}/PyVSparse.cpp)
 
 add_library(IVSparse STATIC ${SPARSE_MATRIX} )
@@ -27,7 +25,6 @@ if(NOT MSVC AND NOT ${CMAKE_BUILD_TYPE} MATCHES Debug|RelWithDebInfo)
     pybind11_strip(PyVSparse)
 endif()
 
-target_compile_options(PyVSparse PRIVATE -O2)
 
 find_package(OpenMP)
 if(OpenMP_CXX_FOUND)

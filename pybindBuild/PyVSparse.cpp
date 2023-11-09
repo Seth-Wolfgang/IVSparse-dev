@@ -4,14 +4,14 @@
 #include <pybind11/eigen.h>
 #include "../IVSparse/SparseMatrix"
 #include <any>
-#include <omp.h>
 
 namespace py = pybind11;
 
 template <typename T, int compLevel>
-std::vector<std::any> generateForEachIndexType(py::module& m);
+void generateForEachIndexType(py::module& m);
 
-void declareForOtherTypes(py::class_<std::any>& mat);
+template <typename T, typename indexT, int compressionLevel, bool isColMajor>
+void declareForOtherTypes(py::class_<IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor>>& mat);
 
 template <typename T> 
 constexpr const char* returnTypeName();
@@ -40,115 +40,94 @@ Make typedefs for all of these
 PYBIND11_MODULE(PyVSparse, m) {
     m.doc() = "pybind11 example plugin"; // optional module docstring
 
-    std::vector<std::vector<std::any>> pyClassVec;
+    // #pragma omp parallel sections 
+    // {
+    //     #pragma omp section 
+    //     {
+    //         generateForEachIndexType<int8_t, 2>(m);
+    //     }
+    //     #pragma omp section 
+    //     {
+            // generateForEachIndexType<uint8_t, 2>(m);
+    //     }
+    //     #pragma omp section 
+    //     {
+    //         generateForEachIndexType<int16_t, 2>(m);
+    //     }
+    //     #pragma omp section 
+    //     {
+    //         generateForEachIndexType<uint16_t, 2>(m);
+    //     }
+    //     #pragma omp section 
+        // {
+            generateForEachIndexType<int32_t, 2>(m);
+    //     }
+    //     #pragma omp section 
+    //     {
+    //         generateForEachIndexType<uint32_t, 2>(m);
+    //     }
+    //     #pragma omp section 
+    //     {
+    //         generateForEachIndexType<int64_t, 2>(m);
+    //     }
+    //     #pragma omp section 
+    //     {
+    //         generateForEachIndexType<uint64_t, 2>(m);
+    //     }
+    //     #pragma omp section 
+    //     {
+    //         generateForEachIndexType<float, 2>(m);
+    //     }
+    //     #pragma omp section 
+    //     {
+    //         generateForEachIndexType<double, 2>(m);
+    //     }
+    // }
 
 
-    // VCSC
-    #pragma omp parallel sections
-    {
-        #pragma omp section 
-        {
-            pyClassVec.push_back(generateForEachIndexType<uint8_t, 2>(m));
-        }
-        #pragma omp section 
-        {
-            pyClassVec.push_back(generateForEachIndexType<int16_t, 2>(m));
-        }
-        #pragma omp section 
-        {
-            pyClassVec.push_back(generateForEachIndexType<uint16_t, 2>(m));
-        }
-        #pragma omp section 
-        {
-            pyClassVec.push_back(generateForEachIndexType<int32_t, 2>(m));
-        }
-        #pragma omp section 
-        {
-            pyClassVec.push_back(generateForEachIndexType<uint32_t, 2>(m));
-        }
-        #pragma omp section 
-        {
-            pyClassVec.push_back(generateForEachIndexType<int64_t, 2>(m));
-        }
-        #pragma omp section 
-        {
-            pyClassVec.push_back(generateForEachIndexType<uint64_t, 2>(m));
-        }
-        #pragma omp section 
-        {
-            pyClassVec.push_back(generateForEachIndexType<float, 2>(m));
-        }
-        #pragma omp section 
-        {
-            pyClassVec.push_back(generateForEachIndexType<double, 2>(m));
-        }
-    }
-
-    // IVCSC
-
-    #pragma omp parallel sections
-    {
-        #pragma omp section 
-        {
-            pyClassVec.push_back(generateForEachIndexType<int8_t, 3>(m));
-        }
-        #pragma omp section 
-        {
-            pyClassVec.push_back(generateForEachIndexType<uint8_t, 3>(m));
-        }
-        #pragma omp section 
-        {
-            pyClassVec.push_back(generateForEachIndexType<int16_t, 3>(m));
-        }
-        #pragma omp section
-        {
-            pyClassVec.push_back(generateForEachIndexType<uint16_t, 3>(m));
-        }
-        #pragma omp section
-        {
-            pyClassVec.push_back(generateForEachIndexType<int32_t, 3>(m));
-        }
-        #pragma omp section 
-        {
-            pyClassVec.push_back(generateForEachIndexType<uint32_t, 3>(m));
-        }
-        #pragma omp section 
-        {
-            pyClassVec.push_back(generateForEachIndexType<int64_t, 3>(m));
-        }
-        #pragma omp section 
-        {
-            pyClassVec.push_back(generateForEachIndexType<uint64_t, 3>(m));
-        }
-        #pragma omp section 
-        {
-            pyClassVec.push_back(generateForEachIndexType<float, 3>(m));
-        }
-        #pragma omp section 
-        {
-            pyClassVec.push_back(generateForEachIndexType<double, 3>(m));
-        }
-    }
-
-
-
-
-
-
-
-
-
-
-
-    # pragma openmp parallel for
-    for(int i = 0; i < pyClassVec.size(); i++) {
-        for(int j = 0; j < pyClassVec[i].size(); j++) {
-            declareForOtherTypes(pyClassVec[i][j]);
-        }
-    }
-   
-
-   
+    // #pragma omp parallel sections 
+    // {
+    //     #pragma omp section 
+    //     {
+            // generateForEachIndexType<int8_t, 3>(m);
+    //     }
+    //     #pragma omp section 
+    //     {
+            // generateForEachIndexType<uint8_t, 3>(m);
+    //     }
+    //     #pragma omp section 
+    //     {
+    //         generateForEachIndexType<int16_t, 3>(m);
+    //     }
+    //     #pragma omp section 
+    //     {
+    //         generateForEachIndexType<uint16_t, 3>(m);
+    //     }
+    //     #pragma omp section 
+    //     {
+            generateForEachIndexType<int32_t, 3>(m);
+    //     }
+    //     #pragma omp section 
+    //     {
+    //         generateForEachIndexType<uint32_t, 3>(m);
+    //     }
+    //     #pragma omp section 
+    //     {
+    //         generateForEachIndexType<int64_t, 3>(m);
+    //     }
+    //     #pragma omp section 
+    //     {
+    //         generateForEachIndexType<uint64_t, 3>(m);
+    //     }
+    //     #pragma omp section 
+    //     {
+    //         generateForEachIndexType<float, 3>(m);
+    //     }
+    //     #pragma omp section 
+    //     {
+    //         generateForEachIndexType<double, 3>(m);
+    //     }
+    // }
 };
 
 
@@ -168,18 +147,16 @@ py::class_<IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor>> decl
     uniqueName += "_";
     uniqueName += isCol;
 
-
-
     py::class_<IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor>> mat(m, uniqueName.c_str());
         mat.def(py::init<Eigen::SparseMatrix<T>& >())
         .def(py::init<Eigen::SparseMatrix<T, Eigen::RowMajor>& >())
         .def(py::init<T*, indexT*, indexT*, uint32_t, uint32_t, uint32_t>())
         .def(py::init<std::vector<std::tuple<indexT, indexT, T>>&, uint32_t, uint32_t, uint32_t>())
-        // .def(py::init<std::unordered_map<T, std::vector<indexT>>[], uint32_t, uint32_t>()) //<std::unordered_map<T, std::vector<indexT>>[], uint32_t, uint32_t>
+        .def(py::init<std::unordered_map<T, std::vector<indexT>>*, uint32_t, uint32_t>()) //<std::unordered_map<T, std::vector<indexT>>[], uint32_t, uint32_t> 
         .def(py::init<const char*>())
         .def(py::init<>())
-        .def("rows", &IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor>::rows, py::return_value_policy::copy)
-        .def("cols", &IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor>::cols, py::return_value_policy::copy)
+        .def("rows", &IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor>::rows, py::return_value_policy::copy) 
+        .def("cols", &IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor>::cols, py::return_value_policy::copy) 
         .def("innerSize", &IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor>::innerSize, py::return_value_policy::copy)
         .def("outerSize", &IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor>::outerSize, py::return_value_policy::copy)
         .def("nonZeros", &IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor>::nonZeros, py::return_value_policy::copy)
@@ -277,42 +254,74 @@ py::class_<IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor>> decl
 }
 
 // For other adding other constructors, basically conversions
-void declareForOtherTypes(py::class_<std::any>& mat) {
+// template <typename T, typename indexT, int compressionLevel, bool isColMajor>
+// void declareForOtherTypes(py::class_<IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor>>& mat) {
 
-        mat.def(py::init<IVSparse::SparseMatrix<T, uint8_t, 2, false>& >())
-            .def(py::init<IVSparse::SparseMatrix<T, uint8_t, 2 >& >())
-            .def(py::init<IVSparse::SparseMatrix<T, uint8_t, 3, false>& >())
-            .def(py::init<IVSparse::SparseMatrix<T, uint8_t, 3 >& >())
-            .def(py::init<IVSparse::SparseMatrix<T, uint16_t, 2, false>& >())
-            .def(py::init<IVSparse::SparseMatrix<T, uint16_t, 2 >& >())
-            .def(py::init<IVSparse::SparseMatrix<T, uint16_t, 3, false>& >())
-            .def(py::init<IVSparse::SparseMatrix<T, uint16_t, 3 >& >())
-            .def(py::init<IVSparse::SparseMatrix<T, uint32_t, 2, false>& >())
-            .def(py::init<IVSparse::SparseMatrix<T, uint32_t, 2 >& >())
-            .def(py::init<IVSparse::SparseMatrix<T, uint32_t, 3, false>& >())
-            .def(py::init<IVSparse::SparseMatrix<T, uint32_t, 3 >& >())
-            .def(py::init<IVSparse::SparseMatrix<T, uint64_t, 2, false>& >())
-            .def(py::init<IVSparse::SparseMatrix<T, uint64_t, 2 >& >())
-            .def(py::init<IVSparse::SparseMatrix<T, uint64_t, 3, false>& >())
-            .def(py::init<IVSparse::SparseMatrix<T, uint64_t, 3 >& >());
-}
+
+
+
+//         mat.def(py::init<IVSparse::SparseMatrix<T, uint8_t, 2, isColMajor>&>())
+//            .def(py::init<IVSparse::SparseMatrix<T, uint8_t, 3, isColMajor>&>())
+//            .def(py::init<IVSparse::SparseMatrix<T, uint16_t,2, isColMajor>&>())
+//            .def(py::init<IVSparse::SparseMatrix<T, uint16_t,3, isColMajor>&>())
+//            .def(py::init<IVSparse::SparseMatrix<T, uint32_t,2, isColMajor>&>())
+//            .def(py::init<IVSparse::SparseMatrix<T, uint32_t,3, isColMajor>&>())
+//            .def(py::init<IVSparse::SparseMatrix<T, uint64_t,2, isColMajor>&>())
+//            .def(py::init<IVSparse::SparseMatrix<T, uint64_t,3, isColMajor>&>());
+
+//         .def("__mul__", [](IVSparse::SparseMatrix<T, indexT, compressionLevel, isColMajor> self, uint8_t a) {
+//             return self * a;
+// }
 
 template <typename T, int compLevel>
-std::vector<std::any> generateForEachIndexType(py::module& m) {
+void generateForEachIndexType(py::module& m) {
 
-    std::vector<std::any> pyClassVec;
 
-    // self functions
-    pyClassVec.push_back(declareSelfFunc<T, uint8_t, compLevel, false>(m));
-    pyClassVec.push_back(declareSelfFunc<T, uint8_t, compLevel, true>(m));
-    pyClassVec.push_back(declareSelfFunc<T, uint16_t, compLevel, false>(m));
-    pyClassVec.push_back(declareSelfFunc<T, uint16_t, compLevel, true>(m));
-    pyClassVec.push_back(declareSelfFunc<T, uint32_t, compLevel, false>(m));
-    pyClassVec.push_back(declareSelfFunc<T, uint32_t, compLevel, true>(m));
-    pyClassVec.push_back(declareSelfFunc<T, uint64_t, compLevel, false>(m));
-    pyClassVec.push_back(declareSelfFunc<T, uint64_t, compLevel, true>(m));
 
-    return pyClassVec;
+
+    if constexpr (compLevel == 3) {
+        py::class_<IVSparse::SparseMatrix<T, uint8_t,  3, false>> mat8  = declareSelfFunc<T, uint8_t , 3, false>(m);
+        py::class_<IVSparse::SparseMatrix<T, uint8_t,  3, true >> mat9  = declareSelfFunc<T, uint8_t , 3, true>(m);
+        py::class_<IVSparse::SparseMatrix<T, uint16_t, 3, false>> mat10 = declareSelfFunc<T, uint16_t, 3, false>(m);
+        py::class_<IVSparse::SparseMatrix<T, uint16_t, 3, true >> mat11 = declareSelfFunc<T, uint16_t, 3, true>(m);
+        py::class_<IVSparse::SparseMatrix<T, uint32_t, 3, false>> mat12 = declareSelfFunc<T, uint32_t, 3, false>(m);
+        py::class_<IVSparse::SparseMatrix<T, int32_t, 3, false>> mat16 = declareSelfFunc<T, int32_t, 3, false>(m);
+        py::class_<IVSparse::SparseMatrix<T, int32_t, 3, true>> mat17 = declareSelfFunc<T, int32_t, 3, true>(m);
+
+        py::class_<IVSparse::SparseMatrix<T, uint32_t, 3, true >> mat13 = declareSelfFunc<T, uint32_t, 3, true>(m);
+        py::class_<IVSparse::SparseMatrix<T, uint64_t, 3, false>> mat14 = declareSelfFunc<T, uint64_t, 3, false>(m);
+        py::class_<IVSparse::SparseMatrix<T, uint64_t, 3, true >> mat15 = declareSelfFunc<T, uint64_t, 3, true>(m);
+    }
+    else {
+        py::class_<IVSparse::SparseMatrix<T, uint8_t,  2, false>> mat0  = declareSelfFunc<T, uint8_t , 2, false>(m);
+        py::class_<IVSparse::SparseMatrix<T, uint8_t,  2, true >> mat1  = declareSelfFunc<T, uint8_t , 2, true>(m);
+        py::class_<IVSparse::SparseMatrix<T, uint16_t, 2, false>> mat2  = declareSelfFunc<T, uint16_t, 2, false>(m);
+        py::class_<IVSparse::SparseMatrix<T, uint16_t, 2, true >> mat3  = declareSelfFunc<T, uint16_t, 2, true>(m);
+        py::class_<IVSparse::SparseMatrix<T, uint32_t, 2, false>> mat4  = declareSelfFunc<T, uint32_t, 2, false>(m);
+        py::class_<IVSparse::SparseMatrix<T, uint32_t, 2, true >> mat5  = declareSelfFunc<T, uint32_t, 2, true>(m);
+        py::class_<IVSparse::SparseMatrix<T, uint64_t, 2, false>> mat6  = declareSelfFunc<T, uint64_t, 2, false>(m);
+        py::class_<IVSparse::SparseMatrix<T, uint64_t, 2, true >> mat7  = declareSelfFunc<T, uint64_t, 2, true>(m);
+    }
+ 
+
+    // declareForOtherTypes<T, uint8_t,  2, false>(mat0 );
+    // declareForOtherTypes<T, uint8_t,  2, true >(mat1 );
+    // declareForOtherTypes<T, uint16_t, 2, false>(mat2 );
+    // declareForOtherTypes<T, uint16_t, 2, true >(mat3 );
+    // declareForOtherTypes<T, uint32_t, 2, false>(mat4 );
+    // declareForOtherTypes<T, uint32_t, 2, true >(mat5 );
+    // declareForOtherTypes<T, uint64_t, 2, false>(mat6 );
+    // declareForOtherTypes<T, uint64_t, 2, true >(mat7 );
+
+    // declareForOtherTypes<T, uint8_t,  3, false>(mat8 );
+    // declareForOtherTypes<T, uint8_t,  3, true >(mat9 );
+    // declareForOtherTypes<T, uint16_t, 3, false>(mat10);
+    // declareForOtherTypes<T, uint16_t, 3, true >(mat11);
+    // declareForOtherTypes<T, uint32_t, 3, false>(mat12);
+    // declareForOtherTypes<T, uint32_t, 3, true >(mat13);
+    // declareForOtherTypes<T, uint64_t, 3, false>(mat14);
+    // declareForOtherTypes<T, uint64_t, 3, true >(mat15);
+
 }
 
 // template <class T>

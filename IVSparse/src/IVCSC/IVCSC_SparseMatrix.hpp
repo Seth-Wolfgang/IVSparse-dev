@@ -52,12 +52,8 @@ namespace IVSparse {
         // Method to calcuate and set the byte size of the matrix in memory
         void calculateCompSize();
 
-        // Private Helper Constructor for tranposing a IVSparse matrix
-        SparseMatrix(std::unordered_map<T, std::vector<indexT>> maps[], uint32_t num_rows, uint32_t num_cols);
-
         // Scalar Multiplication
-        inline IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>
-            scalarMultiply(T scalar);
+        inline IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>scalarMultiply(T scalar);
 
         // In Place Scalar Multiplication
         inline void inPlaceScalarMultiply(T scalar);
@@ -66,9 +62,7 @@ namespace IVSparse {
         inline Eigen::Matrix<T, -1, 1> vectorMultiply(Eigen::Matrix<T, -1, 1>& vec);
 
         // Matrix Vector Multiplication 2 (with IVSparse Vector)
-        inline Eigen::Matrix<T, -1, 1> vectorMultiply(
-            typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector
-            & vec);
+        inline Eigen::Matrix<T, -1, 1> vectorMultiply(typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector& vec);
 
         // Matrix Matrix Multiplication
         inline Eigen::Matrix<T, -1, -1> matrixMultiply(Eigen::Matrix<T, -1, -1> mat);
@@ -97,6 +91,10 @@ namespace IVSparse {
           * matrix is not well supported.
           */
         SparseMatrix() {};
+
+                // Private Helper Constructor for tranposing a IVSparse matrix
+        SparseMatrix(std::unordered_map<T, std::vector<indexT>>* maps, uint32_t num_rows, uint32_t num_cols);
+
 
         /**
          * Empty Constructor \n \n
@@ -134,8 +132,7 @@ namespace IVSparse {
          * without having to go through the CSC format.
          */
         template <uint8_t compressionLevel2>
-        SparseMatrix(
-            IVSparse::SparseMatrix<T, indexT, compressionLevel2, columnMajor>& other);
+        SparseMatrix(IVSparse::SparseMatrix<T, indexT, compressionLevel2, columnMajor>& other);
 
         /**
          * @param other The IVSparse matrix to be copied
@@ -143,8 +140,7 @@ namespace IVSparse {
          * Deep Copy Constructor \n \n
          * This constructor takes in a IVSparse matrix and creates a deep copy of it.
          */
-        SparseMatrix(const IVSparse::SparseMatrix<T, indexT, compressionLevel,
-                     columnMajor>& other);
+        SparseMatrix(const IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>& other);
 
         /**
          * Raw CSC Constructor \n \n
@@ -153,8 +149,7 @@ namespace IVSparse {
          * an Eigen Sparse Matrix and then to a IVSparse matrix.
          */
         template <typename T2, typename indexT2>
-        SparseMatrix(T2* vals, indexT2* innerIndices, indexT2* outerPtr,
-                     uint32_t num_rows, uint32_t num_cols, uint32_t nnz);
+        SparseMatrix(T2* vals, indexT2* innerIndices, indexT2* outerPtr, uint32_t num_rows, uint32_t num_cols, uint32_t nnz);
 
         /**
          * COO Tuples Constructor \n \n
@@ -177,8 +172,7 @@ namespace IVSparse {
          * This constructor takes in a single IVSparse vector and creates a one
          * column/row IVSparse matrix.
          */
-        SparseMatrix(typename IVSparse::SparseMatrix<T, indexT, compressionLevel,
-                     columnMajor>::Vector& vec);
+        SparseMatrix(typename IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector& vec);
 
         /**
          * @param vecs The vector of IVSparse vectors to construct from.
@@ -187,8 +181,7 @@ namespace IVSparse {
          * This constructor takes in an vector of IVSparse vectors and creates a
          * IVSparse matrix from them.
          */
-        SparseMatrix(std::vector<typename IVSparse::SparseMatrix<
-                     T, indexT, compressionLevel, columnMajor>::Vector>& vecs);
+        SparseMatrix(std::vector<typename IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector>& vecs);
 
         /**
          * @param filename The filepath of the matrix to be read in

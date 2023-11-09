@@ -312,8 +312,7 @@ namespace IVSparse {
 
     // IVSparse Vector Constructor
     template <typename T, typename indexT, bool columnMajor>
-    SparseMatrix<T, indexT, 2, columnMajor>::SparseMatrix(
-        typename IVSparse::SparseMatrix<T, indexT, 2, columnMajor>::Vector& vec) {
+    SparseMatrix<T, indexT, 2, columnMajor>::SparseMatrix(typename IVSparse::SparseMatrix<T, indexT, 2, columnMajor>::Vector& vec) {
 
         // Get the dimensions and metadata
         if (columnMajor) {
@@ -392,8 +391,7 @@ namespace IVSparse {
 
     // Array of Vectors Constructor
     template <typename T, typename indexT, bool columnMajor>
-    SparseMatrix<T, indexT, 2, columnMajor>::SparseMatrix(
-        std::vector<typename IVSparse::SparseMatrix<T, indexT, 2, columnMajor>::Vector>& vecs) {
+    SparseMatrix<T, indexT, 2, columnMajor>::SparseMatrix(std::vector<typename IVSparse::SparseMatrix<T, indexT, 2, columnMajor>::Vector>& vecs) {
 
         // Construct a one vector matrix to append to
         IVSparse::SparseMatrix<T, indexT, 2, columnMajor> temp(vecs[0]);
@@ -538,7 +536,7 @@ namespace IVSparse {
 
     // Private Tranpose Constructor
     template <typename T, typename indexT, bool columnMajor>
-    SparseMatrix<T, indexT, 2, columnMajor>::SparseMatrix(std::unordered_map<T, std::vector<indexT>> maps[], uint32_t num_rows, uint32_t num_cols) {
+    SparseMatrix<T, indexT, 2, columnMajor>::SparseMatrix(std::unordered_map<T, std::vector<indexT>>* maps, uint32_t num_rows, uint32_t num_cols) {
 
         // set class variables
         if constexpr (columnMajor) {

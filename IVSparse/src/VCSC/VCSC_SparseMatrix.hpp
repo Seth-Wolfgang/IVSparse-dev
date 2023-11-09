@@ -47,9 +47,6 @@ namespace IVSparse {
         // Calculates the current byte size of the matrix in memory
         void calculateCompSize();
 
-        // Private Helper Constructor for tranposing a IVSparse matrix
-        SparseMatrix(std::unordered_map<T, std::vector<indexT>> maps[], uint32_t num_rows, uint32_t num_cols);
-
         // Scalar Multiplication
         inline IVSparse::SparseMatrix<T, indexT, 2, columnMajor> scalarMultiply(T scalar);
 
@@ -86,6 +83,10 @@ namespace IVSparse {
           * IVSparse matrix is not well supported.
           */
         SparseMatrix() {};
+
+        // Private Helper Constructor for tranposing a IVSparse matrix
+        SparseMatrix(std::unordered_map<T, std::vector<indexT>>* maps, uint32_t num_rows, uint32_t num_cols);
+
 
         /**
          * @param mat The Eigen Sparse Matrix to be compressed
