@@ -11,7 +11,7 @@
 namespace IVSparse {
 
     // Calculates the number of bytes needed to store a value
-    inline uint8_t SparseMatrixBase::byteWidth(size_t size) {
+    inline uint8_t SparseMatrix::byteWidth(size_t size) {
         if (size <= 0xFF){
             return 1;
         }
@@ -40,21 +40,21 @@ namespace IVSparse {
     }
 
     // Gets the number of rows in the matrix
-    uint32_t SparseMatrixBase::rows() const { return numRows; }
+    uint32_t SparseMatrix::rows() const { return numRows; }
 
     // Gets the number of columns in the matrix
-    uint32_t SparseMatrixBase::cols() const { return numCols; }
+    uint32_t SparseMatrix::cols() const { return numCols; }
 
     // Gets the inner dimension of the matrix
-    uint32_t SparseMatrixBase::innerSize() const { return innerDim; }
+    uint32_t SparseMatrix::innerSize() const { return innerDim; }
 
     // Gets the outer dimension of the matrix
-    uint32_t SparseMatrixBase::outerSize() const { return outerDim; }
+    uint32_t SparseMatrix::outerSize() const { return outerDim; }
 
     // Gets the number of non-zero elements in the matrix
-    uint32_t SparseMatrixBase::nonZeros() const { return nnz; }
+    uint32_t SparseMatrix::nonZeros() const { return nnz; }
 
     // Gets the number of bytes needed to store the matrix
-    size_t SparseMatrixBase::byteSize() const { return compSize; }
+    size_t SparseMatrix::byteSize() const { return compSize; }
 
 }  // namespace IVSparse

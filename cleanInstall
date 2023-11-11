@@ -1,7 +1,0 @@
-#!/bin/sh
-
-cd pybindBuild
-rm -r build
-rm -r PyVSparse.egg-info
-rm - *.so
-cd ..

@@ -26,12 +26,34 @@ namespace IVSparse {
      * and 2 there are template specializations.
      */
     template <typename T, typename indexT = uint64_t, uint8_t compressionLevel = 3, bool columnMajor = true>
-    class SparseMatrix : public SparseMatrixBase {
+    class SparseMatrix {
         private:
         //* The Matrix Data *//
 
         void** data = nullptr;         // The data of the matrix
         void** endPointers = nullptr;  // The pointers to the end of each column
+
+        uint32_t innerDim = 0;  // The inner dimension of the matrix
+        uint32_t outerDim = 0;  // The outer dimension of the matrix
+
+        uint32_t numRows = 0;  // The number of rows in the matrix
+        uint32_t numCols = 0;  // The number of columns in the matrix
+
+        uint32_t nnz = 0;  // The number of non-zero values in the matrix
+
+        size_t compSize = 0;  // The size of the compressed matrix in bytes
+
+        //* The Value and Index Types *//
+
+        uint32_t val_t;  // Information about the value type (size, signededness, etc.)
+        uint32_t index_t;  // Information about the index type (size)
+
+        uint32_t* metadata = nullptr;  // The metadata of the matrix
+
+        //* Private Methods *//
+
+        // Calculates the number of bytes needed to store a value
+        inline uint8_t byteWidth(size_t size);
 
         //* Private Methods *//
 
@@ -68,6 +90,26 @@ namespace IVSparse {
         inline Eigen::Matrix<T, -1, -1> matrixMultiply(Eigen::Matrix<T, -1, -1> mat);
 
         public:
+
+        // Gets the number of rows in the matrix
+        uint32_t rows() const { return numRows; }
+
+        // Gets the number of columns in the matrix
+        uint32_t cols() const { return numCols; }
+
+        // Gets the inner dimension of the matrix
+        uint32_t innerSize() const { return innerDim; }
+
+        // Gets the outer dimension of the matrix
+        uint32_t outerSize() const { return outerDim; }
+
+        // Gets the number of non-zero elements in the matrix
+        uint32_t nonZeros() const { return nnz; }
+
+        // Gets the number of bytes needed to store the matrix
+        size_t byteSize() const { return compSize; }
+
+
         //* Nested Subclasses *//
 
         // Vector Class for IVCSC Sparse Matrix
@@ -92,7 +134,7 @@ namespace IVSparse {
           */
         SparseMatrix() {};
 
-                // Private Helper Constructor for tranposing a IVSparse matrix
+        // Private Helper Constructor for tranposing a IVSparse matrix
         SparseMatrix(std::unordered_map<T, std::vector<indexT>>* maps, uint32_t num_rows, uint32_t num_cols);
 
 

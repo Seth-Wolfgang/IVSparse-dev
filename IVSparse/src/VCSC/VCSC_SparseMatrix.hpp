@@ -18,7 +18,7 @@ namespace IVSparse {
      * redundant data than CSC.
      */
     template <typename T, typename indexT, bool columnMajor>
-    class SparseMatrix<T, indexT, 2, columnMajor> : public SparseMatrixBase {
+    class SparseMatrix<T, indexT, 2, columnMajor> {
         private:
         //* The Matrix Data *//
 
@@ -28,6 +28,28 @@ namespace IVSparse {
 
         indexT* valueSizes = nullptr;  // The sizes of the value arrays
         indexT* indexSizes = nullptr;  // The sizes of the index arrays
+        
+        uint32_t innerDim = 0;  // The inner dimension of the matrix
+        uint32_t outerDim = 0;  // The outer dimension of the matrix
+
+        uint32_t numRows = 0;  // The number of rows in the matrix
+        uint32_t numCols = 0;  // The number of columns in the matrix
+
+        uint32_t nnz = 0;  // The number of non-zero values in the matrix
+
+        size_t compSize = 0;  // The size of the compressed matrix in bytes
+
+        //* The Value and Index Types *//
+
+        uint32_t val_t;  // Information about the value type (size, signededness, etc.)
+        uint32_t index_t;  // Information about the index type (size)
+
+        uint32_t* metadata = nullptr;  // The metadata of the matrix
+
+        //* Private Methods *//
+
+        // Calculates the number of bytes needed to store a value
+        inline uint8_t byteWidth(size_t size);
 
         //* Private Methods *//
 
@@ -60,6 +82,26 @@ namespace IVSparse {
         inline Eigen::Matrix<T, -1, 1> vectorMultiply(typename SparseMatrix<T, indexT, 2, columnMajor>::Vector& vec);
 
         public:
+
+        // Gets the number of rows in the matrix
+        uint32_t rows() const { return numRows; }
+
+        // Gets the number of columns in the matrix
+        uint32_t cols() const { return numCols; }
+
+        // Gets the inner dimension of the matrix
+        uint32_t innerSize() const { return innerDim; }
+
+        // Gets the outer dimension of the matrix
+        uint32_t outerSize() const { return outerDim; }
+
+        // Gets the number of non-zero elements in the matrix
+        uint32_t nonZeros() const { return nnz; }
+
+        // Gets the number of bytes needed to store the matrix
+        size_t byteSize() const { return compSize; }
+
+
         //* Nested Subclasses *//
 
         // The Vector Class for VCSC Matrices

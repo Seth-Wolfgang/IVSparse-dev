@@ -10,6 +10,35 @@
 
 namespace IVSparse {
 
+    // Calculates the number of bytes needed to store a value
+    template <typename T, typename indexType, bool columnMajor>
+    inline uint8_t SparseMatrix<T, indexType, 1, columnMajor>::byteWidth(size_t size) {
+        if (size <= 0xFF){
+            return 1;
+        }
+        else if (size <= 0xFFFF){
+            return 2;
+        }
+        else if (size <= 0xFFFFFF){
+            return 3;
+        }
+        else if (size <= 0xFFFFFFFF){
+            return 4;
+        }
+        else if (size <= 0xFFFFFFFFFF){
+            return 5;
+        }
+        else if (size <= 0xFFFFFFFFFFFF){
+            return 6;
+        }
+        else if (size <= 0xFFFFFFFFFFFFFF){
+            return 7;
+        }
+        else{
+            return 8;
+        }
+    }
+
 // Encodes the value type of the matrix in a uint32_t
 template <typename T, typename indexT, bool columnMajor>
 void SparseMatrix<T, indexT, 1, columnMajor>::encodeValueType() {
