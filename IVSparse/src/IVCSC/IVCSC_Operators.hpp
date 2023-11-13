@@ -86,11 +86,11 @@ namespace IVSparse {
     // Equality Operator
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     bool SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator==(const SparseMatrix<T, indexT, compressionLevel, columnMajor>& other) const {
-    // bool SparseMatrix<T, indexT, 2               , columnMajor>::operator==(const SparseMatrix<T, indexT,                2, columnMajor>& other) const {
-        
-        // check if the two matrices are equal
+        // bool SparseMatrix<T, indexT, 2               , columnMajor>::operator==(const SparseMatrix<T, indexT,                2, columnMajor>& other) const {
 
-        // first check the metadata using memcompare
+            // check if the two matrices are equal
+
+            // first check the metadata using memcompare
         if (memcmp(metadata, other.metadata, sizeof(uint32_t) * NUM_META_DATA) != 0)
             return false;
 
@@ -127,9 +127,7 @@ namespace IVSparse {
         if (data[vector] == nullptr) return 0;
 
         // get an iterator for the desired vector
-        for (typename SparseMatrix<T, indexT, compressionLevel,
-             columnMajor>::InnerIterator it(*this, vector);
-             it; ++it) {
+        for (typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator it(*this, vector); it; ++it) {
             if (it.getIndex() == (indexT)index) {
                 return it.value();
             }

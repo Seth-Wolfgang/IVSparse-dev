@@ -248,19 +248,16 @@ namespace IVSparse {
                "matrix!");
         #endif
 
-        indexT oldOuterSize = outerDim - 1;
+        uint32_t oldOuterDim = outerDim;
 
-        innerDim = mat.innerSize();
         outerDim += mat.outerSize();
         nnz += mat.nonZeros();
 
         if constexpr (columnMajor) {
             numCols = outerDim;
-            numRows = innerDim;
         }
         else {
             numRows = outerDim;
-            numCols = innerDim;
         }
 
         // update metadata
@@ -281,18 +278,15 @@ namespace IVSparse {
         }
 
         // copy the data from the vector to the new vectors
-        
-
-        for (uint32_t i = 0; i < mat.outerSize(); ++i) {
-            oldOuterSize++;
-            valueSizes[oldOuterSize] = mat.getNumUniqueVals(i);
-            indexSizes[oldOuterSize] = mat.getNumIndices(i);
+        for (uint32_t i = 0; i < outerDim - oldOuterDim; ++i) {
+            valueSizes[oldOuterDim + i] = mat.getNumUniqueVals(i);
+            indexSizes[oldOuterDim + i] = mat.getNumIndices(i);
 
             // allocate the new vectors
             try {
-                values[oldOuterSize] = (T*)malloc(valueSizes[oldOuterSize] * sizeof(T));
-                counts[oldOuterSize] = (indexT*)malloc(sizeof(indexT) * valueSizes[oldOuterSize]);
-                indices[oldOuterSize] = (indexT*)malloc(indexSizes[oldOuterSize] * sizeof(indexT));
+                values[oldOuterDim + i]  = (T*)     malloc(valueSizes[oldOuterDim + i] * sizeof(T));
+                counts[oldOuterDim + i]  = (indexT*)malloc(valueSizes[oldOuterDim + i] * sizeof(indexT));
+                indices[oldOuterDim + i] = (indexT*)malloc(indexSizes[oldOuterDim + i] * sizeof(indexT));
             }
             catch (std::bad_alloc& e) {
                 std::cerr << "Error: " << e.what() << std::endl;
@@ -300,9 +294,9 @@ namespace IVSparse {
             }
 
             // copy the data from the vector to the new vectors
-            memcpy(values[oldOuterSize], mat.getValues(i), valueSizes[oldOuterSize] * sizeof(T));
-            memcpy(counts[oldOuterSize], mat.getCounts(i), valueSizes[oldOuterSize] * sizeof(indexT));
-            memcpy(indices[oldOuterSize], mat.getIndices(i), indexSizes[oldOuterSize] * sizeof(indexT));
+            memcpy(values[oldOuterDim + i],  mat.getValues(i),  mat.valueSizes[i] * sizeof(T));
+            memcpy(counts[oldOuterDim + i],  mat.getCounts(i),  mat.valueSizes[i] * sizeof(indexT));
+            memcpy(indices[oldOuterDim + i], mat.getIndices(i), mat.indexSizes[i] * sizeof(indexT));
         }
 
         // update the compressed size
@@ -421,13 +415,13 @@ namespace IVSparse {
 
         }
 
-        metadata = new uint32_t[NUM_META_DATA];
-        metadata[0] = 2;
-        metadata[1] = temp.innerDim;
-        metadata[2] = temp.outerDim;
-        metadata[3] = temp.nnz;
-        metadata[4] = val_t;
-        metadata[5] = index_t;
+        temp.metadata = new uint32_t[NUM_META_DATA];
+        temp.metadata[0] = 2;
+        temp.metadata[1] = temp.innerDim;
+        temp.metadata[2] = temp.outerDim;
+        temp.metadata[3] = temp.nnz;
+        temp.metadata[4] = val_t;
+        temp.metadata[5] = index_t;
 
 
         // update the compressed size

@@ -250,10 +250,10 @@ namespace IVSparse {
         // update the outer dimension
         outerDim += mat.outerDim;
         if (columnMajor) {
-            numCols += mat.outerDim;
+            numCols = outerDim;
         }
         else {
-            numRows += mat.outerDim;
+            numRows = outerDim;
         }
 
         // update the number of nonzeros
@@ -273,7 +273,7 @@ namespace IVSparse {
         }
 
         // deep copy the data
-        for (uint32_t i = 0; i < mat.outerDim; ++i) {
+        for (uint32_t i = 0; i < outerDim - oldOuterDim; ++i) {
             try {
                 data[oldOuterDim + i] = malloc(mat.getVectorSize(i));
                 endPointers[oldOuterDim + i] = (char*)data[oldOuterDim + i] + mat.getVectorSize(i);
@@ -285,7 +285,7 @@ namespace IVSparse {
             // copy the vector
             memcpy(data[oldOuterDim + i], mat.data[i], mat.getVectorSize(i));
         }
-        
+
 
         calculateCompSize();
     }
