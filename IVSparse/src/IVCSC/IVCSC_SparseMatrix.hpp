@@ -399,8 +399,7 @@ namespace IVSparse {
         /**
          * @returns An Eigen Sparse Matrix constructed from the IVSparse matrix data.
          */
-        Eigen::SparseMatrix<T, columnMajor ? Eigen::ColMajor : Eigen::RowMajor>
-            toEigen();
+        Eigen::SparseMatrix<T, columnMajor ? Eigen::ColMajor : Eigen::RowMajor> toEigen();
 
         ///@}
 
@@ -425,21 +424,18 @@ namespace IVSparse {
         void inPlaceTranspose();
 
         /**
-         * @param vec The vector to append to the matrix in the correct storage order.
+         * @param mat The matrix to append to the matrix in the correct storage order.
          *
-         * Appends a IVSparse vector to the current matrix in the storage order of the
+         * Appends an IVSparse matrix to the current matrix in the storage order of the
          * matrix.
          */
-        void append(typename SparseMatrix<T, indexT, compressionLevel,
-                    columnMajor>::Vector& vec);
+        void append(SparseMatrix<T, indexT, compressionLevel, columnMajor>& mat);
 
         /**
-         * @returns A vector of IVSparse vectors that represent a slice of the
+         * @returns A matrix that represent a slice of the
          * IVSparse matrix.
          */
-        std::vector<typename IVSparse::SparseMatrix<T, indexT, compressionLevel,
-            columnMajor>::Vector>
-            slice(uint32_t start, uint32_t end);
+        IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor> slice(uint32_t start, uint32_t end);
 
         ///@}
 

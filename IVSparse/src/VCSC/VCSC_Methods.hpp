@@ -239,123 +239,74 @@ namespace IVSparse {
 
     // appends a vector to the back of the storage order of the matrix
     template <typename T, typename indexT, bool columnMajor>
-    void SparseMatrix<T, indexT, 2, columnMajor>::append(typename IVSparse::SparseMatrix<T, indexT, 2, columnMajor>::Vector& vec) {
+    void SparseMatrix<T, indexT, 2, columnMajor>::append(IVSparse::SparseMatrix<T, indexT, 2, columnMajor>& mat) {
 
         #ifdef IVSPARSE_DEBUG
         // check that the vector is the correct size
-        assert((vec.getLength() == innerDim) &&
+        assert((mat.innerDim == innerDim) &&
                "The vector must be the same size as the outer dimension of the "
                "matrix!");
         #endif
 
-        // check if the matrix is empty
-        if (numRows < 1 && numCols < 1) [[unlikely]] {
-            *this = IVSparse::SparseMatrix<T, indexT, 2, columnMajor>(vec);
-            }
+        indexT oldOuterSize = outerDim - 1;
+
+        innerDim = mat.innerSize();
+        outerDim += mat.outerSize();
+        nnz += mat.nonZeros();
+
+        if constexpr (columnMajor) {
+            numCols = outerDim;
+            numRows = innerDim;
+        }
         else {
-            // check if the vector is empty, if so change the implementation details
-            if (vec.nonZeros() == 0) {
-                if (columnMajor) {
-                    numCols++;
-                }
-                else {
-                    numRows++;
-                }
-                outerDim++;
-
-                // update metadata
-                metadata[2] = outerDim;
-
-                // realloc the vectors
-                try {
-                    values = (T**)realloc(values, outerDim * sizeof(T*));
-                    counts = (indexT**)realloc(counts, outerDim * sizeof(indexT*));
-                    indices = (indexT**)realloc(indices, outerDim * sizeof(indexT*));
-                    valueSizes = (indexT*)realloc(valueSizes, outerDim * sizeof(indexT));
-                    indexSizes = (indexT*)realloc(indexSizes, outerDim * sizeof(indexT));
-                }
-                catch (std::bad_alloc& e) {
-                    std::cerr << "Error: " << e.what() << std::endl;
-                    exit(1);
-                }
-
-                // set the last vector to be empty
-                values[outerDim - 1] = nullptr;
-                counts[outerDim - 1] = nullptr;
-                indices[outerDim - 1] = nullptr;
-                valueSizes[outerDim - 1] = 0;
-                indexSizes[outerDim - 1] = 0;
-
-                calculateCompSize();
-                return;
-            }
-            else {
-                #ifdef IVSPARSE_DEBUG
-                // check that the vector is the correct size
-                if ((vec.getLength() != innerDim))
-                    throw std::invalid_argument(
-                        "The vector must be the same size as the outer dimension of the "
-                        "matrix!");
-                #endif
-
-                outerDim++;
-                nnz += vec.nonZeros();
-
-                if (columnMajor) {
-                    numCols++;
-                }
-                else {
-                    numRows++;
-                }
-
-                // update metadata
-                metadata[2] = outerDim;
-                metadata[3] = nnz;
-
-                // realloc the vectors
-                try {
-                    values = (T**)realloc(values, outerDim * sizeof(T*));
-                    counts = (indexT**)realloc(counts, outerDim * sizeof(indexT*));
-                    indices = (indexT**)realloc(indices, outerDim * sizeof(indexT*));
-                    valueSizes = (indexT*)realloc(valueSizes, outerDim * sizeof(indexT));
-                    indexSizes = (indexT*)realloc(indexSizes, outerDim * sizeof(indexT));
-                }
-                catch (std::bad_alloc& e) {
-                    std::cerr << "Error: " << e.what() << std::endl;
-                    exit(1);
-                }
-
-                // set the sizes of the new vector
-                valueSizes[outerDim - 1] = vec.uniqueVals();
-                indexSizes[outerDim - 1] = vec.nonZeros();
-
-                // allocate the new vectors
-                try {
-                    values[outerDim - 1] =
-                        (T*)malloc(valueSizes[outerDim - 1] * sizeof(T));
-                    counts[outerDim - 1] =
-                        (indexT*)malloc(sizeof(indexT) * valueSizes[outerDim - 1]);
-                    indices[outerDim - 1] =
-                        (indexT*)malloc(indexSizes[outerDim - 1] * sizeof(indexT));
-                }
-                catch (std::bad_alloc& e) {
-                    std::cerr << "Error: " << e.what() << std::endl;
-                    exit(1);
-                }
-
-                // copy the data from the vector to the new vectors
-                memcpy(values[outerDim - 1], vec.getValues(),
-                       valueSizes[outerDim - 1] * sizeof(T));
-                memcpy(counts[outerDim - 1], vec.getCounts(),
-                       valueSizes[outerDim - 1] * sizeof(indexT));
-                memcpy(indices[outerDim - 1], vec.getIndices(),
-                       indexSizes[outerDim - 1] * sizeof(indexT));
-
-                // update the compressed size
-                calculateCompSize();
-            }
+            numRows = outerDim;
+            numCols = innerDim;
         }
 
+        // update metadata
+        metadata[2] = outerDim;
+        metadata[3] = nnz;
+
+        // realloc the vectors
+        try {
+            values = (T**)realloc(values, outerDim * sizeof(T*));
+            counts = (indexT**)realloc(counts, outerDim * sizeof(indexT*));
+            indices = (indexT**)realloc(indices, outerDim * sizeof(indexT*));
+            valueSizes = (indexT*)realloc(valueSizes, outerDim * sizeof(indexT));
+            indexSizes = (indexT*)realloc(indexSizes, outerDim * sizeof(indexT));
+        }
+        catch (std::bad_alloc& e) {
+            std::cerr << "Error: " << e.what() << std::endl;
+            exit(1);
+        }
+
+        // copy the data from the vector to the new vectors
+        
+
+        for (uint32_t i = 0; i < mat.outerSize(); ++i) {
+            oldOuterSize++;
+            valueSizes[oldOuterSize] = mat.getNumUniqueVals(i);
+            indexSizes[oldOuterSize] = mat.getNumIndices(i);
+
+            // allocate the new vectors
+            try {
+                values[oldOuterSize] = (T*)malloc(valueSizes[oldOuterSize] * sizeof(T));
+                counts[oldOuterSize] = (indexT*)malloc(sizeof(indexT) * valueSizes[oldOuterSize]);
+                indices[oldOuterSize] = (indexT*)malloc(indexSizes[oldOuterSize] * sizeof(indexT));
+            }
+            catch (std::bad_alloc& e) {
+                std::cerr << "Error: " << e.what() << std::endl;
+                exit(1);
+            }
+
+            // copy the data from the vector to the new vectors
+            memcpy(values[oldOuterSize], mat.getValues(i), valueSizes[oldOuterSize] * sizeof(T));
+            memcpy(counts[oldOuterSize], mat.getCounts(i), valueSizes[oldOuterSize] * sizeof(indexT));
+            memcpy(indices[oldOuterSize], mat.getIndices(i), indexSizes[oldOuterSize] * sizeof(indexT));
+        }
+
+        // update the compressed size
+        calculateCompSize();
     }  // end append
 
     // tranposes the ivsparse matrix
@@ -416,29 +367,72 @@ namespace IVSparse {
 
     // slice method that returns a vector of IVSparse vectors
     template <typename T, typename indexT, bool columnMajor>
-    std::vector<typename IVSparse::SparseMatrix<T, indexT, 2, columnMajor>::Vector> SparseMatrix<T, indexT, 2, columnMajor>::slice(uint32_t start, uint32_t end) {
+    IVSparse::SparseMatrix<T, indexT, 2, columnMajor> SparseMatrix<T, indexT, 2, columnMajor>::slice(uint32_t start, uint32_t end) {
 
         #ifdef IVSPARSE_DEBUG
         assert(start < outerDim && end <= outerDim && start < end &&
                "Invalid start and end values!");
         #endif
 
-        // make a vector of IVSparse vectors
-        std::vector<
-            typename IVSparse::SparseMatrix<T, indexT, 2, columnMajor>::Vector>
-            vecs(end - start);
+        // create a new matrix
+        IVSparse::SparseMatrix<T, indexT, 2, columnMajor> temp;
 
-        // grab the vectors and add them to vecs
-        for (uint32_t i = start; i < end; ++i) {
-            // make a temp vector
-            IVSparse::SparseMatrix<T, indexT, 2, columnMajor>::Vector temp(*this, i);
+        temp.innerDim = innerDim;
+        temp.outerDim = end - start;
+        temp.numRows = numRows;
+        temp.numCols = temp.outerDim;
 
-            // add the vector to vecs
-            vecs[i - start] = temp;
+        // malloc the vectors
+        try {
+            temp.values = (T**)malloc((end - start) * sizeof(T*));
+            temp.counts = (indexT**)malloc((end - start) * sizeof(indexT*));
+            temp.indices = (indexT**)malloc((end - start) * sizeof(indexT*));
+            temp.valueSizes = (indexT*)malloc((end - start) * sizeof(indexT));
+            temp.indexSizes = (indexT*)malloc((end - start) * sizeof(indexT));
+        }
+        catch (std::bad_alloc& e) {
+            std::cerr << "Error: " << e.what() << std::endl;
+            exit(1);
         }
 
-        // return the vector
-        return vecs;
+        // copy the data from the vector to the new vectors
+        for (int i = 0; i < end - start; i++) {
+
+            temp.valueSizes[i] = valueSizes[i + start];
+            temp.indexSizes[i] = indexSizes[i + start];
+
+            // allocate the new vectors
+            try {
+                temp.values[i] = (T*)malloc(valueSizes[i + start] * sizeof(T));
+                temp.counts[i] = (indexT*)malloc(sizeof(indexT) * valueSizes[i + start]);
+                temp.indices[i] = (indexT*)malloc(indexSizes[i + start] * sizeof(indexT));
+            }
+            catch (std::bad_alloc& e) {
+                std::cerr << "Error: " << e.what() << std::endl;
+                exit(1);
+            }
+
+            // copy the data from the vector to the new vectors
+            memcpy(temp.values[i], values[i + start], valueSizes[i + start] * sizeof(T));
+            memcpy(temp.counts[i], counts[i + start], valueSizes[i + start] * sizeof(indexT));
+            memcpy(temp.indices[i], indices[i + start], indexSizes[i + start] * sizeof(indexT));
+
+            temp.nnz += temp.valueSizes[i] * temp.indexSizes[i];
+
+        }
+
+        metadata = new uint32_t[NUM_META_DATA];
+        metadata[0] = 2;
+        metadata[1] = temp.innerDim;
+        metadata[2] = temp.outerDim;
+        metadata[3] = temp.nnz;
+        metadata[4] = val_t;
+        metadata[5] = index_t;
+
+
+        // update the compressed size
+        temp.calculateCompSize();
+        return temp;
     }
 
 }  // end namespace IVSparse

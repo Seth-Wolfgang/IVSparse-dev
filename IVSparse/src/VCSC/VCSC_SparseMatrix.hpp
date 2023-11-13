@@ -424,15 +424,13 @@ namespace IVSparse {
          * Appends a IVSparse vector to the current matrix in the storage order of the
          * matrix.
          */
-        void append(typename SparseMatrix<T, indexT, 2, columnMajor>::Vector& vec);
+        void append(SparseMatrix<T, indexT, 2, columnMajor>& mat);
 
         /**
-         * @returns A vector of IVSparse vectors that represent a slice of the
+         * @returns A matrix that represent a slice of the
          * IVSparse matrix.
          */
-        std::vector<
-            typename IVSparse::SparseMatrix<T, indexT, 2, columnMajor>::Vector>
-            slice(uint32_t start, uint32_t end);
+        IVSparse::SparseMatrix<T, indexT, 2, columnMajor> slice(uint32_t start, uint32_t end);
 
         ///@}
 

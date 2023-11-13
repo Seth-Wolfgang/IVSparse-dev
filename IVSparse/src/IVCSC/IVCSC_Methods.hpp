@@ -239,102 +239,60 @@ namespace IVSparse {
 
     // appends a vector to the back of the storage order of the matrix
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    void SparseMatrix<T, indexT, compressionLevel, columnMajor>::append(
-        typename IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector& vec) {
+    void SparseMatrix<T, indexT, compressionLevel, columnMajor>::append(IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>& mat) {
 
         #ifdef IVSPARSE_DEBUG
-        assert(vec.getLength() == innerDim && "Vector must be the same size as the inner dimension!");
+        assert(mat.innerDim == innerDim && "Vector must be the same size as the inner dimension!");
         #endif
 
-        // check if the matrix is empty
-        if (compSize == 0) [[unlikely]] {
-            *this = IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>(vec);
-            }
+        indexT olderOuterSize = outerDim - 1;
+
+        outerDim += mat.outerSize();
+        nnz += mat.nonZeros();
+        if (columnMajor) {
+            numCols += mat.innerSize();
+        }
         else {
-            // check if the vector is empty, if so change the implementation details
-            if (vec.begin() == vec.end()) [[unlikely]] {
-                if (columnMajor) {
-                    numCols++;
-                }
-                else {
-                    numRows++;
-                }
-                outerDim++;
-
-                // update metadata
-                metadata[2] = outerDim;
-
-                // realloc the data to be one larger
-                try {
-                    data = (void**)realloc(data, outerDim * sizeof(void*));
-                    endPointers = (void**)realloc(endPointers, outerDim * sizeof(void*));
-                }
-                catch (std::bad_alloc& e) {
-                    throw std::bad_alloc();
-                }
-
-                // set the new vector to nullptr
-                data[outerDim - 1] = nullptr;
-                endPointers[outerDim - 1] = nullptr;
-
-                calculateCompSize();
-
-                return;
-                }
-            else {
-                // check that the vector is the correct size
-                if ((vec.getLength() != innerDim))
-                    throw std::invalid_argument(
-                        "The vector must be the same size as the outer dimension of the "
-                        "matrix!");
-
-                outerDim++;
-                nnz += vec.nonZeros();
-                if (columnMajor) {
-                    numCols++;
-                }
-                else {
-                    numRows++;
-                }
-
-                // update metadata
-                metadata[2] = outerDim;
-                metadata[3] = nnz;
-
-                // realloc the data to be one larger
-                try {
-                    data = (void**)realloc(data, outerDim * sizeof(void*));
-                    endPointers = (void**)realloc(endPointers, outerDim * sizeof(void*));
-                }
-                catch (std::bad_alloc& e) {
-                    throw std::bad_alloc();
-                }
-
-                // malloc the new vector
-                try {
-                    data[outerDim - 1] = malloc(vec.byteSize());
-                    endPointers[outerDim - 1] = (char*)data[outerDim - 1] + vec.byteSize();
-                }
-                catch (std::bad_alloc& e) {
-                    throw std::bad_alloc();
-                }
-
-                // copy the vector into the new space
-                memcpy(data[outerDim - 1], vec.begin(), vec.byteSize());
-
-                calculateCompSize();
-            }
+            numRows += mat.innerSize();
         }
 
-    }  // end append
+        // update metadata
+        metadata[2] = outerDim;
+        metadata[3] = nnz;
+
+        // realloc the data to be one larger
+        try {
+            data = (void**)realloc(data, outerDim * sizeof(void*));
+            endPointers = (void**)realloc(endPointers, outerDim * sizeof(void*));
+        }
+        catch (std::bad_alloc& e) {
+            throw std::bad_alloc();
+        }
+
+
+        for (uint32_t i = 0; i < mat.outerSize(); ++i) {
+            olderOuterSize++;
+            // malloc the new vector
+            try {
+                data[olderOuterSize] = malloc(mat.getVectorSize(i));
+                endPointers[olderOuterSize] = (char*)data[olderOuterSize] + mat.getVectorSize(i);
+            }
+            catch (std::bad_alloc& e) {
+                throw std::bad_alloc();
+            }
+
+            // copy the vector into the new space
+            memcpy(data[olderOuterSize], mat.vectorPointer(i), mat.getVectorSize(i));
+        }
+
+        calculateCompSize();
+    }
+
 
     // tranposes the ivsparse matrix
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor> SparseMatrix<T, indexT, compressionLevel, columnMajor>::transpose() {
 
-        // make a data structure to store the tranpose
-        // std::unordered_map<T, std::vector<indexT>> mapsT[innerDim];
-        // std::unordered_map<T, std::vector<indexT>>* mapsT = (std::unordered_map<T, std::vector<indexT>>*)malloc(innerDim * sizeof(std::unordered_map<T, std::vector<indexT>>));
         std::vector<std::unordered_map<T, std::vector<indexT>>> mapsT;
         // mapsT.reserve(innerDim);
         mapsT.resize(innerDim);
@@ -420,30 +378,72 @@ namespace IVSparse {
 
     // slice method that returns a vector of IVSparse vectors
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    std::vector<typename IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector>SparseMatrix<T, indexT, compressionLevel, columnMajor>::slice(uint32_t start, uint32_t end) {
+    IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor> SparseMatrix<T, indexT, compressionLevel, columnMajor>::slice(uint32_t start, uint32_t end) {
 
         #ifdef IVSPARSE_DEBUG
         assert(start < outerDim && end <= outerDim && start < end &&
                "Invalid start and end values!");
         #endif
 
-        // make a vector of IVSparse vectors
-        std::vector<typename IVSparse::SparseMatrix<T, indexT, compressionLevel,
-            columnMajor>::Vector>
-            vecs(end - start);
+        // create a new matrix
+        IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor> temp;
 
-        // grab the vectors and add them to vecs
-        for (uint32_t i = start; i < end; ++i) {
-            // make a temp vector
-            IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector
-                temp(*this, i);
+        temp.outerDim = end - start;
+        temp.innerDim = innerDim;
 
-            // add the vector to vecs
-            vecs[i - start] = temp;
+        if constexpr (columnMajor) {
+            temp.numRows = innerDim;
+            temp.numCols = temp.outerDim;
+        }
+        else {
+            temp.numRows = temp.outerDim;
+            temp.numCols = innerDim;
         }
 
-        // return the vector
-        return vecs;
+        // allocate the vectors
+        try {
+            temp.data = (void**)malloc((end - start) * sizeof(void*));
+            temp.endPointers = (void**)malloc((end - start) * sizeof(void*));
+        }
+        catch (std::bad_alloc& e) {
+            throw std::bad_alloc();
+        }
+
+        // copy the vectors
+        for (uint32_t i = start; i < end; ++i) {
+
+            try {
+                temp.data[i - start] = malloc(getVectorSize(i));
+                temp.endPointers[i - start] = (char*)temp.data[i - start] + getVectorSize(i);
+            }
+            catch (std::bad_alloc& e) {
+                throw std::bad_alloc();
+            }
+
+            // copy the vector
+            memcpy(temp.data[i - start], data[i], getVectorSize(i));
+        }
+
+        // get nnz
+        temp.nnz = 0;
+        for (int i = 0; i < temp.outerDim; ++i) {
+            for (typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator it(temp, i); it; ++it) {
+                temp.nnz++;
+            }
+        }
+
+        metadata = new uint32_t[NUM_META_DATA];
+        metadata[0] = 3;
+        metadata[1] = temp.innerDim;
+        metadata[2] = temp.outerDim;
+        metadata[3] = temp.nnz;
+        metadata[4] = val_t;
+        metadata[5] = index_t;
+
+
+        // update metadata
+        temp.calculateCompSize();
+        return temp;
     }
 
 }  // end namespace IVSparse

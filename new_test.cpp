@@ -8,23 +8,26 @@
 
 int main() {
 
-    Eigen::Matrix<int8_t, -1, -1> eigen = Eigen::Matrix<int8_t, -1, -1>::Zero(1000, 1000);
+    Eigen::Matrix<int, -1, -1> eigen = Eigen::Matrix<int, -1, -1>::Random(10, 10);
+    Eigen::SparseMatrix<int> eigen_sparse = eigen.sparseView();
 
-    for(int i = 0; i < eigen.cols(); i++) {
-        for (int j = 0; j < eigen.rows(); j++) {
-            eigen(i, j) = 1;
-        }
-    }
+    IVSparse::SparseMatrix<int, int, 3> ivcsc(eigen_sparse);
+    IVSparse::SparseMatrix<int, int, 2> vcsc(eigen_sparse);
 
-    std::cout << eigen << std::endl;
+    ivcsc.print();
+    vcsc.print();
 
-    Eigen::SparseMatrix<int8_t> sparse = eigen.sparseView();
+    // ivcsc.append(ivcsc);
+    vcsc.append(vcsc);  
+     
+    assert(ivcsc.sum() == vcsc.sum());
+    assert(ivcsc.sum() == eigen_sparse.sum());
 
-    IVSparse::SparseMatrix<int8_t, int32_t, 2> ivsparse(sparse);
+    IVSparse::SparseMatrix<int, int, 2> vcsc2 = vcsc.slice(0, 10);
+    IVSparse::SparseMatrix<int, int, 3> ivcsc2 = ivcsc.slice(0, 10);
 
-    std::cout << (int)ivsparse.sum() << std::endl;
-    std::cout << (int)eigen.sum() << std::endl;
-
+    assert(vcsc2.sum() == ivcsc2.sum());
+    assert(vcsc2.sum() == eigen_sparse.sum());
 
     return 0;
 }
