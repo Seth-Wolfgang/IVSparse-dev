@@ -4,30 +4,33 @@
 #include "IVSparse/SparseMatrix"
 #include "misc/matrix_creator.cpp"
 
-
+#define TYPE int16_t
 
 int main() {
 
-    Eigen::Matrix<int, -1, -1> eigen = Eigen::Matrix<int, -1, -1>::Random(10, 10);
-    Eigen::SparseMatrix<int> eigen_sparse = eigen.sparseView();
+    Eigen::Matrix<TYPE, -1, -1> eigen = Eigen::Matrix<TYPE, -1, -1>::Random(10, 10);
+    Eigen::SparseMatrix<TYPE> eigen_sparse = eigen.sparseView();
 
-    IVSparse::SparseMatrix<int, int, 3> ivcsc(eigen_sparse);
-    IVSparse::SparseMatrix<int, int, 2> vcsc(eigen_sparse);
+    //IVSparse::SparseMatrix<TYPE, int, 3> ivcsc(eigen_sparse);
+    IVSparse::SparseMatrix<TYPE, int, 2> vcsc(eigen_sparse);
 
-    ivcsc.print();
+    //ivcsc.print();
     vcsc.print();
 
-    // ivcsc.append(ivcsc);
-    vcsc.append(vcsc);  
-     
-    assert(ivcsc.sum() == vcsc.sum());
-    assert(ivcsc.sum() == eigen_sparse.sum());
+    IVSparse::SparseMatrix<TYPE, int, 2> vcsc2 = vcsc.transpose();
 
-    IVSparse::SparseMatrix<int, int, 2> vcsc2 = vcsc.slice(0, 10);
-    IVSparse::SparseMatrix<int, int, 3> ivcsc2 = ivcsc.slice(0, 10);
+    vcsc2.print();
 
-    assert(vcsc2.sum() == ivcsc2.sum());
-    assert(vcsc2.sum() == eigen_sparse.sum());
+    vcsc2 = vcsc2 * 0;
+
+    vcsc2.append(vcsc);
+
+    vcsc2.print();
+
+    // slice the first 3 cols of ivcsc
+    IVSparse::SparseMatrix<TYPE, int, 2> vcsc3 = vcsc2.slice(0, 3);
+
+    vcsc3.print();
 
     return 0;
 }

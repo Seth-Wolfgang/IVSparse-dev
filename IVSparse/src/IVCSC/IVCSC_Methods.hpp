@@ -245,22 +245,25 @@ namespace IVSparse {
         assert(mat.innerDim == innerDim && "Vector must be the same size as the inner dimension!");
         #endif
 
-        indexT olderOuterSize = outerDim - 1;
+        uint32_t oldOuterDim = outerDim;
 
-        outerDim += mat.outerSize();
-        nnz += mat.nonZeros();
+        // update the outer dimension
+        outerDim += mat.outerDim;
         if (columnMajor) {
-            numCols += mat.innerSize();
+            numCols += mat.outerDim;
         }
         else {
-            numRows += mat.innerSize();
+            numRows += mat.outerDim;
         }
 
-        // update metadata
+        // update the number of nonzeros
+        nnz += mat.nnz;
+
+        // update the metadata
         metadata[2] = outerDim;
         metadata[3] = nnz;
 
-        // realloc the data to be one larger
+        // reallocate the data
         try {
             data = (void**)realloc(data, outerDim * sizeof(void*));
             endPointers = (void**)realloc(endPointers, outerDim * sizeof(void*));
@@ -269,21 +272,20 @@ namespace IVSparse {
             throw std::bad_alloc();
         }
 
-
-        for (uint32_t i = 0; i < mat.outerSize(); ++i) {
-            olderOuterSize++;
-            // malloc the new vector
+        // deep copy the data
+        for (uint32_t i = 0; i < mat.outerDim; ++i) {
             try {
-                data[olderOuterSize] = malloc(mat.getVectorSize(i));
-                endPointers[olderOuterSize] = (char*)data[olderOuterSize] + mat.getVectorSize(i);
+                data[oldOuterDim + i] = malloc(mat.getVectorSize(i));
+                endPointers[oldOuterDim + i] = (char*)data[oldOuterDim + i] + mat.getVectorSize(i);
             }
             catch (std::bad_alloc& e) {
                 throw std::bad_alloc();
             }
 
-            // copy the vector into the new space
-            memcpy(data[olderOuterSize], mat.vectorPointer(i), mat.getVectorSize(i));
+            // copy the vector
+            memcpy(data[oldOuterDim + i], mat.data[i], mat.getVectorSize(i));
         }
+        
 
         calculateCompSize();
     }
@@ -432,13 +434,13 @@ namespace IVSparse {
             }
         }
 
-        metadata = new uint32_t[NUM_META_DATA];
-        metadata[0] = 3;
-        metadata[1] = temp.innerDim;
-        metadata[2] = temp.outerDim;
-        metadata[3] = temp.nnz;
-        metadata[4] = val_t;
-        metadata[5] = index_t;
+        temp.metadata = new uint32_t[NUM_META_DATA];
+        temp.metadata[0] = 3;
+        temp.metadata[1] = temp.innerDim;
+        temp.metadata[2] = temp.outerDim;
+        temp.metadata[3] = temp.nnz;
+        temp.metadata[4] = val_t;
+        temp.metadata[5] = index_t;
 
 
         // update metadata
