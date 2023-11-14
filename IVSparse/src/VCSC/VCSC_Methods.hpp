@@ -303,6 +303,13 @@ namespace IVSparse {
         calculateCompSize();
     }  // end append
 
+    // Eigen -> IVSparse append
+    template<typename T, typename indexT, bool columnMajor>
+    inline void IVSparse::SparseMatrix<T, indexT, 2, columnMajor>::append(Eigen::SparseMatrix<T>& mat) {
+        SparseMatrix<T, indexT, 2, columnMajor> temp (mat);
+        append(temp);
+    }
+
     // tranposes the ivsparse matrix
     template <typename T, typename indexT, bool columnMajor>
     IVSparse::SparseMatrix<T, indexT, 2, columnMajor> SparseMatrix<T, indexT, 2, columnMajor>::transpose() {

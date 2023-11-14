@@ -28,7 +28,7 @@ namespace IVSparse {
 
         indexT* valueSizes = nullptr;  // The sizes of the value arrays
         indexT* indexSizes = nullptr;  // The sizes of the index arrays
-        
+
         uint32_t innerDim = 0;  // The inner dimension of the matrix
         uint32_t outerDim = 0;  // The outer dimension of the matrix
 
@@ -425,6 +425,15 @@ namespace IVSparse {
          * matrix.
          */
         void append(SparseMatrix<T, indexT, 2, columnMajor>& mat);
+
+        /**
+         * @param mat The matrix to append to the matrix in the correct storage order.
+         *
+         * Appends an Eigen::SparseMatrix to the current matrix in the storage order of the
+         * matrix. This converts the Eigen::SparseMatrix to an IVSparse matrix.
+         */
+
+        inline void append(Eigen::SparseMatrix<T>& mat);
 
         /**
          * @returns A matrix that represent a slice of the

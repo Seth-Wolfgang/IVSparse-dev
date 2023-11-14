@@ -432,6 +432,16 @@ namespace IVSparse {
         void append(SparseMatrix<T, indexT, compressionLevel, columnMajor>& mat);
 
         /**
+         * @param mat The matrix to append to the matrix in the correct storage order.
+         *
+         * Appends an Eigen::SparseMatrix to the current matrix in the storage order of the
+         * matrix. This converts the Eigen::SparseMatrix to an IVSparse matrix.
+         */
+
+        inline void append(Eigen::SparseMatrix<T>& mat);
+
+
+        /**
          * @returns A matrix that represent a slice of the
          * IVSparse matrix.
          */
