@@ -21,7 +21,7 @@
 
 
 
-#include "benchmarkFunctions.h"
+#include "suiteSparseBenchmarkFunctions.h"
 #include "../../misc/matrix_creator.cpp"
 #include <tuple>
 #include <unordered_map>
@@ -46,7 +46,7 @@ void averageRedundancy(IVSparse::SparseMatrix<T, indexType, compressionLevel>& m
 
 int main() {
 
-    char* path = "../datasets/PR02R.mtx"; // comes from 10X genmatics, see bibliography from the paper for this librar for more info.
+    char* path = "/home/sethwolfgang/datasets/bigratings-movielens.csv"; // comes from 10X genmatics, see bibliography from the paper for this librar for more info.
 
      //returnDouble is a first class function. Some data sets use strings (like survey data: "very likely, likely..."), 
      //so we can classify them by using the other first class function classifyDouble.
@@ -75,7 +75,7 @@ void loadMatrix(std::vector<std::tuple<uint, uint, double>>& data, std::function
         std::string val3String(val3);
 
         // add the values to the data vector
-        data.push_back(std::make_tuple(atoi(val2), atoi(val1), func(val3String, map))); //val1 and val2 may need to be switched depending on data set.
+        data.push_back(std::make_tuple(atoi(val1), atoi(val2), func(val3String, map))); //val1 and val2 may need to be switched depending on data set.
     }
 
     // copy data to data vector
@@ -116,9 +116,9 @@ double classifyDouble(std::string val, std::unordered_map<std::string, double>& 
 void benchmark(char* filepath, std::function<double(std::string, std::unordered_map<std::string, double>&)> func) {
     std::vector<std::tuple<uint, uint, double>> data;
 
-    // loadMatrix(data, func, filepath); // for reading COO matrices (no metadata, just 3 values per row seperated by commas)
+    loadMatrix(data, func, filepath); // for reading COO matrices (no metadata, just 3 values per row seperated by commas)
     std::cout << "Loading matrix... " << filepath << std::endl;
-    load_mm_matrix(data, filepath);
+    // load_mm_matrix(data, filepath);
     // generateMatrix(data, 500000, 10000, 99, 1, 1); //optional for generating a matrix
     std::cout << "Done loading matrix" << std::endl;
     data.resize(data.size());

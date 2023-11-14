@@ -14,12 +14,10 @@ namespace IVSparse {
 
     // Matrix Constructor
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    inline SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator::InnerIterator(
-        IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>& matrix, uint32_t vec) {
-
+    inline SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator::InnerIterator(IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>& matrix, uint32_t vec) {
         // check if the vector is out of bounds
         #ifdef IVSPARSE_DEBUG
-        assert((vec < matrix.outerDim && vec >= 0) && "Vector index out of bounds");
+        assert((vec < matrix.outerDim && vec >= 0) && "Vector index out of bounds.");
         #endif
 
         // check if data is nullptr
@@ -52,8 +50,7 @@ namespace IVSparse {
 
     // Vector Constructor
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator::InnerIterator(
-        SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector& vector) {
+    SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator::InnerIterator(SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector& vector) {
 
         // set the column to -1
         this->outer = 0;

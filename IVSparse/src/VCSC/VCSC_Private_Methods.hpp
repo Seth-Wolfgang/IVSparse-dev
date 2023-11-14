@@ -10,6 +10,66 @@
 
 namespace IVSparse {
 
+    // Calculates the number of bytes needed to store a value
+    template <typename T, typename indexType, bool columnMajor>
+    inline uint8_t SparseMatrix<T, indexType, 2, columnMajor>::byteWidth(size_t size) {
+        if (size <= 0xFF) {
+            return 1;
+        }
+        else if (size <= 0xFFFF) {
+            return 2;
+        }
+        else if (size <= 0xFFFFFF) {
+            return 3;
+        }
+        else if (size <= 0xFFFFFFFF) {
+            return 4;
+        }
+        else if (size <= 0xFFFFFFFFFF) {
+            return 5;
+        }
+        else if (size <= 0xFFFFFFFFFFFF) {
+            return 6;
+        }
+        else if (size <= 0xFFFFFFFFFFFFFF) {
+            return 7;
+        }
+        else {
+            return 8;
+        }
+
+    }
+
+    // private ostream operator helper
+    template <typename T, typename indexT, bool columnMajor>
+    void SparseMatrix<T, indexT, 2, columnMajor>::print(std::ostream& os) {
+        os << std::endl;
+        os << "IVSparse Matrix" << std::endl;
+
+        // if the matrix is less than 100 rows and columns print the whole thing
+        if (numRows < 100 && numCols < 100) {
+            // print the matrix
+            for (uint32_t i = 0; i < numRows; i++) {
+                for (uint32_t j = 0; j < numCols; j++) {
+                    os << coeff(i, j) << " ";
+                }
+                os << std::endl;
+            }
+        }
+        else if (numRows > 100 && numCols > 100) {
+            // print the first 100 rows and columns
+            for (uint32_t i = 0; i < 100; i++) {
+                for (uint32_t j = 0; j < 100; j++) {
+                    os << coeff(i, j) << " ";
+                }
+                os << std::endl;
+            }
+        }
+
+        os << std::endl;
+    }
+
+
     // Encodes the value type of the matrix in a uint32_t
     template <typename T, typename indexT, bool columnMajor>
     void SparseMatrix<T, indexT, 2, columnMajor>::encodeValueType() {
@@ -115,7 +175,7 @@ namespace IVSparse {
         #pragma omp parallel for
         #endif
         for (uint32_t i = 0; i < outerDim; i++) {
-            
+
             // create the data structure to temporarily hold the data
             std::map<T2, std::vector<indexT2>> dict;  // Key = value, Value = vector of indices
 

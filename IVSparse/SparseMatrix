@@ -41,7 +41,6 @@
 #include <type_traits>
 #include <iomanip>
 #include <type_traits>
-
 // Library Namespaces
 
 // SparseMatrixBase Files

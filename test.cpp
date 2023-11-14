@@ -84,7 +84,8 @@ int main() {
         Eigen::SparseMatrix<int> eigenDense = dense.sparseView();
         IVSparse::SparseMatrix<int, INDEX_TYPE, 3, isColMajor> csf3(eigenDense);
         IVSparse::SparseMatrix<int, INDEX_TYPE, 2, isColMajor> csf2(eigenDense);
-
+        csf3 *= 4;
+        csf3 = csf3 * 2;
         Eigen::VectorXi eigenVec = Eigen::VectorXi::Random(cols);
 
         // std::cout << "rows in vec:" << eigenVec.rows() << std::endl;

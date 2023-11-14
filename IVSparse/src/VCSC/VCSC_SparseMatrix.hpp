@@ -18,7 +18,7 @@ namespace IVSparse {
      * redundant data than CSC.
      */
     template <typename T, typename indexT, bool columnMajor>
-    class SparseMatrix<T, indexT, 2, columnMajor> : public SparseMatrixBase {
+    class SparseMatrix<T, indexT, 2, columnMajor> {
         private:
         //* The Matrix Data *//
 
@@ -28,6 +28,28 @@ namespace IVSparse {
 
         indexT* valueSizes = nullptr;  // The sizes of the value arrays
         indexT* indexSizes = nullptr;  // The sizes of the index arrays
+
+        uint32_t innerDim = 0;  // The inner dimension of the matrix
+        uint32_t outerDim = 0;  // The outer dimension of the matrix
+
+        uint32_t numRows = 0;  // The number of rows in the matrix
+        uint32_t numCols = 0;  // The number of columns in the matrix
+
+        uint32_t nnz = 0;  // The number of non-zero values in the matrix
+
+        size_t compSize = 0;  // The size of the compressed matrix in bytes
+
+        //* The Value and Index Types *//
+
+        uint32_t val_t;  // Information about the value type (size, signededness, etc.)
+        uint32_t index_t;  // Information about the index type (size)
+
+        uint32_t* metadata = nullptr;  // The metadata of the matrix
+
+        //* Private Methods *//
+
+        // Calculates the number of bytes needed to store a value
+        inline uint8_t byteWidth(size_t size);
 
         //* Private Methods *//
 
@@ -47,13 +69,8 @@ namespace IVSparse {
         // Calculates the current byte size of the matrix in memory
         void calculateCompSize();
 
-        // Private Helper Constructor for tranposing a IVSparse matrix
-        SparseMatrix(std::unordered_map<T, std::vector<indexT>> maps[],
-                     uint32_t num_rows, uint32_t num_cols);
-
         // Scalar Multiplication
-        inline IVSparse::SparseMatrix<T, indexT, 2, columnMajor> scalarMultiply(
-            T scalar);
+        inline IVSparse::SparseMatrix<T, indexT, 2, columnMajor> scalarMultiply(T scalar);
 
         // In Place Scalar Multiplication
         inline void inPlaceScalarMultiply(T scalar);
@@ -62,10 +79,33 @@ namespace IVSparse {
         inline Eigen::Matrix<T, -1, 1> vectorMultiply(Eigen::Matrix<T, -1, 1>& vec);
 
         // Matrix Vector Multiplication 2 (with IVSparse Vector)
-        inline Eigen::Matrix<T, -1, 1> vectorMultiply(
-            typename SparseMatrix<T, indexT, 2, columnMajor>::Vector& vec);
+        inline Eigen::Matrix<T, -1, 1> vectorMultiply(typename SparseMatrix<T, indexT, 2, columnMajor>::Vector& vec);
+
+        // helper for ostream operator
+        void print(std::ostream& stream);
+
 
         public:
+
+        // Gets the number of rows in the matrix
+        uint32_t rows() const { return numRows; }
+
+        // Gets the number of columns in the matrix
+        uint32_t cols() const { return numCols; }
+
+        // Gets the inner dimension of the matrix
+        uint32_t innerSize() const { return innerDim; }
+
+        // Gets the outer dimension of the matrix
+        uint32_t outerSize() const { return outerDim; }
+
+        // Gets the number of non-zero elements in the matrix
+        uint32_t nonZeros() const { return nnz; }
+
+        // Gets the number of bytes needed to store the matrix
+        size_t byteSize() const { return compSize; }
+
+
         //* Nested Subclasses *//
 
         // The Vector Class for VCSC Matrices
@@ -89,6 +129,10 @@ namespace IVSparse {
           * IVSparse matrix is not well supported.
           */
         SparseMatrix() {};
+
+        // Private Helper Constructor for tranposing a IVSparse matrix
+        SparseMatrix(std::unordered_map<T, std::vector<indexT>>* maps, uint32_t num_rows, uint32_t num_cols);
+
 
         /**
          * @param mat The Eigen Sparse Matrix to be compressed
@@ -119,8 +163,7 @@ namespace IVSparse {
          * without having to go through the CSC format.
          */
         template <uint8_t compressionLevel2>
-        SparseMatrix(
-            IVSparse::SparseMatrix<T, indexT, compressionLevel2, columnMajor>& other);
+        SparseMatrix(IVSparse::SparseMatrix<T, indexT, compressionLevel2, columnMajor>& other);
 
         /**
          * @param other The IVSparse matrix to be copied
@@ -137,8 +180,7 @@ namespace IVSparse {
          * Eigen Sparse Matrix and then to a VCSC matrix.
          */
         template <typename T2, typename indexT2>
-        SparseMatrix(T2* vals, indexT2* innerIndices, indexT2* outerPtr,
-                     uint32_t num_rows, uint32_t num_cols, uint32_t nnz);
+        SparseMatrix(T2* vals, indexT2* innerIndices, indexT2* outerPtr, uint32_t num_rows, uint32_t num_cols, uint32_t nnz);
 
         /**
          * COO Tuples Constructor \n \n
@@ -149,8 +191,7 @@ namespace IVSparse {
          * @note COO is (row, col, value) format.
          */
         template <typename T2, typename indexT2>
-        SparseMatrix(std::vector<std::tuple<indexT2, indexT2, T2>>& entries,
-                     uint64_t num_rows, uint32_t num_cols, uint32_t nnz);
+        SparseMatrix(std::vector<std::tuple<indexT2, indexT2, T2>>& entries, uint64_t num_rows, uint32_t num_cols, uint32_t nnz);
 
         /**
          * @param vec The vector to construct the matrix from
@@ -159,8 +200,7 @@ namespace IVSparse {
          * This constructor takes in a single VCSC vector and creates a one column/row
          * VCSC matrix.
          */
-        SparseMatrix(
-            typename IVSparse::SparseMatrix<T, indexT, 2, columnMajor>::Vector& vec);
+        SparseMatrix(typename IVSparse::SparseMatrix<T, indexT, 2, columnMajor>::Vector& vec);
 
         /**
          * @param vecs The vector of VCSC vectors to construct from.
@@ -169,8 +209,7 @@ namespace IVSparse {
          * This constructor takes in an vector of VCSC vectors and creates a VCSC
          * matrix from them.
          */
-        SparseMatrix(std::vector<typename IVSparse::SparseMatrix<
-                     T, indexT, 2, columnMajor>::Vector>& vecs);
+        SparseMatrix(std::vector<typename IVSparse::SparseMatrix<T, indexT, 2, columnMajor>::Vector>& vecs);
 
         /**
          * @param filename The filepath of the matrix to be read in
@@ -193,6 +232,7 @@ namespace IVSparse {
          * @name Getters
          */
          ///@{
+
 
          /**
           * @returns T The value at the specified row and column. Returns 0 if the
@@ -345,6 +385,7 @@ namespace IVSparse {
          */
         void print();
 
+
         /**
          * @returns The current matrix as uncompressed to CSC format.
          */
@@ -358,8 +399,7 @@ namespace IVSparse {
         /**
          * @returns An Eigen Sparse Matrix constructed from the VCSC matrix data.
          */
-        Eigen::SparseMatrix<T, columnMajor ? Eigen::ColMajor : Eigen::RowMajor>
-            toEigen();
+        Eigen::SparseMatrix<T, columnMajor ? Eigen::ColMajor : Eigen::RowMajor> toEigen();
 
         ///@}
 
@@ -389,26 +429,37 @@ namespace IVSparse {
          * Appends a IVSparse vector to the current matrix in the storage order of the
          * matrix.
          */
-        void append(typename SparseMatrix<T, indexT, 2, columnMajor>::Vector& vec);
+        void append(SparseMatrix<T, indexT, 2, columnMajor>& mat);
 
         /**
-         * @returns A vector of IVSparse vectors that represent a slice of the
+         * @param mat The matrix to append to the matrix in the correct storage order.
+         *
+         * Appends an Eigen::SparseMatrix to the current matrix in the storage order of the
+         * matrix. This converts the Eigen::SparseMatrix to an IVSparse matrix.
+         */
+
+        inline void append(Eigen::SparseMatrix<T>& mat);
+
+        /**
+         * @returns A matrix that represent a slice of the
          * IVSparse matrix.
          */
-        std::vector<
-            typename IVSparse::SparseMatrix<T, indexT, 2, columnMajor>::Vector>
-            slice(uint32_t start, uint32_t end);
+        IVSparse::SparseMatrix<T, indexT, 2, columnMajor> slice(uint32_t start, uint32_t end);
 
         ///@}
 
         //* Operator Overloads *//
 
+        friend std::ostream& operator<< (std::ostream& stream, IVSparse::SparseMatrix<T, indexT, 2, columnMajor>& mat) {
+            mat.print(stream);
+            return stream;
+        }
+
         // Assignment Operator
-        IVSparse::SparseMatrix<T, indexT, 2, columnMajor>& operator=(
-            const IVSparse::SparseMatrix<T, indexT, 2, columnMajor>& other);
+        IVSparse::SparseMatrix<T, indexT, 2, columnMajor>& operator=(const IVSparse::SparseMatrix<T, indexT, 2, columnMajor>& other);
 
         // Equality Operator
-        bool operator==(const SparseMatrix<T, indexT, 2, columnMajor>& other);
+        bool operator==(const SparseMatrix<T, indexT, 2, columnMajor>& other) const;
 
         // Inequality Operator
         bool operator!=(const SparseMatrix<T, indexT, 2, columnMajor>& other);

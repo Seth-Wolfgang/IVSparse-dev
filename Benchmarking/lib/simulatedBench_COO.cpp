@@ -254,7 +254,38 @@ void readCSC(const char* valsPath, const char* innerPath, const char* outerPath)
     outerFile.close();
 
 
+    // data.resize(NNZ);
+        
+    // std::ifstream valsFile(valsPath);
+    // std::ifstream innerFile(innerPath);
+    // std::ifstream outerFile(outerPath);
+	
+
+    // int idx = 0; int j = 0; int q = 0; int curr_row = 0;
+    // VALUE_TYPE p = 0.;
+    // outerFile >> j;
+	// outerFile >> q;
+	// //std::cout << "here\n";
+	// //std::cout << j << " " << q << "\n";
+    // for (int i = 0; i < COLS; ++i) {
+    //     for (j; j < q; ++j, idx++) {
+    //         valsFile >> p;
+    //         innerFile >> curr_row;
+    //         data.emplace_back(curr_row, i, p);
+	// 		//std::cout << curr_row << " " << i << " " << p << "\n";
+	// 	}
+	// 	outerFile >> q;
+    //     j = q;
+    // }
+        
+    // std::cout << "done reading in matrix\n";
+    // std::cout << "Data size: " << data.size() << std::endl;
+    // valsFile.close();
+    // innerFile.close();
+    // outerFile.close();
+
 }
+
 
 
 /**

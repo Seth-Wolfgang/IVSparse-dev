@@ -312,8 +312,7 @@ namespace IVSparse {
 
     // IVSparse Vector Constructor
     template <typename T, typename indexT, bool columnMajor>
-    SparseMatrix<T, indexT, 2, columnMajor>::SparseMatrix(
-        typename IVSparse::SparseMatrix<T, indexT, 2, columnMajor>::Vector& vec) {
+    SparseMatrix<T, indexT, 2, columnMajor>::SparseMatrix(typename IVSparse::SparseMatrix<T, indexT, 2, columnMajor>::Vector& vec) {
 
         // Get the dimensions and metadata
         if (columnMajor) {
@@ -392,8 +391,7 @@ namespace IVSparse {
 
     // Array of Vectors Constructor
     template <typename T, typename indexT, bool columnMajor>
-    SparseMatrix<T, indexT, 2, columnMajor>::SparseMatrix(
-        std::vector<typename IVSparse::SparseMatrix<T, indexT, 2, columnMajor>::Vector>& vecs) {
+    SparseMatrix<T, indexT, 2, columnMajor>::SparseMatrix(std::vector<typename IVSparse::SparseMatrix<T, indexT, 2, columnMajor>::Vector>& vecs) {
 
         // Construct a one vector matrix to append to
         IVSparse::SparseMatrix<T, indexT, 2, columnMajor> temp(vecs[0]);
@@ -429,7 +427,9 @@ namespace IVSparse {
 
         // read the metadata
         metadata = new uint32_t[NUM_META_DATA];
-        fread(metadata, sizeof(uint32_t), NUM_META_DATA, fp);
+        if (fread(metadata, sizeof(uint32_t), NUM_META_DATA, fp) != 1) [[unlikely]] {
+            throw std::runtime_error("Error: Could not read metadata");
+        }
 
         // set the matrix info
         innerDim = metadata[1];
@@ -466,12 +466,16 @@ namespace IVSparse {
 
         // read in the value sizes
         for (size_t i = 0; i < outerDim; i++) {
-            fread(&valueSizes[i], sizeof(indexT), 1, fp);
+            if (fread(&valueSizes[i], sizeof(indexT), 1, fp) != 1) [[unlikely]] {
+                throw std::runtime_error("Error: Could not read valueSizes");
+            }
         }
 
         // read in the index sizes
         for (size_t i = 0; i < outerDim; i++) {
-            fread(&indexSizes[i], sizeof(indexT), 1, fp);
+            if (fread(&indexSizes[i], sizeof(indexT), 1, fp) != 1) [[unlikely]] {
+                throw std::runtime_error("Error: Could not read indexSizes");
+                }
         }
 
         // read in the values
@@ -483,7 +487,9 @@ namespace IVSparse {
                 std::cerr << "bad_alloc caught: " << ba.what() << '\n';
                 throw std::runtime_error("Error: Could not allocate memory");
             }
-            fread(values[i], sizeof(T), valueSizes[i], fp);
+            if (fread(values[i], sizeof(T), valueSizes[i], fp) != 1) [[unlikely]] {
+                throw std::runtime_error("Error: Could not read values");
+                }
         }
 
         // read in the counts
@@ -495,7 +501,9 @@ namespace IVSparse {
                 std::cerr << "bad_alloc caught: " << ba.what() << '\n';
                 throw std::runtime_error("Error: Could not allocate memory");
             }
-            fread(counts[i], sizeof(indexT), valueSizes[i], fp);
+            if (fread(counts[i], sizeof(indexT), valueSizes[i], fp) != 1) [[unlikely]] {
+                throw std::runtime_error("Error: Could not read counts");
+                }
         }
 
         // read in the indices
@@ -507,7 +515,9 @@ namespace IVSparse {
                 std::cerr << "bad_alloc caught: " << ba.what() << '\n';
                 throw std::runtime_error("Error: Could not allocate memory");
             }
-            fread(indices[i], sizeof(indexT), indexSizes[i], fp);
+            if(fread(indices[i], sizeof(indexT), indexSizes[i], fp) != 1) [[unlikely]] {
+                throw std::runtime_error("Error: Could not read indices");
+            }
         }
 
         // close the file
@@ -526,7 +536,7 @@ namespace IVSparse {
 
     // Private Tranpose Constructor
     template <typename T, typename indexT, bool columnMajor>
-    SparseMatrix<T, indexT, 2, columnMajor>::SparseMatrix(std::unordered_map<T, std::vector<indexT>> maps[], uint32_t num_rows, uint32_t num_cols) {
+    SparseMatrix<T, indexT, 2, columnMajor>::SparseMatrix(std::unordered_map<T, std::vector<indexT>>* maps, uint32_t num_rows, uint32_t num_cols) {
 
         // set class variables
         if constexpr (columnMajor) {

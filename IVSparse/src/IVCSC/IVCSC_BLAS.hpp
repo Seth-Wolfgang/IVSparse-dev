@@ -220,8 +220,7 @@ namespace IVSparse {
 
         T trace = 0;
         for (int i = 0; i < outerDim; i++) {
-            for (typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator it(*this, i);
-                 it; ++it) {
+            for (typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator it(*this, i); it; ++it) {
                 if (it.row() == i) {
                     trace += it.value();
                 }

@@ -6,7 +6,7 @@ private:
     uint64_t state;
 
 public:
-    rng(uint64_t state) : state(state) {}
+    rng(uint64_t state): state(state) {}
 
     void advance_state() {
         state ^= state << 19;

@@ -157,8 +157,7 @@ namespace IVSparse {
 
     // Deep Copy Constructor
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(
-        const IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>& other) {
+    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(const IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>& other) {
 
         *this = other;
     }
@@ -166,8 +165,7 @@ namespace IVSparse {
     // Conversion Constructor
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     template <uint8_t otherCompressionLevel>
-    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(
-        IVSparse::SparseMatrix<T, indexT, otherCompressionLevel, columnMajor>& other) {
+    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(IVSparse::SparseMatrix<T, indexT, otherCompressionLevel, columnMajor>& other) {
 
         // if already the right compression level
         if constexpr (otherCompressionLevel == compressionLevel) {
@@ -198,8 +196,7 @@ namespace IVSparse {
     // Raw CSC Constructor
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     template <typename T2, typename indexT2>
-    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(
-        T2* vals, indexT2* innerIndices, indexT2* outerPtr, uint32_t num_rows, uint32_t num_cols, uint32_t nnz) {
+    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(T2* vals, indexT2* innerIndices, indexT2* outerPtr, uint32_t num_rows, uint32_t num_cols, uint32_t nnz) {
 
         #ifdef IVSPARSE_DEBUG
         assert(num_rows > 0 && num_cols > 0 &&
@@ -237,8 +234,7 @@ namespace IVSparse {
     // COO Constructor
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     template <typename T2, typename indexT2>
-    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(
-        std::vector<std::tuple<indexT2, indexT2, T2>>& entries, uint64_t num_rows, uint32_t num_cols, uint32_t nnz) {
+    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(std::vector<std::tuple<indexT2, indexT2, T2>>& entries, uint64_t num_rows, uint32_t num_cols, uint32_t nnz) {
 
 
         #ifdef IVSPARSE_DEBUG
@@ -443,8 +439,7 @@ namespace IVSparse {
 
     // IVSparse Vector Constructor
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(
-        typename IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector& vec) {
+    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(typename IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector& vec) {
 
 
         // if it is the matrix is empty and we need to construct it
@@ -512,8 +507,7 @@ namespace IVSparse {
 
     // Array of Vectors Constructor
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(
-        std::vector<typename IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector>& vecs) {
+    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(std::vector<typename IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector>& vecs) {
 
         IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor> temp(vecs[0]);
 
@@ -545,7 +539,9 @@ namespace IVSparse {
 
         // read the metadata
         metadata = new uint32_t[NUM_META_DATA];
-        fread(metadata, sizeof(uint32_t), NUM_META_DATA, fp);
+        if(fread(metadata, sizeof(uint32_t), NUM_META_DATA, fp) != 1) [[unlikely]] {
+            throw std::runtime_error("Error: Could not read file");
+        }
 
         // set the matrix info
         innerDim = metadata[1];
@@ -583,7 +579,10 @@ namespace IVSparse {
         for (size_t i = 0; i < outerDim; i++) {
             // get the size of the column
             uint64_t size;
-            fread(&size, sizeof(uint64_t), 1, fp);
+
+            if(fread(&size, sizeof(uint64_t), 1, fp) != 1) [[unlikely]] {
+                throw std::runtime_error("Error: Could not read file");
+            }
 
             // if the size is 0, set the data and endpointer to nullptr
             if (size == 0) {
@@ -604,7 +603,9 @@ namespace IVSparse {
 
         // read the data
         for (size_t i = 0; i < outerDim; i++) {
-            fread(data[i], 1, (uint8_t*)endPointers[i] - (uint8_t*)data[i], fp);
+            if(fread(data[i], 1, (uint8_t*)endPointers[i] - (uint8_t*)data[i], fp) != 1) [[unlikely]] {
+                throw std::runtime_error("Error: Could not read file");
+            }
         }
 
         // close the file
@@ -624,8 +625,7 @@ namespace IVSparse {
 
     // Private Tranpose Constructor
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(
-        std::unordered_map<T, std::vector<indexT>> maps[], uint32_t num_rows, uint32_t num_cols) {
+    SparseMatrix<T, indexT, compressionLevel, columnMajor>::SparseMatrix(std::unordered_map<T, std::vector<indexT>>* maps, uint32_t num_rows, uint32_t num_cols) {
 
         // set class variables
         if constexpr (columnMajor) {
@@ -669,7 +669,7 @@ namespace IVSparse {
                 data[i] = nullptr;
                 endPointers[i] = nullptr;
                 continue;
-                }
+            }
 
             size_t byteSize = 0;
 

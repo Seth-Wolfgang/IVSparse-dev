@@ -12,9 +12,7 @@ namespace IVSparse {
 
     // Assignment Operator
     template <typename T, typename indexT, bool columnMajor>
-    SparseMatrix<T, indexT, 2, columnMajor>&
-        SparseMatrix<T, indexT, 2, columnMajor>::operator=(
-            const IVSparse::SparseMatrix<T, indexT, 2, columnMajor>& other) {
+    SparseMatrix<T, indexT, 2, columnMajor>& SparseMatrix<T, indexT, 2, columnMajor>::operator=(const IVSparse::SparseMatrix<T, indexT, 2, columnMajor>& other) {
         // check if the matrices are the same
         if (this != &other) {
             // free the old data
@@ -110,8 +108,7 @@ namespace IVSparse {
 
     // Equality Operator
     template <typename T, typename indexT, bool columnMajor>
-    bool SparseMatrix<T, indexT, 2, columnMajor>::operator==(
-        const SparseMatrix<T, indexT, 2, columnMajor>& other) {
+    bool SparseMatrix<T, indexT, 2, columnMajor>::operator==(const SparseMatrix<T, indexT, 2, columnMajor>& other) const {
         // first check the metadata using memcompare
         if (memcmp(metadata, other.metadata, sizeof(uint32_t) * NUM_META_DATA) != 0) {
             return false;
@@ -146,15 +143,13 @@ namespace IVSparse {
 
     // Inequality Operator
     template <typename T, typename indexT, bool columnMajor>
-    bool SparseMatrix<T, indexT, 2, columnMajor>::operator!=(
-        const SparseMatrix<T, indexT, 2, columnMajor>& other) {
+    bool SparseMatrix<T, indexT, 2, columnMajor>::operator!=(const SparseMatrix<T, indexT, 2, columnMajor>& other) {
         return !(*this == other);
     }
 
     // Coefficent Access Operator
     template <typename T, typename indexT, bool columnMajor>
-    T SparseMatrix<T, indexT, 2, columnMajor>::operator()(uint32_t row,
-                                                          uint32_t col) {
+    T SparseMatrix<T, indexT, 2, columnMajor>::operator()(uint32_t row, uint32_t col) {
         #ifdef IVSPARSE_DEBUG
         // check if the row and column are in bounds
         assert((row < numRows && row >= 0) && "Row index out of bounds");
@@ -187,8 +182,7 @@ namespace IVSparse {
 
     // Vector Access Operator
     template <typename T, typename indexT, bool columnMajor>
-    typename SparseMatrix<T, indexT, 2, columnMajor>::Vector
-        SparseMatrix<T, indexT, 2, columnMajor>::operator[](uint32_t vec) {
+    typename SparseMatrix<T, indexT, 2, columnMajor>::Vector SparseMatrix<T, indexT, 2, columnMajor>::operator[](uint32_t vec) {
         #ifdef IVSPARSE_DEBUG
         // check if the vector is out of bounds
         assert((vec < outerDim && vec >= 0) && "Vector index out of bounds");
@@ -201,58 +195,12 @@ namespace IVSparse {
         return newVector;
     }
 
-    // Outstream Operator
-    template <typename T, typename indexT, bool columnMajor>
-    std::ostream& operator<<(
-        std::ostream& os, IVSparse::SparseMatrix<T, indexT, 2, columnMajor>& mat) {
-        #ifndef IVSPARSE_DEBUG
-        if (mat.cols() > 110) {
-            std::cout << "IVSparse matrix is too large to print" << std::endl;
-            return os;
-        }
-        #endif
-
-        // create a matrix to store the full matrix representation of the IVSparse
-        // matrix
-        T** matrix = new T * [mat.rows()];
-        for (size_t i = 0; i < mat.rows(); i++) {
-            matrix[i] = (T*)calloc(mat.cols(), sizeof(T));
-        }
-
-        // Build the full matrix representation of the the IVSparse matrix
-        for (size_t i = 0; i < mat.cols(); i++) {
-            for (typename IVSparse::SparseMatrix<T, indexT, 2,
-                 columnMajor>::InnerIterator it(mat, i);
-                 it; ++it) {
-                // std::cout << "it.row(): " << it.row() << " col: " << it.col() << "
-                // value: " << it.value() << std::endl;
-                matrix[it.row()][it.col()] = it.value();
-            }
-        }
-
-        // store all of matrix into the output stream
-        for (size_t i = 0; i < mat.rows(); i++) {
-            for (size_t j = 0; j < mat.cols(); j++) {
-                os << matrix[i][j] << " ";
-            }
-            os << std::endl;
-        }
-
-        for (int i = 0; i < mat.rows(); i++) {
-            free(matrix[i]);
-        }
-        delete[] matrix;
-
-        return os;
-
-    }  // end outstream operator
 
     //* BLAS Operators *//
 
     // Scalar Multiplication
     template <typename T, typename indexT, bool columnMajor>
-    IVSparse::SparseMatrix<T, indexT, 2, columnMajor>
-        SparseMatrix<T, indexT, 2, columnMajor>::operator*(T scalar) {
+    IVSparse::SparseMatrix<T, indexT, 2, columnMajor> SparseMatrix<T, indexT, 2, columnMajor>::operator*(T scalar) {
         return scalarMultiply(scalar);
     }
 
@@ -272,15 +220,13 @@ namespace IVSparse {
 
     // Matrix Vector Multiplication (IVSparse Eigen -> Eigen)
     template <typename T, typename indexT, bool columnMajor>
-    Eigen::Matrix<T, -1, 1> SparseMatrix<T, indexT, 2, columnMajor>::operator*(
-        Eigen::Matrix<T, -1, 1>& vec) {
+    Eigen::Matrix<T, -1, 1> SparseMatrix<T, indexT, 2, columnMajor>::operator*(Eigen::Matrix<T, -1, 1>& vec) {
         return vectorMultiply(vec);
     }
 
     // Matrix Matrix Multiplication (IVSparse Eigen -> Eigen)
     template <typename T, typename indexT, bool columnMajor>
-    Eigen::Matrix<T, -1, -1> SparseMatrix<T, indexT, 2, columnMajor>::operator*(
-        Eigen::Matrix<T, -1, -1>& mat) {
+    Eigen::Matrix<T, -1, -1> SparseMatrix<T, indexT, 2, columnMajor>::operator* (Eigen::Matrix<T, -1, -1>& mat) {
         #ifdef IVSPARSE_DEBUG
         // check that the matrix is the correct size
         if (mat.rows() != numCols)
@@ -289,8 +235,7 @@ namespace IVSparse {
                 "matrix!");
         #endif
 
-        Eigen::Matrix<T, -1, -1> newMatrix =
-            Eigen::Matrix<T, -1, -1>::Zero(mat.cols(), numRows);
+        Eigen::Matrix<T, -1, -1> newMatrix = Eigen::Matrix<T, -1, -1>::Zero(mat.cols(), numRows);
         Eigen::Matrix<T, -1, -1> matTranspose = mat.transpose();
 
         // Fix Parallelism issue (race condition because of partial sums and

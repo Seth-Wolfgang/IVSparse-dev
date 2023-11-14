@@ -153,7 +153,7 @@ int main(int argc, char** argv) {
     std::vector<int> inner;
     std::vector<int> outer;
 
-    readCSC(vals, innerPath, outerPath, values, inner, outer);
+    // readCSC(vals, innerPath, outerPath, values, inner, outer);
 
     // std::cout << "Running with " << argv[1] << " rows and " << argv[2] << " columns" << std::endl;
 
@@ -355,20 +355,19 @@ void  VCSC_Benchmark(VALUE_TYPE* cscValues, int* cscInner, int* cscOuter, double
     std::cout << "VCSC scalar done" << std::endl;
     // VCSC_outerSumBenchmark(matrix, timeData);
     // std::cout << "VCSC column sums done" << std::endl;
-    // VCSC_spmvBenchmark(matrix, timeData, COLS - 1);
+    VCSC_spmvBenchmark(matrix, timeData, COLS - 1);
     std::cout << "VCSC spmv done" << std::endl;
     // VCSC_spmmBenchmark(matrix, timeData, ROWS, COLS - 1);
     std::cout << "VCSC spmm done" << std::endl;
     // VCSC_iteratorBenchmark(matrix, timeData, ROWS, COLS - 1);
     std::cout << "VCSC iterator done\n" << std::endl;
-    VCSC_transposeBenchmark(matrix, timeData, ROWS, COLS);
+    // VCSC_transposeBenchmark(matrix, timeData, ROWS, COLS);
     std::cout << "VCSC transpose done\n" << std::endl;
 
     std::stringstream path;
     path << "../results/VCSCResults_CSC.csv";
-    // printDataToFile(matrixData, timeData, path.str().c_str());
-    // adjustValues(data, static_cast<int>(((double)numRows / (double)MATRICES) * (i + 1)), i);
-
+    printDataToFile(matrixData, timeData, path.str().c_str());
+    adjustValues(data, static_cast<int>(((double)numRows / (double)MATRICES) * (i + 1)), i);
 }
 
 /**
@@ -404,8 +403,8 @@ void   IVCSC_Benchmark(VALUE_TYPE* cscValues, int* cscInner, int* cscOuter, doub
     // IVCSC_scalarBenchmark(matrix, timeData);
     std::cout << "IVCSC scalar done" << std::endl;
     // IVCSC_outerSumBenchmark(matrix, timeData);
-    // std::cout << "IVCSC column sums done" << std::endl;
-    // IVCSC_spmvBenchmark(matrix, timeData, COLS - 1);
+    std::cout << "IVCSC column sums done" << std::endl;
+    IVCSC_spmvBenchmark(matrix, timeData, COLS - 1);
     // IVCSC_spmmBenchmark(matrix, timeData, ROWS, COLS - 1);
     std::cout << "IVCSC spmm done" << std::endl;
     // IVCSC_iteratorBenchmark(matrix, timeData, ROWS, COLS - 1);
@@ -414,12 +413,12 @@ void   IVCSC_Benchmark(VALUE_TYPE* cscValues, int* cscInner, int* cscOuter, doub
     std::cout << "IVCSC transpose done" << std::endl;
 
     #ifdef CHECK_VALUES
-    // assert(IVCSC_ScalarSum == VCSC_ScalarSum);
-    // assert(IVCSC_SpmvSum == VCSC_SpmvSum);
-    // assert(IVCSC_SpmmSum == VCSC_SpmmSum);
-    // assert(IVCSC_ConstructorSum == VCSC_ConstructorSum);
-    // assert(IVCSC_IteratorSum == VCSC_IteratorSum);
-    assert(IVCSC_TransposeSum == VCSC_TransposeSum);
+    assert(1e-6 > std::fabs(IVCSC_ScalarSum - VCSC_ScalarSum));
+    assert(1e-6 > std::fabs(IVCSC_SpmvSum - VCSC_SpmvSum));
+    assert(1e-6 > std::fabs(IVCSC_SpmmSum - VCSC_SpmmSum));
+    assert(1e-6 > std::fabs(IVCSC_ConstructorSum - VCSC_ConstructorSum));
+    assert(1e-6 > std::fabs(IVCSC_IteratorSum - VCSC_IteratorSum));
+    assert(1e-6 > std::fabs(IVCSC_TransposeSum - VCSC_TransposeSum));
     #endif
 
     std::stringstream path;
@@ -466,22 +465,25 @@ void eigen_Benchmark(VALUE_TYPE* cscValues, int* cscInner, int* cscOuter, double
     // std::cout << "Eigen scalar done" << std::endl;
     // // eigen_outerSumBenchmark(matrix, timeData);
     // // std::cout << "Eigen column sums done" << std::endl;
-    // eigen_spmvBenchmark(matrix, timeData, COLS - 1);
-    // std::cout << "Eigen spmv done" << std::endl;
+    eigen_spmvBenchmark(matrix, timeData, COLS - 1);
+    std::cout << "Eigen spmv done" << std::endl;
     // // eigen_spmmBenchmark(matrix, timeData, ROWS, COLS - 1);
     // std::cout << "Eigen spmm done" << std::endl;
     // eigen_iteratorBenchmark(matrix, timeData, ROWS, COLS - 1);
     // std::cout << "Eigen iterator done" << std::endl;
-    eigen_transposeBenchmark(matrix, timeData, ROWS, COLS - 1);
-    std::cout << "Eigen transpose done" << std::endl;
+    // eigen_transposeBenchmark(matrix, timeData, ROWS, COLS - 1);
+    // std::cout << "Eigen transpose done" << std::endl;
 
     #ifdef CHECK_VALUES
-    // assert(Eigen_ScalarSum == VCSC_ScalarSum);
-    // assert(Eigen_SpmvSum == VCSC_SpmvSum);
-    // assert(Eigen_SpmmSum == VCSC_SpmmSum);
-    // assert(Eigen_ConstructorSum == VCSC_ConstructorSum);
-    // assert(Eigen_IteratorSum == VCSC_IteratorSum);
-    assert(Eigen_TransposeSum == VCSC_TransposeSum);
+    std::cout << "Eigen Scalar sum: " << Eigen_ScalarSum << " VCSC Scalar sum: " << VCSC_ScalarSum << std::endl;
+    assert(1e-6 > std::fabs(Eigen_ScalarSum - VCSC_ScalarSum));
+    assert(1e-6 > std::fabs(Eigen_SpmvSum - VCSC_SpmvSum));
+    assert(1e-6 > std::fabs(Eigen_SpmmSum - VCSC_SpmmSum));
+    std::cout << "Eigen_ConstructorSum: " << Eigen_ConstructorSum << " VCSC_ConstructorSum: " << VCSC_ConstructorSum << std::endl;
+    assert(1e-6 > std::fabs(Eigen_ConstructorSum - VCSC_ConstructorSum));
+    assert(1e-6 > std::fabs(Eigen_IteratorSum - VCSC_IteratorSum));
+    std::cout << "Eigen Transpose sum: " << Eigen_TransposeSum << " VCSC Transpose sum: " << VCSC_TransposeSum << std::endl;
+    assert(1e-6 > std::fabs(Eigen_TransposeSum - VCSC_TransposeSum));
     #endif
 
     std::stringstream path;

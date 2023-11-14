@@ -1,0 +1,6 @@
+[submodule "pybindBuild/pybind11"]
+	path = pybindBuild/pybind11
+	url = https://github.com/pybind/pybind11.git
+[submodule "pybindBuild/cppwg"]
+	path = pybindBuild/cppwg
+	url = https://github.com/jmsgrogan/cppwg.git

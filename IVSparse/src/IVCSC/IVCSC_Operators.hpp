@@ -85,12 +85,12 @@ namespace IVSparse {
 
     // Equality Operator
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    bool SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator==(
-        const SparseMatrix<T, indexT, compressionLevel, columnMajor>& other) {
+    bool SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator==(const SparseMatrix<T, indexT, compressionLevel, columnMajor>& other) const {
+        // bool SparseMatrix<T, indexT, 2               , columnMajor>::operator==(const SparseMatrix<T, indexT,                2, columnMajor>& other) const {
 
-        // check if the two matrices are equal
+            // check if the two matrices are equal
 
-        // first check the metadata using memcompare
+            // first check the metadata using memcompare
         if (memcmp(metadata, other.metadata, sizeof(uint32_t) * NUM_META_DATA) != 0)
             return false;
 
@@ -104,8 +104,7 @@ namespace IVSparse {
 
     // Inequality Operator
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    bool SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator!=(
-        const SparseMatrix<T, indexT, compressionLevel, columnMajor>& other) {
+    bool SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator!=(const SparseMatrix<T, indexT, compressionLevel, columnMajor>& other) {
 
         return !(*this == other);
     }
@@ -128,9 +127,7 @@ namespace IVSparse {
         if (data[vector] == nullptr) return 0;
 
         // get an iterator for the desired vector
-        for (typename SparseMatrix<T, indexT, compressionLevel,
-             columnMajor>::InnerIterator it(*this, vector);
-             it; ++it) {
+        for (typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator it(*this, vector); it; ++it) {
             if (it.getIndex() == (indexT)index) {
                 return it.value();
             }
@@ -154,54 +151,6 @@ namespace IVSparse {
         IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector newVector(*this, vec);
 
         return newVector;
-    }
-
-    // Outstream Operator
-    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    std::ostream& operator<<(std::ostream& os, IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>& mat) {
-
-        #ifndef IVSPARSE_DEBUG
-        if (mat.cols() > 110) {
-            std::cout << "IVSparse matrix is too large to print" << std::endl;
-            return os;
-        }
-        #endif
-
-        // create a matrix to store the full matrix representation of the IVSparse
-        // matrix
-        T** matrix = new T * [mat.rows()];
-        for (size_t i = 0; i < mat.rows(); i++) {
-            matrix[i] = (T*)calloc(mat.cols(), sizeof(T));
-        }
-
-        // Build the full matrix representation of the the IVSparse matrix
-        for (size_t i = 0; i < mat.cols(); i++) {
-            for (typename IVSparse::SparseMatrix<T, indexT, compressionLevel,
-                 columnMajor>::InnerIterator it(mat, i);
-                 it; ++it) {
-                // std::cout << "it.row(): " << it.row() << " col: " << it.col() << "
-                // value: " << it.value() << std::endl;
-                matrix[it.row()][it.col()] = it.value();
-            }
-        }
-
-        // std::cout << "rows: " << mat.rows() << std::endl;
-        // std::cout << "cols: " << mat.cols() << std::endl;
-
-        // store all of matrix into the output stream
-        for (size_t i = 0; i < mat.rows(); i++) {
-            for (size_t j = 0; j < mat.cols(); j++) {
-                os << matrix[i][j] << " ";
-            }
-            os << std::endl;
-        }
-
-        for (int i = 0; i < mat.rows(); i++) {
-            free(matrix[i]);
-        }
-        delete[] matrix;
-
-        return os;
     }
 
     //* BLAS Operators *//
