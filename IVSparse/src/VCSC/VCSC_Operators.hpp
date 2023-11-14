@@ -195,50 +195,6 @@ namespace IVSparse {
         return newVector;
     }
 
-    // Outstream Operator
-    template <typename T, typename indexT, bool columnMajor>
-    std::ostream& operator<<(std::ostream& os, IVSparse::SparseMatrix<T, indexT, 2, columnMajor>& mat) {
-        #ifndef IVSPARSE_DEBUG
-        if (mat.cols() > 110) {
-            std::cout << "IVSparse matrix is too large to print" << std::endl;
-            return os;
-        }
-        #endif
-
-        // create a matrix to store the full matrix representation of the IVSparse
-        // matrix
-        T** matrix = new T * [mat.rows()];
-        for (size_t i = 0; i < mat.rows(); i++) {
-            matrix[i] = (T*)calloc(mat.cols(), sizeof(T));
-        }
-
-        // Build the full matrix representation of the the IVSparse matrix
-        for (size_t i = 0; i < mat.cols(); i++) {
-            for (typename IVSparse::SparseMatrix<T, indexT, 2,
-                 columnMajor>::InnerIterator it(mat, i);
-                 it; ++it) {
-                // std::cout << "it.row(): " << it.row() << " col: " << it.col() << "
-                // value: " << it.value() << std::endl;
-                matrix[it.row()][it.col()] = it.value();
-            }
-        }
-
-        // store all of matrix into the output stream
-        for (size_t i = 0; i < mat.rows(); i++) {
-            for (size_t j = 0; j < mat.cols(); j++) {
-                os << matrix[i][j] << " ";
-            }
-            os << std::endl;
-        }
-
-        for (int i = 0; i < mat.rows(); i++) {
-            free(matrix[i]);
-        }
-        delete[] matrix;
-
-        return os;
-
-    }  // end outstream operator
 
     //* BLAS Operators *//
 

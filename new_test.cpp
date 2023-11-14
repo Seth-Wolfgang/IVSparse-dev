@@ -179,7 +179,8 @@ void test2(IVSparse::SparseMatrix<TYPE, int, 2> vcsc1,
     assert(vcsc5.sum() == ivcsc5.sum());
 
     vcsc5.print();
-    ivcsc5.print();
+    std::cout << vcsc5 << std::endl;
+    std::cout << ivcsc5 << std::endl;
 
     int combinedSum = vcsc1.sum() + vcsc2.sum();
     vcsc1.append(vcsc2);
@@ -263,8 +264,8 @@ void test3(IVSparse::SparseMatrix<TYPE, int, 2> vcsc1,
 
     assert(vcsc5.sum() == ivcsc5.sum());
 
-    vcsc5.print();
-    ivcsc5.print();
+    std::cout << vcsc5 << std::endl;
+    std::cout << ivcsc5 << std::endl;
 
     int combinedSum = vcsc1.sum() + vcsc2.sum();
     vcsc1.append(eigen2);

@@ -89,6 +89,9 @@ namespace IVSparse {
         // Matrix Matrix Multiplication
         inline Eigen::Matrix<T, -1, -1> matrixMultiply(Eigen::Matrix<T, -1, -1> mat);
 
+        // helper for ostream operator
+        void print(std::ostream& stream);
+
         public:
 
         // Gets the number of rows in the matrix
@@ -450,6 +453,11 @@ namespace IVSparse {
         ///@}
 
         //* Operator Overloads *//
+
+        friend std::ostream& operator<< (std::ostream& stream, IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>& mat) {
+            mat.print(stream);
+            return stream;
+        }
 
         // Assignment Operator
         IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>& operator=(const IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>& other);

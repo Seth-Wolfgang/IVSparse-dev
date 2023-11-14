@@ -81,6 +81,10 @@ namespace IVSparse {
         // Matrix Vector Multiplication 2 (with IVSparse Vector)
         inline Eigen::Matrix<T, -1, 1> vectorMultiply(typename SparseMatrix<T, indexT, 2, columnMajor>::Vector& vec);
 
+        // helper for ostream operator
+        void print(std::ostream& stream);
+
+
         public:
 
         // Gets the number of rows in the matrix
@@ -381,6 +385,7 @@ namespace IVSparse {
          */
         void print();
 
+
         /**
          * @returns The current matrix as uncompressed to CSC format.
          */
@@ -444,6 +449,11 @@ namespace IVSparse {
         ///@}
 
         //* Operator Overloads *//
+
+        friend std::ostream& operator<< (std::ostream& stream, IVSparse::SparseMatrix<T, indexT, 2, columnMajor>& mat) {
+            mat.print(stream);
+            return stream;
+        }
 
         // Assignment Operator
         IVSparse::SparseMatrix<T, indexT, 2, columnMajor>& operator=(const IVSparse::SparseMatrix<T, indexT, 2, columnMajor>& other);
