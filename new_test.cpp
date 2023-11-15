@@ -4,7 +4,7 @@
 #include "IVSparse/SparseMatrix"
 #include "misc/matrix_creator.cpp"
 
-#define TYPE int
+#define TYPE uint64_t
 
 void test1(IVSparse::SparseMatrix<TYPE, int, 2> vcsc1,
            IVSparse::SparseMatrix<TYPE, int, 2> vcsc2,
@@ -42,6 +42,24 @@ void test3(IVSparse::SparseMatrix<TYPE, int, 2> vcsc1,
            Eigen::SparseMatrix<TYPE> eigen4);
 
 void test4(IVSparse::SparseMatrix<TYPE, int, 2> vcsc1,
+           IVSparse::SparseMatrix<TYPE, int, 2> vcsc2,
+           IVSparse::SparseMatrix<TYPE, int, 2> vcsc3,
+           IVSparse::SparseMatrix<TYPE, int, 2> vcsc4,
+           IVSparse::SparseMatrix<TYPE, int, 3> ivcsc1,
+           IVSparse::SparseMatrix<TYPE, int, 3> ivcsc2,
+           IVSparse::SparseMatrix<TYPE, int, 3> ivcsc3,
+           IVSparse::SparseMatrix<TYPE, int, 3> ivcsc4);
+
+void test5(IVSparse::SparseMatrix<TYPE, int, 2> vcsc1,
+           IVSparse::SparseMatrix<TYPE, int, 2> vcsc2,
+           IVSparse::SparseMatrix<TYPE, int, 2> vcsc3,
+           IVSparse::SparseMatrix<TYPE, int, 2> vcsc4,
+           IVSparse::SparseMatrix<TYPE, int, 3> ivcsc1,
+           IVSparse::SparseMatrix<TYPE, int, 3> ivcsc2,
+           IVSparse::SparseMatrix<TYPE, int, 3> ivcsc3,
+           IVSparse::SparseMatrix<TYPE, int, 3> ivcsc4);
+
+void test6(IVSparse::SparseMatrix<TYPE, int, 2> vcsc1,
            IVSparse::SparseMatrix<TYPE, int, 2> vcsc2,
            IVSparse::SparseMatrix<TYPE, int, 2> vcsc3,
            IVSparse::SparseMatrix<TYPE, int, 2> vcsc4,
@@ -99,7 +117,8 @@ int main() {
     test2(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4);
     test3(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4, eigen_sparse1, eigen_sparse2, eigen_sparse3, eigen_sparse4);
     test4(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4);
-
+    test5(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4);
+    test6(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4);
 
 
     return 0;
@@ -188,8 +207,8 @@ void test2(IVSparse::SparseMatrix<TYPE, int, 2> vcsc1,
     assert(vcsc5.sum() == ivcsc5.sum());
 
     vcsc5.print();
-    std::cout << vcsc5 << std::endl;
-    std::cout << ivcsc5 << std::endl;
+    // std::cout << vcsc5 << std::endl;
+    // std::cout << ivcsc5 << std::endl;
 
     int combinedSum = vcsc1.sum() + vcsc2.sum();
     vcsc1.append(vcsc2);
@@ -273,8 +292,8 @@ void test3(IVSparse::SparseMatrix<TYPE, int, 2> vcsc1,
 
     assert(vcsc5.sum() == ivcsc5.sum());
 
-    std::cout << vcsc5 << std::endl;
-    std::cout << ivcsc5 << std::endl;
+    // std::cout << vcsc5 << std::endl;
+    // std::cout << ivcsc5 << std::endl;
 
     int combinedSum = vcsc1.sum() + vcsc2.sum();
     vcsc1.append(eigen2);
@@ -319,6 +338,26 @@ void test3(IVSparse::SparseMatrix<TYPE, int, 2> vcsc1,
     assert(vcsc4.sum() == ivcsc4.sum());
     assert(vcsc4.sum() == combinedSum);
 
+    IVSparse::SparseMatrix<TYPE, int, 2> vcsc6 = vcsc4.transpose();
+    IVSparse::SparseMatrix<TYPE, int, 3> ivcsc6 = ivcsc4.transpose();
+
+    assert(vcsc6.sum() == vcsc4.sum());
+    assert(ivcsc6.sum() == ivcsc4.sum());
+
+    std::cout << vcsc6 << std::endl;
+    std::cout << ivcsc6 << std::endl;
+
+    vcsc6.append(vcsc6);
+    ivcsc6.append(ivcsc6);
+
+    assert(vcsc6.sum() == vcsc4.sum() * 2);
+    assert(ivcsc6.sum() == ivcsc4.sum() * 2);
+
+    vcsc4 = vcsc6.transpose();
+    ivcsc4 = ivcsc6.transpose();
+
+    assert(vcsc4.sum() == vcsc6.sum());
+    assert(ivcsc4.sum() == ivcsc6.sum());
 
 }
 
@@ -361,9 +400,92 @@ void test4(IVSparse::SparseMatrix<TYPE, int, 2> vcsc1,
     assert(ivcsc4.sum() == ivcsc6.sum());
     assert(vcsc4.sum() == vcsc6.sum());
 
-    std::cout << ivcsc4 << std::endl << "-------------------" << std::endl;
-    std::cout << ivcsc6 << std::endl;
+    // std::cout << ivcsc4 << std::endl << "-------------------" << std::endl;
+    // std::cout << ivcsc6 << std::endl;
 
     remove("test3");
     remove("test4");
 }
+
+
+void test5(IVSparse::SparseMatrix<TYPE, int, 2> vcsc1,
+           IVSparse::SparseMatrix<TYPE, int, 2> vcsc2,
+           IVSparse::SparseMatrix<TYPE, int, 2> vcsc3,
+           IVSparse::SparseMatrix<TYPE, int, 2> vcsc4,
+           IVSparse::SparseMatrix<TYPE, int, 3> ivcsc1,
+           IVSparse::SparseMatrix<TYPE, int, 3> ivcsc2,
+           IVSparse::SparseMatrix<TYPE, int, 3> ivcsc3,
+           IVSparse::SparseMatrix<TYPE, int, 3> ivcsc4) {
+
+
+    IVSparse::SparseMatrix<TYPE, int, 3> ivcsc5 = ivcsc1.transpose();
+
+    // std::cout << ivcsc5 << std::endl << "-------------------" << std::endl;
+    // std::cout << ivcsc1 << std::endl;
+
+    assert(ivcsc5.sum() == ivcsc1.sum());
+
+
+    IVSparse::SparseMatrix<TYPE, int, 3> ivcsc6 = ivcsc2.transpose();
+
+    // std::cout << ivcsc6 << std::endl << "-------------------" << std::endl;
+    // std::cout << ivcsc2 << std::endl;
+
+    assert(ivcsc6.sum() == ivcsc2.sum());
+
+    IVSparse::SparseMatrix<TYPE, int, 2> vcsc5 = vcsc1.transpose();
+
+    // std::cout << vcsc5 << std::endl << "-------------------" << std::endl;
+    // std::cout << vcsc1 << std::endl;
+
+    assert(vcsc5.sum() == vcsc1.sum());
+
+
+    IVSparse::SparseMatrix<TYPE, int, 2> vcsc6 = vcsc2.transpose();
+
+    // std::cout << vcsc6 << std::endl << "-------------------" << std::endl;
+    // std::cout << vcsc2 << std::endl;
+
+    assert(vcsc6.sum() == vcsc2.sum());
+
+    // Eigen::Matrix<TYPE, -1, -1> mockEigen1 = Eigen::Matrix<TYPE, -1, -1>::Random(1000, 10);
+    // Eigen::SparseMatrix<TYPE> mockEigenSparse1 = mockEigen1.sparseView();
+
+//     IVSparse::SparseMatrix<TYPE, int, 2> vcsc7(mockEigenSparse1);
+
+//     std::cout << vcsc7 << std::endl;
+
+//     std::cout << "-------------------" << std::endl;
+
+//     IVSparse::SparseMatrix<TYPE, int, 2> vcsc8 = vcsc7.transpose();
+
+//     std::cout << vcsc8 << std::endl;
+}
+
+
+void test6(IVSparse::SparseMatrix<TYPE, int, 2> vcsc1,
+           IVSparse::SparseMatrix<TYPE, int, 2> vcsc2,
+           IVSparse::SparseMatrix<TYPE, int, 2> vcsc3,
+           IVSparse::SparseMatrix<TYPE, int, 2> vcsc4,
+           IVSparse::SparseMatrix<TYPE, int, 3> ivcsc1,
+           IVSparse::SparseMatrix<TYPE, int, 3> ivcsc2,
+           IVSparse::SparseMatrix<TYPE, int, 3> ivcsc3,
+           IVSparse::SparseMatrix<TYPE, int, 3> ivcsc4) {
+
+    vcsc2.append(vcsc4);
+    ivcsc2.append(ivcsc4);
+
+    IVSparse::SparseMatrix<TYPE, int, 2> vcsc6 = vcsc2.transpose();
+    IVSparse::SparseMatrix<TYPE, int, 3> ivcsc6 = ivcsc2.transpose();
+
+    assert(ivcsc2.sum() == ivcsc6.sum());
+    assert(vcsc2.sum() == vcsc6.sum());
+
+    IVSparse::SparseMatrix<TYPE, int, 2> vcsc7 = vcsc6.transpose();
+    IVSparse::SparseMatrix<TYPE, int, 3> ivcsc7 = ivcsc6.transpose();
+
+    assert(ivcsc7.sum() == ivcsc2.sum());
+    assert(vcsc7.sum() == vcsc2.sum());
+    
+}
+

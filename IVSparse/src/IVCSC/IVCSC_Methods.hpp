@@ -306,19 +306,25 @@ namespace IVSparse {
         // mapsT.reserve(innerDim);
         mapsT.resize(innerDim);
         // populate the transpose data structure
+
+        #ifdef IVSPARSE_HAS_OPENMP
+        #pragma omp parallel for
+        #endif
         for (uint32_t i = 0; i < outerDim; ++i) {
             for (typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator it(*this, i); it; ++it) {
                 // add the value to the map
                 if constexpr (columnMajor) {
+                    #pragma omp critical
                     mapsT[it.row()][it.value()].push_back(it.col());
                 }
                 else {
+                    #pragma omp critical
                     mapsT[it.col()][it.value()].push_back(it.row());
                 }
             }
         }
 
-
+        #pragma omp parallel for
         for (int i = 0; i < innerDim; ++i) {
             for (auto& col : mapsT[i]) {
                 // find the max value in the vector
@@ -353,6 +359,9 @@ namespace IVSparse {
         mapsT.resize(innerDim);
 
         // populate the transpose data structure
+        #ifdef IVSPARSE_HAS_OPENMP
+        #pragma omp parallel for
+        #endif
         for (uint32_t i = 0; i < outerDim; ++i) {
             for (typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator it(*this, i); it; ++it) {
                 // add the value to the map
@@ -365,6 +374,9 @@ namespace IVSparse {
             }
         }
 
+        #ifdef IVSPARSE_HAS_OPENMP
+        #pragma omp parallel for
+        #endif
         for (int i = 0; i < innerDim; ++i) {
             for (auto& col : mapsT[i]) {
                 // find the max value in the vector

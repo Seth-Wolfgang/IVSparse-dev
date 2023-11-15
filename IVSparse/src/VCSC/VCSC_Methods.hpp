@@ -319,14 +319,18 @@ namespace IVSparse {
         mapsT.resize(innerDim);
 
         // populate the transpose data structure
+        #ifdef IVSPARSE_HAS_OPENMP
+        #pragma omp parallel for
+        #endif        
         for (uint32_t i = 0; i < outerDim; ++i) {
-            for (typename SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator it(*this, i); it;
-                 ++it) {
+            for (typename SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator it(*this, i); it; ++it) {
                 // add the value to the map
                 if constexpr (columnMajor) {
+                    #pragma omp critical
                     mapsT[it.row()][it.value()].push_back(it.col());
                 }
                 else {
+                    #pragma omp critical
                     mapsT[it.col()][it.value()].push_back(it.row());
                 }
             }
@@ -349,14 +353,18 @@ namespace IVSparse {
 
 
         // populate the transpose data structure
+        #ifdef IVSPARSE_HAS_OPENMP
+        #pragma omp parallel for
+        #endif
         for (uint32_t i = 0; i < outerDim; ++i) {
-            for (typename SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator it(*this, i); it;
-                 ++it) {
+            for (typename SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator it(*this, i); it; ++it) {
                 // add the value to the map
                 if constexpr (columnMajor) {
+                    #pragma omp critical
                     mapsT[it.row()][it.value()].push_back(it.col());
                 }
                 else {
+                    #pragma omp critical
                     mapsT[it.col()][it.value()].push_back(it.row());
                 }
             }
