@@ -233,8 +233,25 @@ namespace IVSparse {
     }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    inline T SparseMatrix<T, indexT, compressionLevel, columnMajor>::sum() {
-        T sum = 0;
+    template<typename T2, std::enable_if_t<std::is_integral<T2>::value, bool>>
+    inline int64_t SparseMatrix<T, indexT, compressionLevel, columnMajor>::sum() {
+        int64_t sum = 0;
+
+        #ifdef IVSPARSE_HAS_OPENMP
+        #pragma omp parallel for reduction(+ : sum)
+        #endif
+        for (int i = 0; i < outerDim; i++) {
+            for (typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator it(*this, i); it; ++it) {
+                sum += it.value();
+            }
+        }
+        return sum;
+    }
+
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    template<typename T2, std::enable_if_t<std::is_floating_point<T2>::value, bool>>
+    inline double SparseMatrix<T, indexT, compressionLevel, columnMajor>::sum() {
+        double sum = 0;
 
         #ifdef IVSPARSE_HAS_OPENMP
         #pragma omp parallel for reduction(+ : sum)

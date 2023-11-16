@@ -4,7 +4,7 @@
 #include "IVSparse/SparseMatrix"
 #include "misc/matrix_creator.cpp"
 
-#define TYPE uint64_t
+#define TYPE int8_t
 
 void test1(IVSparse::SparseMatrix<TYPE, int, 2> vcsc1,
            IVSparse::SparseMatrix<TYPE, int, 2> vcsc2,
@@ -145,8 +145,7 @@ void test1(IVSparse::SparseMatrix<TYPE, int, 2> vcsc1,
     assert(vcsc1.sum() == eigen1.sum());
     assert(vcsc2.sum() == eigen2.sum());
     assert(vcsc3.sum() == eigen3.sum());
-    assert(vcsc4.sum() == eigen4.sum());
-
+    assert(vcsc4.sum() == eigen4.sum());  
     ivcsc1.append(ivcsc1);
     vcsc1.append(vcsc1);
 

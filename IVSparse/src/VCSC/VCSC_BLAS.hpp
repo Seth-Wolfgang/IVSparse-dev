@@ -116,7 +116,8 @@ namespace IVSparse {
 
     // Finds the Inner Sum of the Matrix
     template <typename T, typename indexT, bool columnMajor>
-    inline std::vector<T> SparseMatrix<T, indexT, 2, columnMajor>::innerSum() {std::vector<T> innerSum = std::vector<T>(innerDim);
+    inline std::vector<T> SparseMatrix<T, indexT, 2, columnMajor>::innerSum() {
+        std::vector<T> innerSum = std::vector<T>(innerDim);
 
         #ifdef IVSPARSE_HAS_OPENMP
         #pragma omp parallel for
@@ -149,7 +150,8 @@ namespace IVSparse {
 
     // Finds the maximum value in each row
     template <typename T, typename indexT, bool columnMajor>
-    inline std::vector<T> SparseMatrix<T, indexT, 2, columnMajor>::maxRowCoeff() {std::vector<T> maxCoeff = std::vector<T>(innerDim);
+    inline std::vector<T> SparseMatrix<T, indexT, 2, columnMajor>::maxRowCoeff() {
+        std::vector<T> maxCoeff = std::vector<T>(innerDim);
 
         #ifdef IVSPARSE_HAS_OPENMP
         #pragma omp parallel for
@@ -166,7 +168,8 @@ namespace IVSparse {
 
     // Finds the minimum value in each column
     template <typename T, typename indexT, bool columnMajor>
-    inline std::vector<T> SparseMatrix<T, indexT, 2, columnMajor>::minColCoeff() {std::vector<T> minCoeff = std::vector<T>(innerDim);
+    inline std::vector<T> SparseMatrix<T, indexT, 2, columnMajor>::minColCoeff() {
+        std::vector<T> minCoeff = std::vector<T>(innerDim);
 
         #ifdef IVSPARSE_HAS_OPENMP
         #pragma omp parallel for
@@ -183,7 +186,8 @@ namespace IVSparse {
 
     // Finds the minimum value in each row
     template <typename T, typename indexT, bool columnMajor>
-    inline std::vector<T> SparseMatrix<T, indexT, 2, columnMajor>::minRowCoeff() {std::vector<T> minCoeff = std::vector<T>(innerDim);
+    inline std::vector<T> SparseMatrix<T, indexT, 2, columnMajor>::minRowCoeff() {
+        std::vector<T> minCoeff = std::vector<T>(innerDim);
         memset(minCoeff.data(), 0xF, innerDim * sizeof(T));
 
         #ifdef IVSPARSE_HAS_OPENMP
@@ -226,11 +230,28 @@ namespace IVSparse {
     }
 
     // Calculates the sum of the matrix
-    template <typename T, typename indexT, bool columnMajor>
-    inline T SparseMatrix<T, indexT, 2, columnMajor>::sum() {
-        T sum = 0;
-        // std::vector<T> outerSum = this->outerSum();
+    // template <typename std::is_floating_point<T>, typename indexT, bool columnMajor>
+    // inline double SparseMatrix<T, indexT, 2, columnMajor>::sum() {
+    //     T sum = 0;
+    //     // std::vector<T> outerSum = this->outerSum();
 
+    //     #ifdef IVSPARSE_HAS_OPENMP
+    //     #pragma omp parallel for reduction(+ : sum)
+    //     #endif
+    //     for (int i = 0; i < outerDim; i++) {
+    //         for (int j = 0; j < valueSizes[i]; j++) {
+    //             sum += values[i][j] * counts[i][j];
+    //         }
+    //     }
+    //     return sum;
+    // }
+
+    template <typename T, typename indexT, bool columnMajor>
+    template<typename T2, std::enable_if_t<std::is_integral<T2>::value, bool>>
+    inline int64_t SparseMatrix<T, indexT, 2, columnMajor>::sum() {
+        int64_t sum = 0;
+        // std::vector<T> outerSum = this->outerSum();
+        std::cout << "INT SUM" << std::endl;
         #ifdef IVSPARSE_HAS_OPENMP
         #pragma omp parallel for reduction(+ : sum)
         #endif
@@ -241,6 +262,25 @@ namespace IVSparse {
         }
         return sum;
     }
+
+
+    template <typename T, typename indexT, bool columnMajor>
+    template<typename T2, std::enable_if_t<std::is_floating_point<T2>::value, bool>>
+    inline double SparseMatrix<T, indexT, 2, columnMajor>::sum() {
+        double sum = 0;
+        // std::vector<T> outerSum = this->outerSum();
+        std::cout << "DOUBLE SUM" << std::endl;
+        #ifdef IVSPARSE_HAS_OPENMP
+        #pragma omp parallel for reduction(+ : sum)
+        #endif
+        for (int i = 0; i < outerDim; i++) {
+            for (int j = 0; j < valueSizes[i]; j++) {
+                sum += values[i][j] * counts[i][j];
+            }
+        }
+        return sum;
+    }
+
 
     // Calculates the norm of the matrix
     template <typename T, typename indexT, bool columnMajor>
