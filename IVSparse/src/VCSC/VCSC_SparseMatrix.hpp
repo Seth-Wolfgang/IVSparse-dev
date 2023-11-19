@@ -82,7 +82,9 @@ namespace IVSparse {
         inline Eigen::Matrix<T, -1, 1> vectorMultiply(typename SparseMatrix<T, indexT, 2, columnMajor>::Vector& vec);
 
         // helper for ostream operator
-        void print(std::ostream& stream);
+        void printHelper(std::ostream& stream);
+        void printHelper(std::stringstream& stream);
+
 
 
         public:
@@ -455,7 +457,12 @@ namespace IVSparse {
         //* Operator Overloads *//
 
         friend std::ostream& operator<< (std::ostream& stream, IVSparse::SparseMatrix<T, indexT, 2, columnMajor>& mat) {
-            mat.print(stream);
+            mat.printHelper(stream);
+            return stream;
+        }
+
+        friend std::stringstream& operator<< (std::stringstream& stream, IVSparse::SparseMatrix<T, indexT, 2, columnMajor>& mat) {
+            mat.printHelper(stream);
             return stream;
         }
 
@@ -491,6 +498,6 @@ namespace IVSparse {
         // Matrix Matrix Multiplication
         Eigen::Matrix<T, -1, -1> operator*(Eigen::Matrix<T, -1, -1>& mat);
 
-    };  // End of VCSC Sparse Matrix Class
+        };  // End of VCSC Sparse Matrix Class
 
-}  // namespace IVSparse
+    }  // namespace IVSparse

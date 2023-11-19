@@ -4,7 +4,7 @@
 #include "IVSparse/SparseMatrix"
 #include "misc/matrix_creator.cpp"
 
-#define TYPE int8_t
+#define TYPE int
 
 void test1(IVSparse::SparseMatrix<TYPE, int, 2> vcsc1,
            IVSparse::SparseMatrix<TYPE, int, 2> vcsc2,

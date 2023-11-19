@@ -42,32 +42,40 @@ namespace IVSparse {
 
     // private ostream operator helper
     template <typename T, typename indexT, bool columnMajor>
-    void SparseMatrix<T, indexT, 2, columnMajor>::print(std::ostream& os) {
+    void SparseMatrix<T, indexT, 2, columnMajor>::printHelper(std::ostream& os) {
         os << std::endl;
         os << "IVSparse Matrix" << std::endl;
 
         // if the matrix is less than 100 rows and columns print the whole thing
-        if (numRows < 100 && numCols < 100) {
-            // print the matrix
-            for (uint32_t i = 0; i < numRows; i++) {
-                for (uint32_t j = 0; j < numCols; j++) {
-                    os << coeff(i, j) << " ";
-                }
-                os << std::endl;
+        for (uint32_t i = 0; i < 100 && i < numRows; i++) {
+            for (uint32_t j = 0; j < 100 && j < numCols; j++) {
+                os << static_cast<int>(coeff(i, j)) << " ";
+                std::cout << static_cast<int>(coeff(i, j)) << " ";
             }
+            os << std::endl;
         }
-        else if (numRows > 100 && numCols > 100) {
-            // print the first 100 rows and columns
-            for (uint32_t i = 0; i < 100; i++) {
-                for (uint32_t j = 0; j < 100; j++) {
-                    os << coeff(i, j) << " ";
-                }
-                os << std::endl;
-            }
-        }
-
         os << std::endl;
     }
+
+    // private ostream operator helper
+    template <typename T, typename indexT, bool columnMajor>
+    void SparseMatrix<T, indexT, 2, columnMajor>::printHelper(std::stringstream& os) {
+        os << std::endl;
+        os << "IVSparse Matrix" << std::endl;
+
+        // if the matrix is less than 100 rows and columns print the whole thing
+        for (uint32_t i = 0; i < 100 && i < numRows; i++) {
+            for (uint32_t j = 0; j < 100 && j < numCols; j++) {
+                os << static_cast<int>(coeff(i, j)) << " ";
+                std::cout << static_cast<int>(coeff(i, j)) << " ";
+            }
+            os << std::endl;
+        }
+        os << std::endl;
+    }
+
+
+
 
 
     // Encodes the value type of the matrix in a uint32_t

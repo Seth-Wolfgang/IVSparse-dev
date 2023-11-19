@@ -95,30 +95,16 @@ namespace IVSparse {
     // Prints the matrix dense to console
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
     void SparseMatrix<T, indexT, compressionLevel, columnMajor>::print() {
-
         std::cout << std::endl;
         std::cout << "IVSparse Matrix" << std::endl;
 
-        // if the matrix is less than 100 rows and columns print the whole thing
-        if (numRows < 100 && numCols < 100) {
-            // print the matrix
-            for (uint32_t i = 0; i < numRows; i++) {
-                for (uint32_t j = 0; j < numCols; j++) {
-                    std::cout << coeff(i, j) << " ";
-                }
-                std::cout << std::endl;
+        // print the first 100 rows and columns
+        for (uint32_t i = 0; i < 100 && i < numRows; i++) {
+            for (uint32_t j = 0; j < 100 && j < numCols; j++) {
+                std::cout << static_cast<int>(coeff(i, j)) << " ";
             }
+            std::cout << std::endl;
         }
-        else if (numRows > 100 && numCols > 100) {
-            // print the first 100 rows and columns
-            for (uint32_t i = 0; i < 100; i++) {
-                for (uint32_t j = 0; j < 100; j++) {
-                    std::cout << coeff(i, j) << " ";
-                }
-                std::cout << std::endl;
-            }
-        }
-
         std::cout << std::endl;
     }
 

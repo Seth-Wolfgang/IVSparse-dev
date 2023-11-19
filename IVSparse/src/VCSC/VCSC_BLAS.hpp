@@ -250,14 +250,13 @@ namespace IVSparse {
     template<typename T2, std::enable_if_t<std::is_integral<T2>::value, bool>>
     inline int64_t SparseMatrix<T, indexT, 2, columnMajor>::sum() {
         int64_t sum = 0;
-        // std::vector<T> outerSum = this->outerSum();
-        std::cout << "INT SUM" << std::endl;
+
         #ifdef IVSPARSE_HAS_OPENMP
         #pragma omp parallel for reduction(+ : sum)
         #endif
         for (int i = 0; i < outerDim; i++) {
             for (int j = 0; j < valueSizes[i]; j++) {
-                sum += values[i][j] * counts[i][j];
+                sum += static_cast<int64_t>(values[i][j]) * static_cast<int64_t>(counts[i][j]);
             }
         }
         return sum;
@@ -268,8 +267,7 @@ namespace IVSparse {
     template<typename T2, std::enable_if_t<std::is_floating_point<T2>::value, bool>>
     inline double SparseMatrix<T, indexT, 2, columnMajor>::sum() {
         double sum = 0;
-        // std::vector<T> outerSum = this->outerSum();
-        std::cout << "DOUBLE SUM" << std::endl;
+        
         #ifdef IVSPARSE_HAS_OPENMP
         #pragma omp parallel for reduction(+ : sum)
         #endif

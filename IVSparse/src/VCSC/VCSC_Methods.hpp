@@ -114,28 +114,16 @@ namespace IVSparse {
         std::cout << std::endl;
         std::cout << "IVSparse Matrix" << std::endl;
 
-        // if the matrix is less than 100 rows and columns print the whole thing
-        if (numRows < 100 && numCols < 100) {
-            // print the matrix
-            for (uint32_t i = 0; i < numRows; i++) {
-                for (uint32_t j = 0; j < numCols; j++) {
-                    std::cout << coeff(i, j) << " ";
-                }
-                std::cout << std::endl;
+        // print the first 100 rows and columns
+        for (uint32_t i = 0; i < 100 && i < numRows; i++) {
+            for (uint32_t j = 0; j < 100 && j < numCols; j++) {
+                std::cout << static_cast<int>(coeff(i, j)) << " ";
             }
+            std::cout << std::endl;
         }
-        else if (numRows > 100 && numCols > 100) {
-            // print the first 100 rows and columns
-            for (uint32_t i = 0; i < 100; i++) {
-                for (uint32_t j = 0; j < 100; j++) {
-                    std::cout << coeff(i, j) << " ";
-                }
-                std::cout << std::endl;
-            }
-        }
-
         std::cout << std::endl;
     }
+
 
     // Convert a IVCSC matrix to CSC
     template <typename T, typename indexT, bool columnMajor>
@@ -284,8 +272,8 @@ namespace IVSparse {
 
             // allocate the new vectors
             try {
-                values[oldOuterDim + i]  = (T*)     malloc(valueSizes[oldOuterDim + i] * sizeof(T));
-                counts[oldOuterDim + i]  = (indexT*)malloc(valueSizes[oldOuterDim + i] * sizeof(indexT));
+                values[oldOuterDim + i] = (T*)malloc(valueSizes[oldOuterDim + i] * sizeof(T));
+                counts[oldOuterDim + i] = (indexT*)malloc(valueSizes[oldOuterDim + i] * sizeof(indexT));
                 indices[oldOuterDim + i] = (indexT*)malloc(indexSizes[oldOuterDim + i] * sizeof(indexT));
             }
             catch (std::bad_alloc& e) {
@@ -294,8 +282,8 @@ namespace IVSparse {
             }
 
             // copy the data from the vector to the new vectors
-            memcpy(values[oldOuterDim + i],  mat.getValues(i),  mat.valueSizes[i] * sizeof(T));
-            memcpy(counts[oldOuterDim + i],  mat.getCounts(i),  mat.valueSizes[i] * sizeof(indexT));
+            memcpy(values[oldOuterDim + i], mat.getValues(i), mat.valueSizes[i] * sizeof(T));
+            memcpy(counts[oldOuterDim + i], mat.getCounts(i), mat.valueSizes[i] * sizeof(indexT));
             memcpy(indices[oldOuterDim + i], mat.getIndices(i), mat.indexSizes[i] * sizeof(indexT));
         }
 
@@ -306,7 +294,7 @@ namespace IVSparse {
     // Eigen -> IVSparse append
     template<typename T, typename indexT, bool columnMajor>
     inline void IVSparse::SparseMatrix<T, indexT, 2, columnMajor>::append(Eigen::SparseMatrix<T>& mat) {
-        SparseMatrix<T, indexT, 2, columnMajor> temp (mat);
+        SparseMatrix<T, indexT, 2, columnMajor> temp(mat);
         append(temp);
     }
 

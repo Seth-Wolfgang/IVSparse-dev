@@ -90,7 +90,8 @@ namespace IVSparse {
         inline Eigen::Matrix<T, -1, -1> matrixMultiply(Eigen::Matrix<T, -1, -1> mat);
 
         // helper for ostream operator
-        void print(std::ostream& stream);
+        void printHelper(std::ostream& stream);
+        void printHelper(std::stringstream& stream);
 
         public:
 
@@ -460,10 +461,14 @@ namespace IVSparse {
         //* Operator Overloads *//
 
         friend std::ostream& operator<< (std::ostream& stream, IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>& mat) {
-            mat.print(stream);
+            mat.printHelper(stream);
             return stream;
         }
 
+        friend std::stringstream& operator<< (std::stringstream& stream, IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>& mat) {
+            mat.printHelper(stream);
+            return stream;
+        }
         // Assignment Operator
         IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>& operator=(const IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>& other);
 
