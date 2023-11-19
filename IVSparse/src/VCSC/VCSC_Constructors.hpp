@@ -59,11 +59,6 @@ namespace IVSparse {
         // make sure the matrix is compressed
         mat.makeCompressed();
 
-        std::cout << "Eigen Constructor" << std::endl;
-        std::cout << "Rows: " << mat.rows() << std::endl;
-        std::cout << "Cols: " << mat.cols() << std::endl;
-        std::cout << "NonZeros: " << mat.nonZeros() << std::endl;
-        std::cout << "major: " << columnMajor << std::endl;
         // get the number of rows and columns
         numRows = mat.rows();
         numCols = mat.cols();
