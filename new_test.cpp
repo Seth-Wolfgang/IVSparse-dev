@@ -68,6 +68,15 @@ void test6(IVSparse::SparseMatrix<TYPE, int, 2> vcsc1,
            IVSparse::SparseMatrix<TYPE, int, 3> ivcsc3,
            IVSparse::SparseMatrix<TYPE, int, 3> ivcsc4);
 
+void test7(IVSparse::SparseMatrix<TYPE, int, 2> vcsc1,
+           IVSparse::SparseMatrix<TYPE, int, 2> vcsc2,
+           IVSparse::SparseMatrix<TYPE, int, 2> vcsc3,
+           IVSparse::SparseMatrix<TYPE, int, 2> vcsc4,
+           IVSparse::SparseMatrix<TYPE, int, 3> ivcsc1,
+           IVSparse::SparseMatrix<TYPE, int, 3> ivcsc2,
+           IVSparse::SparseMatrix<TYPE, int, 3> ivcsc3,
+           IVSparse::SparseMatrix<TYPE, int, 3> ivcsc4);
+
 int main() {
 
     Eigen::Matrix<TYPE, -1, -1> eigen1 = Eigen::Matrix<TYPE, -1, -1>::Random(10, 10);
@@ -145,7 +154,7 @@ void test1(IVSparse::SparseMatrix<TYPE, int, 2> vcsc1,
     assert(vcsc1.sum() == eigen1.sum());
     assert(vcsc2.sum() == eigen2.sum());
     assert(vcsc3.sum() == eigen3.sum());
-    assert(vcsc4.sum() == eigen4.sum());  
+    assert(vcsc4.sum() == eigen4.sum());
     ivcsc1.append(ivcsc1);
     vcsc1.append(vcsc1);
 
@@ -343,8 +352,8 @@ void test3(IVSparse::SparseMatrix<TYPE, int, 2> vcsc1,
     assert(vcsc6.sum() == vcsc4.sum());
     assert(ivcsc6.sum() == ivcsc4.sum());
 
-    std::cout << vcsc6 << std::endl;
-    std::cout << ivcsc6 << std::endl;
+    // std::cout << vcsc6 << std::endl;
+    // std::cout << ivcsc6 << std::endl;
 
     vcsc6.append(vcsc6);
     ivcsc6.append(ivcsc6);
@@ -485,6 +494,88 @@ void test6(IVSparse::SparseMatrix<TYPE, int, 2> vcsc1,
 
     assert(ivcsc7.sum() == ivcsc2.sum());
     assert(vcsc7.sum() == vcsc2.sum());
-    
+
+    IVSparse::SparseMatrix<TYPE, int, 3> ivcsc5 = ivcsc1.slice(0, 5);
+    IVSparse::SparseMatrix<TYPE, int, 2> vcsc5 = vcsc1.slice(0, 5);
+
+    assert(ivcsc5.sum() == vcsc5.sum());
+
+    for (int i = 0; i < ivcsc5.rows(); i++) {
+        for (int j = 0; j < ivcsc5.cols(); j++) {
+            assert(ivcsc5(i, j) == vcsc5(i, j));
+            assert(ivcsc5(i, j) == ivcsc1(i, j));
+            assert(vcsc5(i, j) == vcsc1(i, j));
+        }
+    }
+    ivcsc5 = ivcsc1.slice(1, 3);
+    vcsc5 = vcsc1.slice(1, 3);
+
+    assert(ivcsc5.sum() == vcsc5.sum());
+
+    for (int i = 0; i < ivcsc5.rows(); i++) {
+        for (int j = 0; j < ivcsc5.cols(); j++) {
+            assert(ivcsc5(i, j) == vcsc5(i, j));
+            assert(ivcsc5(i, j) == ivcsc1(i, j+ 1));
+            assert(vcsc5(i, j) == vcsc1(i, j + 1));
+        }
+    }
+
+    ivcsc5 = ivcsc1.slice(1, 2);
+    vcsc5 = vcsc1.slice(1, 2);
+
+    assert(ivcsc5.sum() == vcsc5.sum());
+
+    for (int i = 0; i < ivcsc5.rows(); i++) {
+        for (int j = 0; j < ivcsc5.cols(); j++) {
+            assert(ivcsc5(i, j) == vcsc5(i, j));
+            assert(ivcsc5(i, j) == ivcsc1(i, j + 1));
+            assert(vcsc5(i, j) == vcsc1(i, j + 1));
+        }
+    }
+
+    ivcsc5 = ivcsc1.slice(3, 7);
+    vcsc5 = vcsc1.slice(3, 7);
+
+    assert(ivcsc5.sum() == vcsc5.sum());
+
+    for (int i = 0; i < ivcsc5.rows(); i++) {
+        for (int j = 0; j < ivcsc5.cols(); j++) {
+            assert(ivcsc5(i, j) == vcsc5(i, j));
+            assert(ivcsc5(i, j) == ivcsc1(i, j + 3));
+            assert(vcsc5(i, j) == vcsc1(i, j + 3));
+        }
+    }
+
+    ivcsc5 = ivcsc1.slice(0, ivcsc1.cols());
+    vcsc5 = vcsc1.slice(0, vcsc1.cols());
+
+    assert(ivcsc5.sum() == vcsc5.sum());
+
+    for (int i = 0; i < ivcsc5.rows(); i++) {
+        for (int j = 0; j < ivcsc5.cols(); j++) {
+            assert(ivcsc5(i, j) == vcsc5(i, j));
+            assert(ivcsc5(i, j) == ivcsc1(i, j));
+            assert(vcsc5(i, j) == vcsc1(i, j));
+        }
+    }
+
 }
 
+void test7(IVSparse::SparseMatrix<TYPE, int, 2> vcsc1,
+           IVSparse::SparseMatrix<TYPE, int, 2> vcsc2,
+           IVSparse::SparseMatrix<TYPE, int, 2> vcsc3,
+           IVSparse::SparseMatrix<TYPE, int, 2> vcsc4,
+           IVSparse::SparseMatrix<TYPE, int, 3> ivcsc1,
+           IVSparse::SparseMatrix<TYPE, int, 3> ivcsc2,
+           IVSparse::SparseMatrix<TYPE, int, 3> ivcsc3,
+           IVSparse::SparseMatrix<TYPE, int, 3> ivcsc4) {
+    return;
+
+
+
+
+
+
+
+
+}

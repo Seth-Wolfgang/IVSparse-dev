@@ -164,7 +164,7 @@ namespace IVSparse {
             newIndex = static_cast<indexT>(*static_cast<uint64_t*>(data));
             break;
         default:
-            printf("Invalid index width: %d\n", indexWidth);
+            printf("(IVSparse): Invalid index width (%d) after index (%d, %d). IVCSC matrix constructed incorrectly.\n", indexWidth, index, outer);
             exit(1);
             break;
         }

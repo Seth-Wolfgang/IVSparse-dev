@@ -344,6 +344,7 @@ namespace IVSparse {
         // mapsT.reserve(innerDim);
         mapsT.resize(innerDim);
 
+
         // populate the transpose data structure
         #ifdef IVSPARSE_HAS_OPENMP
         #pragma omp parallel for
@@ -383,9 +384,9 @@ namespace IVSparse {
         *this = IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>(mapsT.data(), numRows, numCols);
     }
 
-    // slice method that returns a vector of IVSparse vectors
+    // slice method that returns an IVSparse matrix
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor> SparseMatrix<T, indexT, compressionLevel, columnMajor>::slice(uint32_t start, uint32_t end) {
+    IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor> SparseMatrix<T, indexT, compressionLevel, columnMajor>::slice(uint32_t const start, uint32_t end) {
 
         #ifdef IVSPARSE_DEBUG
         assert(start < outerDim && end <= outerDim && start < end &&
@@ -429,11 +430,12 @@ namespace IVSparse {
 
             // copy the vector
             memcpy(temp.data[i - start], data[i], getVectorSize(i));
-        }
+        }   
 
         // get nnz
         temp.nnz = 0;
         for (int i = 0; i < temp.outerDim; ++i) {
+            if (temp.getVectorSize(i) == 0) continue;
             for (typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator it(temp, i); it; ++it) {
                 temp.nnz++;
             }

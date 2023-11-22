@@ -62,8 +62,7 @@ namespace IVSparse {
          * will forward traverse over the given vector of the matrix. The traversal
          * is sorted by value in ascending order.
          */
-        InnerIterator(SparseMatrix<T, indexT, compressionLevel, columnMajor>& mat,
-                      uint32_t col);
+        InnerIterator(SparseMatrix<T, indexT, compressionLevel, columnMajor>& mat, uint32_t col);
 
         /**
          * IVCSC Vector InnerIterator Constructor \n \n
@@ -138,7 +137,7 @@ namespace IVSparse {
 
         // Bool Operator
         inline __attribute__((hot)) operator bool() {
-            return ((char*)endPtr - indexWidth > data);
+            return (static_cast<char*>(endPtr) - indexWidth > data);
         }
 
         // Dereference Operator
