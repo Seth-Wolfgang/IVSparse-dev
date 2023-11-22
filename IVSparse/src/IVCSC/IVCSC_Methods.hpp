@@ -278,7 +278,7 @@ namespace IVSparse {
 
     // Eigen -> IVSparse append
     template<typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    inline void IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>::append(Eigen::SparseMatrix<T>& mat) {
+    inline void IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>::append(Eigen::SparseMatrix<T, columnMajor ? Eigen::ColMajor : Eigen::RowMajor>& mat) {
         SparseMatrix<T, indexT, compressionLevel, columnMajor> temp(mat);
         append(temp);
     }

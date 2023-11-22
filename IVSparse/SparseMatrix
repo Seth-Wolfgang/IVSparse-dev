@@ -8,7 +8,7 @@
 
 #pragma once
 
-// Library Constants
+ // Library Constants
 #define DELIM 0
 #define NUM_META_DATA 6
 #define META_DATA_SIZE 24
@@ -16,11 +16,17 @@
 #define TWO_BYTE_MAX 65535
 #define FOUR_BYTE_MAX 4294967295
 
+namespace IVSparse {
+        const int RowMajor = 0;
+        const int ColMajor = 1;
+
+}
+
 // Library Preprocessor Directives
 
 // Parallel Processing Directives (On by default)
 #if (defined _OPENMP) && (!defined IVSPARSE_DONT_PARALLEL)
-    #define IVSPARSE_HAS_OPENMP
+#define IVSPARSE_HAS_OPENMP
 #endif
 #ifdef IVSPARSE_HAS_OPENMP
 #include <atomic>
@@ -55,10 +61,10 @@
 #include "src/IVCSC/IVCSC_Constructors.hpp"
 #include "src/IVCSC/IVCSC_BLAS.hpp"
     // Vector and Iterator Files
-    #include "src/Vectors/IVCSC_Vector.hpp"
-    #include "src/Vectors/IVCSC_Vector_Methods.hpp"
-    #include "src/InnerIterators/IVCSC_Iterator.hpp"
-    #include "src/InnerIterators/IVCSC_Iterator_Methods.hpp"
+#include "src/Vectors/IVCSC_Vector.hpp"
+#include "src/Vectors/IVCSC_Vector_Methods.hpp"
+#include "src/InnerIterators/IVCSC_Iterator.hpp"
+#include "src/InnerIterators/IVCSC_Iterator_Methods.hpp"
 
 // SparseMatrix Level 2 Files
 #include "src/VCSC/VCSC_SparseMatrix.hpp"
@@ -68,10 +74,10 @@
 #include "src/VCSC/VCSC_Constructors.hpp"
 #include "src/VCSC/VCSC_BLAS.hpp"
     // Vector and Iterator Files
-    #include "src/Vectors/VCSC_Vector.hpp"
-    #include "src/Vectors/VCSC_Vector_Methods.hpp"
-    #include "src/InnerIterators/VCSC_Iterator.hpp"
-    #include "src/InnerIterators/VCSC_Iterator_Methods.hpp"
+#include "src/Vectors/VCSC_Vector.hpp"
+#include "src/Vectors/VCSC_Vector_Methods.hpp"
+#include "src/InnerIterators/VCSC_Iterator.hpp"
+#include "src/InnerIterators/VCSC_Iterator_Methods.hpp"
 
 // SparseMatrix Level 1 Files
 #include "src/CSC/CSC_SparseMatrix.hpp"
@@ -81,7 +87,7 @@
 #include "src/CSC/CSC_Constructors.hpp"
 #include "src/CSC/CSC_BLAS.hpp"
     // Vector and Iterator Files
-    #include "src/Vectors/CSC_Vector.hpp"
-    #include "src/Vectors/CSC_Vector_Methods.hpp"
-    #include "src/InnerIterators/CSC_Iterator.hpp"
-    #include "src/InnerIterators/CSC_Iterator_Methods.hpp"
+#include "src/Vectors/CSC_Vector.hpp"
+#include "src/Vectors/CSC_Vector_Methods.hpp"
+#include "src/InnerIterators/CSC_Iterator.hpp"
+#include "src/InnerIterators/CSC_Iterator_Methods.hpp"

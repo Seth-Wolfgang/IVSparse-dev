@@ -293,7 +293,7 @@ namespace IVSparse {
 
     // Eigen -> IVSparse append
     template<typename T, typename indexT, bool columnMajor>
-    inline void IVSparse::SparseMatrix<T, indexT, 2, columnMajor>::append(Eigen::SparseMatrix<T>& mat) {
+    inline void IVSparse::SparseMatrix<T, indexT, 2, columnMajor>::append(Eigen::SparseMatrix<T, columnMajor ? Eigen::ColMajor : Eigen::RowMajor>& mat) {
         SparseMatrix<T, indexT, 2, columnMajor> temp(mat);
         append(temp);
     }
@@ -376,8 +376,15 @@ namespace IVSparse {
 
         temp.innerDim = innerDim;
         temp.outerDim = end - start;
-        temp.numRows = numRows;
-        temp.numCols = temp.outerDim;
+
+        if constexpr (columnMajor) {
+            temp.numRows = innerDim;
+            temp.numCols = temp.outerDim;
+        }
+        else {
+            temp.numRows = temp.outerDim;
+            temp.numCols = innerDim;
+        }
 
         // malloc the vectors
         try {

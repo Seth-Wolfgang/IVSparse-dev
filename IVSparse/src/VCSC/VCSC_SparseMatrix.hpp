@@ -444,7 +444,7 @@ namespace IVSparse {
          * matrix. This converts the Eigen::SparseMatrix to an IVSparse matrix.
          */
 
-        inline void append(Eigen::SparseMatrix<T>& mat);
+        inline void append(Eigen::SparseMatrix<T, columnMajor ? Eigen::ColMajor : Eigen::RowMajor>& mat);
 
         /**
          * @returns A matrix that represent a slice of the

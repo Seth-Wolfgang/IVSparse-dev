@@ -168,9 +168,7 @@ namespace IVSparse {
         uint32_t index = columnMajor ? row : col;
 
         // get an iterator for the desired vector
-        for (typename SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator it(
-            *this, vector);
-            it; ++it) {
+        for (typename SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator it( *this, vector); it; ++it) {
             if (it.getIndex() == (indexT)index) {
                 return it.value();
             }
@@ -189,8 +187,7 @@ namespace IVSparse {
         #endif
 
         // return a IVSparse vector
-        typename IVSparse::SparseMatrix<T, indexT, 2, columnMajor>::Vector newVector(
-            *this, vec);
+        typename IVSparse::SparseMatrix<T, indexT, 2, columnMajor>::Vector newVector(*this, vec);
 
         return newVector;
     }

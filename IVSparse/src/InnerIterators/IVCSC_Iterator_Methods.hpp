@@ -21,7 +21,7 @@ namespace IVSparse {
         #endif
 
         // check if data is nullptr
-        if (matrix.vectorPointer(vec) == nullptr) {
+        if (matrix.vectorPointer(vec) == nullptr || matrix.getVectorSize(vec) == 0) {
             // Trips bool operator
             data = (void*)0xFFFFFFFFFFFFFFFF;
             endPtr = (void*)0xFFFFFFFFFFFFFFFF;
