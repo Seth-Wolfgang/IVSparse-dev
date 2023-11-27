@@ -343,7 +343,11 @@ namespace IVSparse {
          *
          * @note Only works for square matrices.
          */
-        inline T trace();
+        template<typename T2 = T, std::enable_if_t<std::is_integral<T2>::value, bool> = true>
+        inline int64_t trace();
+
+        template<typename T2 = T, std::enable_if_t<std::is_floating_point<T2>::value, bool> = true>
+        inline double trace();
 
         /**
          * @returns The sum of all the values in the matrix.

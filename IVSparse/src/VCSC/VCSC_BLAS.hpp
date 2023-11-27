@@ -203,21 +203,39 @@ namespace IVSparse {
         return minCoeff;
     }
 
-    // Calculates the trace of the matrix
     template <typename T, typename indexT, bool columnMajor>
-    inline T SparseMatrix<T, indexT, 2, columnMajor>::trace() {
+    template<typename T2, std::enable_if_t<std::is_integral<T2>::value, bool>>
+    inline int64_t SparseMatrix<T, indexT, 2, columnMajor>::trace() {
 
         #ifdef IVSPARSE_DEBUG
         assert(innerDim == outerDim && "Trace is only defined for square matrices!");
         #endif
 
-        T trace = 0;
-
-        #ifdef IVSPARSE_HAS_OPENMP
-        #pragma omp parallel for reduction(+ : trace)
-        #endif
+        int64_t trace = 0;
         for (int i = 0; i < outerDim; i++) {
-            for (typename SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator it(*this, i);it; ++it) {
+            for (typename SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator it(*this, i); it; ++it) {
+                if (it.row() == i) {
+                    trace += it.value();
+                }
+                else if (it.row() > i) {
+                    continue;
+                }
+            }
+        }
+        return trace;
+    }
+
+    template <typename T, typename indexT, bool columnMajor>
+    template<typename T2, std::enable_if_t<std::is_floating_point<T2>::value, bool>>
+    inline double SparseMatrix<T, indexT, 2, columnMajor>::trace() {
+
+        #ifdef IVSPARSE_DEBUG
+        assert(innerDim == outerDim && "Trace is only defined for square matrices!");
+        #endif
+
+        double trace = 0;
+        for (int i = 0; i < outerDim; i++) {
+            for (typename SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator it(*this, i); it; ++it) {
                 if (it.row() == i) {
                     trace += it.value();
                 }
@@ -267,7 +285,7 @@ namespace IVSparse {
     template<typename T2, std::enable_if_t<std::is_floating_point<T2>::value, bool>>
     inline double SparseMatrix<T, indexT, 2, columnMajor>::sum() {
         double sum = 0;
-        
+
         #ifdef IVSPARSE_HAS_OPENMP
         #pragma omp parallel for reduction(+ : sum)
         #endif

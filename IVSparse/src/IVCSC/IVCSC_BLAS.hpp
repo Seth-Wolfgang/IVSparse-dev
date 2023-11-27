@@ -212,13 +212,36 @@ namespace IVSparse {
     }
 
     template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    inline T SparseMatrix<T, indexT, compressionLevel, columnMajor>::trace() {
+    template<typename T2, std::enable_if_t<std::is_integral<T2>::value, bool>>
+    inline int64_t SparseMatrix<T, indexT, compressionLevel, columnMajor>::trace() {
 
         #ifdef IVSPARSE_DEBUG
         assert(innerDim == outerDim && "Trace is only defined for square matrices!");
         #endif
 
-        T trace = 0;
+        int64_t trace = 0;
+        for (int i = 0; i < outerDim; i++) {
+            for (typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator it(*this, i); it; ++it) {
+                if (it.row() == i) {
+                    trace += it.value();
+                }
+                else if (it.row() > i) {
+                    continue;
+                }
+            }
+        }
+        return trace;
+    }
+
+    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
+    template<typename T2, std::enable_if_t<std::is_floating_point<T2>::value, bool>>
+    inline double SparseMatrix<T, indexT, compressionLevel, columnMajor>::trace() {
+
+        #ifdef IVSPARSE_DEBUG
+        assert(innerDim == outerDim && "Trace is only defined for square matrices!");
+        #endif
+
+        double trace = 0;
         for (int i = 0; i < outerDim; i++) {
             for (typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator it(*this, i); it; ++it) {
                 if (it.row() == i) {
