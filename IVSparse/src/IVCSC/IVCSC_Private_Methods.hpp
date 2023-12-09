@@ -11,8 +11,8 @@
 namespace IVSparse {
 
     // Calculates the number of bytes needed to store a value
-    template <typename T, typename indexType, uint8_t compressionLevel, bool columnMajor>
-    inline uint8_t SparseMatrix<T, indexType, compressionLevel, columnMajor>::byteWidth(size_t size) {
+    template <typename T, bool columnMajor>
+    inline uint8_t IVCSC<T, columnMajor>::byteWidth(size_t size) {
         if (size <= 0xFF) {
             return 1;
         }
@@ -41,10 +41,10 @@ namespace IVSparse {
     }
 
     // private ostream operator helper
-    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    void SparseMatrix<T, indexT, compressionLevel, columnMajor>::printHelper(std::ostream& os) {
+    template <typename T, bool columnMajor>
+    void IVCSC<T, columnMajor>::printHelper(std::ostream& os) {
         os << std::endl;
-        os << "IVSparse Matrix" << std::endl;
+        os << "IVCSC Matrix" << std::endl;
 
         // if the matrix is less than 100 rows and columns print the whole thing
         for (uint32_t i = 0; i < 100 && i < numRows; i++) {
@@ -58,10 +58,10 @@ namespace IVSparse {
     }
 
 
-    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    void SparseMatrix<T, indexT, compressionLevel, columnMajor>::printHelper(std::stringstream& os) {
+    template <typename T, bool columnMajor>
+    void IVCSC<T, columnMajor>::printHelper(std::stringstream& os) {
         os << std::endl;
-        os << "IVSparse Matrix" << std::endl;
+        os << "IVCSC Matrix" << std::endl;
 
         // if the matrix is less than 100 rows and columns print the whole thing
         for (uint32_t i = 0; i < 100 && i < numRows; i++) {
@@ -76,8 +76,8 @@ namespace IVSparse {
 
 
     // Encodes the value type of the matrix in a uint32_t
-    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    void SparseMatrix<T, indexT, compressionLevel, columnMajor>::encodeValueType() {
+    template <typename T, bool columnMajor>
+    void IVCSC<T, columnMajor>::encodeValueType() {
         uint8_t byte0 = sizeof(T);
         uint8_t byte1 = std::is_floating_point<T>::value ? 1 : 0;
         uint8_t byte2 = std::is_signed_v<T> ? 1 : 0;
@@ -87,8 +87,8 @@ namespace IVSparse {
     }
 
     // Checks if the value type is correct for the matrix
-    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    void SparseMatrix<T, indexT, compressionLevel, columnMajor>::checkValueType() {
+    template <typename T, bool columnMajor>
+    void IVCSC<T, columnMajor>::checkValueType() {
         uint8_t byte0 = val_t & 0xFF;
         uint8_t byte1 = (val_t >> 8) & 0xFF;
         uint8_t byte2 = (val_t >> 16) & 0xFF;
@@ -101,27 +101,27 @@ namespace IVSparse {
     }
 
     // performs some simple user checks on the matrices metadata
-    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    void SparseMatrix<T, indexT, compressionLevel, columnMajor>::userChecks() {
+    template <typename T, bool columnMajor>
+    void IVCSC<T, columnMajor>::userChecks() {
         assert((innerDim >= 1 || outerDim >= 1) &&
                "The matrix must have at least one row, column, and nonzero value");
-        assert(std::is_floating_point<indexT>::value == false &&
+        assert(std::is_floating_point<size_t>::value == false &&
                "The index type must be a non-floating point type");
-        assert((compressionLevel == 3) && "The compression level must be 3");
-        assert((std::is_arithmetic<T>::value && std::is_arithmetic<indexT>::value) &&
+        assert((3 == 3) && "The compression level must be 3");
+        assert((std::is_arithmetic<T>::value && std::is_arithmetic<size_t>::value) &&
                "The value and index types must be numeric types");
-        assert((std::is_same<indexT, bool>::value == false) &&
+        assert((std::is_same<size_t, bool>::value == false) &&
                "The index type must not be bool");
-        assert((innerDim < std::numeric_limits<indexT>::max() &&
-                outerDim < std::numeric_limits<indexT>::max()) &&
+        assert((innerDim < std::numeric_limits<size_t>::max() &&
+                outerDim < std::numeric_limits<size_t>::max()) &&
                "The number of rows and columns must be less than the maximum value "
                "of the index type");
         checkValueType();
     }
 
     // Calculates the current byte size of the matrix in memory
-    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    void SparseMatrix<T, indexT, compressionLevel, columnMajor>::calculateCompSize() {
+    template <typename T, bool columnMajor>
+    void IVCSC<T, columnMajor>::calculateCompSize() {
         // set compSize to zero
         compSize = 0; // for pointer arrays of data and endPointers
 
@@ -138,22 +138,20 @@ namespace IVSparse {
     }
 
     // Compression Algorithm for going from CSC to IVCSC
-    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    template <typename T2, typename indexT2> void SparseMatrix<T, indexT, compressionLevel, columnMajor>::compressCSC(
-        T2* vals, indexT2* innerIndices, indexT2* outerPointers) {
-        uint32_t ones = 0;
-        uint32_t twos = 0;
+    template <typename T, bool columnMajor>
+    template <typename T2, typename indexT2> 
+    void IVCSC<T, columnMajor>::compressCSC(T2* vals, indexT2* innerIndices, indexT2* outerPointers) {
         // ---- Stage 1: Setup the Matrix ---- //
         std::map<T2, std::vector<indexT2>> testDict;  // Key = value, Value = vector of indices
 
 
         // set the value and index types of the matrix
         encodeValueType();
-        index_t = sizeof(indexT);
+        index_t = sizeof(size_t);
 
         // allocate space for metadata
         metadata = new uint32_t[NUM_META_DATA];
-        metadata[0] = compressionLevel;
+        metadata[0] = 3;
         metadata[1] = innerDim;
         metadata[2] = outerDim;
         metadata[3] = nnz;

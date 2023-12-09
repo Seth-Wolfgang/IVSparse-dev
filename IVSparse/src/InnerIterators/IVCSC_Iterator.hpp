@@ -12,7 +12,7 @@ namespace IVSparse {
 
     /**
      * @tparam T The type of the values in the matrix
-     * @tparam indexT The type of the indices in the matrix
+     * @tparam size_t The type of the indices in the matrix
      * @tparam compressionLevel The level of compression used in the matrix
      * @tparam columnMajor Whether the matrix is column major or not
      *
@@ -21,16 +21,16 @@ namespace IVSparse {
      * the IVSparse library. The IVCSC Iterator is slower than the others due to
      * needing to decode compressed data.
      */
-    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    class SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator {
+    template<typename T, bool columnMajor>
+    class IVCSC<T, columnMajor>::InnerIterator {
         private:
         //* Private Class Variables *//
 
-        indexT outer;      // Outer dimension
-        indexT index;      // Current index
+        size_t outer;      // Outer dimension
+        size_t index;      // Current index
         T* val = nullptr;  // Current value
 
-        indexT newIndex = 0;  // Next index
+        size_t newIndex = 0;  // Next index
 
         uint8_t indexWidth = 1;  // Width of the current run
 
@@ -62,15 +62,8 @@ namespace IVSparse {
          * will forward traverse over the given vector of the matrix. The traversal
          * is sorted by value in ascending order.
          */
-        InnerIterator(SparseMatrix<T, indexT, compressionLevel, columnMajor>& mat, uint32_t col);
+        InnerIterator(IVCSC<T, columnMajor>& mat, uint32_t col);
 
-        /**
-         * IVCSC Vector InnerIterator Constructor \n \n
-         * Same as the previous constructor but for a single standalone vector.
-         * Can be used in the same way as the previous constructor.
-         */
-        InnerIterator(
-            SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector& vec);
 
         ///@}
 
@@ -82,22 +75,22 @@ namespace IVSparse {
          /**
           * @returns The current index of the iterator.
           */
-        indexT getIndex();
+        size_t getIndex();
 
         /**
          * @returns The current outer dimension of the iterator.
          */
-        indexT outerDim();
+        size_t outerDim();
 
         /**
          * @returns The current row of the iterator.
          */
-        indexT row();
+        size_t row();
 
         /**
          * @returns The current column of the iterator.
          */
-        indexT col();
+        size_t col();
 
         /**
          * @returns The current value of the iterator.

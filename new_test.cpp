@@ -5,125 +5,155 @@
 #include "misc/matrix_creator.cpp"
 
 #define TYPE int
-#define IVSparseMAJOR 1 // IVSparse -> col major, Eigen -> row major
+#define IVSparseMAJOR 0 // IVSparse -> col major, Eigen -> row major
 #define EIGENMAJOR !IVSparseMAJOR    // IVSparse -> col major, Eigen -> row major
 #define INDEX_TYPE int
 #define IVSPARSE_DEBUG
 
-void test1(IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc1,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc2,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc3,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc4,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc1,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc2,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc3,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc4,
+void test1(IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc1,
+           IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc2,
+           IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc3,
+           IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc4,
+           IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc1,
+           IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc2,
+           IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc3,
+           IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc4,
            Eigen::Matrix<TYPE, -1, -1, EIGENMAJOR> eigen1,
            Eigen::Matrix<TYPE, -1, -1, EIGENMAJOR> eigen2,
            Eigen::Matrix<TYPE, -1, -1, EIGENMAJOR> eigen3,
            Eigen::Matrix<TYPE, -1, -1, EIGENMAJOR> eigen4);
 
-void test2(IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc1,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc2,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc3,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc4,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc1,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc2,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc3,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc4);
+void test2(IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc1,
+           IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc2,
+           IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc3,
+           IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc4,
+           IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc1,
+           IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc2,
+           IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc3,
+           IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc4);
 
-void test3(IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc1,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc2,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc3,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc4,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc1,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc2,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc3,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc4,
+void test3(IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc1,
+           IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc2,
+           IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc3,
+           IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc4,
+           IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc1,
+           IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc2,
+           IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc3,
+           IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc4,
            Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen1,
            Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen2,
            Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen3,
            Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen4);
 
-void test4(IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc1,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc2,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc3,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc4,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc1,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc2,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc3,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc4);
+void test4(IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc1,
+           IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc2,
+           IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc3,
+           IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc4,
+           IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc1,
+           IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc2,
+           IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc3,
+           IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc4);
 
-void test5(IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc1,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc2,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc3,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc4,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc1,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc2,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc3,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc4);
+void test5(IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc1,
+           IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc2,
+           IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc3,
+           IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc4,
+           IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc1,
+           IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc2,
+           IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc3,
+           IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc4);
 
-void test6(IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc1,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc2,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc3,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc4,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc1,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc2,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc3,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc4);
+void test6(IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc1,
+           IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc2,
+           IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc3,
+           IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc4,
+           IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc1,
+           IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc2,
+           IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc3,
+           IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc4);
 
-void test7(IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc1,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc2,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc3,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc4,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc1,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc2,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc3,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc4,
+void test7(IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc1,
+           IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc2,
+           IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc3,
+           IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc4,
+           IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc1,
+           IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc2,
+           IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc3,
+           IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc4,
            Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen1,
            Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen2,
            Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen3,
            Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen4);
 
-void test8(IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc1,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc2,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc3,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc4,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc1,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc2,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc3,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc4,
+void test8(IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc1,
+           IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc2,
+           IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc3,
+           IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc4,
+           IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc1,
+           IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc2,
+           IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc3,
+           IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc4,
            Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen1,
            Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen2,
            Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen3,
            Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen4);
+
+void test8(IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc1,
+           IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc2,
+           IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc3,
+           IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc4,
+           IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc1,
+           IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc2,
+           IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc3,
+           IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc4,
+           Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen1,
+           Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen2,
+           Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen3,
+           Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen4);
+
+void test9(IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc1,
+           IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc2,
+           IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc3,
+           IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc4,
+           IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc1,
+           IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc2,
+           IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc3,
+           IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc4,
+           Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen1,
+           Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen2,
+           Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen3,
+           Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen4);
+
+
 
 int main() {
 
     int cols1, cols2, cols3, cols4;
     int rows1, rows2, rows3, rows4;
-
+    int a = rand() % 1000 + 1;
+    int b = rand() % 1000 + 1;
+    
     if constexpr (IVSparseMAJOR) {
-        cols1 = 10;
-        cols2 = 10;
-        cols3 = 10;
-        cols4 = 10;
+        cols1 = a;
+        cols2 = a;
+        cols3 = a;
+        cols4 = a;
 
-        rows1 = 10;
-        rows2 = 5;
-        rows3 = 15;
+        rows1 = a;
+        rows2 = b;
+        rows3 = a + b;
         rows4 = 1;
     }
     else {
-        cols1 = 10;
-        cols2 = 5;
-        cols3 = 15;
+        cols1 = a;
+        cols2 = b;
+        cols3 = a + b;
         cols4 = 1;
 
-        rows1 = 10;
-        rows2 = 10;
-        rows3 = 10;
-        rows4 = 10;
+        rows1 = a;
+        rows2 = a;
+        rows3 = a;
+        rows4 = a;
     }
 
 
@@ -158,17 +188,17 @@ int main() {
     Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen_sparse3 = eigen3.sparseView();
     Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen_sparse4 = eigen4.sparseView();
 
-    IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc1(eigen_sparse1);
-    IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc1(eigen_sparse1);
+    IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc1(eigen_sparse1);
+    IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc1(eigen_sparse1);
 
-    IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc2(eigen_sparse2);
-    IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc2(eigen_sparse2);
+    IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc2(eigen_sparse2);
+    IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc2(eigen_sparse2);
 
-    IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc3(eigen_sparse3);
-    IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc3(eigen_sparse3);
+    IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc3(eigen_sparse3);
+    IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc3(eigen_sparse3);
 
-    IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc4(eigen_sparse4);
-    IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc4(eigen_sparse4);
+    IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc4(eigen_sparse4);
+    IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc4(eigen_sparse4);
 
     test1(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4, eigen1, eigen2, eigen3, eigen4);
     test2(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4);
@@ -177,20 +207,22 @@ int main() {
     test5(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4);
     test6(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4);
     test7(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4, eigen_sparse1, eigen_sparse2, eigen_sparse3, eigen_sparse4);
+    test8(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4, eigen_sparse1, eigen_sparse2, eigen_sparse3, eigen_sparse4);
+    test9(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4, eigen_sparse1, eigen_sparse2, eigen_sparse3, eigen_sparse4);
 
 
     return 0;
 }
 
 
-void test1(IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc1,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc2,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc3,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc4,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc1,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc2,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc3,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc4,
+void test1(IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc1,
+           IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc2,
+           IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc3,
+           IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc4,
+           IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc1,
+           IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc2,
+           IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc3,
+           IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc4,
            Eigen::Matrix<TYPE, -1, -1, EIGENMAJOR> eigen1,
            Eigen::Matrix<TYPE, -1, -1, EIGENMAJOR> eigen2,
            Eigen::Matrix<TYPE, -1, -1, EIGENMAJOR> eigen3,
@@ -231,17 +263,17 @@ void test1(IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc1,
 
 }
 
-void test2(IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc1,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc2,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc3,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc4,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc1,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc2,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc3,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc4) {
+void test2(IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc1,
+           IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc2,
+           IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc3,
+           IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc4,
+           IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc1,
+           IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc2,
+           IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc3,
+           IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc4) {
 
-    IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc5 = vcsc1;
-    IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc5 = ivcsc1;
+    IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc5 = vcsc1;
+    IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc5 = ivcsc1;
 
     vcsc5.append(vcsc2);
     ivcsc5.append(ivcsc2);
@@ -313,21 +345,21 @@ void test2(IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc1,
 }
 
 
-void test3(IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc1,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc2,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc3,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc4,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc1,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc2,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc3,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc4,
+void test3(IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc1,
+           IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc2,
+           IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc3,
+           IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc4,
+           IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc1,
+           IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc2,
+           IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc3,
+           IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc4,
            Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen1,
            Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen2,
            Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen3,
            Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen4) {
 
-    IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc5 = vcsc1;
-    IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc5 = ivcsc1;
+    IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc5 = vcsc1;
+    IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc5 = ivcsc1;
 
     vcsc5.append(eigen2);
     ivcsc5.append(eigen2);
@@ -395,8 +427,8 @@ void test3(IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc1,
     assert(vcsc4.sum() == ivcsc4.sum());
     assert(vcsc4.sum() == combinedSum);
 
-    IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc6 = vcsc4.transpose();
-    IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc6 = ivcsc4.transpose();
+    IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc6 = vcsc4.transpose();
+    IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc6 = ivcsc4.transpose();
 
     assert(vcsc6.sum() == vcsc4.sum());
     assert(ivcsc6.sum() == ivcsc4.sum());
@@ -419,23 +451,23 @@ void test3(IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc1,
 }
 
 
-void test4(IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc1,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc2,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc3,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc4,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc1,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc2,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc3,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc4) {
+void test4(IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc1,
+           IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc2,
+           IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc3,
+           IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc4,
+           IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc1,
+           IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc2,
+           IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc3,
+           IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc4) {
 
 
     ivcsc4.write("test");
-    IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc5("test");
+    IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc5("test");
 
     assert(ivcsc4.sum() == ivcsc5.sum());
 
     vcsc4.write("test2");
-    IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc5("test2");
+    IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc5("test2");
 
     assert(vcsc4.sum() == vcsc5.sum());
 
@@ -451,8 +483,8 @@ void test4(IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc1,
     vcsc4.append(vcsc3);
     vcsc4.write("test4");
 
-    IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc6("test3");
-    IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc6("test4");
+    IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc6("test3");
+    IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc6("test4");
 
     assert(ivcsc4.sum() == ivcsc6.sum());
     assert(vcsc4.sum() == vcsc6.sum());
@@ -465,17 +497,17 @@ void test4(IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc1,
 }
 
 
-void test5(IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc1,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc2,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc3,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc4,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc1,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc2,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc3,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc4) {
+void test5(IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc1,
+           IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc2,
+           IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc3,
+           IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc4,
+           IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc1,
+           IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc2,
+           IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc3,
+           IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc4) {
 
 
-    IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc5 = ivcsc1.transpose();
+    IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc5 = ivcsc1.transpose();
 
     // std::cout << ivcsc5 << std::endl << "-------------------" << std::endl;
     // std::cout << ivcsc1 << std::endl;
@@ -483,14 +515,14 @@ void test5(IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc1,
     assert(ivcsc5.sum() == ivcsc1.sum());
 
 
-    IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc6 = ivcsc2.transpose();
+    IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc6 = ivcsc2.transpose();
 
     // std::cout << ivcsc6 << std::endl << "-------------------" << std::endl;
     // std::cout << ivcsc2 << std::endl;
 
     assert(ivcsc6.sum() == ivcsc2.sum());
 
-    IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc5 = vcsc1.transpose();
+    IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc5 = vcsc1.transpose();
 
     // std::cout << vcsc5 << std::endl << "-------------------" << std::endl;
     // std::cout << vcsc1 << std::endl;
@@ -498,7 +530,7 @@ void test5(IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc1,
     assert(vcsc5.sum() == vcsc1.sum());
 
 
-    IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc6 = vcsc2.transpose();
+    IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc6 = vcsc2.transpose();
 
     // std::cout << vcsc6 << std::endl << "-------------------" << std::endl;
     // std::cout << vcsc2 << std::endl;
@@ -508,44 +540,44 @@ void test5(IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc1,
     // Eigen::Matrix<TYPE, -1, -1> mockEigen1 = Eigen::Matrix<TYPE, -1, -1>::Random(1000, 10);
     // Eigen::SparseMatrix<TYPE> mockEigenSparse1 = mockEigen1.sparseView();
 
-//     IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc7(mockEigenSparse1);
+//     IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc7(mockEigenSparse1);
 
 //     std::cout << vcsc7 << std::endl;
 
 //     std::cout << "-------------------" << std::endl;
 
-//     IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc8 = vcsc7.transpose();
+//     IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc8 = vcsc7.transpose();
 
 //     std::cout << vcsc8 << std::endl;
 }
 
 
-void test6(IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc1,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc2,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc3,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc4,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc1,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc2,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc3,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc4) {
+void test6(IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc1,
+           IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc2,
+           IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc3,
+           IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc4,
+           IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc1,
+           IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc2,
+           IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc3,
+           IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc4) {
 
     vcsc2.append(vcsc4);
     ivcsc2.append(ivcsc4);
 
-    IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc6 = vcsc2.transpose();
-    IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc6 = ivcsc2.transpose();
+    IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc6 = vcsc2.transpose();
+    IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc6 = ivcsc2.transpose();
 
     assert(ivcsc2.sum() == ivcsc6.sum());
     assert(vcsc2.sum() == vcsc6.sum());
 
-    IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc7 = vcsc6.transpose();
-    IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc7 = ivcsc6.transpose();
+    IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc7 = vcsc6.transpose();
+    IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc7 = ivcsc6.transpose();
 
     assert(ivcsc7.sum() == ivcsc2.sum());
     assert(vcsc7.sum() == vcsc2.sum());
 
-    IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc5 = ivcsc1.slice(0, 5);
-    IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc5 = vcsc1.slice(0, 5);
+    IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc5 = ivcsc1.slice(0, 5);
+    IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc5 = vcsc1.slice(0, 5);
 
     assert(ivcsc5.sum() == vcsc5.sum());
 
@@ -610,14 +642,14 @@ void test6(IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc1,
 
 }
 
-void test7(IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc1,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc2,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc3,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc4,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc1,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc2,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc3,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc4,
+void test7(IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc1,
+           IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc2,
+           IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc3,
+           IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc4,
+           IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc1,
+           IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc2,
+           IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc3,
+           IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc4,
            Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen1,
            Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen2,
            Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen3,
@@ -675,26 +707,26 @@ void test7(IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc1,
 }
 
 
-void test8(IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc1,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc2,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc3,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc4,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc1,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc2,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc3,
-           IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 3, IVSparseMAJOR> ivcsc4,
+void test8(IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc1,
+           IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc2,
+           IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc3,
+           IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc4,
+           IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc1,
+           IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc2,
+           IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc3,
+           IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc4,
            Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen1,
            Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen2,
            Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen3,
            Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen4) {
 
 
-    
+
     vcsc1 *= 7;
     ivcsc1 *= 7;
     assert(eigen1.sum() * 7 == vcsc1.sum());
     assert(eigen1.sum() * 7 == ivcsc1.sum());
-    
+
     vcsc2 *= 7;
     ivcsc2 *= 7;
     assert(eigen2.sum() * 7 == vcsc2.sum());
@@ -711,5 +743,73 @@ void test8(IVSparse::SparseMatrix<TYPE, INDEX_TYPE, 2, IVSparseMAJOR> vcsc1,
     assert(eigen4.sum() * 7 == vcsc4.sum());
     assert(eigen4.sum() * 7 == ivcsc4.sum());
 
+}
+
+
+void test9(IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc1,
+           IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc2,
+           IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc3,
+           IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc4,
+           IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc1,
+           IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc2,
+           IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc3,
+           IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc4,
+           Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen1,
+           Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen2,
+           Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen3,
+           Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen4) {
+
+
+    IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc5 = ivcsc1;
+    IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc5 = vcsc1;
+
+    assert(vcsc5.sum() == ivcsc5.sum());
+    assert(vcsc5.sum() == eigen1.sum());
+
+    IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc6 = ivcsc2;
+    IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc6 = vcsc2;
+
+    assert(vcsc6.sum() == ivcsc6.sum());
+    assert(vcsc6.sum() == eigen2.sum());
+
+    IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc7 = ivcsc3;
+    IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc7 = vcsc3;
+
+    assert(vcsc7.sum() == ivcsc7.sum());
+    assert(vcsc7.sum() == eigen3.sum());
+
+    IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc8 = ivcsc4;
+    IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc8 = vcsc4;
+
+    assert(vcsc8.sum() == ivcsc8.sum());
+    assert(vcsc8.sum() == eigen4.sum());
+
+    IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc9 = ivcsc5;
+    IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc9 = vcsc5;
+
+    assert(vcsc9.sum() == ivcsc9.sum());
+    assert(vcsc9.sum() == eigen1.sum());
+
+    IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc10;
+    IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc10;
+    Eigen::SparseMatrix<TYPE> eigen5;
+    Eigen::SparseMatrix<TYPE> eigen6;
+
+
+    vcsc10 = ivcsc5;
+    ivcsc10 = vcsc5;
+    eigen5 = vcsc5.toEigen();
+    eigen6 = ivcsc5.toEigen();
+
+    assert(vcsc10.sum() == ivcsc10.sum());
+    assert(vcsc10.sum() == eigen5.sum());
+    assert(eigen5.sum() == eigen1.sum());
+    assert(eigen6.sum() == eigen1.sum());
+
+    IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc11(ivcsc10);
+    IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc11(vcsc10);
+
+    assert(vcsc11.sum() == ivcsc11.sum());
+    assert(vcsc11.sum() == eigen5.sum());
 
 }

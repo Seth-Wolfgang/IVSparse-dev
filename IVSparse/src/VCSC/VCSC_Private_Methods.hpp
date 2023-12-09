@@ -10,41 +10,12 @@
 
 namespace IVSparse {
 
-    // Calculates the number of bytes needed to store a value
-    template <typename T, typename indexType, bool columnMajor>
-    inline uint8_t SparseMatrix<T, indexType, 2, columnMajor>::byteWidth(size_t size) {
-        if (size <= 0xFF) {
-            return 1;
-        }
-        else if (size <= 0xFFFF) {
-            return 2;
-        }
-        else if (size <= 0xFFFFFF) {
-            return 3;
-        }
-        else if (size <= 0xFFFFFFFF) {
-            return 4;
-        }
-        else if (size <= 0xFFFFFFFFFF) {
-            return 5;
-        }
-        else if (size <= 0xFFFFFFFFFFFF) {
-            return 6;
-        }
-        else if (size <= 0xFFFFFFFFFFFFFF) {
-            return 7;
-        }
-        else {
-            return 8;
-        }
-
-    }
 
     // private ostream operator helper
     template <typename T, typename indexT, bool columnMajor>
-    void SparseMatrix<T, indexT, 2, columnMajor>::printHelper(std::ostream& os) {
+    void VCSC<T, indexT, columnMajor>::printHelper(std::ostream& os) {
         os << std::endl;
-        os << "IVSparse Matrix" << std::endl;
+        os << "VCSC Matrix" << std::endl;
 
         // if the matrix is less than 100 rows and columns print the whole thing
         for (uint32_t i = 0; i < 100 && i < numRows; i++) {
@@ -59,9 +30,9 @@ namespace IVSparse {
 
     // private ostream operator helper
     template <typename T, typename indexT, bool columnMajor>
-    void SparseMatrix<T, indexT, 2, columnMajor>::printHelper(std::stringstream& os) {
+    void VCSC<T, indexT, columnMajor>::printHelper(std::stringstream& os) {
         os << std::endl;
-        os << "IVSparse Matrix" << std::endl;
+        os << "VCSC Matrix" << std::endl;
 
         // if the matrix is less than 100 rows and columns print the whole thing
         for (uint32_t i = 0; i < 100 && i < numRows; i++) {
@@ -73,14 +44,10 @@ namespace IVSparse {
         }
         os << std::endl;
     }
-
-
-
-
 
     // Encodes the value type of the matrix in a uint32_t
     template <typename T, typename indexT, bool columnMajor>
-    void SparseMatrix<T, indexT, 2, columnMajor>::encodeValueType() {
+    void VCSC<T, indexT, columnMajor>::encodeValueType() {
         uint8_t byte0 = sizeof(T);
         uint8_t byte1 = std::is_floating_point<T>::value ? 1 : 0;
         uint8_t byte2 = std::is_signed_v<T> ? 1 : 0;
@@ -91,7 +58,7 @@ namespace IVSparse {
 
     // Checks if the value type is correct for the matrix
     template <typename T, typename indexT, bool columnMajor>
-    void SparseMatrix<T, indexT, 2, columnMajor>::checkValueType() {
+    void VCSC<T, indexT, columnMajor>::checkValueType() {
         uint8_t byte0 = val_t & 0xFF;
         uint8_t byte1 = (val_t >> 8) & 0xFF;
         uint8_t byte2 = (val_t >> 16) & 0xFF;
@@ -105,7 +72,7 @@ namespace IVSparse {
 
     // performs some simple user checks on the matrices metadata
     template <typename T, typename indexT, bool columnMajor>
-    void SparseMatrix<T, indexT, 2, columnMajor>::userChecks() {
+    void VCSC<T, indexT, columnMajor>::userChecks() {
         assert((innerDim > 1 || outerDim > 1 || nnz > 1) &&
                "The matrix must have at least one row, column, and nonzero value");
         assert(std::is_floating_point<indexT>::value == false &&
@@ -123,7 +90,7 @@ namespace IVSparse {
 
     // Calculates the current byte size of the matrix in memory
     template <typename T, typename indexT, bool columnMajor>
-    void SparseMatrix<T, indexT, 2, columnMajor>::calculateCompSize() {
+    void VCSC<T, indexT, columnMajor>::calculateCompSize() {
         // set compSize to zero
         compSize = 0;
 
@@ -141,7 +108,7 @@ namespace IVSparse {
     // Compression Algorithm for going from CSC to VCSC
     template <typename T, typename indexT, bool columnMajor>
     template <typename T2, typename indexT2>
-    void SparseMatrix<T, indexT, 2, columnMajor>::compressCSC(T2* vals, indexT2* innerIndices, indexT2* outerPointers) {
+    void VCSC<T, indexT, columnMajor>::compressCSC(T2* vals, indexT2* innerIndices, indexT2* outerPointers) {
 
         // ---- Stage 1: Setup the Matrix ---- //
 

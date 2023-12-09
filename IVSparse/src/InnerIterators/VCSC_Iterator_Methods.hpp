@@ -14,7 +14,7 @@ namespace IVSparse {
 
     // Matrix Constructor
     template <typename T, typename indexT, bool columnMajor>
-    inline SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::InnerIterator(IVSparse::SparseMatrix<T, indexT, 2, columnMajor>& matrix, uint32_t vec) {
+    inline VCSC<T, indexT, columnMajor>::InnerIterator::InnerIterator(IVSparse::VCSC<T, indexT, columnMajor>& matrix, uint32_t vec) {
 
         #ifdef IVSPARSE_DEBUG
         assert(vec < matrix.outerDim && vec >= 0 && "The vector index is out of bounds!");
@@ -51,70 +51,36 @@ namespace IVSparse {
         this->count = counts[0];
     }
 
-    // Vector Constructor
-    template <typename T, typename indexT, bool columnMajor>
-    SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::InnerIterator(SparseMatrix<T, indexT, 2, columnMajor>::Vector& vector) {
-        // check if the vector is empty
-        if (vector.nonZeros() == 0) {
-            this->vals = nullptr;
-            this->counts = nullptr;
-            this->indices = nullptr;
-            this->val = nullptr;
-            this->index = 0;
-            this->count = 0;
-
-            countIndex = 0;
-            indexSize = 0;
-
-            return;
-        }
-
-        this->outer = 0;
-
-        // set the pointers to the correct locations
-        this->vals = vector.getValues();
-        this->counts = vector.getCounts();
-        this->indices = vector.getIndices();
-
-        this->valsSize = vector.uniqueVals();
-        this->indexSize = vector.nonZeros();
-
-        // set the values of the iterator
-        this->val = vals;
-        this->index = indices[0];
-        this->count = counts[0];
-    }
-
     //* Getters *//
 
     // Get the outer dimension
     template <typename T, typename indexT, bool columnMajor>
-    indexT SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::outerDim() {
+    indexT VCSC<T, indexT, columnMajor>::InnerIterator::outerDim() {
         return outer;
     }
 
     // Get the value
     template <typename T, typename indexT, bool columnMajor>
-    T SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::value() {
+    T VCSC<T, indexT, columnMajor>::InnerIterator::value() {
         return *val;
     }
 
     // Get the index
     template <typename T, typename indexT, bool columnMajor>
-    indexT SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::getIndex() {
+    indexT VCSC<T, indexT, columnMajor>::InnerIterator::getIndex() {
         return index;
     }
 
     // Get a pointer to the value
     template <typename T, typename indexT, bool columnMajor>
-    inline void SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::coeff(
+    inline void VCSC<T, indexT, columnMajor>::InnerIterator::coeff(
         T newValue) {
         *val = newValue;
     }
 
     // Get the current row
     template <typename T, typename indexT, bool columnMajor>
-    indexT SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::row() {
+    indexT VCSC<T, indexT, columnMajor>::InnerIterator::row() {
         if constexpr (!columnMajor) {
             return outer;
         }
@@ -125,7 +91,7 @@ namespace IVSparse {
 
     // Get the current column
     template <typename T, typename indexT, bool columnMajor>
-    indexT SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::col() {
+    indexT VCSC<T, indexT, columnMajor>::InnerIterator::col() {
         if constexpr (!columnMajor) {
             return index;
         }
@@ -138,37 +104,37 @@ namespace IVSparse {
 
     // Dereference Operator
     template <typename T, typename indexT, bool columnMajor>
-    T& SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::operator*() {
+    T& VCSC<T, indexT, columnMajor>::InnerIterator::operator*() {
         return *val;
     }
 
     // Equality Operator
     template <typename T, typename indexT, bool columnMajor>
-    bool SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::operator==(const InnerIterator& other) {
+    bool VCSC<T, indexT, columnMajor>::InnerIterator::operator==(const InnerIterator& other) {
         return values == other.values;
     }
 
     // Inequality Operator
     template <typename T, typename indexT, bool columnMajor>
-    bool SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::operator!=(const InnerIterator& other) {
+    bool VCSC<T, indexT, columnMajor>::InnerIterator::operator!=(const InnerIterator& other) {
         return values != other.values;
     }
 
     // Less Than Operator
     template <typename T, typename indexT, bool columnMajor>
-    bool SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::operator<(const InnerIterator& other) {
+    bool VCSC<T, indexT, columnMajor>::InnerIterator::operator<(const InnerIterator& other) {
         return values < other.values;
     }
 
     // Greater Than Operator
     template <typename T, typename indexT, bool columnMajor>
-    bool SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::operator>(const InnerIterator& other) {
+    bool VCSC<T, indexT, columnMajor>::InnerIterator::operator>(const InnerIterator& other) {
         return values > other.values;
     }
 
     // Increment Operator
     template <typename T, typename indexT, bool columnMajor>
-    inline void SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator::operator++() {
+    inline void VCSC<T, indexT, columnMajor>::InnerIterator::operator++() {
 
         // decriment count
         count--;

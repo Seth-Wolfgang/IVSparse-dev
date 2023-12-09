@@ -11,8 +11,8 @@
 namespace IVSparse {
 
     // Assignment Operator
-    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    SparseMatrix<T, indexT, compressionLevel, columnMajor>& SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator=(const IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>& other) {
+   template <typename T,  bool columnMajor>
+    IVCSC<T, columnMajor>& IVCSC<T, columnMajor>::operator=(const IVSparse::IVCSC<T, columnMajor>& other) {
 
         if (this != &other) {
             // free old data
@@ -68,7 +68,7 @@ namespace IVSparse {
                 }
 
                 try {
-                    data[i] = malloc(other.getVectorSize(i));
+                    data[i] = malloc(other.getVectorByteSize(i));
                 }
                 catch (std::bad_alloc& e) {
                     std::cerr << "Error: Could not allocate memory for IVSparse matrix"
@@ -76,19 +76,16 @@ namespace IVSparse {
                     exit(1);
                 }
 
-                memcpy(data[i], other.data[i], other.getVectorSize(i));
-                endPointers[i] = (uint8_t*)data[i] + other.getVectorSize(i);
+                memcpy(data[i], other.data[i], other.getVectorByteSize(i));
+                endPointers[i] = (uint8_t*)data[i] + other.getVectorByteSize(i);
             }
         }
         return *this;
     }
 
     // Equality Operator
-    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    bool SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator==(const SparseMatrix<T, indexT, compressionLevel, columnMajor>& other) const {
-        // bool SparseMatrix<T, indexT, 2               , columnMajor>::operator==(const SparseMatrix<T, indexT,                2, columnMajor>& other) const {
-
-            // check if the two matrices are equal
+   template <typename T,  bool columnMajor>
+    bool IVCSC<T, columnMajor>::operator==(const IVCSC<T, columnMajor>& other) const {
 
             // first check the metadata using memcompare
         if (memcmp(metadata, other.metadata, sizeof(uint32_t) * NUM_META_DATA) != 0)
@@ -96,22 +93,22 @@ namespace IVSparse {
 
         // iterate through the data and compare each element
         for (uint32_t i = 0; i < outerDim; i++) {
-            if (memcmp(data[i], other.data[i], getVectorSize(i)) != 0) return false;
+            if (memcmp(data[i], other.data[i], getVectorByteSize(i)) != 0) return false;
         }
 
         return true;
     }
 
     // Inequality Operator
-    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    bool SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator!=(const SparseMatrix<T, indexT, compressionLevel, columnMajor>& other) {
+   template <typename T,  bool columnMajor>
+    bool IVCSC<T, columnMajor>::operator!=(const IVCSC<T, columnMajor>& other) {
 
         return !(*this == other);
     }
 
     // Coefficent Access Operator
-    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    T SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator()(uint32_t row, uint32_t col) {
+   template <typename T,  bool columnMajor>
+    T IVCSC<T, columnMajor>::operator()(uint32_t row, uint32_t col) {
         #ifdef IVSPARSE_DEBUG
         // check if the row and column are in bounds
         if (row >= numRows || col >= numCols) {
@@ -127,8 +124,8 @@ namespace IVSparse {
         if (data[vector] == nullptr) return 0;
 
         // get an iterator for the desired vector
-        for (typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator it(*this, vector); it; ++it) {
-            if (it.getIndex() == (indexT)index) {
+        for (typename IVCSC<T, columnMajor>::InnerIterator it(*this, vector); it; ++it) {
+            if (it.getIndex() == (size_t)index) {
                 return it.value();
             }
         }
@@ -137,53 +134,31 @@ namespace IVSparse {
         return 0;
     }
 
-    // Vector Access Operator
-    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector
-        SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator[](uint32_t vec) {
-
-        #ifdef IVSPARSE_DEBUG
-        // check if the vector is out of bounds
-        assert((vec < outerDim && vec >= 0) && "Vector index out of bounds");
-        #endif
-
-        // return a IVSparse vector
-        IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector newVector(*this, vec);
-
-        return newVector;
-    }
 
     //* BLAS Operators *//
 
     // Scalar Multiplication
-    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor> SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator*(T scalar) {
+   template <typename T,  bool columnMajor>
+    IVSparse::IVCSC<T, columnMajor> IVCSC<T, columnMajor>::operator*(T scalar) {
         return scalarMultiply(scalar);
     }
 
     // In place scalar multiplication
-    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    void SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator*=(T scalar) {
+   template <typename T,  bool columnMajor>
+    void IVCSC<T, columnMajor>::operator*=(T scalar) {
         inPlaceScalarMultiply(scalar);
     }
 
-    // IVSparse Matrix * IVSparse Vector Multiplication
-    // template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    // Eigen::Matrix<T, -1, 1> SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator*(typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector& vec) {
-
-    //     return vectorMultiply(vec);
-    // }
-
     // Matrix Vector Multiplication (IVSparse Eigen -> Eigen)
-    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    Eigen::Matrix<T, -1, 1> SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator*(Eigen::Matrix<T, -1, 1>& vec) {
+   template <typename T,  bool columnMajor>
+    Eigen::Matrix<T, -1, 1> IVCSC<T, columnMajor>::operator*(Eigen::Matrix<T, -1, 1>& vec) {
 
         return vectorMultiply(vec);
     }
 
     // Matrix Matrix Multiplication (IVSparse Eigen -> Eigen)
-    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    Eigen::Matrix<T, -1, -1> SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator*(Eigen::Matrix<T, -1, -1>& mat) {
+   template <typename T,  bool columnMajor>
+    Eigen::Matrix<T, -1, -1> IVCSC<T, columnMajor>::operator*(Eigen::Matrix<T, -1, -1>& mat) {
 
         #ifdef IVSPARSE_DEBUG
         // check that the matrix is the correct size
@@ -200,15 +175,15 @@ namespace IVSparse {
         // #pragma omp parallel for
         // #endif
         for (uint32_t col = 0; col < numCols; col++) {
-            for (typename SparseMatrix<T, indexT, 3, columnMajor>::InnerIterator matIter(*this, col); matIter; ++matIter) {
+            for (typename IVCSC<T, columnMajor>::InnerIterator matIter(*this, col); matIter; ++matIter) {
                 newMatrix.col(matIter.row()) += matTranspose.col(col) * matIter.value();
             }
         }
         return newMatrix.transpose();
     }
 
-    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    Eigen::Matrix<T, -1, -1>  SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator* (const Eigen::Ref<const Eigen::Matrix<T, -1, -1>>& mat) {
+   template <typename T,  bool columnMajor>
+    Eigen::Matrix<T, -1, -1>  IVCSC<T, columnMajor>::operator* (const Eigen::Ref<const Eigen::Matrix<T, -1, -1>>& mat) {
 
         #ifdef IVSPARSE_DEBUG
         // check that the matrix is the correct size
@@ -224,15 +199,15 @@ namespace IVSparse {
         // Fix Parallelism issue (race condition because of partial sums and
         // orientation of Sparse * Dense)
         for (uint32_t col = 0; col < numCols; col++) {
-            for (typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator matIter(*this, col); matIter; ++matIter) {
+            for (typename IVCSC<T, columnMajor>::InnerIterator matIter(*this, col); matIter; ++matIter) {
                 newMatrix.col(matIter.row()) += matTranspose.col(col) * matIter.value();
             }
         }
         return newMatrix.transpose();
     }
 
-    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    inline Eigen::Matrix<T, -1, 1> SparseMatrix<T, indexT, compressionLevel, columnMajor>::operator*(const Eigen::Ref<const Eigen::Matrix<T, -1, 1>>& vec) {
+   template <typename T,  bool columnMajor>
+    inline Eigen::Matrix<T, -1, 1> IVCSC<T, columnMajor>::operator*(const Eigen::Ref<const Eigen::Matrix<T, -1, 1>>& vec) {
 
         #ifdef IVSPARSE_DEBUG
         // check that the vector is the correct size
@@ -245,7 +220,7 @@ namespace IVSparse {
 
         // iterate over the vector and multiply the corresponding row of the matrix by the vecIter value
         for (uint32_t i = 0; i < outerDim; i++) {
-            for (typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator matIter(*this, i); matIter; ++matIter) {
+            for (typename IVCSC<T, columnMajor>::InnerIterator matIter(*this, i); matIter; ++matIter) {
                 eigenTemp(matIter.row()) += vec(matIter.col()) * matIter.value();
             }
         }

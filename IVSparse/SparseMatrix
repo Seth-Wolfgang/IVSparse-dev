@@ -20,6 +20,11 @@ namespace IVSparse {
         const int RowMajor = 0;
         const int ColMajor = 1;
 
+        template <typename T, bool columnMajor>
+        class IVCSC;
+
+        template <typename T, typename indexT, bool columnMajor>
+        class VCSC;
 }
 
 // Library Preprocessor Directives
@@ -47,47 +52,29 @@ namespace IVSparse {
 #include <type_traits>
 #include <iomanip>
 #include <type_traits>
-// Library Namespaces
 
-// SparseMatrixBase Files
-// #include "src/IVSparse_SparseMatrixBase.hpp"
-// #include "src/IVSparse_Base_Methods.hpp"
-
-// SparseMatrix Level 3 Files
+// Class Declarations
+#include "src/VCSC/VCSC_SparseMatrix.hpp"
 #include "src/IVCSC/IVCSC_SparseMatrix.hpp"
+
+// IVCSC Files
 #include "src/IVCSC/IVCSC_Operators.hpp"
 #include "src/IVCSC/IVCSC_Private_Methods.hpp"
 #include "src/IVCSC/IVCSC_Methods.hpp"
 #include "src/IVCSC/IVCSC_Constructors.hpp"
 #include "src/IVCSC/IVCSC_BLAS.hpp"
-    // Vector and Iterator Files
-#include "src/Vectors/IVCSC_Vector.hpp"
-#include "src/Vectors/IVCSC_Vector_Methods.hpp"
+
+// IVCSC Iterator Files
 #include "src/InnerIterators/IVCSC_Iterator.hpp"
 #include "src/InnerIterators/IVCSC_Iterator_Methods.hpp"
 
-// SparseMatrix Level 2 Files
-#include "src/VCSC/VCSC_SparseMatrix.hpp"
+// VCSC Files
 #include "src/VCSC/VCSC_Operators.hpp"
 #include "src/VCSC/VCSC_Private_Methods.hpp"
 #include "src/VCSC/VCSC_Methods.hpp"
 #include "src/VCSC/VCSC_Constructors.hpp"
 #include "src/VCSC/VCSC_BLAS.hpp"
-    // Vector and Iterator Files
-#include "src/Vectors/VCSC_Vector.hpp"
-#include "src/Vectors/VCSC_Vector_Methods.hpp"
+
+// VCSC Iterator Files
 #include "src/InnerIterators/VCSC_Iterator.hpp"
 #include "src/InnerIterators/VCSC_Iterator_Methods.hpp"
-
-// SparseMatrix Level 1 Files
-#include "src/CSC/CSC_SparseMatrix.hpp"
-#include "src/CSC/CSC_Operators.hpp"
-#include "src/CSC/CSC_Private_Methods.hpp"
-#include "src/CSC/CSC_Methods.hpp"
-#include "src/CSC/CSC_Constructors.hpp"
-#include "src/CSC/CSC_BLAS.hpp"
-    // Vector and Iterator Files
-#include "src/Vectors/CSC_Vector.hpp"
-#include "src/Vectors/CSC_Vector_Methods.hpp"
-#include "src/InnerIterators/CSC_Iterator.hpp"
-#include "src/InnerIterators/CSC_Iterator_Methods.hpp"

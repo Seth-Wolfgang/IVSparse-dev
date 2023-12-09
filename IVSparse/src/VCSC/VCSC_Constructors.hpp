@@ -12,7 +12,7 @@ namespace IVSparse {
 
     // Destructor
     template <typename T, typename indexT, bool columnMajor>
-    SparseMatrix<T, indexT, 2, columnMajor>::~SparseMatrix() {
+    VCSC<T, indexT, columnMajor>::~VCSC() {
 
         // delete the meta data
         if (metadata != nullptr) {
@@ -55,7 +55,7 @@ namespace IVSparse {
 
     // Eigen Constructor
     template <typename T, typename indexT, bool columnMajor>
-    SparseMatrix<T, indexT, 2, columnMajor>::SparseMatrix(Eigen::SparseMatrix<T, 0>& mat) {
+    VCSC<T, indexT, columnMajor>::VCSC(Eigen::SparseMatrix<T, 0>& mat) {
 
         // make sure the matrix is compressed
         mat.makeCompressed();
@@ -76,7 +76,7 @@ namespace IVSparse {
 
     // Eigen Row Major Constructor
     template <typename T, typename indexT, bool columnMajor>
-    SparseMatrix<T, indexT, 2, columnMajor>::SparseMatrix(Eigen::SparseMatrix<T, 1>& mat) {
+    VCSC<T, indexT, columnMajor>::VCSC(Eigen::SparseMatrix<T, 1>& mat) {
         
         // make sure the matrix is compressed
         mat.makeCompressed();
@@ -97,33 +97,16 @@ namespace IVSparse {
 
     // Deep Copy Constructor
     template <typename T, typename indexT, bool columnMajor>
-    SparseMatrix<T, indexT, 2, columnMajor>::SparseMatrix(const IVSparse::SparseMatrix<T, indexT, 2, columnMajor>& other) {
+    VCSC<T, indexT, columnMajor>::VCSC(const IVSparse::VCSC<T, indexT, columnMajor>& other) {
         *this = other;
     }
 
     // Conversion Constructor
     template <typename T, typename indexT, bool columnMajor>
-    template <uint8_t otherCompressionLevel>
-    SparseMatrix<T, indexT, 2, columnMajor>::SparseMatrix(IVSparse::SparseMatrix<T, indexT, otherCompressionLevel, columnMajor>& other) {
-        // if already the right compression level
-        if constexpr (otherCompressionLevel == 2) {
-            *this = other;
-            return;
-        }
-
-        // make a temporary matrix of the correct compression level
-        IVSparse::SparseMatrix<T, indexT, 2, columnMajor> temp;
-
-        // convert other to the right compression level
-        if constexpr (otherCompressionLevel == 1) {
-            temp = other.toVCSC();
-        }
-        else if constexpr (otherCompressionLevel == 3) {
-            temp = other.toVCSC();
-        }
+    VCSC<T, indexT, columnMajor>::VCSC(IVSparse::IVCSC<T, columnMajor>& other) {
 
         // other should be the same compression level as this now
-        *this = temp;
+        *this = other.template toVCSC<indexT>();
 
         // run the user checks and calculate the compression size
         calculateCompSize();
@@ -136,8 +119,7 @@ namespace IVSparse {
     // Raw CSC Constructor
     template <typename T, typename indexT, bool columnMajor>
     template <typename T2, typename indexT2>
-    SparseMatrix<T, indexT, 2, columnMajor>::SparseMatrix(
-        T2* vals, indexT2* innerIndices, indexT2* outerPtr, uint32_t num_rows, uint32_t num_cols, uint32_t nnz) {
+    VCSC<T, indexT, columnMajor>::VCSC(T2* vals, indexT2* innerIndices, indexT2* outerPtr, uint32_t num_rows, uint32_t num_cols, uint32_t nnz) {
 
         #ifdef IVSPARSE_DEBUG
         assert(num_rows > 0 && num_cols > 0 && nnz > 0 &&
@@ -167,8 +149,7 @@ namespace IVSparse {
     // COO Constructor
     template <typename T, typename indexT, bool columnMajor>
     template <typename T2, typename indexT2>
-    SparseMatrix<T, indexT, 2, columnMajor>::SparseMatrix(
-        std::vector<std::tuple<indexT2, indexT2, T2>>& entries, uint64_t num_rows, uint32_t num_cols, uint32_t nnz) {
+    VCSC<T, indexT, columnMajor>::VCSC(std::vector<std::tuple<indexT2, indexT2, T2>>& entries, uint64_t num_rows, uint32_t num_cols, uint32_t nnz) {
 
         #ifdef IVSPARSE_DEBUG
         assert(num_rows > 0 && num_cols > 0 && nnz > 0 &&
@@ -177,7 +158,7 @@ namespace IVSparse {
 
         // see if the matrix is empty
         if (nnz == 0) {
-            *this = SparseMatrix<T, indexT, 2, columnMajor>();
+            *this = VCSC<T, indexT, columnMajor>();
         }
 
         // set the dimensions
@@ -312,111 +293,9 @@ namespace IVSparse {
         #endif
     }
 
-    // IVSparse Vector Constructor
-    template <typename T, typename indexT, bool columnMajor>
-    SparseMatrix<T, indexT, 2, columnMajor>::SparseMatrix(typename IVSparse::SparseMatrix<T, indexT, 2, columnMajor>::Vector& vec) {
-
-        // Get the dimensions and metadata
-        if (columnMajor) {
-            numRows = vec.getLength();
-            numCols = 1;
-            innerDim = numRows;
-            outerDim = numCols;
-        }
-        else {
-            numRows = 1;
-            numCols = vec.getLength();
-            innerDim = numCols;
-            outerDim = numRows;
-        }
-        nnz = vec.nonZeros();
-        encodeValueType();
-        index_t = sizeof(indexT);
-
-        metadata = new uint32_t[NUM_META_DATA];
-        metadata[0] = 2;
-        metadata[1] = innerDim;
-        metadata[2] = outerDim;
-        metadata[3] = nnz;
-        metadata[4] = val_t;
-        metadata[5] = index_t;
-
-        // allocate the vectors
-        try {
-            values = (T**)malloc(sizeof(T*));
-            counts = (indexT**)malloc(sizeof(indexT*));
-            indices = (indexT**)malloc(sizeof(indexT*));
-            valueSizes = (indexT*)malloc(sizeof(indexT));
-            indexSizes = (indexT*)malloc(sizeof(indexT));
-        }
-        catch (std::bad_alloc& ba) {
-            std::cerr << "bad_alloc caught: " << ba.what() << '\n';
-            throw std::runtime_error("Error: Could not allocate memory");
-        }
-
-        // check if the vector is empty
-        if (vec.byteSize() == 0) [[unlikely]] {
-            values[0] = nullptr;
-            counts[0] = nullptr;
-            indices[0] = nullptr;
-            valueSizes[0] = 0;
-            indexSizes[0] = 0;
-            return;
-            }
-
-            // set the sizes
-        valueSizes[0] = vec.uniqueVals();
-        indexSizes[0] = vec.nonZeros();
-
-        // allocate the memory for the one vector
-        try {
-            values[0] = (T*)malloc(sizeof(T) * valueSizes[0]);
-            counts[0] = (indexT*)malloc(sizeof(indexT) * valueSizes[0]);
-            indices[0] = (indexT*)malloc(sizeof(indexT) * indexSizes[0]);
-        }
-        catch (std::bad_alloc& ba) {
-            std::cerr << "bad_alloc caught: " << ba.what() << '\n';
-            throw std::runtime_error("Error: Could not allocate memory");
-        }
-
-        // copy the values
-        memcpy(values[0], vec.getValues(), sizeof(T) * valueSizes[0]);
-        memcpy(counts[0], vec.getCounts(), sizeof(indexT) * valueSizes[0]);
-        memcpy(indices[0], vec.getIndices(), sizeof(indexT) * indexSizes[0]);
-
-        // run the user checks and calculate the compression size
-        calculateCompSize();
-        #ifdef IVSPARSE_DEBUG
-        userChecks();
-        #endif
-    }  // end of IVSparse Vector Constructor
-
-    // Array of Vectors Constructor
-    template <typename T, typename indexT, bool columnMajor>
-    SparseMatrix<T, indexT, 2, columnMajor>::SparseMatrix(std::vector<typename IVSparse::SparseMatrix<T, indexT, 2, columnMajor>::Vector>& vecs) {
-
-        // Construct a one vector matrix to append to
-        IVSparse::SparseMatrix<T, indexT, 2, columnMajor> temp(vecs[0]);
-
-        // append the rest of the vectors
-        for (size_t i = 1; i < vecs.size(); i++) {
-            temp.append(vecs[i]);
-        }
-
-        // copy the temp matrix to this
-        *this = temp;
-
-        // run the user checks and calculate the compression size
-        calculateCompSize();
-
-        #ifdef IVSPARSE_DEBUG
-        userChecks();
-        #endif
-    }
-
     // File Constructor
     template <typename T, typename indexT, bool columnMajor>
-    SparseMatrix<T, indexT, 2, columnMajor>::SparseMatrix(const char* filename) {
+    VCSC<T, indexT, columnMajor>::VCSC(const char* filename) {
         // open the file
         FILE* fp = fopen(filename, "rb");
 
@@ -538,7 +417,7 @@ namespace IVSparse {
 
     // Private Tranpose Constructor
     template <typename T, typename indexT, bool columnMajor>
-    SparseMatrix<T, indexT, 2, columnMajor>::SparseMatrix(std::unordered_map<T, std::vector<indexT>>* maps, uint32_t num_rows, uint32_t num_cols) {
+    VCSC<T, indexT, columnMajor>::VCSC(std::unordered_map<T, std::vector<indexT>>* maps, uint32_t num_rows, uint32_t num_cols) {
 
         // set class variables
         if constexpr (columnMajor) {

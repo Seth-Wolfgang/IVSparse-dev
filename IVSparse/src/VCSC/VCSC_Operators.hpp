@@ -12,7 +12,7 @@ namespace IVSparse {
 
     // Assignment Operator
     template <typename T, typename indexT, bool columnMajor>
-    SparseMatrix<T, indexT, 2, columnMajor>& SparseMatrix<T, indexT, 2, columnMajor>::operator=(const IVSparse::SparseMatrix<T, indexT, 2, columnMajor>& other) {
+    VCSC<T, indexT, columnMajor>& VCSC<T, indexT, columnMajor>::operator=(const IVSparse::VCSC<T, indexT, columnMajor>& other) {
         // check if the matrices are the same
         if (this != &other) {
             // free the old data
@@ -93,8 +93,7 @@ namespace IVSparse {
                 // copy the data
                 memcpy(values[i], other.values[i], sizeof(T) * other.valueSizes[i]);
                 memcpy(counts[i], other.counts[i], sizeof(indexT) * other.valueSizes[i]);
-                memcpy(indices[i], other.indices[i],
-                       sizeof(indexT) * other.indexSizes[i]);
+                memcpy(indices[i], other.indices[i], sizeof(indexT) * other.indexSizes[i]);
 
                 valueSizes[i] = other.valueSizes[i];
                 indexSizes[i] = other.indexSizes[i];
@@ -106,9 +105,20 @@ namespace IVSparse {
 
     }  // end assignment operator
 
+    template <typename T, typename indexT, bool columnMajor>
+    VCSC<T, indexT, columnMajor>& VCSC<T, indexT, columnMajor>::operator=(IVSparse::IVCSC<T, columnMajor>& other) {
+
+        *this = other.template toVCSC<indexT>();
+
+        calculateCompSize();
+
+        return *this;
+    }
+
+
     // Equality Operator
     template <typename T, typename indexT, bool columnMajor>
-    bool SparseMatrix<T, indexT, 2, columnMajor>::operator==(const SparseMatrix<T, indexT, 2, columnMajor>& other) const {
+    bool VCSC<T, indexT, columnMajor>::operator==(const VCSC<T, indexT, columnMajor>& other) const {
         // first check the metadata using memcompare
         if (memcmp(metadata, other.metadata, sizeof(uint32_t) * NUM_META_DATA) != 0) {
             return false;
@@ -143,13 +153,13 @@ namespace IVSparse {
 
     // Inequality Operator
     template <typename T, typename indexT, bool columnMajor>
-    bool SparseMatrix<T, indexT, 2, columnMajor>::operator!=(const SparseMatrix<T, indexT, 2, columnMajor>& other) {
+    bool VCSC<T, indexT, columnMajor>::operator!=(const VCSC<T, indexT, columnMajor>& other) {
         return !(*this == other);
     }
 
     // Coefficent Access Operator
     template <typename T, typename indexT, bool columnMajor>
-    T SparseMatrix<T, indexT, 2, columnMajor>::operator()(uint32_t row, uint32_t col) {
+    T VCSC<T, indexT, columnMajor>::operator()(uint32_t row, uint32_t col) {
         #ifdef IVSPARSE_DEBUG
         // check if the row and column are in bounds
         assert((row < numRows && row >= 0) && "Row index out of bounds");
@@ -168,7 +178,7 @@ namespace IVSparse {
         uint32_t index = columnMajor ? row : col;
 
         // get an iterator for the desired vector
-        for (typename SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator it(*this, vector); it; ++it) {
+        for (typename VCSC<T, indexT, columnMajor>::InnerIterator it(*this, vector); it; ++it) {
             if (it.getIndex() == (indexT)index) {
                 return it.value();
             }
@@ -178,46 +188,24 @@ namespace IVSparse {
         return 0;
     }
 
-    // Vector Access Operator
-    template <typename T, typename indexT, bool columnMajor>
-    typename SparseMatrix<T, indexT, 2, columnMajor>::Vector SparseMatrix<T, indexT, 2, columnMajor>::operator[](uint32_t vec) {
-        #ifdef IVSPARSE_DEBUG
-        // check if the vector is out of bounds
-        assert((vec < outerDim && vec >= 0) && "Vector index out of bounds");
-        #endif
-
-        // return a IVSparse vector
-        typename IVSparse::SparseMatrix<T, indexT, 2, columnMajor>::Vector newVector(*this, vec);
-
-        return newVector;
-    }
-
 
     //* BLAS Operators *//
 
     // Scalar Multiplication
     template <typename T, typename indexT, bool columnMajor>
-    IVSparse::SparseMatrix<T, indexT, 2, columnMajor> SparseMatrix<T, indexT, 2, columnMajor>::operator*(T scalar) {
+    IVSparse::VCSC<T, indexT, columnMajor> VCSC<T, indexT, columnMajor>::operator*(T scalar) {
         return scalarMultiply(scalar);
     }
 
     // In place scalar multiplication
     template <typename T, typename indexT, bool columnMajor>
-    void SparseMatrix<T, indexT, 2, columnMajor>::operator*=(T scalar) {
+    void VCSC<T, indexT, columnMajor>::operator*=(T scalar) {
         inPlaceScalarMultiply(scalar);
     }
 
-    // // IVSparse Matrix * IVSparse Vector Multiplication
-    // template <typename T, typename indexT, bool columnMajor>
-    // Eigen::Matrix<T, -1, 1>SparseMatrix<T, indexT, 2,
-    // columnMajor>::operator*(SparseMatrix<T, indexT, 2, columnMajor>::Vector& vec)
-    // {
-    //     return vectorMultiply(vec);
-    // }
-
     // Matrix Vector Multiplication (IVSparse Eigen -> Eigen)
     template <typename T, typename indexT, bool columnMajor>
-    Eigen::Matrix<T, -1, 1> SparseMatrix<T, indexT, 2, columnMajor>::operator*(Eigen::Matrix<T, -1, 1>& vec) {
+    Eigen::Matrix<T, -1, 1> VCSC<T, indexT, columnMajor>::operator*(Eigen::Matrix<T, -1, 1>& vec) {
         return vectorMultiply(vec);
     }
 
@@ -225,7 +213,7 @@ namespace IVSparse {
 
     // Matrix Matrix Multiplication (IVSparse Eigen -> Eigen)
     template <typename T, typename indexT, bool columnMajor>
-    Eigen::Matrix<T, -1, -1> SparseMatrix<T, indexT, 2, columnMajor>::operator* (Eigen::Matrix<T, -1, -1>& mat) {
+    Eigen::Matrix<T, -1, -1> VCSC<T, indexT, columnMajor>::operator* (Eigen::Matrix<T, -1, -1>& mat) {
         #ifdef IVSPARSE_DEBUG
         // check that the matrix is the correct size
         if (mat.rows() != numCols)
@@ -240,9 +228,7 @@ namespace IVSparse {
         // Fix Parallelism issue (race condition because of partial sums and
         // orientation of Sparse * Dense)
         for (uint32_t col = 0; col < numCols; col++) {
-            for (typename SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator
-                 matIter(*this, col);
-                 matIter; ++matIter) {
+            for (typename VCSC<T, indexT, columnMajor>::InnerIterator matIter(*this, col); matIter; ++matIter) {
                 newMatrix.col(matIter.row()) += matTranspose.col(col) * matIter.value();
             }
         }
@@ -251,7 +237,7 @@ namespace IVSparse {
 
 
     template <typename T, typename indexT, bool columnMajor>
-    Eigen::Matrix<T, -1, -1>  SparseMatrix<T, indexT, 2, columnMajor>::operator* (const Eigen::Ref<const Eigen::Matrix<T, -1, -1>>& mat) {
+    Eigen::Matrix<T, -1, -1>  VCSC<T, indexT, columnMajor>::operator* (const Eigen::Ref<const Eigen::Matrix<T, -1, -1>>& mat) {
 
         #ifdef IVSPARSE_DEBUG
         // check that the matrix is the correct size
@@ -267,7 +253,7 @@ namespace IVSparse {
         // Fix Parallelism issue (race condition because of partial sums and
         // orientation of Sparse * Dense)
         for (uint32_t col = 0; col < numCols; col++) {
-            for (typename SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator matIter(*this, col); matIter; ++matIter) {
+            for (typename VCSC<T, indexT, columnMajor>::InnerIterator matIter(*this, col); matIter; ++matIter) {
                 newMatrix.col(matIter.row()) += matTranspose.col(col) * matIter.value();
             }
         }
@@ -275,7 +261,7 @@ namespace IVSparse {
     }
 
     template <typename T, typename indexT, bool columnMajor>
-    inline Eigen::Matrix<T, -1, 1> SparseMatrix<T, indexT, 2, columnMajor>::operator*(const Eigen::Ref<const Eigen::Matrix<T, -1, 1>>& vec) {
+    inline Eigen::Matrix<T, -1, 1> VCSC<T, indexT, columnMajor>::operator*(const Eigen::Ref<const Eigen::Matrix<T, -1, 1>>& vec) {
 
         #ifdef IVSPARSE_DEBUG
         // check that the vector is the correct size
@@ -289,7 +275,7 @@ namespace IVSparse {
         // iterate over the vector and multiply the corresponding row of the matrix by the vecIter value
 
         for (uint32_t i = 0; i < outerDim; i++) {
-            for (typename SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator matIter(*this, i); matIter; ++matIter) {
+            for (typename VCSC<T, indexT, columnMajor>::InnerIterator matIter(*this, i); matIter; ++matIter) {
                 eigenTemp(matIter.row()) += vec(matIter.col()) * matIter.value();
             }
         }

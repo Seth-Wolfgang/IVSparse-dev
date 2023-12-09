@@ -13,15 +13,15 @@ namespace IVSparse {
     //* Constructors *//
 
     // Matrix Constructor
-    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    inline SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator::InnerIterator(IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>& matrix, uint32_t vec) {
+    template<typename T, bool columnMajor>
+    inline IVCSC<T, columnMajor>::InnerIterator::InnerIterator(IVSparse::IVCSC<T, columnMajor>& matrix, uint32_t vec) {
         // check if the vector is out of bounds
         #ifdef IVSPARSE_DEBUG
         assert((vec < matrix.outerDim && vec >= 0) && "Vector index out of bounds.");
         #endif
 
         // check if data is nullptr
-        if (matrix.vectorPointer(vec) == nullptr || matrix.getVectorSize(vec) == 0) {
+        if (matrix.vectorPointer(vec) == nullptr || matrix.getVectorByteSize(vec) == 0) {
             // Trips bool operator
             data = (void*)0xFFFFFFFFFFFFFFFF;
             endPtr = (void*)0xFFFFFFFFFFFFFFFF;
@@ -35,41 +35,10 @@ namespace IVSparse {
         data = matrix.vectorPointer(vec);
 
         // Sets the end pointer
-        endPtr = (uint8_t*)data + matrix.getVectorSize(vec);
+        endPtr = (uint8_t*)data + matrix.getVectorByteSize(vec);
 
         val = (T*)data;
         data = (uint8_t*)data + sizeof(T);
-
-        // Sets row width to the width of the first run
-        indexWidth = *(uint8_t*)data;
-        data = (uint8_t*)data + sizeof(uint8_t);
-
-        decodeIndex();
-        index = newIndex;
-    }
-
-    // Vector Constructor
-    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator::InnerIterator(SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector& vector) {
-
-        // set the column to -1
-        this->outer = 0;
-
-        // set the data pointer
-        data = vector.begin();
-
-        // If the column is all zeros, set the data to the end pointer
-        if (data == nullptr) {
-            // Trips bool operator
-            data = endPtr;
-            return;
-        }
-
-        val = (T*)data;
-        data = (uint8_t*)data + sizeof(T);
-
-        // set the end pointer
-        endPtr = vector.end();
 
         // Sets row width to the width of the first run
         indexWidth = *(uint8_t*)data;
@@ -82,38 +51,38 @@ namespace IVSparse {
     //* Getters *//
 
     // If the iterator is at a new run
-    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    inline bool SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator::isNewRun() {
+    template<typename T, bool columnMajor>
+    inline bool IVCSC<T, columnMajor>::InnerIterator::isNewRun() {
         return firstIndex;
     }
 
     // Get the current outer dimension of the iterator
-    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    indexT SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator::outerDim() {
+    template<typename T, bool columnMajor>
+    size_t IVCSC<T, columnMajor>::InnerIterator::outerDim() {
         return outer;
     }
 
     // Get the current value of the iterator
-    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    T SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator::value() {
+    template<typename T, bool columnMajor>
+    T IVCSC<T, columnMajor>::InnerIterator::value() {
         return *val;
     }
 
     // Get the current index of the iterator
-    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    indexT SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator::getIndex() {
+    template<typename T, bool columnMajor>
+    size_t IVCSC<T, columnMajor>::InnerIterator::getIndex() {
         return index;
     }
 
     // Updates the value of the iterator to newValue
-    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    inline void SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator::coeff(T newValue) {
+    template<typename T, bool columnMajor>
+    inline void IVCSC<T, columnMajor>::InnerIterator::coeff(T newValue) {
         *val = newValue;
     }
 
     // Current row of the iterator
-    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    indexT SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator::row() {
+    template<typename T, bool columnMajor>
+    size_t IVCSC<T, columnMajor>::InnerIterator::row() {
         if constexpr (!columnMajor) {
             return outer;
         }
@@ -123,8 +92,8 @@ namespace IVSparse {
     }
 
     // Current column of the iterator
-    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    indexT SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator::col() {
+    template<typename T, bool columnMajor>
+    size_t IVCSC<T, columnMajor>::InnerIterator::col() {
         if constexpr (!columnMajor) {
             return index;
         }
@@ -136,32 +105,32 @@ namespace IVSparse {
     //* Private Class Methods *//
 
     // Index decoder
-    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    inline void __attribute__((hot)) SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator::decodeIndex() {
+    template<typename T, bool columnMajor>
+    inline void __attribute__((hot)) IVCSC<T, columnMajor>::InnerIterator::decodeIndex() {
         switch (indexWidth) {
         case 1:
-            newIndex = static_cast<indexT>(*static_cast<uint8_t*>(data));
+            newIndex = static_cast<size_t>(*static_cast<uint8_t*>(data));
             break;
         case 2:
-            newIndex = static_cast<indexT>(*static_cast<uint16_t*>(data));
+            newIndex = static_cast<size_t>(*static_cast<uint16_t*>(data));
             break;
         case 3:
-            newIndex = static_cast<indexT>(*static_cast<uint32_t*>(data) & 0xFFFFFF);
+            newIndex = static_cast<size_t>(*static_cast<uint32_t*>(data) & 0xFFFFFF);
             break;
         case 4:
-            newIndex = static_cast<indexT>(*static_cast<uint32_t*>(data));
+            newIndex = static_cast<size_t>(*static_cast<uint32_t*>(data));
             break;
         case 5:
-            newIndex = static_cast<indexT>(*static_cast<uint64_t*>(data) & 0xFFFFFFFFFF);
+            newIndex = static_cast<size_t>(*static_cast<uint64_t*>(data) & 0xFFFFFFFFFF);
             break;
         case 6:
-            newIndex = static_cast<indexT>(*static_cast<uint64_t*>(data) & 0xFFFFFFFFFFFF);
+            newIndex = static_cast<size_t>(*static_cast<uint64_t*>(data) & 0xFFFFFFFFFFFF);
             break;
         case 7:
-            newIndex = static_cast<indexT>(*static_cast<uint64_t*>(data) & 0xFFFFFFFFFFFFFF);
+            newIndex = static_cast<size_t>(*static_cast<uint64_t*>(data) & 0xFFFFFFFFFFFFFF);
             break;
         case 8:
-            newIndex = static_cast<indexT>(*static_cast<uint64_t*>(data));
+            newIndex = static_cast<size_t>(*static_cast<uint64_t*>(data));
             break;
         default:
             printf("(IVSparse): Invalid index width (%d) after index (%ld, %ld). IVCSC matrix constructed incorrectly.\n", indexWidth, index, outer);
@@ -173,38 +142,38 @@ namespace IVSparse {
     //* Operator Overloads *//
 
     // Dereference Operator
-    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    T& SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator::operator*() {
+    template<typename T, bool columnMajor>
+    T& IVCSC<T, columnMajor>::InnerIterator::operator*() {
         return *val;
     }
 
     // Equality Operator
-    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    bool SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator::operator==(const InnerIterator& other) {
+    template<typename T, bool columnMajor>
+    bool IVCSC<T, columnMajor>::InnerIterator::operator==(const InnerIterator& other) {
         return data == other.getIndex();
     }
 
     // Inequality Operator
-    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    bool SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator::operator!=(const InnerIterator& other) {
+    template<typename T, bool columnMajor>
+    bool IVCSC<T, columnMajor>::InnerIterator::operator!=(const InnerIterator& other) {
         return data != other.getIndex();
     }
 
     // Less Than Operator
-    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    bool SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator::operator<(const InnerIterator& other) {
+    template<typename T, bool columnMajor>
+    bool IVCSC<T, columnMajor>::InnerIterator::operator<(const InnerIterator& other) {
         return data < other.getIndex();
     }
 
     // Greater Than Operator
-    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    bool SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator::operator>(const InnerIterator& other) {
+    template<typename T, bool columnMajor>
+    bool IVCSC<T, columnMajor>::InnerIterator::operator>(const InnerIterator& other) {
         return data > other.getIndex();
     }
 
     // Increment Operator
-    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    void SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator::operator++() {
+    template<typename T, bool columnMajor>
+    void IVCSC<T, columnMajor>::InnerIterator::operator++() {
         data = (uint8_t*)data + indexWidth;
         decodeIndex();
 
@@ -213,7 +182,7 @@ namespace IVSparse {
         if (newIndex == 0) {
             if (data >= (uint8_t*)endPtr - indexWidth) [[unlikely]] {
                 return;
-            }
+                }
 
             data = (uint8_t*)data + indexWidth;
 

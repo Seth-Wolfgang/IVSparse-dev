@@ -14,9 +14,9 @@ namespace IVSparse {
 
     // Scalar Multiply
     template <typename T, typename indexT, bool columnMajor>
-    inline IVSparse::SparseMatrix<T, indexT, 2, columnMajor> SparseMatrix<T, indexT, 2, columnMajor>::scalarMultiply(T scalar) {
+    inline IVSparse::VCSC<T, indexT, columnMajor> VCSC<T, indexT, columnMajor>::scalarMultiply(T scalar) {
         // Deep copy the matrix
-        IVSparse::SparseMatrix<T, indexT, 2, columnMajor> newMatrix(*this);
+        IVSparse::VCSC<T, indexT, columnMajor> newMatrix(*this);
 
         // If performance vectors are active use them for the scalar multiplication
         #ifdef IVSPARSE_HAS_OPENMP
@@ -32,7 +32,7 @@ namespace IVSparse {
 
     // In Place Scalar Multiply
     template <typename T, typename indexT, bool columnMajor>
-    inline void SparseMatrix<T, indexT, 2, columnMajor>::inPlaceScalarMultiply(T scalar) {
+    inline void VCSC<T, indexT, columnMajor>::inPlaceScalarMultiply(T scalar) {
         // if performance vectors are active use them for the scalar multiplication
         #ifdef IVSPARSE_HAS_OPENMP
         #pragma omp parallel for
@@ -48,7 +48,7 @@ namespace IVSparse {
 
     // Matrix Vector Multiplication (IVSparse::SparseMatrix * Eigen::Vector)
     template <typename T, typename indexT, bool columnMajor>
-    inline Eigen::Matrix<T, -1, 1> SparseMatrix<T, indexT, 2, columnMajor>::vectorMultiply(Eigen::Matrix<T, -1, 1>& vec) {
+    inline Eigen::Matrix<T, -1, 1> VCSC<T, indexT, columnMajor>::vectorMultiply(Eigen::Matrix<T, -1, 1>& vec) {
 
         #ifdef IVSPARSE_DEBUG
         // check that the vector is the correct size
@@ -61,36 +61,11 @@ namespace IVSparse {
 
         // iterate over the vector and multiply the corresponding row of the matrix by the vecIter value
         for (uint32_t i = 0; i < outerDim; i++) {
-            for (typename SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator matIter(*this, i); matIter; ++matIter) {
+            for (typename VCSC<T, indexT, columnMajor>::InnerIterator matIter(*this, i); matIter; ++matIter) {
                 eigenTemp(matIter.row()) += vec(matIter.col()) * matIter.value();
             }
         }
         return eigenTemp;
-    }
-
-    // Matrix Vector Multiplication (IVSparse::SparseMatrix *
-    // IVSparse::SparseMatrix::Vector)
-    template <typename T, typename indexT, bool columnMajor>
-    inline Eigen::Matrix<T, -1, 1> SparseMatrix<T, indexT, 2, columnMajor>::vectorMultiply(typename SparseMatrix<T, indexT, 2, columnMajor>::Vector& vec) {
-
-        #ifdef IVSPARSE_DEBUG
-        if (vec.length() != outerDim)
-            throw std::invalid_argument(
-                "The vector must be the same size as the number of columns in the "
-                "matrix!");
-        #endif
-
-        Eigen::Matrix<T, -1, 1> newVector = Eigen::Matrix<T, -1, 1>::Zero(innerDim, 1);
-
-        for (typename SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator vecIter(vec);
-             vecIter; ++vecIter) {
-            for (typename SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator
-                 matIter(*this, vecIter.row());
-                 matIter; ++matIter) {
-                newVector(matIter.row()) += matIter.value() * vecIter.value();
-            }
-        }
-        return newVector;
     }
 
     //* BLAS Level 3 Routines *//
@@ -100,7 +75,7 @@ namespace IVSparse {
 
     // Finds the Outer Sum of the Matrix
     template <typename T, typename indexT, bool columnMajor>
-    inline std::vector<T> SparseMatrix<T, indexT, 2, columnMajor>::outerSum() {
+    inline std::vector<T> VCSC<T, indexT, columnMajor>::outerSum() {
         std::vector<T> outerSum = std::vector<T>(outerDim);
 
         #ifdef IVSPARSE_HAS_OPENMP
@@ -116,14 +91,14 @@ namespace IVSparse {
 
     // Finds the Inner Sum of the Matrix
     template <typename T, typename indexT, bool columnMajor>
-    inline std::vector<T> SparseMatrix<T, indexT, 2, columnMajor>::innerSum() {
+    inline std::vector<T> VCSC<T, indexT, columnMajor>::innerSum() {
         std::vector<T> innerSum = std::vector<T>(innerDim);
 
         #ifdef IVSPARSE_HAS_OPENMP
         #pragma omp parallel for
         #endif
         for (int i = 0; i < outerDim; i++) {
-            for (typename SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator it(*this, i);it; ++it) {
+            for (typename VCSC<T, indexT, columnMajor>::InnerIterator it(*this, i);it; ++it) {
                 innerSum[it.row()] += it.value();
             }
         }
@@ -132,7 +107,7 @@ namespace IVSparse {
 
     // Finds the maximum value in each column
     template <typename T, typename indexT, bool columnMajor>
-    inline std::vector<T> SparseMatrix<T, indexT, 2, columnMajor>::maxColCoeff() {
+    inline std::vector<T> VCSC<T, indexT, columnMajor>::maxColCoeff() {
         std::vector<T> maxCoeff = std::vector<T>(innerDim);
 
         #ifdef IVSPARSE_HAS_OPENMP
@@ -150,14 +125,14 @@ namespace IVSparse {
 
     // Finds the maximum value in each row
     template <typename T, typename indexT, bool columnMajor>
-    inline std::vector<T> SparseMatrix<T, indexT, 2, columnMajor>::maxRowCoeff() {
+    inline std::vector<T> VCSC<T, indexT, columnMajor>::maxRowCoeff() {
         std::vector<T> maxCoeff = std::vector<T>(innerDim);
 
         #ifdef IVSPARSE_HAS_OPENMP
         #pragma omp parallel for
         #endif
         for (int i = 0; i < outerDim; i++) {
-            for (typename SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator it(*this, i);it; ++it) {
+            for (typename VCSC<T, indexT, columnMajor>::InnerIterator it(*this, i);it; ++it) {
                 if (it.value() > maxCoeff[it.row()]) {
                     maxCoeff[it.row()] = it.value();
                 }
@@ -168,7 +143,7 @@ namespace IVSparse {
 
     // Finds the minimum value in each column
     template <typename T, typename indexT, bool columnMajor>
-    inline std::vector<T> SparseMatrix<T, indexT, 2, columnMajor>::minColCoeff() {
+    inline std::vector<T> VCSC<T, indexT, columnMajor>::minColCoeff() {
         std::vector<T> minCoeff = std::vector<T>(innerDim);
 
         #ifdef IVSPARSE_HAS_OPENMP
@@ -186,7 +161,7 @@ namespace IVSparse {
 
     // Finds the minimum value in each row
     template <typename T, typename indexT, bool columnMajor>
-    inline std::vector<T> SparseMatrix<T, indexT, 2, columnMajor>::minRowCoeff() {
+    inline std::vector<T> VCSC<T, indexT, columnMajor>::minRowCoeff() {
         std::vector<T> minCoeff = std::vector<T>(innerDim);
         memset(minCoeff.data(), 0xF, innerDim * sizeof(T));
 
@@ -194,7 +169,7 @@ namespace IVSparse {
         #pragma omp parallel for
         #endif
         for (int i = 0; i < outerDim; i++) {
-            for (typename SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator it(*this, i);it; ++it) {
+            for (typename VCSC<T, indexT, columnMajor>::InnerIterator it(*this, i);it; ++it) {
                 if (it.value() < minCoeff[it.row()]) {
                     minCoeff[it.row()] = it.value();
                 }
@@ -205,7 +180,7 @@ namespace IVSparse {
 
     template <typename T, typename indexT, bool columnMajor>
     template<typename T2, std::enable_if_t<std::is_integral<T2>::value, bool>>
-    inline int64_t SparseMatrix<T, indexT, 2, columnMajor>::trace() {
+    inline int64_t VCSC<T, indexT, columnMajor>::trace() {
 
         #ifdef IVSPARSE_DEBUG
         assert(innerDim == outerDim && "Trace is only defined for square matrices!");
@@ -213,7 +188,7 @@ namespace IVSparse {
 
         int64_t trace = 0;
         for (int i = 0; i < outerDim; i++) {
-            for (typename SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator it(*this, i); it; ++it) {
+            for (typename VCSC<T, indexT, columnMajor>::InnerIterator it(*this, i); it; ++it) {
                 if (it.row() == i) {
                     trace += it.value();
                 }
@@ -227,7 +202,7 @@ namespace IVSparse {
 
     template <typename T, typename indexT, bool columnMajor>
     template<typename T2, std::enable_if_t<std::is_floating_point<T2>::value, bool>>
-    inline double SparseMatrix<T, indexT, 2, columnMajor>::trace() {
+    inline double VCSC<T, indexT, columnMajor>::trace() {
 
         #ifdef IVSPARSE_DEBUG
         assert(innerDim == outerDim && "Trace is only defined for square matrices!");
@@ -235,7 +210,7 @@ namespace IVSparse {
 
         double trace = 0;
         for (int i = 0; i < outerDim; i++) {
-            for (typename SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator it(*this, i); it; ++it) {
+            for (typename VCSC<T, indexT, columnMajor>::InnerIterator it(*this, i); it; ++it) {
                 if (it.row() == i) {
                     trace += it.value();
                 }
@@ -249,7 +224,7 @@ namespace IVSparse {
 
     // Calculates the sum of the matrix
     // template <typename std::is_floating_point<T>, typename indexT, bool columnMajor>
-    // inline double SparseMatrix<T, indexT, 2, columnMajor>::sum() {
+    // inline double VCSC<T, indexT, columnMajor>::sum() {
     //     T sum = 0;
     //     // std::vector<T> outerSum = this->outerSum();
 
@@ -266,7 +241,7 @@ namespace IVSparse {
 
     template <typename T, typename indexT, bool columnMajor>
     template<typename T2, std::enable_if_t<std::is_integral<T2>::value, bool>>
-    inline int64_t SparseMatrix<T, indexT, 2, columnMajor>::sum() {
+    inline int64_t VCSC<T, indexT, columnMajor>::sum() {
         int64_t sum = 0;
 
         #ifdef IVSPARSE_HAS_OPENMP
@@ -283,7 +258,7 @@ namespace IVSparse {
 
     template <typename T, typename indexT, bool columnMajor>
     template<typename T2, std::enable_if_t<std::is_floating_point<T2>::value, bool>>
-    inline double SparseMatrix<T, indexT, 2, columnMajor>::sum() {
+    inline double VCSC<T, indexT, columnMajor>::sum() {
         double sum = 0;
 
         #ifdef IVSPARSE_HAS_OPENMP
@@ -300,7 +275,7 @@ namespace IVSparse {
 
     // Calculates the norm of the matrix
     template <typename T, typename indexT, bool columnMajor>
-    inline double SparseMatrix<T, indexT, 2, columnMajor>::norm() {
+    inline double VCSC<T, indexT, columnMajor>::norm() {
         double norm = 0;
 
         #ifdef IVSPARSE_HAS_OPENMP
@@ -316,7 +291,7 @@ namespace IVSparse {
 
     // Finds the length of a certain column
     template <typename T, typename indexT, bool columnMajor>
-    inline double SparseMatrix<T, indexT, 2, columnMajor>::vectorLength(uint32_t col) {
+    inline double VCSC<T, indexT, columnMajor>::vectorLength(uint32_t col) {
 
         #ifdef IVSPARSE_DEBUG
         assert(col < outerDim && col >= 0 && "Column index out of bounds!");

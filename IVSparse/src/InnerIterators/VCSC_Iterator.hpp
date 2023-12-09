@@ -19,7 +19,7 @@ namespace IVSparse {
      * vector in the VCSC Matrix instead of a outer pointers vector.
      */
     template <typename T, typename indexT, bool columnMajor>
-    class SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator {
+    class VCSC<T, indexT, columnMajor>::InnerIterator {
         private:
         //* Private Class Variables *//
 
@@ -58,14 +58,7 @@ namespace IVSparse {
          * will forward traverse over the given vector of the matrix. The traversal
          * is sorted by value in ascending order.
          */
-        InnerIterator(SparseMatrix<T, indexT, 2, columnMajor>& mat, uint32_t col);
-
-        /**
-         * VCSC Vector InnerIterator Constructor \n \n
-         * Same as the previous constructor but for a single standalone vector.
-         * Can be used in the same way as the previous constructor.
-         */
-        InnerIterator(SparseMatrix<T, indexT, 2, columnMajor>::Vector& vec);
+        InnerIterator(VCSC<T, indexT, columnMajor>& mat, uint32_t col);
 
         ///@}
 

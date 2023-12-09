@@ -13,8 +13,8 @@ namespace IVSparse {
     //* Getters *//
 
     // Gets the element stored at the given row and column
-    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    T SparseMatrix<T, indexT, compressionLevel, columnMajor>::coeff(uint32_t row, uint32_t col) {
+    template<typename T, bool columnMajor>
+    T IVCSC<T, columnMajor>::coeff(uint32_t row, uint32_t col) {
 
         #ifdef IVSPARSE_DEBUG
         // check that the row and column are valid
@@ -26,14 +26,14 @@ namespace IVSparse {
     }
 
     // Check for Column Major
-    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    bool SparseMatrix<T, indexT, compressionLevel, columnMajor>::isColumnMajor() const {
+    template<typename T, bool columnMajor>
+    bool IVCSC<T, columnMajor>::isColumnMajor() const {
         return columnMajor;
     }
 
     // Returns a pointer to the given vector
-    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    void* SparseMatrix<T, indexT, compressionLevel, columnMajor>::vectorPointer(uint32_t vec) {
+    template<typename T, bool columnMajor>
+    void* IVCSC<T, columnMajor>::vectorPointer(uint32_t vec) {
 
         #ifdef IVSPARSE_DEBUG
         assert(vec < outerDim && vec >= 0 && "Invalid vector!");
@@ -42,19 +42,9 @@ namespace IVSparse {
         return data[vec];
     }
 
-    // Gets a IVSparse vector copy of the given vector
-    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::Vector SparseMatrix<T, indexT, compressionLevel, columnMajor>::getVector(uint32_t vec) {
-        #ifdef IVSPARSE_DEBUG
-        assert(vec < outerDim && vec >= 0 && "Invalid vector!");
-        #endif
-
-        return (*this)[vec];
-    }
-
     // Gets the byte size of a given vector
-    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    size_t SparseMatrix<T, indexT, compressionLevel, columnMajor>::getVectorSize(uint32_t vec) const {
+    template<typename T, bool columnMajor>
+    size_t IVCSC<T, columnMajor>::getVectorByteSize(uint32_t vec) const {
         #ifdef IVSPARSE_DEBUG
         assert(vec < outerDim && vec >= 0 && "Invalid vector!");
         #endif
@@ -68,8 +58,8 @@ namespace IVSparse {
     //* Utility Methods *//
 
     // Writes the matrix to file
-    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    void SparseMatrix<T, indexT, compressionLevel, columnMajor>::write(const char* filename) {
+    template<typename T, bool columnMajor>
+    void IVCSC<T, columnMajor>::write(const char* filename) {
 
         // Open the file
         FILE* fp = fopen(filename, "wb+");
@@ -93,10 +83,10 @@ namespace IVSparse {
     }
 
     // Prints the matrix dense to console
-    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    void SparseMatrix<T, indexT, compressionLevel, columnMajor>::print() {
+    template<typename T, bool columnMajor>
+    void IVCSC<T, columnMajor>::print() {
         std::cout << std::endl;
-        std::cout << "IVSparse Matrix" << std::endl;
+        std::cout << "IVCSC Matrix" << std::endl;
 
         // print the first 100 rows and columns
         for (uint32_t i = 0; i < 100 && i < numRows; i++) {
@@ -108,38 +98,10 @@ namespace IVSparse {
         std::cout << std::endl;
     }
 
-    // Convert a IVCSC matrix to CSC
-    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    IVSparse::SparseMatrix<T, indexT, 1, columnMajor> SparseMatrix<T, indexT, compressionLevel, columnMajor>::toCSC() {
-
-        // create a new sparse matrix
-        Eigen::SparseMatrix<T, columnMajor ? Eigen::ColMajor : Eigen::RowMajor> eigenMatrix(numRows, numCols);
-
-        // iterate over the matrix
-        for (uint32_t i = 0; i < outerDim; ++i) {
-            for (typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator it(*this, i);it; ++it) {
-                // add the value to the matrix
-                eigenMatrix.insert(it.row(), it.col()) = it.value();
-            }
-        }
-
-        // finalize the matrix
-        eigenMatrix.makeCompressed();
-
-        // make a CSC matrix
-        IVSparse::SparseMatrix<T, indexT, 1, columnMajor> CSCMatrix(eigenMatrix);
-
-        // return the matrix
-        return CSCMatrix;
-    }
-
     // Convert a IVCSC matrix to a VCSC matrix
-    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    IVSparse::SparseMatrix<T, indexT, 2, columnMajor> SparseMatrix<T, indexT, compressionLevel, columnMajor>::toVCSC() {
-        // if already VCSC return a copy
-        if (compressionLevel == 2) {
-            return *this;
-        }
+    template <typename T, bool columnMajor>
+    template <typename indexT>
+    IVSparse::VCSC<T, indexT, columnMajor> IVCSC<T, columnMajor>::toVCSC() {
 
         //* compress the data
 
@@ -157,9 +119,7 @@ namespace IVSparse {
         for (uint32_t i = 0; i < outerDim; ++i) {
             size_t count = 0;
 
-            for (typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator it(
-                *this, i);
-                it; ++it) {
+            for (typename IVCSC<T, columnMajor>::InnerIterator it(*this, i); it; ++it) {
                 dict[i][it.getIndex()] = it.value();
                 count++;
             }
@@ -179,8 +139,7 @@ namespace IVSparse {
         }
 
         // return a VCSC matrix from the CSC vectors
-        IVSparse::SparseMatrix<T, indexT, 2, columnMajor> mat(
-            values, indices, colPtrs, numRows, numCols, nnz);
+        typename IVSparse::VCSC<T, indexT, columnMajor> mat(values, indices, colPtrs, numRows, numCols, nnz);
 
         // free the CSC vectors
         free(values);
@@ -191,8 +150,8 @@ namespace IVSparse {
     }
 
     // converts the ivsparse matrix to an eigen one and returns it
-    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    Eigen::SparseMatrix<T, columnMajor ? Eigen::ColMajor : Eigen::RowMajor> SparseMatrix<T, indexT, compressionLevel, columnMajor>::toEigen() {
+    template<typename T, bool columnMajor>
+    Eigen::SparseMatrix<T, columnMajor ? Eigen::ColMajor : Eigen::RowMajor> IVCSC<T, columnMajor>::toEigen() {
         #ifdef IVSPARSE_DEBUG
         // assert that the matrix is not empty
         assert(outerDim > 0 && "Cannot convert an empty matrix to an Eigen matrix!");
@@ -208,7 +167,7 @@ namespace IVSparse {
                 continue;
             }
 
-            for (typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator it(*this, i);it; ++it) {
+            for (typename IVCSC<T, columnMajor>::InnerIterator it(*this, i);it; ++it) {
                 // add the value to the matrix
                 eigenMatrix.insert(it.row(), it.col()) = it.value();
             }
@@ -224,8 +183,8 @@ namespace IVSparse {
     //* Conversion/Transformation Methods *//
 
     // appends a vector to the back of the storage order of the matrix
-    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    void SparseMatrix<T, indexT, compressionLevel, columnMajor>::append(IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>& mat) {
+    template <typename T, bool columnMajor>
+    void IVCSC<T, columnMajor>::append(IVSparse::IVCSC<T, columnMajor>& mat) {
 
         #ifdef IVSPARSE_DEBUG
         assert(mat.innerDim == innerDim && "Vector must be the same size as the inner dimension!");
@@ -261,15 +220,15 @@ namespace IVSparse {
         // deep copy the data
         for (uint32_t i = 0; i < outerDim - oldOuterDim; ++i) {
             try {
-                data[oldOuterDim + i] = malloc(mat.getVectorSize(i));
-                endPointers[oldOuterDim + i] = (char*)data[oldOuterDim + i] + mat.getVectorSize(i);
+                data[oldOuterDim + i] = malloc(mat.getVectorByteSize(i));
+                endPointers[oldOuterDim + i] = (char*)data[oldOuterDim + i] + mat.getVectorByteSize(i);
             }
             catch (std::bad_alloc& e) {
                 throw std::bad_alloc();
             }
 
             // copy the vector
-            memcpy(data[oldOuterDim + i], mat.data[i], mat.getVectorSize(i));
+            memcpy(data[oldOuterDim + i], mat.data[i], mat.getVectorByteSize(i));
         }
 
 
@@ -277,18 +236,18 @@ namespace IVSparse {
     }
 
     // Eigen -> IVSparse append
-    template<typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    inline void IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>::append(Eigen::SparseMatrix<T, columnMajor ? Eigen::ColMajor : Eigen::RowMajor>& mat) {
-        SparseMatrix<T, indexT, compressionLevel, columnMajor> temp(mat);
+    template<typename T, bool columnMajor>
+    inline void IVSparse::IVCSC<T, columnMajor>::append(Eigen::SparseMatrix<T, columnMajor ? Eigen::ColMajor : Eigen::RowMajor>& mat) {
+        IVCSC<T, columnMajor> temp(mat);
         append(temp);
     }
 
 
     // tranposes the ivsparse matrix
-    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor> SparseMatrix<T, indexT, compressionLevel, columnMajor>::transpose() {
+    template<typename T, bool columnMajor>
+    IVSparse::IVCSC<T, columnMajor> IVCSC<T, columnMajor>::transpose() {
 
-        std::vector<std::unordered_map<T, std::vector<indexT>>> mapsT;
+        std::vector<std::unordered_map<T, std::vector<size_t>>> mapsT;
         // mapsT.reserve(innerDim);
         mapsT.resize(innerDim);
         // populate the transpose data structure
@@ -297,7 +256,7 @@ namespace IVSparse {
         #pragma omp parallel for
         #endif
         for (uint32_t i = 0; i < outerDim; ++i) {
-            for (typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator it(*this, i); it; ++it) {
+            for (typename IVCSC<T, columnMajor>::InnerIterator it(*this, i); it; ++it) {
                 // add the value to the map
                 if constexpr (columnMajor) {
                     #pragma omp critical
@@ -329,18 +288,18 @@ namespace IVSparse {
         }
 
         // create a new matrix passing in transposedMap
-        IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor> temp(mapsT.data(), numRows, numCols);
+        IVSparse::IVCSC<T, columnMajor> temp(mapsT.data(), numRows, numCols);
 
         // return the new matrix
         return temp;
     }
 
     // Transpose In Place Method
-    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    void SparseMatrix<T, indexT, compressionLevel, columnMajor>::inPlaceTranspose() {
+    template<typename T, bool columnMajor>
+    void IVCSC<T, columnMajor>::inPlaceTranspose() {
         // make a data structure to store the tranpose
         // std::unordered_map<T, std::vector<indexT>> mapsT[innerDim];
-        std::vector<std::unordered_map<T, std::vector<indexT>>> mapsT;
+        std::vector<std::unordered_map<T, std::vector<size_t>>> mapsT;
         // mapsT.reserve(innerDim);
         mapsT.resize(innerDim);
 
@@ -350,7 +309,7 @@ namespace IVSparse {
         #pragma omp parallel for
         #endif
         for (uint32_t i = 0; i < outerDim; ++i) {
-            for (typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator it(*this, i); it; ++it) {
+            for (typename IVCSC<T, columnMajor>::InnerIterator it(*this, i); it; ++it) {
                 // add the value to the map
                 if constexpr (columnMajor) {
                     mapsT[it.row()][it.value()].push_back(it.col());
@@ -381,12 +340,12 @@ namespace IVSparse {
             }
         }
 
-        *this = IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor>(mapsT.data(), numRows, numCols);
+        *this = IVSparse::IVCSC<T, columnMajor>(mapsT.data(), numRows, numCols);
     }
 
-    // slice method that returns an IVSparse matrix
-    template <typename T, typename indexT, uint8_t compressionLevel, bool columnMajor>
-    IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor> SparseMatrix<T, indexT, compressionLevel, columnMajor>::slice(uint32_t const start, uint32_t end) {
+    // slice method that returns an IVCSC matrix
+    template<typename T, bool columnMajor>
+    IVSparse::IVCSC<T, columnMajor> IVCSC<T, columnMajor>::slice(uint32_t const start, uint32_t end) {
 
         #ifdef IVSPARSE_DEBUG
         assert(start < outerDim && end <= outerDim && start < end &&
@@ -394,7 +353,7 @@ namespace IVSparse {
         #endif
 
         // create a new matrix
-        IVSparse::SparseMatrix<T, indexT, compressionLevel, columnMajor> temp;
+        IVSparse::IVCSC<T, columnMajor> temp;
 
         temp.outerDim = end - start;
         temp.innerDim = innerDim;
@@ -421,22 +380,22 @@ namespace IVSparse {
         for (uint32_t i = start; i < end; ++i) {
 
             try {
-                temp.data[i - start] = malloc(getVectorSize(i));
-                temp.endPointers[i - start] = (char*)temp.data[i - start] + getVectorSize(i);
+                temp.data[i - start] = malloc(getVectorByteSize(i));
+                temp.endPointers[i - start] = (char*)temp.data[i - start] + getVectorByteSize(i);
             }
             catch (std::bad_alloc& e) {
                 throw std::bad_alloc();
             }
 
             // copy the vector
-            memcpy(temp.data[i - start], data[i], getVectorSize(i));
-        }   
+            memcpy(temp.data[i - start], data[i], getVectorByteSize(i));
+        }
 
         // get nnz
         temp.nnz = 0;
         for (int i = 0; i < temp.outerDim; ++i) {
-            if (temp.getVectorSize(i) == 0) continue;
-            for (typename SparseMatrix<T, indexT, compressionLevel, columnMajor>::InnerIterator it(temp, i); it; ++it) {
+            if (temp.getVectorByteSize(i) == 0) continue;
+            for (typename IVCSC<T, columnMajor>::InnerIterator it(temp, i); it; ++it) {
                 temp.nnz++;
             }
         }
