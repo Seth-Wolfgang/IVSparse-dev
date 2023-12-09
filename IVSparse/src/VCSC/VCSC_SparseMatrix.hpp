@@ -143,7 +143,7 @@ namespace IVSparse {
          * This constructor takes an Eigen Sparse Matrix and compresses it into a
          * IVSparse matrix.
          */
-        SparseMatrix(Eigen::SparseMatrix<T>& mat);
+        SparseMatrix(Eigen::SparseMatrix<T, 0>& mat);
 
         /**
          * @param mat The Eigen Sparse Matrix to be compressed
@@ -151,8 +151,8 @@ namespace IVSparse {
          * Eigen Sparse Matrix Constructor (Row Major) \n \n
          * Same as previous constructor but for Row Major Eigen Sparse Matrices.
          */
-        SparseMatrix(Eigen::SparseMatrix<T, Eigen::RowMajor>& mat);
-
+        SparseMatrix(Eigen::SparseMatrix<T, 1>& mat);
+    
         /**
          * @tparam compressionLevel2 The compression level of the IVSparse matrix to
          * convert
@@ -483,8 +483,7 @@ namespace IVSparse {
         T operator()(uint32_t row, uint32_t col);
 
         // Vector Access Operator
-        typename IVSparse::SparseMatrix<T, indexT, 2, columnMajor>::Vector operator[](
-            uint32_t vec);
+        typename IVSparse::SparseMatrix<T, indexT, 2, columnMajor>::Vector operator[](uint32_t vec);
 
         // Scalar Multiplication
         IVSparse::SparseMatrix<T, indexT, 2, columnMajor> operator*(T scalar);
@@ -494,13 +493,15 @@ namespace IVSparse {
 
         // Matrix Vector Multiplication
         Eigen::Matrix<T, -1, 1> operator*(Eigen::Matrix<T, -1, 1>& vec);
+        Eigen::Matrix<T, -1, 1> operator*(const Eigen::Ref<const Eigen::Matrix<T, -1, 1>>& mat);
 
         // Matrix Vector Multiplication 2 (with IVSparse Vector)
-        Eigen::Matrix<T, -1, 1> operator*(
-            typename SparseMatrix<T, indexT, 2, columnMajor>::Vector& vec);
+        Eigen::Matrix<T, -1, 1> operator*(typename SparseMatrix<T, indexT, 2, columnMajor>::Vector& vec);
 
         // Matrix Matrix Multiplication
         Eigen::Matrix<T, -1, -1> operator*(Eigen::Matrix<T, -1, -1>& mat);
+        Eigen::Matrix<T, -1, -1> operator*(const Eigen::Ref<const Eigen::Matrix<T, -1, -1>>& mat);
+
 
         };  // End of VCSC Sparse Matrix Class
 

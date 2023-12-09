@@ -55,7 +55,8 @@ namespace IVSparse {
 
     // Eigen Constructor
     template <typename T, typename indexT, bool columnMajor>
-    SparseMatrix<T, indexT, 2, columnMajor>::SparseMatrix(Eigen::SparseMatrix<T>& mat) {
+    SparseMatrix<T, indexT, 2, columnMajor>::SparseMatrix(Eigen::SparseMatrix<T, 0>& mat) {
+
         // make sure the matrix is compressed
         mat.makeCompressed();
 
@@ -75,7 +76,8 @@ namespace IVSparse {
 
     // Eigen Row Major Constructor
     template <typename T, typename indexT, bool columnMajor>
-    SparseMatrix<T, indexT, 2, columnMajor>::SparseMatrix(Eigen::SparseMatrix<T, Eigen::RowMajor>& mat) {
+    SparseMatrix<T, indexT, 2, columnMajor>::SparseMatrix(Eigen::SparseMatrix<T, 1>& mat) {
+        
         // make sure the matrix is compressed
         mat.makeCompressed();
 
@@ -429,9 +431,9 @@ namespace IVSparse {
         metadata = new uint32_t[NUM_META_DATA];
         if (fread(metadata, sizeof(uint32_t), NUM_META_DATA, fp) == 0) [[unlikely]] {
             throw std::runtime_error("Error: Could not read metadata");
-        }
+            }
 
-        // set the matrix info
+            // set the matrix info
         innerDim = metadata[1];
         outerDim = metadata[2];
         nnz = metadata[3];
@@ -468,7 +470,7 @@ namespace IVSparse {
         for (size_t i = 0; i < outerDim; i++) {
             if (fread(&valueSizes[i], sizeof(indexT), 1, fp) == 0) [[unlikely]] {
                 throw std::runtime_error("Error: Could not read valueSizes");
-            }
+                }
         }
 
         // read in the index sizes
@@ -489,7 +491,7 @@ namespace IVSparse {
             }
             if (fread(values[i], sizeof(T), valueSizes[i], fp) == 0) [[unlikely]] {
                 throw std::runtime_error("Error: Could not read values");
-            }
+                }
         }
 
         // read in the counts
@@ -515,9 +517,9 @@ namespace IVSparse {
                 std::cerr << "bad_alloc caught: " << ba.what() << '\n';
                 throw std::runtime_error("Error: Could not allocate memory");
             }
-            if(fread(indices[i], sizeof(indexT), indexSizes[i], fp) == 0) [[unlikely]] {
+            if (fread(indices[i], sizeof(indexT), indexSizes[i], fp) == 0) [[unlikely]] {
                 throw std::runtime_error("Error: Could not read indices");
-            }
+                }
         }
 
         // close the file

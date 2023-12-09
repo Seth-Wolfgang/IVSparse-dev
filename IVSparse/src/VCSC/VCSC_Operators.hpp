@@ -168,7 +168,7 @@ namespace IVSparse {
         uint32_t index = columnMajor ? row : col;
 
         // get an iterator for the desired vector
-        for (typename SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator it( *this, vector); it; ++it) {
+        for (typename SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator it(*this, vector); it; ++it) {
             if (it.getIndex() == (indexT)index) {
                 return it.value();
             }
@@ -204,7 +204,7 @@ namespace IVSparse {
     // In place scalar multiplication
     template <typename T, typename indexT, bool columnMajor>
     void SparseMatrix<T, indexT, 2, columnMajor>::operator*=(T scalar) {
-        return inPlaceScalarMultiply(scalar);
+        inPlaceScalarMultiply(scalar);
     }
 
     // // IVSparse Matrix * IVSparse Vector Multiplication
@@ -220,6 +220,8 @@ namespace IVSparse {
     Eigen::Matrix<T, -1, 1> SparseMatrix<T, indexT, 2, columnMajor>::operator*(Eigen::Matrix<T, -1, 1>& vec) {
         return vectorMultiply(vec);
     }
+
+
 
     // Matrix Matrix Multiplication (IVSparse Eigen -> Eigen)
     template <typename T, typename indexT, bool columnMajor>
@@ -245,6 +247,53 @@ namespace IVSparse {
             }
         }
         return newMatrix.transpose();
+    }
+
+
+    template <typename T, typename indexT, bool columnMajor>
+    Eigen::Matrix<T, -1, -1>  SparseMatrix<T, indexT, 2, columnMajor>::operator* (const Eigen::Ref<const Eigen::Matrix<T, -1, -1>>& mat) {
+
+        #ifdef IVSPARSE_DEBUG
+        // check that the matrix is the correct size
+        if (mat.rows() != numCols)
+            throw std::invalid_argument(
+                "The left matrix must have the same # of rows as columns in the right "
+                "matrix!");
+        #endif
+
+        Eigen::Matrix<T, -1, -1> newMatrix = Eigen::Matrix<T, -1, -1>::Zero(mat.cols(), numRows);
+        Eigen::Matrix<T, -1, -1> matTranspose = mat.transpose();
+
+        // Fix Parallelism issue (race condition because of partial sums and
+        // orientation of Sparse * Dense)
+        for (uint32_t col = 0; col < numCols; col++) {
+            for (typename SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator matIter(*this, col); matIter; ++matIter) {
+                newMatrix.col(matIter.row()) += matTranspose.col(col) * matIter.value();
+            }
+        }
+        return newMatrix.transpose();
+    }
+
+    template <typename T, typename indexT, bool columnMajor>
+    inline Eigen::Matrix<T, -1, 1> SparseMatrix<T, indexT, 2, columnMajor>::operator*(const Eigen::Ref<const Eigen::Matrix<T, -1, 1>>& vec) {
+
+        #ifdef IVSPARSE_DEBUG
+        // check that the vector is the correct size
+        assert(vec.rows() == outerDim &&
+               "The vector must be the same size as the number of columns in the "
+               "matrix!");
+        #endif
+
+        Eigen::Matrix<T, -1, 1> eigenTemp = Eigen::Matrix<T, -1, 1>::Zero(innerDim, 1);
+
+        // iterate over the vector and multiply the corresponding row of the matrix by the vecIter value
+
+        for (uint32_t i = 0; i < outerDim; i++) {
+            for (typename SparseMatrix<T, indexT, 2, columnMajor>::InnerIterator matIter(*this, i); matIter; ++matIter) {
+                eigenTemp(matIter.row()) += vec(matIter.col()) * matIter.value();
+            }
+        }
+        return eigenTemp;
     }
 
 }  // end namespace IVSparse

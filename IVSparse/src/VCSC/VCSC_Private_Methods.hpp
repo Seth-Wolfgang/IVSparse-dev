@@ -142,6 +142,7 @@ namespace IVSparse {
     template <typename T, typename indexT, bool columnMajor>
     template <typename T2, typename indexT2>
     void SparseMatrix<T, indexT, 2, columnMajor>::compressCSC(T2* vals, indexT2* innerIndices, indexT2* outerPointers) {
+
         // ---- Stage 1: Setup the Matrix ---- //
 
         // set the value and index types of the matrix
@@ -207,6 +208,7 @@ namespace IVSparse {
                 if (dict.find(vals[j]) != dict.end()) {
                     // add the index
                     dict[vals[j]].push_back(innerIndices[j]);
+                    
 
                     numIndices++;
                 }
@@ -243,8 +245,8 @@ namespace IVSparse {
             // ---- Stage 4: Populate the Column Data ---- //
 
             for (auto& pair : dict) {
-                values[i][performanceVecSize] = pair.first;
-                counts[i][performanceVecSize] = pair.second.size();
+                values[i][performanceVecSize] = (T)pair.first;
+                counts[i][performanceVecSize] = (indexT)pair.second.size();
 
                 // memcpy the indices into the indices array and increment the indexSize
                 memcpy(&indices[i][indexSize], &pair.second[0], sizeof(indexT) * pair.second.size());
