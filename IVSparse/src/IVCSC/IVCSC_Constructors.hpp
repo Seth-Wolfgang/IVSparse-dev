@@ -105,7 +105,7 @@ namespace IVSparse {
             metadata = nullptr;
             return;
         }
-
+        
         // make sure the matrix is compressed
         mat.makeCompressed();
 

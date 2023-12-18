@@ -21,7 +21,6 @@ namespace IVSparse {
         for (uint32_t i = 0; i < 100 && i < numRows; i++) {
             for (uint32_t j = 0; j < 100 && j < numCols; j++) {
                 os << static_cast<int>(coeff(i, j)) << " ";
-                std::cout << static_cast<int>(coeff(i, j)) << " ";
             }
             os << std::endl;
         }
@@ -38,7 +37,6 @@ namespace IVSparse {
         for (uint32_t i = 0; i < 100 && i < numRows; i++) {
             for (uint32_t j = 0; j < 100 && j < numCols; j++) {
                 os << static_cast<int>(coeff(i, j)) << " ";
-                std::cout << static_cast<int>(coeff(i, j)) << " ";
             }
             os << std::endl;
         }

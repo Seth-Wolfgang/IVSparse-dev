@@ -76,8 +76,7 @@ namespace IVSparse {
 
     // Eigen Row Major Constructor
     template <typename T, typename indexT, bool columnMajor>
-    VCSC<T, indexT, columnMajor>::VCSC(Eigen::SparseMatrix<T, 1>& mat) {
-        
+    VCSC<T, indexT, columnMajor>::VCSC(Eigen::SparseMatrix<T, Eigen::RowMajor>& mat) {
         // make sure the matrix is compressed
         mat.makeCompressed();
 
