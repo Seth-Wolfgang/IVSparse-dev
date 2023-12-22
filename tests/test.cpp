@@ -4,8 +4,8 @@ int main() {
 
     int cols1, cols2, cols3, cols4;
     int rows1, rows2, rows3, rows4;
-    int a = (rand() % 1000 + 1) % std::numeric_limits<INDEX_TYPE>::max() + 1;
-    int b = (rand() % 1000 + 1) % std::numeric_limits<INDEX_TYPE>::max() + 1;
+    int a = (rand() % 100 + 1) % std::numeric_limits<INDEX_TYPE>::max() + 1;
+    int b = (rand() % 100 + 1) % std::numeric_limits<INDEX_TYPE>::max() + 1;
     std::cout << "a: " << a << std::endl;
     std::cout << "b: " << b << std::endl;
 
@@ -85,7 +85,8 @@ int main() {
     // test7(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4, eigen_sparse1, eigen_sparse2, eigen_sparse3, eigen_sparse4);
     // test8(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4, eigen_sparse1, eigen_sparse2, eigen_sparse3, eigen_sparse4);
     // test9(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4, eigen_sparse1, eigen_sparse2, eigen_sparse3, eigen_sparse4);
-    test10(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4, eigen_sparse1, eigen_sparse2, eigen_sparse3, eigen_sparse4);
+    // test10(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4, eigen_sparse1, eigen_sparse2, eigen_sparse3, eigen_sparse4);
+    test11(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4, eigen_sparse1, eigen_sparse2, eigen_sparse3, eigen_sparse4);
 
 
     return 0;
@@ -694,7 +695,6 @@ void test9(IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc1,
 
     assert(vcsc12.sum() == ivcsc12.sum());
     assert(vcsc12.sum() == eigen5.sum());
-
 }
 
 
@@ -723,4 +723,127 @@ void test10(IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc1,
     assert(ivcsc1.trace() == ivcsc1.transpose().trace());
     assert(vcsc1.trace() == vcsc1.transpose().trace());
 
+}
+
+
+void test11(IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc1,
+            IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc2,
+            IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc3,
+            IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc4,
+            IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc1,
+            IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc2,
+            IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc3,
+            IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc4,
+            Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen1,
+            Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen2,
+            Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen3,
+            Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen4) {
+
+    vcsc1.append(vcsc4);
+    vcsc2.append(vcsc3);
+    vcsc3.append(vcsc2);
+    vcsc4.append(vcsc1);
+
+    ivcsc1.append(ivcsc4);
+    ivcsc2.append(ivcsc3);
+    ivcsc3.append(ivcsc2);
+    ivcsc4.append(ivcsc1);
+    int rows;
+    int cols;
+
+    Eigen::Matrix<TYPE, -1, -1> denseMat1;
+    Eigen::Matrix<TYPE, -1, -1> denseMat2;
+    Eigen::Matrix<TYPE, -1, -1> denseMat3;
+    Eigen::Matrix<TYPE, -1, -1> denseMat4;
+
+    if constexpr (IVSparseMAJOR) {
+        denseMat1 = Eigen::Matrix<TYPE, -1, -1>(eigen1.rows(), eigen1.cols() + eigen4.cols());
+        denseMat2 = Eigen::Matrix<TYPE, -1, -1>(eigen2.rows(), eigen2.cols() + eigen3.cols());
+        denseMat3 = Eigen::Matrix<TYPE, -1, -1>(eigen3.rows(), eigen3.cols() + eigen2.cols());
+        denseMat4 = Eigen::Matrix<TYPE, -1, -1>(eigen4.rows(), eigen4.cols() + eigen1.cols());
+
+    }
+    else {
+        denseMat1 = Eigen::Matrix<TYPE, -1, -1>(eigen1.rows() + eigen4.rows(), eigen1.cols());
+        denseMat2 = Eigen::Matrix<TYPE, -1, -1>(eigen2.rows() + eigen3.rows(), eigen2.cols());
+        denseMat3 = Eigen::Matrix<TYPE, -1, -1>(eigen3.rows() + eigen2.rows(), eigen3.cols());
+        denseMat4 = Eigen::Matrix<TYPE, -1, -1>(eigen4.rows() + eigen1.rows(), eigen4.cols());
+    }
+
+    denseMat1 << Eigen::Matrix<TYPE, -1, -1>(eigen1), Eigen::Matrix<TYPE, -1, -1>(eigen4);
+    denseMat2 << Eigen::Matrix<TYPE, -1, -1>(eigen2), Eigen::Matrix<TYPE, -1, -1>(eigen3);
+    denseMat3 << Eigen::Matrix<TYPE, -1, -1>(eigen3), Eigen::Matrix<TYPE, -1, -1>(eigen2);
+    denseMat4 << Eigen::Matrix<TYPE, -1, -1>(eigen4), Eigen::Matrix<TYPE, -1, -1>(eigen1);
+
+    Eigen::SparseMatrix<TYPE, EIGENMAJOR> vcsc_to_eigen1 = vcsc1.toEigen();
+    Eigen::SparseMatrix<TYPE, EIGENMAJOR> vcsc_to_eigen2 = vcsc2.toEigen();
+    Eigen::SparseMatrix<TYPE, EIGENMAJOR> vcsc_to_eigen3 = vcsc3.toEigen();
+    Eigen::SparseMatrix<TYPE, EIGENMAJOR> vcsc_to_eigen4 = vcsc4.toEigen();
+
+    Eigen::SparseMatrix<TYPE, EIGENMAJOR> ivcsc_to_eigen1 = ivcsc1.toEigen();
+    Eigen::SparseMatrix<TYPE, EIGENMAJOR> ivcsc_to_eigen2 = ivcsc2.toEigen();
+    Eigen::SparseMatrix<TYPE, EIGENMAJOR> ivcsc_to_eigen3 = ivcsc3.toEigen();
+    Eigen::SparseMatrix<TYPE, EIGENMAJOR> ivcsc_to_eigen4 = ivcsc4.toEigen();
+
+    Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen_sparse1 = denseMat1.sparseView();
+    Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen_sparse2 = denseMat2.sparseView();
+    Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen_sparse3 = denseMat3.sparseView();
+    Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen_sparse4 = denseMat4.sparseView();
+
+    for (int i = 0; i < eigen_sparse1.outerSize(); ++i) {
+        typename Eigen::SparseMatrix<TYPE, EIGENMAJOR>::InnerIterator it(eigen_sparse1, i);
+        typename Eigen::SparseMatrix<TYPE, EIGENMAJOR>::InnerIterator it2(vcsc_to_eigen1, i);
+        typename Eigen::SparseMatrix<TYPE, EIGENMAJOR>::InnerIterator it3(ivcsc_to_eigen1, i);
+
+
+        while (it) {
+            // std::cout << "1| eigen: " << it.value() << " vcsc: " << it2.value() << " ivcsc: " << it3.value() << std::endl;
+            assert(it.value() == it2.value() && it.value() == it3.value());
+            ++it;
+            ++it2;
+            ++it3;
+        }
+    }
+
+    for (int i = 0; i < eigen_sparse2.outerSize(); ++i) {
+        typename Eigen::SparseMatrix<TYPE, EIGENMAJOR>::InnerIterator it(eigen_sparse2, i);
+        typename Eigen::SparseMatrix<TYPE, EIGENMAJOR>::InnerIterator it2(vcsc_to_eigen2, i);
+        typename Eigen::SparseMatrix<TYPE, EIGENMAJOR>::InnerIterator it3(ivcsc_to_eigen2, i);
+
+        while (it) {
+            // std::cout << "2| eigen: " << it.value() << " vcsc: " << it2.value() << " ivcsc: " << it3.value() << std::endl;
+            assert(it.value() == it2.value() && it.value() == it3.value());
+            ++it;
+            ++it2;
+            ++it3;
+        }
+    }
+
+    for (int i = 0; i < eigen_sparse3.outerSize(); ++i) {
+        typename Eigen::SparseMatrix<TYPE, EIGENMAJOR>::InnerIterator it(eigen_sparse3, i);
+        typename Eigen::SparseMatrix<TYPE, EIGENMAJOR>::InnerIterator it2(vcsc_to_eigen3, i);
+        typename Eigen::SparseMatrix<TYPE, EIGENMAJOR>::InnerIterator it3(ivcsc_to_eigen3, i);
+
+        while (it) {
+            // std::cout << "3| eigen: " << it.value() << " vcsc: " << it2.value() << " ivcsc: " << it3.value() << std::endl;
+            assert(it.value() == it2.value() && it.value() == it3.value());
+            ++it;
+            ++it2;
+            ++it3;
+        }
+    }
+
+    for (int i = 0; i < eigen_sparse4.outerSize(); ++i) {
+        typename Eigen::SparseMatrix<TYPE, EIGENMAJOR>::InnerIterator it(eigen_sparse4, i);
+        typename Eigen::SparseMatrix<TYPE, EIGENMAJOR>::InnerIterator it2(vcsc_to_eigen4, i);
+        typename Eigen::SparseMatrix<TYPE, EIGENMAJOR>::InnerIterator it3(ivcsc_to_eigen4, i);
+
+        while (it) {
+            // std::cout << "4| eigen: " << it.value() << " vcsc: " << it2.value() << " ivcsc: " << it3.value() << std::endl;
+            assert(it.value() == it2.value() && it.value() == it3.value());
+            ++it;
+            ++it2;
+            ++it3;
+        }
+    }
 }
