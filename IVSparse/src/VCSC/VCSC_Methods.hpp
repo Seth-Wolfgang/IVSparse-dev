@@ -170,11 +170,14 @@ namespace IVSparse {
         // assert that the matrix is not empty
         assert(outerDim > 0 && "Cannot convert an empty matrix to an Eigen matrix!");
         #endif
-        
+
         // create a new sparse matrix
         Eigen::SparseMatrix<T, columnMajor ? Eigen::ColMajor : Eigen::RowMajor> eigenMatrix(numRows, numCols);
 
         // iterate over the matrix
+        #ifdef IVSPARSE_HAS_OPENMP
+        #pragma omp parallel for
+        #endif
         for (uint32_t i = 0; i < outerDim; ++i) {
             for (typename VCSC<T, indexT, columnMajor>::InnerIterator it(*this, i); it; ++it) {
                 // add the value to the matrix
@@ -232,6 +235,9 @@ namespace IVSparse {
         }
 
         // copy the data from the vector to the new vectors
+        #ifdef IVSPARSE_HAS_OPENMP
+        #pragma omp parallel for
+        #endif
         for (uint32_t i = 0; i < outerDim - oldOuterDim; ++i) {
             valueSizes[oldOuterDim + i] = mat.getNumUniqueVals(i);
             indexSizes[oldOuterDim + i] = mat.getNumIndices(i);
@@ -261,6 +267,14 @@ namespace IVSparse {
     template<typename T, typename indexT, bool columnMajor>
     inline void IVSparse::VCSC<T, indexT, columnMajor>::append(Eigen::SparseMatrix<T, columnMajor ? Eigen::ColMajor : Eigen::RowMajor>& mat) {
         VCSC<T, indexT, columnMajor> temp(mat);
+        append(temp);
+    }
+
+    // Raw CSC -> IVSparse append
+    template<typename T, typename indexT, bool columnMajor>
+    template<typename T2, typename indexT2>
+    inline void IVSparse::VCSC<T, indexT, columnMajor>::append(T2* vals, indexT2* innerIndices, indexT2* outerPtr, uint32_t num_rows, uint32_t num_cols, uint32_t nnz) {
+        VCSC<T, indexT, columnMajor> temp(vals, innerIndices, outerPtr, num_rows, num_cols, nnz);
         append(temp);
     }
 

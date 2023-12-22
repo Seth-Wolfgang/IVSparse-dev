@@ -408,6 +408,21 @@ namespace IVSparse {
         inline void append(Eigen::SparseMatrix<T, columnMajor ? Eigen::ColMajor : Eigen::RowMajor>& mat);
 
         /**
+         * @brief Appends a raw CSC matrix to the current matrix. Assumes correct storage order.
+         * @tparam T2 
+         * @tparam indexT2 
+         * @param vals 
+         * @param innerIndices 
+         * @param outerPtr 
+         * @param num_rows 
+         * @param num_cols 
+         * @param nnz 
+         */
+        template <typename T2, typename indexT2>
+        inline void append(T2* vals, indexT2* innerIndices, indexT2* outerPtr, uint32_t num_rows, uint32_t num_cols, uint32_t nnz);
+
+
+        /**
          * @returns A matrix that represent a slice of the
          * IVSparse matrix.
          */

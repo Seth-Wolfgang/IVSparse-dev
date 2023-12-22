@@ -157,10 +157,9 @@ namespace IVSparse {
         assert(outerDim > 0 && "Cannot convert an empty matrix to an Eigen matrix!");
         #endif
 
-        // create a new sparse matrix
-        Eigen::SparseMatrix<T, columnMajor ? Eigen::ColMajor : Eigen::RowMajor> eigenMatrix(numRows, numCols);
-
         // iterate over the matrix
+        // #ifndef IVSPARSE_HAS_OPENMP
+        Eigen::SparseMatrix<T, columnMajor ? Eigen::ColMajor : Eigen::RowMajor> eigenMatrix(numRows, numCols);
         for (uint32_t i = 0; i < outerDim; ++i) {
             // check if the vector is empty
             if (data[i] == nullptr) {
@@ -172,12 +171,37 @@ namespace IVSparse {
                 eigenMatrix.insert(it.row(), it.col()) = it.value();
             }
         }
-
-        // finalize the matrix
+        // eigenMatrix.makeCompressed();
+        // return eigenMatrix;
+        // #endif
         eigenMatrix.makeCompressed();
-
-        // return the matrix
         return eigenMatrix;
+        // #ifdef IVSPARSE_HAS_OPENMP
+        // #pragma omp declare reduction (merge : std::vector<Eigen::Triplet<T>> : omp_out.insert(omp_out.end(), omp_in.begin(), omp_in.end()))
+
+        // Eigen::SparseMatrix<T, columnMajor ? Eigen::ColMajor : Eigen::RowMajor> eigenMatrix;
+        // std::vector<Eigen::Triplet<T>> triplets(nnz);
+
+        // #pragma omp parallel for reduction(merge: triplets)
+        // for (uint32_t i = 0; i < outerDim; ++i) {
+        //     // check if the vector is empty
+        //     if (data[i] == nullptr) {
+        //         continue;
+        //     }
+
+        //     for (typename IVCSC<T, columnMajor>::InnerIterator it(*this, i);it; ++it) {
+        //         // add the value to the matrix
+        //         triplets.push_back(Eigen::Triplet<T>(it.row(), it.col(), it.value()));
+        //     }
+        // }
+        // eigenMatrix.setFromTriplets(triplets.begin(), triplets.end());
+
+        // // finalize the matrix
+        // eigenMatrix.makeCompressed();
+
+        // // return the matrix
+        // return eigenMatrix;
+        // #endif
     }
 
     //* Conversion/Transformation Methods *//
@@ -239,6 +263,14 @@ namespace IVSparse {
     template<typename T, bool columnMajor>
     inline void IVSparse::IVCSC<T, columnMajor>::append(Eigen::SparseMatrix<T, columnMajor ? Eigen::ColMajor : Eigen::RowMajor>& mat) {
         IVCSC<T, columnMajor> temp(mat);
+        append(temp);
+    }
+
+    // Raw CSC -> IVSparse append
+    template<typename T, bool columnMajor>
+    template <typename T2, typename indexT>
+    inline void IVSparse::IVCSC<T, columnMajor>::append(T2* vals, indexT* innerIndices, indexT* outerPtr, uint32_t num_rows, uint32_t num_cols, uint32_t nnz) {
+        IVCSC<T, columnMajor> temp(vals, innerIndices, outerPtr, num_rows, num_cols, nnz);
         append(temp);
     }
 

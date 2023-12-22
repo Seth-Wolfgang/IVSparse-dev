@@ -16,24 +16,12 @@
 #define TWO_BYTE_MAX 65535
 #define FOUR_BYTE_MAX 4294967295
 
-namespace IVSparse {
-        const int RowMajor = 0;
-        const int ColMajor = 1;
-
-        template <typename T, bool columnMajor>
-        class IVCSC;
-
-        template <typename T, typename indexT, bool columnMajor>
-        class VCSC;
-}
-
-// Library Preprocessor Directives
-
 // Parallel Processing Directives (On by default)
 #if (defined _OPENMP) && (!defined IVSPARSE_DONT_PARALLEL)
 #define IVSPARSE_HAS_OPENMP
 #endif
 #ifdef IVSPARSE_HAS_OPENMP
+#include <Eigen/Core>
 #include <atomic>
 #include <omp.h>
 #endif
@@ -52,6 +40,19 @@ namespace IVSparse {
 #include <type_traits>
 #include <iomanip>
 #include <type_traits>
+
+namespace IVSparse {
+ 
+    const int RowMajor = 0;
+    const int ColMajor = 1;
+
+    template <typename T, bool columnMajor>
+    class IVCSC;
+
+    template <typename T, typename indexT, bool columnMajor>
+    class VCSC;
+}
+
 
 // Class Declarations
 #include "src/VCSC/VCSC_SparseMatrix.hpp"

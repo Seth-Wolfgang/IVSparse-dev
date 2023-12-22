@@ -417,6 +417,21 @@ namespace IVSparse {
 
 
         /**
+         * @brief Appends a raw CSC matrix to the current matrix. Assumes correct storage order.
+         * @tparam T2 
+         * @tparam indexT2 
+         * @param vals 
+         * @param innerIndices 
+         * @param outerPtr 
+         * @param num_rows 
+         * @param num_cols 
+         * @param nnz 
+         */
+        template <typename T2, typename indexT>
+        inline void append(T2* vals, indexT* innerIndices, indexT* outerPtr, uint32_t num_rows, uint32_t num_cols, uint32_t nnz);
+
+
+        /**
          * @returns A matrix that represent a slice of the
          * IVSparse matrix.
          */

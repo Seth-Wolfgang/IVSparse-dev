@@ -8,7 +8,9 @@ int main() {
     int b = (rand() % 100 + 1) % std::numeric_limits<INDEX_TYPE>::max() + 1;
     std::cout << "a: " << a << std::endl;
     std::cout << "b: " << b << std::endl;
-
+    #ifdef IVSPARSE_HAS_OPENMP
+    Eigen::initParallel();
+    #endif
     if constexpr (IVSparseMAJOR) {
         cols1 = a;
         cols2 = a;
@@ -86,7 +88,8 @@ int main() {
     // test8(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4, eigen_sparse1, eigen_sparse2, eigen_sparse3, eigen_sparse4);
     // test9(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4, eigen_sparse1, eigen_sparse2, eigen_sparse3, eigen_sparse4);
     // test10(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4, eigen_sparse1, eigen_sparse2, eigen_sparse3, eigen_sparse4);
-    test11(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4, eigen_sparse1, eigen_sparse2, eigen_sparse3, eigen_sparse4);
+    // test11(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4, eigen_sparse1, eigen_sparse2, eigen_sparse3, eigen_sparse4);
+    test12(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4, eigen_sparse1, eigen_sparse2, eigen_sparse3, eigen_sparse4);
 
 
     return 0;
@@ -789,6 +792,148 @@ void test11(IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc1,
     Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen_sparse2 = denseMat2.sparseView();
     Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen_sparse3 = denseMat3.sparseView();
     Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen_sparse4 = denseMat4.sparseView();
+
+    for (int i = 0; i < eigen_sparse1.outerSize(); ++i) {
+        typename Eigen::SparseMatrix<TYPE, EIGENMAJOR>::InnerIterator it(eigen_sparse1, i);
+        typename Eigen::SparseMatrix<TYPE, EIGENMAJOR>::InnerIterator it2(vcsc_to_eigen1, i);
+        typename Eigen::SparseMatrix<TYPE, EIGENMAJOR>::InnerIterator it3(ivcsc_to_eigen1, i);
+
+
+        while (it) {
+            // std::cout << "1| eigen: " << it.value() << " vcsc: " << it2.value() << " ivcsc: " << it3.value() << std::endl;
+            assert(it.value() == it2.value() && it.value() == it3.value());
+            ++it;
+            ++it2;
+            ++it3;
+        }
+    }
+
+    for (int i = 0; i < eigen_sparse2.outerSize(); ++i) {
+        typename Eigen::SparseMatrix<TYPE, EIGENMAJOR>::InnerIterator it(eigen_sparse2, i);
+        typename Eigen::SparseMatrix<TYPE, EIGENMAJOR>::InnerIterator it2(vcsc_to_eigen2, i);
+        typename Eigen::SparseMatrix<TYPE, EIGENMAJOR>::InnerIterator it3(ivcsc_to_eigen2, i);
+
+        while (it) {
+            // std::cout << "2| eigen: " << it.value() << " vcsc: " << it2.value() << " ivcsc: " << it3.value() << std::endl;
+            assert(it.value() == it2.value() && it.value() == it3.value());
+            ++it;
+            ++it2;
+            ++it3;
+        }
+    }
+
+    for (int i = 0; i < eigen_sparse3.outerSize(); ++i) {
+        typename Eigen::SparseMatrix<TYPE, EIGENMAJOR>::InnerIterator it(eigen_sparse3, i);
+        typename Eigen::SparseMatrix<TYPE, EIGENMAJOR>::InnerIterator it2(vcsc_to_eigen3, i);
+        typename Eigen::SparseMatrix<TYPE, EIGENMAJOR>::InnerIterator it3(ivcsc_to_eigen3, i);
+
+        while (it) {
+            // std::cout << "3| eigen: " << it.value() << " vcsc: " << it2.value() << " ivcsc: " << it3.value() << std::endl;
+            assert(it.value() == it2.value() && it.value() == it3.value());
+            ++it;
+            ++it2;
+            ++it3;
+        }
+    }
+
+    for (int i = 0; i < eigen_sparse4.outerSize(); ++i) {
+        typename Eigen::SparseMatrix<TYPE, EIGENMAJOR>::InnerIterator it(eigen_sparse4, i);
+        typename Eigen::SparseMatrix<TYPE, EIGENMAJOR>::InnerIterator it2(vcsc_to_eigen4, i);
+        typename Eigen::SparseMatrix<TYPE, EIGENMAJOR>::InnerIterator it3(ivcsc_to_eigen4, i);
+
+        while (it) {
+            // std::cout << "4| eigen: " << it.value() << " vcsc: " << it2.value() << " ivcsc: " << it3.value() << std::endl;
+            assert(it.value() == it2.value() && it.value() == it3.value());
+            ++it;
+            ++it2;
+            ++it3;
+        }
+    }
+}
+
+
+void test12(IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc1,
+            IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc2,
+            IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc3,
+            IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc4,
+            IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc1,
+            IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc2,
+            IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc3,
+            IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc4,
+            Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen1,
+            Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen2,
+            Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen3,
+            Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen4) {
+                
+    std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
+    vcsc1.append(eigen4.valuePtr(), eigen4.innerIndexPtr(), eigen4.outerIndexPtr(), eigen4.innerSize(), eigen4.outerSize(), eigen4.nonZeros());
+    vcsc2.append(eigen3.valuePtr(), eigen3.innerIndexPtr(), eigen3.outerIndexPtr(), eigen3.innerSize(), eigen3.outerSize(), eigen3.nonZeros());
+    vcsc3.append(eigen2.valuePtr(), eigen2.innerIndexPtr(), eigen2.outerIndexPtr(), eigen2.innerSize(), eigen2.outerSize(), eigen2.nonZeros());
+    vcsc4.append(eigen1.valuePtr(), eigen1.innerIndexPtr(), eigen1.outerIndexPtr(), eigen1.innerSize(), eigen1.outerSize(), eigen1.nonZeros());
+    std::chrono::high_resolution_clock::time_point t2 = std::chrono::high_resolution_clock::now();
+    std::cout << "vcsc append: " << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count() << std::endl;
+
+    t1 = std::chrono::high_resolution_clock::now();
+    ivcsc1.append(eigen4.valuePtr(), eigen4.innerIndexPtr(), eigen4.outerIndexPtr(), eigen4.innerSize(), eigen4.outerSize(), eigen4.nonZeros());
+    ivcsc2.append(eigen3.valuePtr(), eigen3.innerIndexPtr(), eigen3.outerIndexPtr(), eigen3.innerSize(), eigen3.outerSize(), eigen3.nonZeros());
+    ivcsc3.append(eigen2.valuePtr(), eigen2.innerIndexPtr(), eigen2.outerIndexPtr(), eigen2.innerSize(), eigen2.outerSize(), eigen2.nonZeros());
+    ivcsc4.append(eigen1.valuePtr(), eigen1.innerIndexPtr(), eigen1.outerIndexPtr(), eigen1.innerSize(), eigen1.outerSize(), eigen1.nonZeros());
+    t2 = std::chrono::high_resolution_clock::now();
+    std::cout << "ivcsc append: " << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count() << std::endl;
+
+    Eigen::Matrix<TYPE, -1, -1> denseMat1;
+    Eigen::Matrix<TYPE, -1, -1> denseMat2;
+    Eigen::Matrix<TYPE, -1, -1> denseMat3;
+    Eigen::Matrix<TYPE, -1, -1> denseMat4;
+
+    t1 = std::chrono::high_resolution_clock::now();
+    if constexpr (IVSparseMAJOR) {
+        denseMat1 = Eigen::Matrix<TYPE, -1, -1>(eigen1.rows(), eigen1.cols() + eigen4.cols());
+        denseMat2 = Eigen::Matrix<TYPE, -1, -1>(eigen2.rows(), eigen2.cols() + eigen3.cols());
+        denseMat3 = Eigen::Matrix<TYPE, -1, -1>(eigen3.rows(), eigen3.cols() + eigen2.cols());
+        denseMat4 = Eigen::Matrix<TYPE, -1, -1>(eigen4.rows(), eigen4.cols() + eigen1.cols());
+
+    }
+    else {
+        denseMat1 = Eigen::Matrix<TYPE, -1, -1>(eigen1.rows() + eigen4.rows(), eigen1.cols());
+        denseMat2 = Eigen::Matrix<TYPE, -1, -1>(eigen2.rows() + eigen3.rows(), eigen2.cols());
+        denseMat3 = Eigen::Matrix<TYPE, -1, -1>(eigen3.rows() + eigen2.rows(), eigen3.cols());
+        denseMat4 = Eigen::Matrix<TYPE, -1, -1>(eigen4.rows() + eigen1.rows(), eigen4.cols());
+    }
+    t2 = std::chrono::high_resolution_clock::now();
+    std::cout << "denseMat init: " << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count() << std::endl;
+
+    t1 = std::chrono::high_resolution_clock::now();
+    denseMat1 << Eigen::Matrix<TYPE, -1, -1>(eigen1), Eigen::Matrix<TYPE, -1, -1>(eigen4);
+    denseMat2 << Eigen::Matrix<TYPE, -1, -1>(eigen2), Eigen::Matrix<TYPE, -1, -1>(eigen3);
+    denseMat3 << Eigen::Matrix<TYPE, -1, -1>(eigen3), Eigen::Matrix<TYPE, -1, -1>(eigen2);
+    denseMat4 << Eigen::Matrix<TYPE, -1, -1>(eigen4), Eigen::Matrix<TYPE, -1, -1>(eigen1);
+    t2 = std::chrono::high_resolution_clock::now();
+    std::cout << "denseMat append: " << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count() << std::endl;
+    
+    t1 = std::chrono::high_resolution_clock::now();
+    Eigen::SparseMatrix<TYPE, EIGENMAJOR> vcsc_to_eigen1 = vcsc1.toEigen();
+    Eigen::SparseMatrix<TYPE, EIGENMAJOR> vcsc_to_eigen2 = vcsc2.toEigen();
+    Eigen::SparseMatrix<TYPE, EIGENMAJOR> vcsc_to_eigen3 = vcsc3.toEigen();
+    Eigen::SparseMatrix<TYPE, EIGENMAJOR> vcsc_to_eigen4 = vcsc4.toEigen();
+    t2 = std::chrono::high_resolution_clock::now();
+    std::cout << "vcsc toEigen: " << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count() << std::endl;
+
+    t1 = std::chrono::high_resolution_clock::now();
+    Eigen::SparseMatrix<TYPE, EIGENMAJOR> ivcsc_to_eigen1 = ivcsc1.toEigen();
+    Eigen::SparseMatrix<TYPE, EIGENMAJOR> ivcsc_to_eigen2 = ivcsc2.toEigen();
+    Eigen::SparseMatrix<TYPE, EIGENMAJOR> ivcsc_to_eigen3 = ivcsc3.toEigen();
+    Eigen::SparseMatrix<TYPE, EIGENMAJOR> ivcsc_to_eigen4 = ivcsc4.toEigen();
+    t2 = std::chrono::high_resolution_clock::now();
+    std::cout << "ivcsc toEigen: " << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count() << std::endl;
+
+    t1 = std::chrono::high_resolution_clock::now();
+    Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen_sparse1 = denseMat1.sparseView();
+    Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen_sparse2 = denseMat2.sparseView();
+    Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen_sparse3 = denseMat3.sparseView();
+    Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen_sparse4 = denseMat4.sparseView();
+    t2 = std::chrono::high_resolution_clock::now();
+    std::cout << "denseMat toEigen: " << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count() << std::endl;
 
     for (int i = 0; i < eigen_sparse1.outerSize(); ++i) {
         typename Eigen::SparseMatrix<TYPE, EIGENMAJOR>::InnerIterator it(eigen_sparse1, i);
