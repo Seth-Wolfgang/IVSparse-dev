@@ -189,10 +189,10 @@ namespace IVSparse {
         int64_t trace = 0;
         for (int i = 0; i < outerDim; i++) {
             for (typename VCSC<T, indexT, columnMajor>::InnerIterator it(*this, i); it; ++it) {
-                if (it.row() == i) {
+                if (it.getIndex() == i) {
                     trace += it.value();
                 }
-                else if (it.row() > i) {
+                else if (it.getIndex() > i) {
                     continue;
                 }
             }
@@ -211,10 +211,10 @@ namespace IVSparse {
         double trace = 0;
         for (int i = 0; i < outerDim; i++) {
             for (typename VCSC<T, indexT, columnMajor>::InnerIterator it(*this, i); it; ++it) {
-                if (it.row() == i) {
+                if (it.getIndex() == i) {
                     trace += it.value();
                 }
-                else if (it.row() > i) {
+                else if (it.getIndex() > i) {
                     continue;
                 }
             }

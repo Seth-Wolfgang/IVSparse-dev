@@ -105,7 +105,7 @@ namespace IVSparse {
     template <typename T, typename indexT, bool columnMajor>
     void VCSC<T, indexT, columnMajor>::print() {
         std::cout << std::endl;
-        std::cout << "IVSparse Matrix" << std::endl;
+        std::cout << "VCSC Matrix" << std::endl;
 
         // print the first 100 rows and columns
         for (uint32_t i = 0; i < 100 && i < numRows; i++) {
