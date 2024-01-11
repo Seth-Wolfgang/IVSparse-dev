@@ -173,11 +173,12 @@ namespace IVSparse {
 
         // create a new sparse matrix
         Eigen::SparseMatrix<T, columnMajor ? Eigen::ColMajor : Eigen::RowMajor> eigenMatrix(numRows, numCols);
+        eigenMatrix.reserve(Eigen::VectorXi::Constant(numCols, nnz / numCols));
 
         // iterate over the matrix
-        #ifdef IVSPARSE_HAS_OPENMP
-        #pragma omp parallel for
-        #endif
+        // #ifdef IVSPARSE_HAS_OPENMP
+        // #pragma omp parallel for
+        // #endif
         for (uint32_t i = 0; i < outerDim; ++i) {
             for (typename VCSC<T, indexT, columnMajor>::InnerIterator it(*this, i); it; ++it) {
                 // add the value to the matrix

@@ -160,6 +160,8 @@ namespace IVSparse {
         // iterate over the matrix
         // #ifndef IVSPARSE_HAS_OPENMP
         Eigen::SparseMatrix<T, columnMajor ? Eigen::ColMajor : Eigen::RowMajor> eigenMatrix(numRows, numCols);
+        eigenMatrix.reserve(Eigen::VectorXi::Constant(numCols, nnz / numCols));
+
         for (uint32_t i = 0; i < outerDim; ++i) {
             // check if the vector is empty
             if (data[i] == nullptr) {
