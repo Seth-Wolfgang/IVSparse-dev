@@ -143,7 +143,7 @@ namespace IVSparse {
             for (int i = 0; i < outerDim; i++) {
                 for (typename IVCSC<T, columnMajor>::InnerIterator it(*this, i); it; ++it) {
                     if (it.value() > maxCoeff(it.row(), 0)) {
-                        maxCoeff(it.col(), 0) = it.value();
+                        maxCoeff(it.row(), 0) = it.value();
                     }
                 }
             }
@@ -195,7 +195,7 @@ namespace IVSparse {
             for (int i = 0; i < outerDim; i++) {
                 for (typename IVCSC<T, columnMajor>::InnerIterator it(*this, i); it; ++it) {
                     if (it.value() < minCoeff(it.row(), 0)) {
-                        minCoeff(it.col(), 0) = it.value();
+                        minCoeff(it.row(), 0) = it.value();
                     }
                 }
             }
@@ -257,7 +257,7 @@ namespace IVSparse {
             }
         }
 
-        if (minCoeff == std::numeric_limits<T>::max())
+        if (minCoeff == std::numeric_limits<T>::max() || (uint64_t)nnz < (uint64_t)numRows * (uint64_t)numCols)
             return 0;
         else
             return minCoeff;
