@@ -274,32 +274,45 @@ namespace IVSparse {
          /**
           * @returns A vector of the sum of each vector along the outer dimension.
           */
-        inline std::vector<T> outerSum();
+        inline Eigen::Matrix<T, -1, -1> colSum();
 
         /**
          * @returns A vector of the sum of each vector along the inner dimension.
          */
-        inline std::vector<T> innerSum();
+        inline Eigen::Matrix<T, -1, -1> rowSum();
+
 
         /**
-         * @returns A vector of the maximum value in each column.
-         */
-        inline std::vector<T> maxColCoeff();
+         * Note: axis = 0 for a column sum and axis = 1 for row sum.
+         *       For min coefficient in matrix, there is an overloaded
+         *       method without a paramter.
+         * 
+         * @returns An Eigen::Matrix of the min value along specified axis
+        */
+
+        inline Eigen::Matrix<T, -1, -1> min(int axis);
 
         /**
-         * @returns A vector of the maximum value in each row.
+         * @returns The min value in the matrix.
          */
-        inline std::vector<T> maxRowCoeff();
+
+        inline T min();
 
         /**
-         * @returns A vector of the minimum value in each column.
-         */
-        inline std::vector<T> minColCoeff();
+         * Note: axis = 0 for a column sum and axis = 1 for row sum.
+         *       For max coefficient in matrix, there is an overloaded
+         *       method without a paramter.
+         * 
+         * @returns An Eigen::Matrix of the max value along specified axis
+        */
+
+        inline Eigen::Matrix<T, -1, -1> max(int axis);
 
         /**
-         * @returns A vector of the minimum value in each row.
+         * @returns The max value in the matrix.
          */
-        inline std::vector<T> minRowCoeff();
+
+        inline T max();
 
         /**
          * @returns The trace of the matrix.
@@ -329,7 +342,7 @@ namespace IVSparse {
         /**
          * @returns Returns the length of the specified vector.
          */
-        inline double vectorLength(uint32_t vec);
+        // inline double vectorLength(uint32_t vec);
 
         ///@}
 

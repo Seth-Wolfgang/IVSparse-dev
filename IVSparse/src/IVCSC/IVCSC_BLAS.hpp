@@ -80,106 +80,189 @@ namespace IVSparse {
     //* Other Matrix Calculations *//
 
     template <typename T, bool columnMajor>
-    inline std::vector<T> IVCSC<T, columnMajor>::outerSum() {
-        std::vector<T> outerSum = std::vector<T>(outerDim);
+    inline Eigen::Matrix<T, -1, -1> IVCSC<T, columnMajor>::colSum() {
+        Eigen::Matrix<T, -1, -1> colSum = Eigen::Matrix<T, -1, -1>::Zero(numCols, 1);
 
         #ifdef IVSPARSE_HAS_OPENMP
-        #pragma omp parallel for
+        // #pragma omp parallel for
         #endif
         for (int i = 0; i < outerDim; i++) {
             for (typename IVCSC<T, columnMajor>::InnerIterator it(*this, i); it; ++it) {
-                outerSum[i] += it.value();
+                colSum(it.col(), 0) += it.value();
             }
         }
-        return outerSum;
+        return colSum.transpose();
     }
 
     template <typename T, bool columnMajor>
-    inline std::vector<T> IVCSC<T, columnMajor>::innerSum() {
-        std::vector<T> innerSum = std::vector<T>(innerDim);
+    inline Eigen::Matrix<T, -1, -1> IVCSC<T, columnMajor>::rowSum() {
+        Eigen::Matrix<T, -1, -1> rowSum = Eigen::Matrix<T, -1, -1>::Zero(numRows, 1);
 
         #ifdef IVSPARSE_HAS_OPENMP
-        #pragma omp parallel for
+        // #pragma omp parallel for
         #endif
         for (int i = 0; i < outerDim; i++) {
             for (typename IVCSC<T, columnMajor>::InnerIterator it(*this, i); it; ++it) {
-                innerSum[it.row()] += it.value();
+                rowSum(it.row(), 0) += it.value();
             }
         }
-        return innerSum;
+        return rowSum;
     }
 
     template <typename T, bool columnMajor>
-    inline std::vector<T> IVCSC<T, columnMajor>::maxColCoeff() {
+    inline Eigen::Matrix<T, -1, -1> IVCSC<T, columnMajor>::max(int axis) {
 
-        std::vector<T> maxCoeff = std::vector<T>(innerDim);
+        Eigen::Matrix<T, -1, -1> maxCoeff;
+
+        // Axis 0 for col, Axis 1 for row. Like SciPy
+        switch (axis) {
+        case 0: // MAX COLUMN COEFFICIENTS
+
+            // This is set to a singular column for caching purposes
+            // This is transposed in the final return statement
+            maxCoeff = Eigen::Matrix<T, -1, -1>::Constant(numCols, 1, std::numeric_limits<T>::min());
+
+            #ifdef IVSPARSE_HAS_OPENMP
+            // #pragma omp parallel for
+            #endif
+            for (int i = 0; i < outerDim; i++) {
+                for (typename IVCSC<T, columnMajor>::InnerIterator it(*this, i); it; ++it) {
+                    if (it.value() > maxCoeff(it.col(), 0)) {
+                        maxCoeff(it.col(), 0) = it.value();
+                    }
+                }
+            }
+            break;
+
+        case 1: // MAX ROW COEFFICIENTS
+            maxCoeff = Eigen::Matrix<T, -1, -1>::Constant(numRows, 1, std::numeric_limits<T>::min());
+
+            #ifdef IVSPARSE_HAS_OPENMP
+            // #pragma omp parallel for
+            #endif
+            for (int i = 0; i < outerDim; i++) {
+                for (typename IVCSC<T, columnMajor>::InnerIterator it(*this, i); it; ++it) {
+                    if (it.value() > maxCoeff(it.row(), 0)) {
+                        maxCoeff(it.col(), 0) = it.value();
+                    }
+                }
+            }
+            break;
+        } // end switch
+
+        // If the maxCoeff is still the initialized value, set it to 0
+        for (int i = 0; i < maxCoeff.rows(); i++) 
+            if (maxCoeff(i, 0) == std::numeric_limits<T>::min()) 
+                maxCoeff(i, 0) = 0;
+            
+        
+        if (!axis) {
+            return maxCoeff.transpose();
+        }
+        else {
+            return maxCoeff;
+        }
+    }
+
+    template <typename T, bool columnMajor>
+    inline Eigen::Matrix<T, -1, -1> IVCSC<T, columnMajor>::min(int axis) {
+
+        Eigen::Matrix<T, -1, -1> minCoeff;
+
+        // Axis 0 for col, Axis 1 for row. Like SciPy
+        switch (axis) {
+        case 0: // MIN COLUMN COEFFICIENTS
+            minCoeff = Eigen::Matrix<T, -1, -1>::Constant(numCols, 1, std::numeric_limits<T>::max());
+
+            #ifdef IVSPARSE_HAS_OPENMP
+            // #pragma omp parallel for
+            #endif
+            for (int i = 0; i < outerDim; i++) {
+                for (typename IVCSC<T, columnMajor>::InnerIterator it(*this, i); it; ++it) {
+                    if (it.value() < minCoeff(it.col(), 0)) {
+                        minCoeff(it.col(), 0) = it.value();
+                    }
+                }
+            }
+            break;
+
+        case 1: // MIN ROW COEFFICIENTS
+            minCoeff = Eigen::Matrix<T, -1, -1>::Constant(numRows, 1, std::numeric_limits<T>::max());
+
+            #ifdef IVSPARSE_HAS_OPENMP
+            // #pragma omp parallel for
+            #endif
+            for (int i = 0; i < outerDim; i++) {
+                for (typename IVCSC<T, columnMajor>::InnerIterator it(*this, i); it; ++it) {
+                    if (it.value() < minCoeff(it.row(), 0)) {
+                        minCoeff(it.col(), 0) = it.value();
+                    }
+                }
+            }
+            break;
+        } // end switch
+
+        // reset any values that are still max
+        for (int i = 0; i < minCoeff.rows(); i++) {
+            if (minCoeff(i, 0) == std::numeric_limits<T>::max()) {
+                minCoeff(i, 0) = 0;
+            }
+        }
+
+        if (!axis) {
+            return minCoeff.transpose();
+        }
+        else {
+            return minCoeff;
+        }
+
+    }
+
+
+    template <typename T, bool columnMajor>
+    inline T IVCSC<T, columnMajor>::max() {
+
+        T maxCoeff = std::numeric_limits<T>::min();
 
         #ifdef IVSPARSE_HAS_OPENMP
-        #pragma omp parallel for
+        // #pragma omp parallel for
         #endif
         for (int i = 0; i < outerDim; i++) {
             for (typename IVCSC<T, columnMajor>::InnerIterator it(*this, i); it; ++it) {
-                if (it.value() > maxCoeff[i]) {
-                    maxCoeff[i] = it.value();
+                if (it.value() > maxCoeff) {
+                    maxCoeff = it.value();
                 }
             }
         }
-        return maxCoeff;
+
+        if (maxCoeff == std::numeric_limits<T>::min())
+            return 0;
+        else
+            return maxCoeff;
     }
 
     template <typename T, bool columnMajor>
-    inline std::vector<T> IVCSC<T, columnMajor>::maxRowCoeff() {
+    inline T IVCSC<T, columnMajor>::min() {
 
-        std::vector<T> maxCoeff = std::vector<T>(innerDim);
+        T minCoeff = std::numeric_limits<T>::max();
 
         #ifdef IVSPARSE_HAS_OPENMP
-        #pragma omp parallel for
+        // #pragma omp parallel for
         #endif
         for (int i = 0; i < outerDim; i++) {
             for (typename IVCSC<T, columnMajor>::InnerIterator it(*this, i); it; ++it) {
-                if (it.value() > maxCoeff[it.row()]) {
-                    maxCoeff[it.row()] = it.value();
+                if (it.value() < minCoeff) {
+                    minCoeff = it.value();
                 }
             }
         }
-        return maxCoeff;
+
+        if (minCoeff == std::numeric_limits<T>::max())
+            return 0;
+        else
+            return minCoeff;
     }
 
-    template <typename T, bool columnMajor>
-    inline std::vector<T> IVCSC<T, columnMajor>::minColCoeff() {
-
-        std::vector<T> minCoeff = std::vector<T>(innerDim);
-
-        #ifdef IVSPARSE_HAS_OPENMP
-        #pragma omp parallel for
-        #endif
-        for (int i = 0; i < outerDim; i++) {
-            for (typename IVCSC<T, columnMajor>::InnerIterator it(*this, i); it; ++it) {
-                if (it.value() < minCoeff[i]) {
-                    minCoeff[i] = it.value();
-                }
-            }
-        }
-        return minCoeff;
-    }
-
-    template <typename T, bool columnMajor>
-    inline std::vector<T> IVCSC<T, columnMajor>::minRowCoeff() {
-        std::vector<T> minCoeff = std::vector<T>(innerDim);
-        memset(minCoeff.data(), 0xF, innerDim * sizeof(T));
-
-        #ifdef IVSPARSE_HAS_OPENMP
-        #pragma omp parallel for
-        #endif
-        for (int i = 0; i < outerDim; i++) {
-            for (typename IVCSC<T, columnMajor>::InnerIterator it(*this, i); it; ++it) {
-                if (it.value() < minCoeff[it.row()]) {
-                    minCoeff[it.row()] = it.value();
-                }
-            }
-        }
-        return minCoeff;
-    }
 
     template <typename T, bool columnMajor>
     template<typename T2, std::enable_if_t<std::is_integral<T2>::value, bool>>
@@ -273,20 +356,20 @@ namespace IVSparse {
         return sqrt(norm);
     }
 
-    template <typename T, bool columnMajor>
-    inline double IVCSC<T, columnMajor>::vectorLength(uint32_t col) {
+    // template <typename T, bool columnMajor>
+    // inline double IVCSC<T, columnMajor>::vectorLength(uint32_t col) {
 
-        #ifdef IVSPARSE_DEBUG
-        assert(col < outerDim && col >= 0 && "The column index is out of bounds!");
-        #endif
+    //     #ifdef IVSPARSE_DEBUG
+    //     assert(col < outerDim && col >= 0 && "The column index is out of bounds!");
+    //     #endif
 
-        double norm = 0;
+    //     double norm = 0;
 
-        for (typename IVCSC<T, columnMajor>::InnerIterator it(*this, col);
-             it; ++it) {
-            norm += it.value() * it.value();
-        }
-        return sqrt(norm);
-    }
+    //     for (typename IVCSC<T, columnMajor>::InnerIterator it(*this, col);
+    //          it; ++it) {
+    //         norm += it.value() * it.value();
+    //     }
+    //     return sqrt(norm);
+    // }
 
 }  // namespace IVSparse

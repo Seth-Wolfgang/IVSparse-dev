@@ -280,32 +280,44 @@ namespace IVSparse {
          /**
           * @returns A vector of the sum of each vector along the outer dimension.
           */
-        inline std::vector<T> outerSum();
+        inline Eigen::Matrix<T, -1, -1> colSum();
 
         /**
          * @returns A vector of the sum of each vector along the inner dimension.
          */
-        inline std::vector<T> innerSum();
+        inline Eigen::Matrix<T, -1, -1> rowSum();
 
         /**
-         * @returns A vector of the maximum value in each column.
-         */
-        inline std::vector<T> maxColCoeff();
+         * Note: axis = 0 for a column sum and axis = 1 for row sum.
+         *       For min coefficient in matrix, there is an overloaded
+         *       method without a paramter.
+         * 
+         * @returns An Eigen::Matrix of the min value along specified axis
+        */
+
+        inline Eigen::Matrix<T, -1, -1> min(int axis);
 
         /**
-         * @returns A vector of the maximum value in each row.
+         * @returns The min value in the matrix.
          */
-        inline std::vector<T> maxRowCoeff();
+
+        inline T min();
 
         /**
-         * @returns A vector of the minimum value in each column.
-         */
-        inline std::vector<T> minColCoeff();
+         * Note: axis = 0 for a column sum and axis = 1 for row sum.
+         *       For max coefficient in matrix, there is an overloaded
+         *       method without a paramter.
+         * 
+         * @returns An Eigen::Matrix of the max value along specified axis
+        */
+
+        inline Eigen::Matrix<T, -1, -1> max(int axis);
 
         /**
-         * @returns A vector of the minimum value in each row.
+         * @returns The max value in the matrix.
          */
-        inline std::vector<T> minRowCoeff();
+
+        inline T max();
 
         /**
          * @returns The trace of the matrix.
@@ -418,14 +430,14 @@ namespace IVSparse {
 
         /**
          * @brief Appends a raw CSC matrix to the current matrix. Assumes correct storage order.
-         * @tparam T2 
-         * @tparam indexT2 
-         * @param vals 
-         * @param innerIndices 
-         * @param outerPtr 
-         * @param num_rows 
-         * @param num_cols 
-         * @param nnz 
+         * @tparam T2
+         * @tparam indexT2
+         * @param vals
+         * @param innerIndices
+         * @param outerPtr
+         * @param num_rows
+         * @param num_cols
+         * @param nnz
          */
         template <typename T2, typename indexT>
         inline void append(T2* vals, indexT* innerIndices, indexT* outerPtr, uint32_t num_rows, uint32_t num_cols, uint32_t nnz);

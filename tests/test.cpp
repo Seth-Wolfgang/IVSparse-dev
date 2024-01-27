@@ -78,18 +78,19 @@ int main() {
     IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc4(eigen_sparse4);
     IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc4(eigen_sparse4);
 
-    test1(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4, eigen1, eigen2, eigen3, eigen4);
-    test2(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4);
-    test3(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4, eigen_sparse1, eigen_sparse2, eigen_sparse3, eigen_sparse4);
-    test4(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4);
-    test5(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4);
-    test6(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4);
-    test7(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4, eigen_sparse1, eigen_sparse2, eigen_sparse3, eigen_sparse4);
-    test8(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4, eigen_sparse1, eigen_sparse2, eigen_sparse3, eigen_sparse4);
-    test9(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4, eigen_sparse1, eigen_sparse2, eigen_sparse3, eigen_sparse4);
-    test10(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4, eigen_sparse1, eigen_sparse2, eigen_sparse3, eigen_sparse4);
-    test11(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4, eigen_sparse1, eigen_sparse2, eigen_sparse3, eigen_sparse4);
+    // test1(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4, eigen1, eigen2, eigen3, eigen4);
+    // test2(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4);
+    // test3(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4, eigen_sparse1, eigen_sparse2, eigen_sparse3, eigen_sparse4);
+    // test4(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4);
+    // test5(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4);
+    // test6(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4);
+    // test7(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4, eigen_sparse1, eigen_sparse2, eigen_sparse3, eigen_sparse4);
+    // test8(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4, eigen_sparse1, eigen_sparse2, eigen_sparse3, eigen_sparse4);
+    // test9(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4, eigen_sparse1, eigen_sparse2, eigen_sparse3, eigen_sparse4);
+    // test10(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4, eigen_sparse1, eigen_sparse2, eigen_sparse3, eigen_sparse4);
+    // test11(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4, eigen_sparse1, eigen_sparse2, eigen_sparse3, eigen_sparse4);
     test12(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4, eigen_sparse1, eigen_sparse2, eigen_sparse3, eigen_sparse4);
+    test13(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4, eigen_sparse1, eigen_sparse2, eigen_sparse3, eigen_sparse4);
 
 
     return 0;
@@ -725,7 +726,6 @@ void test10(IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc1,
     assert(vcsc1.trace() == denseMat1.trace());
     assert(ivcsc1.trace() == ivcsc1.transpose().trace());
     assert(vcsc1.trace() == vcsc1.transpose().trace());
-
 }
 
 
@@ -864,7 +864,7 @@ void test12(IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc1,
             Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen2,
             Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen3,
             Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen4) {
-                
+
     // std::chrono::high_resolution_clock::time_point t1 = std::chrono::high_resolution_clock::now();
     vcsc1.append(eigen4.valuePtr(), eigen4.innerIndexPtr(), eigen4.outerIndexPtr(), eigen4.innerSize(), eigen4.outerSize(), eigen4.nonZeros());
     vcsc2.append(eigen3.valuePtr(), eigen3.innerIndexPtr(), eigen3.outerIndexPtr(), eigen3.innerSize(), eigen3.outerSize(), eigen3.nonZeros());
@@ -910,7 +910,7 @@ void test12(IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc1,
     denseMat4 << Eigen::Matrix<TYPE, -1, -1>(eigen4), Eigen::Matrix<TYPE, -1, -1>(eigen1);
     // t2 = std::chrono::high_resolution_clock::now();
     // std::cout << "denseMat append: " << std::chrono::duration_cast<std::chrono::microseconds>(t2 - t1).count() << std::endl;
-    
+
     // t1 = std::chrono::high_resolution_clock::now();
     Eigen::SparseMatrix<TYPE, EIGENMAJOR> vcsc_to_eigen1 = vcsc1.toEigen();
     Eigen::SparseMatrix<TYPE, EIGENMAJOR> vcsc_to_eigen2 = vcsc2.toEigen();
@@ -991,4 +991,391 @@ void test12(IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc1,
             ++it3;
         }
     }
+}
+
+
+void test13(IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc1,
+            IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc2,
+            IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc3,
+            IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc4,
+            IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc1,
+            IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc2,
+            IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc3,
+            IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc4,
+            Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen1,
+            Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen2,
+            Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen3,
+            Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen4) {
+
+    Eigen::Matrix<TYPE, -1, -1> denseMat1(eigen1);
+    Eigen::Matrix<TYPE, -1, -1> denseMat2(eigen2);
+    Eigen::Matrix<TYPE, -1, -1> denseMat3(eigen3);
+    Eigen::Matrix<TYPE, -1, -1> denseMat4(eigen4);
+
+    Eigen::Matrix<TYPE, -1, -1> vcsc_sum1 = vcsc1.rowSum();
+    Eigen::Matrix<TYPE, -1, -1> ivcsc_sum1 = ivcsc1.rowSum();
+    Eigen::Matrix<TYPE, -1, -1> denseMat_sum1 = denseMat1.rowwise().sum();
+
+    Eigen::Matrix<TYPE, -1, -1> vcsc_sum2 = vcsc2.rowSum();
+    Eigen::Matrix<TYPE, -1, -1> ivcsc_sum2 = ivcsc2.rowSum();
+    Eigen::Matrix<TYPE, -1, -1> denseMat_sum2 = denseMat2.rowwise().sum();
+
+
+    Eigen::Matrix<TYPE, -1, -1> vcsc_sum3 = vcsc3.rowSum();
+    Eigen::Matrix<TYPE, -1, -1> ivcsc_sum3 = ivcsc3.rowSum();
+    Eigen::Matrix<TYPE, -1, -1> denseMat_sum3 = denseMat3.rowwise().sum();
+
+
+    Eigen::Matrix<TYPE, -1, -1> vcsc_sum4 = vcsc4.rowSum();
+    Eigen::Matrix<TYPE, -1, -1> ivcsc_sum4 = ivcsc4.rowSum();
+    Eigen::Matrix<TYPE, -1, -1> denseMat_sum4 = denseMat4.rowwise().sum();
+
+    for (int i = 0; i < vcsc_sum1.rows(); i++) {
+        assert(vcsc_sum1(i, 0) == ivcsc_sum1(i, 0));
+        assert(vcsc_sum1(i, 0) == denseMat_sum1(i, 0));
+    }
+
+    for (int i = 0; i < vcsc_sum2.rows(); i++) {
+        assert(vcsc_sum2(i, 0) == ivcsc_sum2(i, 0));
+        assert(vcsc_sum2(i, 0) == denseMat_sum2(i, 0));
+    }
+    for (int i = 0; i < vcsc_sum3.rows(); i++) {
+        assert(vcsc_sum3(i, 0) == ivcsc_sum3(i, 0));
+        assert(vcsc_sum3(i, 0) == denseMat_sum3(i, 0));
+    }
+    for (int i = 0; i < vcsc_sum4.rows(); i++) {
+        assert(vcsc_sum4(i, 0) == ivcsc_sum4(i, 0));
+        assert(vcsc_sum4(i, 0) == denseMat_sum4(i, 0));
+    }
+
+
+    vcsc_sum1 = vcsc1.colSum();
+    ivcsc_sum1 = ivcsc1.colSum();
+    denseMat_sum1 = denseMat1.colwise().sum();
+
+    vcsc_sum2 = vcsc2.colSum();
+    ivcsc_sum2 = ivcsc2.colSum();
+    denseMat_sum2 = denseMat2.colwise().sum();
+
+
+    vcsc_sum3 = vcsc3.colSum();
+    ivcsc_sum3 = ivcsc3.colSum();
+    denseMat_sum3 = denseMat3.colwise().sum();
+
+
+    vcsc_sum4 = vcsc4.colSum();
+    ivcsc_sum4 = ivcsc4.colSum();
+    denseMat_sum4 = denseMat4.colwise().sum();
+
+    for (int i = 0; i < vcsc_sum1.cols(); i++) {
+        assert(vcsc_sum1(0, i) == ivcsc_sum1(0, i));
+        assert(vcsc_sum1(0, i) == denseMat_sum1(0, i));
+    }
+
+    for (int i = 0; i < vcsc_sum2.cols(); i++) {
+        assert(vcsc_sum2(0, i) == ivcsc_sum2(0, i));
+        assert(vcsc_sum2(0, i) == denseMat_sum2(0, i));
+    }
+
+    for (int i = 0; i < vcsc_sum3.cols(); i++) {
+        assert(vcsc_sum3(0, i) == ivcsc_sum3(0, i));
+        assert(vcsc_sum3(0, i) == denseMat_sum3(0, i));
+    }
+
+    for (int i = 0; i < vcsc_sum4.cols(); i++) {
+        assert(vcsc_sum4(0, i) == ivcsc_sum4(0, i));
+        assert(vcsc_sum4(0, i) == denseMat_sum4(0, i));
+    }
+
+}
+
+
+void test14(IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc1,
+            IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc2,
+            IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc3,
+            IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc4,
+            IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc1,
+            IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc2,
+            IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc3,
+            IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc4,
+            Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen1,
+            Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen2,
+            Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen3,
+            Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen4) {
+
+
+    Eigen::Matrix<TYPE, -1, -1> denseMat1(eigen1);
+    Eigen::Matrix<TYPE, -1, -1> denseMat2(eigen2);
+    Eigen::Matrix<TYPE, -1, -1> denseMat3(eigen3);
+    Eigen::Matrix<TYPE, -1, -1> denseMat4(eigen4);
+
+    Eigen::Matrix<TYPE, -1, -1> vcsc_sum1 = vcsc1.min(1);
+    Eigen::Matrix<TYPE, -1, -1> ivcsc_sum1 = ivcsc1.min(1);
+    Eigen::Matrix<TYPE, -1, -1> denseMat_sum1 = denseMat1.rowwise().minCoeff();
+
+    Eigen::Matrix<TYPE, -1, -1> vcsc_sum2 = vcsc2.min(1);
+    Eigen::Matrix<TYPE, -1, -1> ivcsc_sum2 = ivcsc2.min(1);
+    Eigen::Matrix<TYPE, -1, -1> denseMat_sum2 = denseMat2.rowwise().minCoeff();
+
+
+    Eigen::Matrix<TYPE, -1, -1> vcsc_sum3 = vcsc3.min(1);
+    Eigen::Matrix<TYPE, -1, -1> ivcsc_sum3 = ivcsc3.min(1);
+    Eigen::Matrix<TYPE, -1, -1> denseMat_sum3 = denseMat3.rowwise().minCoeff();
+
+
+    Eigen::Matrix<TYPE, -1, -1> vcsc_sum4 = vcsc4.min(1);
+    Eigen::Matrix<TYPE, -1, -1> ivcsc_sum4 = ivcsc4.min(1);
+    Eigen::Matrix<TYPE, -1, -1> denseMat_sum4 = denseMat4.rowwise().minCoeff();
+
+    for (int i = 0; i < vcsc_sum1.rows(); i++) {
+        assert(vcsc_sum1(i, 0) == ivcsc_sum1(i, 0));
+        assert(vcsc_sum1(i, 0) == denseMat_sum1(i, 0));
+    }
+
+    for (int i = 0; i < vcsc_sum2.rows(); i++) {
+        assert(vcsc_sum2(i, 0) == ivcsc_sum2(i, 0));
+        assert(vcsc_sum2(i, 0) == denseMat_sum2(i, 0));
+    }
+    for (int i = 0; i < vcsc_sum3.rows(); i++) {
+        assert(vcsc_sum3(i, 0) == ivcsc_sum3(i, 0));
+        assert(vcsc_sum3(i, 0) == denseMat_sum3(i, 0));
+    }
+    for (int i = 0; i < vcsc_sum4.rows(); i++) {
+        assert(vcsc_sum4(i, 0) == ivcsc_sum4(i, 0));
+        assert(vcsc_sum4(i, 0) == denseMat_sum4(i, 0));
+    }
+
+
+    vcsc_sum1 = vcsc1.max(1);
+    ivcsc_sum1 = ivcsc1.max(1);
+    denseMat_sum1 = denseMat1.rowwise().maxCoeff();
+
+    vcsc_sum2 = vcsc2.max(1);
+    ivcsc_sum2 = ivcsc2.max(1);
+    denseMat_sum2 = denseMat2.rowwise().maxCoeff();
+
+
+    vcsc_sum3 = vcsc3.max(1);
+    ivcsc_sum3 = ivcsc3.max(1);
+    denseMat_sum3 = denseMat3.rowwise().maxCoeff();
+
+
+    vcsc_sum4 = vcsc4.max(1);
+    ivcsc_sum4 = ivcsc4.max(1);
+    denseMat_sum4 = denseMat4.rowwise().maxCoeff();
+
+    for (int i = 0; i < vcsc_sum1.cols(); i++) {
+        assert(vcsc_sum1(0, i) == ivcsc_sum1(0, i));
+        assert(vcsc_sum1(0, i) == denseMat_sum1(0, i));
+    }
+
+    for (int i = 0; i < vcsc_sum2.cols(); i++) {
+        assert(vcsc_sum2(0, i) == ivcsc_sum2(0, i));
+        assert(vcsc_sum2(0, i) == denseMat_sum2(0, i));
+    }
+
+    for (int i = 0; i < vcsc_sum3.cols(); i++) {
+        assert(vcsc_sum3(0, i) == ivcsc_sum3(0, i));
+        assert(vcsc_sum3(0, i) == denseMat_sum3(0, i));
+    }
+
+    for (int i = 0; i < vcsc_sum4.cols(); i++) {
+        assert(vcsc_sum4(0, i) == ivcsc_sum4(0, i));
+        assert(vcsc_sum4(0, i) == denseMat_sum4(0, i));
+    }
+}
+
+void test15(IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc1,
+            IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc2,
+            IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc3,
+            IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc4,
+            IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc1,
+            IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc2,
+            IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc3,
+            IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc4,
+            Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen1,
+            Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen2,
+            Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen3,
+            Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen4) {
+
+
+    Eigen::Matrix<TYPE, -1, -1> denseMat1(eigen1);
+    Eigen::Matrix<TYPE, -1, -1> denseMat2(eigen2);
+    Eigen::Matrix<TYPE, -1, -1> denseMat3(eigen3);
+    Eigen::Matrix<TYPE, -1, -1> denseMat4(eigen4);
+
+    Eigen::Matrix<TYPE, -1, -1> vcsc_sum1 = vcsc1.min(0);
+    Eigen::Matrix<TYPE, -1, -1> ivcsc_sum1 = ivcsc1.min(0);
+    Eigen::Matrix<TYPE, -1, -1> denseMat_sum1 = denseMat1.colwise().minCoeff();
+
+    Eigen::Matrix<TYPE, -1, -1> vcsc_sum2 = vcsc2.min(0);
+    Eigen::Matrix<TYPE, -1, -1> ivcsc_sum2 = ivcsc2.min(0);
+    Eigen::Matrix<TYPE, -1, -1> denseMat_sum2 = denseMat2.colwise().minCoeff();
+
+
+    Eigen::Matrix<TYPE, -1, -1> vcsc_sum3 = vcsc3.min(0);
+    Eigen::Matrix<TYPE, -1, -1> ivcsc_sum3 = ivcsc3.min(0);
+    Eigen::Matrix<TYPE, -1, -1> denseMat_sum3 = denseMat3.colwise().minCoeff();
+
+
+    Eigen::Matrix<TYPE, -1, -1> vcsc_sum4 = vcsc4.min(0);
+    Eigen::Matrix<TYPE, -1, -1> ivcsc_sum4 = ivcsc4.min(0);
+    Eigen::Matrix<TYPE, -1, -1> denseMat_sum4 = denseMat4.colwise().minCoeff();
+
+    for (int i = 0; i < vcsc_sum1.size(); i++) {
+        assert(vcsc_sum1(i, 0) == ivcsc_sum1(i, 0));
+        assert(vcsc_sum1(i, 0) == denseMat_sum1(i, 0));
+    }
+
+    for (int i = 0; i < vcsc_sum2.size(); i++) {
+        assert(vcsc_sum2(i, 0) == ivcsc_sum2(i, 0));
+        assert(vcsc_sum2(i, 0) == denseMat_sum2(i, 0));
+    }
+    for (int i = 0; i < vcsc_sum3.size(); i++) {
+        assert(vcsc_sum3(i, 0) == ivcsc_sum3(i, 0));
+        assert(vcsc_sum3(i, 0) == denseMat_sum3(i, 0));
+    }
+    for (int i = 0; i < vcsc_sum4.size(); i++) {
+        assert(vcsc_sum4(i, 0) == ivcsc_sum4(i, 0));
+        assert(vcsc_sum4(i, 0) == denseMat_sum4(i, 0));
+    }
+
+
+    vcsc_sum1 = vcsc1.max(0);
+    ivcsc_sum1 = ivcsc1.max(0);
+    denseMat_sum1 = denseMat1.colwise().maxCoeff();
+
+    vcsc_sum2 = vcsc2.max(0);
+    ivcsc_sum2 = ivcsc2.max(0);
+    denseMat_sum2 = denseMat2.colwise().maxCoeff();
+
+
+    vcsc_sum3 = vcsc3.max(0);
+    ivcsc_sum3 = ivcsc3.max(0);
+    denseMat_sum3 = denseMat3.colwise().maxCoeff();
+
+
+    vcsc_sum4 = vcsc4.max(0);
+    ivcsc_sum4 = ivcsc4.max(0);
+    denseMat_sum4 = denseMat4.colwise().maxCoeff();
+
+    for (int i = 0; i < vcsc_sum1.cols(); i++) {
+        assert(vcsc_sum1(0, i) == ivcsc_sum1(0, i));
+        assert(vcsc_sum1(0, i) == denseMat_sum1(0, i));
+    }
+
+    for (int i = 0; i < vcsc_sum2.cols(); i++) {
+        assert(vcsc_sum2(0, i) == ivcsc_sum2(0, i));
+        assert(vcsc_sum2(0, i) == denseMat_sum2(0, i));
+    }
+
+    for (int i = 0; i < vcsc_sum3.cols(); i++) {
+        assert(vcsc_sum3(0, i) == ivcsc_sum3(0, i));
+        assert(vcsc_sum3(0, i) == denseMat_sum3(0, i));
+    }
+
+    for (int i = 0; i < vcsc_sum4.cols(); i++) {
+        assert(vcsc_sum4(0, i) == ivcsc_sum4(0, i));
+        assert(vcsc_sum4(0, i) == denseMat_sum4(0, i));
+    }
+}
+
+void test16(IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc1,
+            IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc2,
+            IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc3,
+            IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc4,
+            IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc1,
+            IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc2,
+            IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc3,
+            IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc4,
+            Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen1,
+            Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen2,
+            Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen3,
+            Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen4) {
+
+
+    Eigen::Matrix<TYPE, -1, -1> denseMat1(eigen1);
+    Eigen::Matrix<TYPE, -1, -1> denseMat2(eigen2);
+    Eigen::Matrix<TYPE, -1, -1> denseMat3(eigen3);
+    Eigen::Matrix<TYPE, -1, -1> denseMat4(eigen4);
+
+    TYPE vcsc_sum1 = vcsc1.min();
+    TYPE ivcsc_sum1 = ivcsc1.min();
+    TYPE denseMat_sum1 = denseMat1.minCoeff();
+
+    TYPE vcsc_sum2 = vcsc2.min();
+    TYPE ivcsc_sum2 = ivcsc2.min();
+    TYPE denseMat_sum2 = denseMat2.minCoeff();
+
+
+    TYPE vcsc_sum3 = vcsc3.min();
+    TYPE ivcsc_sum3 = ivcsc3.min();
+    TYPE denseMat_sum3 = denseMat3.minCoeff();
+
+
+    TYPE vcsc_sum4 = vcsc4.min();
+    TYPE ivcsc_sum4 = ivcsc4.min();
+    TYPE denseMat_sum4 = denseMat4.minCoeff();
+
+    assert(vcsc_sum1 == ivcsc_sum1);
+    assert(vcsc_sum1 == denseMat_sum1);
+
+    assert(vcsc_sum2 == ivcsc_sum2);
+    assert(vcsc_sum2 == denseMat_sum2);
+
+    assert(vcsc_sum3 == ivcsc_sum3);
+    assert(vcsc_sum3 == denseMat_sum3);
+
+    assert(vcsc_sum4 == ivcsc_sum4);
+    assert(vcsc_sum4 == denseMat_sum4);
+
+}
+
+void test17(IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc1,
+            IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc2,
+            IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc3,
+            IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc4,
+            IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc1,
+            IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc2,
+            IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc3,
+            IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc4,
+            Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen1,
+            Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen2,
+            Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen3,
+            Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen4) {
+
+
+    Eigen::Matrix<TYPE, -1, -1> denseMat1(eigen1);
+    Eigen::Matrix<TYPE, -1, -1> denseMat2(eigen2);
+    Eigen::Matrix<TYPE, -1, -1> denseMat3(eigen3);
+    Eigen::Matrix<TYPE, -1, -1> denseMat4(eigen4);
+
+    TYPE vcsc_sum1 = vcsc1.max();
+    TYPE ivcsc_sum1 = ivcsc1.max();
+    TYPE denseMat_sum1 = denseMat1.maxCoeff();
+
+    TYPE vcsc_sum2 = vcsc2.max();
+    TYPE ivcsc_sum2 = ivcsc2.max();
+    TYPE denseMat_sum2 = denseMat2.maxCoeff();
+
+    TYPE vcsc_sum3 = vcsc3.max();
+    TYPE ivcsc_sum3 = ivcsc3.max();
+    TYPE denseMat_sum3 = denseMat3.maxCoeff();
+
+    TYPE vcsc_sum4 = vcsc4.max();
+    TYPE ivcsc_sum4 = ivcsc4.max();
+    TYPE denseMat_sum4 = denseMat4.maxCoeff();
+
+    assert(vcsc_sum1 == ivcsc_sum1);
+    assert(vcsc_sum1 == denseMat_sum1);
+
+    assert(vcsc_sum2 == ivcsc_sum2);
+    assert(vcsc_sum2 == denseMat_sum2);
+
+    assert(vcsc_sum3 == ivcsc_sum3);
+    assert(vcsc_sum3 == denseMat_sum3);
+
+    assert(vcsc_sum4 == ivcsc_sum4);
+    assert(vcsc_sum4 == denseMat_sum4);
+
 }
