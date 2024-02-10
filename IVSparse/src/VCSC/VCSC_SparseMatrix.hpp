@@ -17,7 +17,7 @@ namespace IVSparse {
      * allows for fast level 1 BLAS operations and still compresses more with
      * redundant data than CSC.
      */
-    template <typename T, typename indexT=uint32_t, bool columnMajor=1>
+    template <typename T, typename indexT = uint32_t, bool columnMajor = 1>
     class VCSC {
         private:
         //* The Matrix Data *//
@@ -146,7 +146,7 @@ namespace IVSparse {
          * Same as previous constructor but for Row Major Eigen Sparse Matrices.
          */
         VCSC(Eigen::SparseMatrix<T, 1>& mat);
-    
+
         /**
          * @tparam compressionLevel2 The compression level of the IVSparse matrix to
          * convert
@@ -195,7 +195,7 @@ namespace IVSparse {
          * Given a filepath to a VCSC matrix written to file this constructor will
          * read in the matrix and construct it.
          */
-        VCSC(const char* filename);
+        VCSC(char* filename);
 
         /**
          * @brief Destroy the Sparse Matrix object
@@ -286,7 +286,7 @@ namespace IVSparse {
          * Note: axis = 0 for a column sum and axis = 1 for row sum.
          *       For min coefficient in matrix, there is an overloaded
          *       method without a paramter.
-         * 
+         *
          * @returns An Eigen::Matrix of the min value along specified axis
         */
 
@@ -302,7 +302,7 @@ namespace IVSparse {
          * Note: axis = 0 for a column sum and axis = 1 for row sum.
          *       For max coefficient in matrix, there is an overloaded
          *       method without a paramter.
-         * 
+         *
          * @returns An Eigen::Matrix of the max value along specified axis
         */
 
@@ -342,26 +342,38 @@ namespace IVSparse {
         /**
          * @returns Returns the length of the specified vector.
          */
-        // inline double vectorLength(uint32_t vec);
+         // inline double vectorLength(uint32_t vec);
 
-        ///@}
+         ///@}
 
-        //* Utility Methods *//
-        /**
-         * @name Utility Methods
-         */
-         ///@{
-
+         //* Utility Methods *//
          /**
-          * @param filename The filename of the matrix to write to
-          *
-          * This method writes the IVSparse matrix to a file in binary format.
-          * This can then be read in later using the file constructor.
-          * Currently .ivsparse is the perfered file extension.
-          *
-          * @note Useful to split a matrix up and then write each part separately.
+          * @name Utility Methods
           */
-        void write(const char* filename);
+          ///@{
+
+          /**
+           * @param filename The filename of the matrix to write to
+           *
+           * This method writes the IVSparse matrix to a file in binary format.
+           * This can then be read in later using the file constructor.
+           * Currently .ivsparse is the perfered file extension.
+           *
+           * @note Useful to split a matrix up and then write each part separately.
+           */
+        void write(char* filename);
+
+
+        /**
+        * @param filename The filename of the matrix to read from
+        *
+        * This method overwrites the current matrix with the matrix read in from the
+        * file. The file must be written by the write method.
+        *
+       */
+
+
+        void read(char* filename);
 
         /**
          * Prints "IVSparse Matrix:" followed by the dense representation of the
@@ -422,14 +434,14 @@ namespace IVSparse {
 
         /**
          * @brief Appends a raw CSC matrix to the current matrix. Assumes correct storage order.
-         * @tparam T2 
-         * @tparam indexT2 
-         * @param vals 
-         * @param innerIndices 
-         * @param outerPtr 
-         * @param num_rows 
-         * @param num_cols 
-         * @param nnz 
+         * @tparam T2
+         * @tparam indexT2
+         * @param vals
+         * @param innerIndices
+         * @param outerPtr
+         * @param num_rows
+         * @param num_cols
+         * @param nnz
          */
         template <typename T2, typename indexT2>
         inline void append(T2* vals, indexT2* innerIndices, indexT2* outerPtr, uint32_t num_rows, uint32_t num_cols, uint32_t nnz);
@@ -485,6 +497,6 @@ namespace IVSparse {
         Eigen::Matrix<T, -1, -1> operator*(const Eigen::Ref<const Eigen::Matrix<T, -1, -1>>& mat);
 
 
-        };  // End of VCSC Sparse Matrix Class
+    };  // End of VCSC Sparse Matrix Class
 
-    }  // namespace IVSparse
+}  // namespace IVSparse

@@ -59,10 +59,16 @@ namespace IVSparse {
 
     // Writes the matrix to file
     template<typename T, bool columnMajor>
-    void IVCSC<T, columnMajor>::write(const char* filename) {
+    void IVCSC<T, columnMajor>::write(char* filename) {
+
+        std::string file = std::string(filename);
+        if (strcasestr(filename, ".ivcsc") == NULL) {
+            file += std::string(".ivcsc");
+            // strcat(filename, ".vcsc");
+        }
 
         // Open the file
-        FILE* fp = fopen(filename, "wb+");
+        FILE* fp = fopen(file.c_str(), "wb+");
 
         // Write the metadata
         fwrite(metadata, 1, NUM_META_DATA * sizeof(uint32_t), fp);
@@ -81,6 +87,14 @@ namespace IVSparse {
         // close the file
         fclose(fp);
     }
+
+    template <typename T, bool columnMajor>
+    void IVCSC<T, columnMajor>::read(char* filename) {
+
+        *this = IVCSC<T, columnMajor>(filename);
+
+    }
+
 
     // Prints the matrix dense to console
     template<typename T, bool columnMajor>
@@ -160,7 +174,7 @@ namespace IVSparse {
         // iterate over the matrix
         // #ifndef IVSPARSE_HAS_OPENMP
         Eigen::SparseMatrix<T, columnMajor ? Eigen::ColMajor : Eigen::RowMajor> eigenMatrix(numRows, numCols);
-        eigenMatrix.reserve(Eigen::VectorXi::Constant(numCols, nnz / numCols));
+        // eigenMatrix.reserve(Eigen::VectorXi::Constant(numCols, nnz / numCols));
 
         for (uint32_t i = 0; i < outerDim; ++i) {
             // check if the vector is empty
@@ -447,5 +461,6 @@ namespace IVSparse {
         temp.calculateCompSize();
         return temp;
     }
+
 
 }  // end namespace IVSparse

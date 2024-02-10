@@ -1,5 +1,6 @@
 #include "test.hpp"
 
+
 int main() {
 
     int cols1, cols2, cols3, cols4;
@@ -78,10 +79,10 @@ int main() {
     IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc4(eigen_sparse4);
     IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc4(eigen_sparse4);
 
-    // test1(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4, eigen1, eigen2, eigen3, eigen4);
-    // test2(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4);
-    // test3(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4, eigen_sparse1, eigen_sparse2, eigen_sparse3, eigen_sparse4);
-    // test4(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4);
+    test1(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4, eigen1, eigen2, eigen3, eigen4);
+    test2(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4);
+    test3(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4, eigen_sparse1, eigen_sparse2, eigen_sparse3, eigen_sparse4);
+    test4(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4);
     // test5(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4);
     // test6(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4);
     // test7(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4, eigen_sparse1, eigen_sparse2, eigen_sparse3, eigen_sparse4);
@@ -89,8 +90,12 @@ int main() {
     // test9(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4, eigen_sparse1, eigen_sparse2, eigen_sparse3, eigen_sparse4);
     // test10(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4, eigen_sparse1, eigen_sparse2, eigen_sparse3, eigen_sparse4);
     // test11(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4, eigen_sparse1, eigen_sparse2, eigen_sparse3, eigen_sparse4);
-    test12(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4, eigen_sparse1, eigen_sparse2, eigen_sparse3, eigen_sparse4);
-    test13(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4, eigen_sparse1, eigen_sparse2, eigen_sparse3, eigen_sparse4);
+    // test12(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4, eigen_sparse1, eigen_sparse2, eigen_sparse3, eigen_sparse4);
+    // test13(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4, eigen_sparse1, eigen_sparse2, eigen_sparse3, eigen_sparse4);
+    // test14(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4, eigen_sparse1, eigen_sparse2, eigen_sparse3, eigen_sparse4);
+    // test15(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4, eigen_sparse1, eigen_sparse2, eigen_sparse3, eigen_sparse4);
+    // test16(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4, eigen_sparse1, eigen_sparse2, eigen_sparse3, eigen_sparse4);
+    // test17(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4, eigen_sparse1, eigen_sparse2, eigen_sparse3, eigen_sparse4);
 
 
     return 0;
@@ -344,18 +349,18 @@ void test4(IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc1,
 
 
     ivcsc4.write("test");
-    IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc5("test");
+    IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc5("test.ivcsc");
 
     assert(ivcsc4.sum() == ivcsc5.sum());
 
-    vcsc4.write("test2");
-    IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc5("test2");
+    vcsc4.write("test2.vcsc");
+    IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc5("test2.vcsc");
 
     assert(vcsc4.sum() == vcsc5.sum());
 
     // delete test and test2
-    remove("test");
-    remove("test2");
+    remove("test.ivcsc");
+    remove("test2.vcsc");
 
     ivcsc4.append(ivcsc2);
     ivcsc4.append(ivcsc3);
@@ -365,8 +370,14 @@ void test4(IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc1,
     vcsc4.append(vcsc3);
     vcsc4.write("test4");
 
-    IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc6("test3");
-    IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc6("test4");
+    IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc6("test3.ivcsc");
+    IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc6("test4.vcsc");
+
+    assert(ivcsc4.sum() == ivcsc6.sum());
+    assert(vcsc4.sum() == vcsc6.sum());
+
+    ivcsc6.read("test3.ivcsc");
+    vcsc6.read("test4.vcsc");
 
     assert(ivcsc4.sum() == ivcsc6.sum());
     assert(vcsc4.sum() == vcsc6.sum());
@@ -374,8 +385,9 @@ void test4(IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc1,
     // std::cout << ivcsc4 << std::endl << "-------------------" << std::endl;
     // std::cout << ivcsc6 << std::endl;
 
-    remove("test3");
-    remove("test4");
+    remove("test3.ivcsc");
+    remove("test4.vcsc");
+    
 }
 
 

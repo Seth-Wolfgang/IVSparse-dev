@@ -11,7 +11,7 @@
 namespace IVSparse {
 
     // Assignment Operator
-   template <typename T,  bool columnMajor>
+    template <typename T, bool columnMajor>
     IVCSC<T, columnMajor>& IVCSC<T, columnMajor>::operator=(const IVSparse::IVCSC<T, columnMajor>& other) {
 
         if (this != &other) {
@@ -84,10 +84,10 @@ namespace IVSparse {
     }
 
     // Equality Operator
-   template <typename T,  bool columnMajor>
+    template <typename T, bool columnMajor>
     bool IVCSC<T, columnMajor>::operator==(const IVCSC<T, columnMajor>& other) const {
 
-            // first check the metadata using memcompare
+        // first check the metadata using memcompare
         if (memcmp(metadata, other.metadata, sizeof(uint32_t) * NUM_META_DATA) != 0)
             return false;
 
@@ -100,14 +100,14 @@ namespace IVSparse {
     }
 
     // Inequality Operator
-   template <typename T,  bool columnMajor>
+    template <typename T, bool columnMajor>
     bool IVCSC<T, columnMajor>::operator!=(const IVCSC<T, columnMajor>& other) {
 
         return !(*this == other);
     }
 
     // Coefficent Access Operator
-   template <typename T,  bool columnMajor>
+    template <typename T, bool columnMajor>
     T IVCSC<T, columnMajor>::operator()(uint32_t row, uint32_t col) {
         #ifdef IVSPARSE_DEBUG
         // check if the row and column are in bounds
@@ -138,26 +138,26 @@ namespace IVSparse {
     //* BLAS Operators *//
 
     // Scalar Multiplication
-   template <typename T,  bool columnMajor>
+    template <typename T, bool columnMajor>
     IVSparse::IVCSC<T, columnMajor> IVCSC<T, columnMajor>::operator*(T scalar) {
         return scalarMultiply(scalar);
     }
 
     // In place scalar multiplication
-   template <typename T,  bool columnMajor>
+    template <typename T, bool columnMajor>
     void IVCSC<T, columnMajor>::operator*=(T scalar) {
         inPlaceScalarMultiply(scalar);
     }
 
     // Matrix Vector Multiplication (IVSparse Eigen -> Eigen)
-   template <typename T,  bool columnMajor>
+    template <typename T, bool columnMajor>
     Eigen::Matrix<T, -1, 1> IVCSC<T, columnMajor>::operator*(Eigen::Matrix<T, -1, 1>& vec) {
 
         return vectorMultiply(vec);
     }
 
     // Matrix Matrix Multiplication (IVSparse Eigen -> Eigen)
-   template <typename T,  bool columnMajor>
+    template <typename T, bool columnMajor>
     Eigen::Matrix<T, -1, -1> IVCSC<T, columnMajor>::operator*(Eigen::Matrix<T, -1, -1>& mat) {
 
         #ifdef IVSPARSE_DEBUG
@@ -182,7 +182,7 @@ namespace IVSparse {
         return newMatrix.transpose();
     }
 
-   template <typename T,  bool columnMajor>
+    template <typename T, bool columnMajor>
     Eigen::Matrix<T, -1, -1>  IVCSC<T, columnMajor>::operator* (const Eigen::Ref<const Eigen::Matrix<T, -1, -1>>& mat) {
 
         #ifdef IVSPARSE_DEBUG
@@ -206,7 +206,7 @@ namespace IVSparse {
         return newMatrix.transpose();
     }
 
-   template <typename T,  bool columnMajor>
+    template <typename T, bool columnMajor>
     inline Eigen::Matrix<T, -1, 1> IVCSC<T, columnMajor>::operator*(const Eigen::Ref<const Eigen::Matrix<T, -1, 1>>& vec) {
 
         #ifdef IVSPARSE_DEBUG

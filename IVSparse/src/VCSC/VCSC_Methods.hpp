@@ -67,9 +67,16 @@ namespace IVSparse {
 
     // Writes the matrix to file
     template <typename T, typename indexT, bool columnMajor>
-    void VCSC<T, indexT, columnMajor>::write(const char* filename) {
+    void VCSC<T, indexT, columnMajor>::write(char* filename) {
+
+        std::string file = std::string(filename);
+        if (strcasestr(filename, ".vcsc") == NULL) {
+            file += std::string(".vcsc");
+            // strcat(filename, ".vcsc");
+        }
+
         // Open the file
-        FILE* fp = fopen(filename, "wb+");
+        FILE* fp = fopen(file.c_str(), "wb+");
 
         // Write the metadata
         fwrite(metadata, 1, NUM_META_DATA * sizeof(uint32_t), fp);
@@ -100,6 +107,14 @@ namespace IVSparse {
         // close the file
         fclose(fp);
     }
+
+    template <typename T, typename indexT, bool columnMajor>
+    void VCSC<T, indexT, columnMajor>::read(char* filename) {
+
+        *this = VCSC<T, indexT, columnMajor>(filename);
+
+    }
+
 
     // Prints the matrix dense to console
     template <typename T, typename indexT, bool columnMajor>
@@ -173,7 +188,8 @@ namespace IVSparse {
 
         // create a new sparse matrix
         Eigen::SparseMatrix<T, columnMajor ? Eigen::ColMajor : Eigen::RowMajor> eigenMatrix(numRows, numCols);
-        eigenMatrix.reserve(Eigen::VectorXi::Constant(numCols, nnz / numCols));
+
+        // eigenMatrix.reserve(Eigen::VectorXi::Constant(nnz));
 
         // iterate over the matrix
         // #ifdef IVSPARSE_HAS_OPENMP

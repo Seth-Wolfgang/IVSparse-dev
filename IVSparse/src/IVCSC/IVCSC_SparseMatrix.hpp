@@ -46,7 +46,7 @@ namespace IVSparse {
         //* The Value and Index Types *//
 
         uint32_t val_t;  // Information about the value type (size, signededness, etc.)
-        uint32_t index_t;  // Information about the index type (size)
+        uint32_t index_t;  // Information about the index type (size) (DEPRECATED)
 
         uint32_t* metadata = nullptr;  // The metadata of the matrix
 
@@ -213,7 +213,7 @@ namespace IVSparse {
          * Given a filepath to a IVSparse matrix written to file this constructor will
          * read in the matrix and construct it.
          */
-        IVCSC(const char* filename);
+        IVCSC(char* filename);
 
         /**
          * @brief Destroy the Sparse Matrix object
@@ -367,7 +367,18 @@ namespace IVSparse {
           *
           * @note Useful to split a matrix up and then write each part separately.
           */
-        void write(const char* filename);
+        void write(char* filename);
+
+
+        /**
+         * @param filename The filename of the matrix to read from
+         * 
+         * This method overwrites the current matrix with the matrix read in from the
+         * file. The file must be written by the write method.
+         * 
+        */
+
+        void read(char* filename);
 
         /**
          * Prints "IVSparse Matrix:" followed by the dense representation of the

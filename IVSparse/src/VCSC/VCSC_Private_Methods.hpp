@@ -52,7 +52,7 @@ namespace IVSparse {
         uint8_t byte3 = columnMajor ? 1 : 0;
 
         val_t = (byte3 << 24) | (byte2 << 16) | (byte1 << 8) | byte0;
-    }
+    }                                           //second      //first
 
     // Checks if the value type is correct for the matrix
     template <typename T, typename indexT, bool columnMajor>

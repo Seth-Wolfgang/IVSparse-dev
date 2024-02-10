@@ -4,11 +4,14 @@
 #include "../IVSparse/SparseMatrix"
 // #include "misc/matrix_creator.cpp"
 
+
 #define TYPE double
 #define IVSparseMAJOR 1 // 1 = col major, 0 = row major
 #define EIGENMAJOR !IVSparseMAJOR    // IVSparse -> col major, Eigen -> row major
 #define INDEX_TYPE int
 #define IVSPARSE_DEBUG
+
+
 
 void test1(IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc1,
            IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc2,

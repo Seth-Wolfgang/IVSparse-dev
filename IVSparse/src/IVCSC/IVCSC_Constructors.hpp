@@ -105,7 +105,7 @@ namespace IVSparse {
             metadata = nullptr;
             return;
         }
-        
+
         // make sure the matrix is compressed
         mat.makeCompressed();
 
@@ -421,7 +421,9 @@ namespace IVSparse {
 
     // File Constructor
     template <typename T, bool columnMajor>
-    IVCSC<T, columnMajor>::IVCSC(const char* filename) {
+    IVCSC<T, columnMajor>::IVCSC(char* filename) {
+
+        assert(strcasestr(filename, ".ivcsc") != NULL && "The file must be of type .ivcsc");
 
         FILE* fp = fopen(filename, "rb");
 
@@ -433,11 +435,9 @@ namespace IVSparse {
 
         // read the metadata
         metadata = new uint32_t[NUM_META_DATA];
-        if (fread(metadata, sizeof(uint32_t), NUM_META_DATA, fp) == 0) [[unlikely]] {
-            throw std::runtime_error("Error: Could not read file");
-            }
+        fread(metadata, sizeof(uint32_t), NUM_META_DATA, fp);
 
-            // set the matrix info
+        // set the matrix info
         innerDim = metadata[1];
         outerDim = metadata[2];
         nnz = metadata[3];
@@ -474,32 +474,28 @@ namespace IVSparse {
             // get the size of the column
             uint64_t size;
 
-            if (fread(&size, sizeof(uint64_t), 1, fp) == 0) [[unlikely]] {
-                throw std::runtime_error("Error: Could not read file");
-                }
+            fread(&size, sizeof(uint64_t), 1, fp);
 
-                // if the size is 0, set the data and endpointer to nullptr
-                    if (size == 0) {
-                        data[i] = nullptr;
-                        endPointers[i] = nullptr;
-                        continue;
-                    }
+            // if the size is 0, set the data and endpointer to nullptr
+            if (size == 0) {
+                data[i] = nullptr;
+                endPointers[i] = nullptr;
+                continue;
+            }
 
-                // malloc the column
-                try {
-                    data[i] = malloc(size);
-                    endPointers[i] = (char*)data[i] + size;
-                }
-                catch (std::bad_alloc& e) {
-                    throw std::bad_alloc();
-                }
+            // malloc the column
+            try {
+                data[i] = malloc(size);
+                endPointers[i] = (char*)data[i] + size;
+            }
+            catch (std::bad_alloc& e) {
+                throw std::bad_alloc();
+            }
         }
 
         // read the data
         for (size_t i = 0; i < outerDim; i++) {
-            if (fread(data[i], 1, (uint8_t*)endPointers[i] - (uint8_t*)data[i], fp) == 0) [[unlikely]] {
-                throw std::runtime_error("Error: Could not read file");
-                }
+            fread(data[i], 1, (uint8_t*)endPointers[i] - (uint8_t*)data[i], fp);
         }
 
         // close the file

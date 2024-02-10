@@ -204,7 +204,7 @@ namespace IVSparse {
             for (int i = 0; i < outerDim; i++) {
                 for (typename VCSC<T, indexT, columnMajor>::InnerIterator it(*this, i); it; ++it) {
                     if (it.value() < minCoeff(it.col(), 0)) {
-                        minCoeff(it.row(), 0) = it.value();
+                        minCoeff(it.col(), 0) = it.value();
                     }
                 }
             }
