@@ -53,7 +53,7 @@ namespace IVSparse {
         }
     }
 
-    // Eigen Constructor
+    // Eigen Col Major Constructor
     template <typename T, typename indexT, bool columnMajor>
     VCSC<T, indexT, columnMajor>::VCSC(Eigen::SparseMatrix<T, 0>& mat) {
 

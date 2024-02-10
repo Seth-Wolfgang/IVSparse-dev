@@ -145,13 +145,13 @@ namespace IVSparse {
         // ---- Stage 2: Construct the Dictionary For Each Column ---- //
 
         // Loop through each column and construct a middle data structre for the matrix
-        #ifdef IVSPARSE_HAS_OPENMP
-        #pragma omp parallel for
-        #endif
+        // #ifdef IVSPARSE_HAS_OPENMP
+        // #pragma omp parallel for
+        // #endif
         for (uint32_t i = 0; i < outerDim; i++) {
 
             // create the data structure to temporarily hold the data
-            std::map<T2, std::vector<indexT2>> dict;  // Key = value, Value = vector of indices
+            std::map<T2, std::vector<indexT>> dict;  // Key = value, Value = vector of indices
 
             // check if the current column is empty
             if (outerPointers[i] == outerPointers[i + 1]) {
@@ -173,7 +173,6 @@ namespace IVSparse {
                 if (dict.find(vals[j]) != dict.end()) {
                     // add the index
                     dict[vals[j]].push_back(innerIndices[j]);
-                    
 
                     numIndices++;
                 }
@@ -181,7 +180,7 @@ namespace IVSparse {
                     // if value not already in the dictionary add it
 
                     // create a new vector for the indices
-                    dict[vals[j]] = std::vector<indexT2>{ innerIndices[j] };
+                    dict[vals[j]] = std::vector<indexT>{ (indexT)innerIndices[j] };
 
                     numIndices++;
                 }
@@ -204,21 +203,21 @@ namespace IVSparse {
             // set the size of the column
             valueSizes[i] = dict.size();
             indexSizes[i] = numIndices;
-            size_t performanceVecSize = 0;
+            size_t countSize = 0;
             size_t indexSize = 0;
 
             // ---- Stage 4: Populate the Column Data ---- //
 
             for (auto& pair : dict) {
-                values[i][performanceVecSize] = (T)pair.first;
-                counts[i][performanceVecSize] = (indexT)pair.second.size();
+                values[i][countSize] = (T)pair.first;
+                counts[i][countSize] = (indexT)pair.second.size();
 
                 // memcpy the indices into the indices array and increment the indexSize
                 memcpy(&indices[i][indexSize], &pair.second[0], sizeof(indexT) * pair.second.size());
                 indexSize += pair.second.size();
 
 
-                performanceVecSize++;
+                countSize++;
             }
 
         }  // end column loop
