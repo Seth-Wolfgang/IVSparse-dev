@@ -6,7 +6,7 @@
 
 
 #define TYPE double
-#define IVSparseMAJOR 1 // 1 = col major, 0 = row major
+#define IVSparseMAJOR 0 // 1 = col major, 0 = row major
 #define EIGENMAJOR !IVSparseMAJOR    // IVSparse -> col major, Eigen -> row major
 #define INDEX_TYPE int
 #define IVSPARSE_DEBUG

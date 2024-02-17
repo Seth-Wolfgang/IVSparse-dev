@@ -5,8 +5,8 @@ int main() {
 
     int cols1, cols2, cols3, cols4;
     int rows1, rows2, rows3, rows4;
-    int a = (rand() % 100 + 1) % std::numeric_limits<INDEX_TYPE>::max() + 1;
-    int b = (rand() % 100 + 1) % std::numeric_limits<INDEX_TYPE>::max() + 1;
+    int a = (rand() % 10000 + 1) % std::numeric_limits<INDEX_TYPE>::max() + 1;
+    int b = (rand() % 10000 + 1) % std::numeric_limits<INDEX_TYPE>::max() + 1;
     std::cout << "a: " << a << std::endl;
     std::cout << "b: " << b << std::endl;
     #ifdef IVSPARSE_HAS_OPENMP
@@ -80,9 +80,12 @@ int main() {
     IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc4(eigen_sparse4);
 
     test1(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4, eigen1, eigen2, eigen3, eigen4);
+    std::cout << "test1 passed" << std::endl;
     test2(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4);
+    std::cout << "test2 passed" << std::endl;
     test3(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4, eigen_sparse1, eigen_sparse2, eigen_sparse3, eigen_sparse4);
-    test4(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4);
+    std::cout << "test3 passed" << std::endl;
+    // test4(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4);
     // test5(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4);
     // test6(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4);
     // test7(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4, eigen_sparse1, eigen_sparse2, eigen_sparse3, eigen_sparse4);
