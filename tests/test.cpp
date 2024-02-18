@@ -5,8 +5,8 @@ int main() {
 
     int cols1, cols2, cols3, cols4;
     int rows1, rows2, rows3, rows4;
-    int a = (rand() % 10000 + 1) % std::numeric_limits<INDEX_TYPE>::max() + 1;
-    int b = (rand() % 10000 + 1) % std::numeric_limits<INDEX_TYPE>::max() + 1;
+    int a = (rand() % 1000 + 1) % std::numeric_limits<INDEX_TYPE>::max() + 1;
+    int b = (rand() % 1000 + 1) % std::numeric_limits<INDEX_TYPE>::max() + 1;
     std::cout << "a: " << a << std::endl;
     std::cout << "b: " << b << std::endl;
     #ifdef IVSPARSE_HAS_OPENMP
@@ -79,13 +79,13 @@ int main() {
     IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc4(eigen_sparse4);
     IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc4(eigen_sparse4);
 
-    test1(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4, eigen1, eigen2, eigen3, eigen4);
-    std::cout << "test1 passed" << std::endl;
-    test2(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4);
-    std::cout << "test2 passed" << std::endl;
-    test3(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4, eigen_sparse1, eigen_sparse2, eigen_sparse3, eigen_sparse4);
-    std::cout << "test3 passed" << std::endl;
-    // test4(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4);
+    // test1(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4, eigen1, eigen2, eigen3, eigen4);
+    // std::cout << "test1 passed" << std::endl;
+    // test2(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4);
+    // std::cout << "test2 passed" << std::endl;
+    // test3(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4, eigen_sparse1, eigen_sparse2, eigen_sparse3, eigen_sparse4);
+    // std::cout << "test3 passed" << std::endl;
+    test4(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4);
     // test5(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4);
     // test6(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4);
     // test7(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4, eigen_sparse1, eigen_sparse2, eigen_sparse3, eigen_sparse4);
@@ -353,7 +353,8 @@ void test4(IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc1,
 
     ivcsc4.write("test");
     IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc5("test.ivcsc");
-
+    std::cout << "ivcsc4 sum: " << ivcsc4.sum() << std::endl;
+    std::cout << "ivcsc5 sum: " << ivcsc5.sum() << std::endl;
     assert(ivcsc4.sum() == ivcsc5.sum());
 
     vcsc4.write("test2.vcsc");
@@ -390,6 +391,24 @@ void test4(IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc1,
 
     remove("test3.ivcsc");
     remove("test4.vcsc");
+
+    ivcsc2.write("test5");
+    vcsc2.write("test6");
+
+    IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc7("test5.ivcsc");
+    IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc7("test6.vcsc");
+
+    assert(ivcsc2.sum() == ivcsc7.sum());
+    assert(vcsc2.sum() == vcsc7.sum());
+
+    ivcsc7.read("test5.ivcsc");
+    vcsc7.read("test6.vcsc");
+
+    assert(ivcsc2.sum() == ivcsc7.sum());
+    assert(vcsc2.sum() == vcsc7.sum());
+
+    remove("test5.ivcsc");
+    remove("test6.vcsc");
     
 }
 

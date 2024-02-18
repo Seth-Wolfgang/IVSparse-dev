@@ -5,7 +5,7 @@
 // #include "misc/matrix_creator.cpp"
 
 
-#define TYPE double
+#define TYPE int16_t
 #define IVSparseMAJOR 0 // 1 = col major, 0 = row major
 #define EIGENMAJOR !IVSparseMAJOR    // IVSparse -> col major, Eigen -> row major
 #define INDEX_TYPE int

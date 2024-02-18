@@ -40,6 +40,7 @@
 #include <type_traits>
 #include <iomanip>
 #include <type_traits>
+#include <unistd.h>
 
 namespace IVSparse {
  

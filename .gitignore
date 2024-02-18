@@ -24,3 +24,5 @@ Benchmarking/datasets
 *.mtx
 PyVSparse
 PyVSparse/*
+*.ivcsc
+*.vcsc

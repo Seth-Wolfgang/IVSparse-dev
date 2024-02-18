@@ -66,6 +66,7 @@ namespace IVSparse {
     //* Utility Methods *//
 
     // Writes the matrix to file
+    // #ifndef IVSPARSE_HAS_OPENMP
     template <typename T, typename indexT, bool columnMajor>
     void VCSC<T, indexT, columnMajor>::write(char* filename) {
 
@@ -107,6 +108,53 @@ namespace IVSparse {
         // close the file
         fclose(fp);
     }
+    // #endif
+
+    // #ifdef IVSPARSE_HAS_OPENMP
+    // template <typename T, typename indexT, bool columnMajor>
+    // void VCSC<T, indexT, columnMajor>::write(char* filename) {
+
+    //     std::string file = std::string(filename);
+    //     if (strcasestr(filename, ".vcsc") == NULL) {
+    //         file += std::string(".vcsc");
+    //     }
+
+    //     // Open the file
+    //     FILE* fp = fopen(file.c_str(), "wb+");
+
+    //     // Write the metadata
+    //     fwrite(metadata, 1, NUM_META_DATA * sizeof(uint32_t), fp);
+
+        
+
+    //     // write the lengths of the vectors
+    //     for (uint32_t i = 0; i < outerDim; ++i) {
+    //         fwrite(&valueSizes[i], 1, sizeof(indexT), fp);
+    //     }
+    //     for (uint32_t i = 0; i < outerDim; ++i) {
+    //         fwrite(&indexSizes[i], 1, sizeof(indexT), fp);
+    //     }
+
+    //     // write the values
+    //     for (uint32_t i = 0; i < outerDim; ++i) {
+    //         fwrite(values[i], 1, valueSizes[i] * sizeof(T), fp);
+    //     }
+
+    //     // write the counts
+    //     for (uint32_t i = 0; i < outerDim; ++i) {
+    //         fwrite(counts[i], 1, valueSizes[i] * sizeof(indexT), fp);
+    //     }
+
+    //     // write the indices
+    //     for (uint32_t i = 0; i < outerDim; ++i) {
+    //         fwrite(indices[i], 1, indexSizes[i] * sizeof(indexT), fp);
+    //     }
+
+    //     // close the file
+    //     fclose(fp);
+    // }
+    // #endif
+
 
     template <typename T, typename indexT, bool columnMajor>
     void VCSC<T, indexT, columnMajor>::read(char* filename) {

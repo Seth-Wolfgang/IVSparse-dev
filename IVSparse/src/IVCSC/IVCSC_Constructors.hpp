@@ -194,23 +194,23 @@ namespace IVSparse {
             endPointers = nullptr;
             metadata = nullptr;
             return;
-            }
+        }
 
             // set class variables
-                if (columnMajor) {
-                    innerDim = num_rows;
-                    outerDim = num_cols;
-                }
-                else {
-                    innerDim = num_cols;
-                    outerDim = num_rows;
-                }
-            numRows = num_rows;
-            numCols = num_cols;
-            this->nnz = nnz;
+            if (columnMajor) {
+                innerDim = num_rows;
+                outerDim = num_cols;
+            }
+            else {
+                innerDim = num_cols;
+                outerDim = num_rows;
+            }
+        numRows = num_rows;
+        numCols = num_cols;
+        this->nnz = nnz;
 
-            // call the compression function
-            compressCSC(vals, innerIndices, outerPtr);
+        // call the compression function
+        compressCSC(vals, innerIndices, outerPtr);
     }
 
     // COO Constructor
@@ -229,197 +229,198 @@ namespace IVSparse {
         if (nnz == 0) [[unlikely]] {
             *this = IVCSC<T, columnMajor>(num_rows, num_cols);
             return;
-            }
+        }
 
             // set class variables
-                if (columnMajor) {
-                    innerDim = num_rows;
-                    outerDim = num_cols;
-                }
-                else {
-                    innerDim = num_cols;
-                    outerDim = num_rows;
-                }
+            if (columnMajor) {
+                innerDim = num_rows;
+                outerDim = num_cols;
+            }
+            else {
+                innerDim = num_cols;
+                outerDim = num_rows;
+            }
 
-            numRows = num_rows;
-            numCols = num_cols;
-            this->nnz = nnz;
-            encodeValueType();
-            index_t = sizeof(indexT);
+        numRows = num_rows;
+        numCols = num_cols;
+        this->nnz = nnz;
+        encodeValueType();
+        index_t = sizeof(indexT);
 
-            metadata = new uint32_t[NUM_META_DATA];
-            metadata[0] = 3;
-            metadata[1] = innerDim;
-            metadata[2] = outerDim;
-            metadata[3] = nnz;
-            metadata[4] = val_t;
-            metadata[5] = index_t;
+        metadata = new uint32_t[NUM_META_DATA];
+        metadata[0] = 3;
+        metadata[1] = innerDim;
+        metadata[2] = outerDim;
+        metadata[3] = nnz;
+        metadata[4] = val_t;
+        metadata[5] = index_t;
 
-            // allocate memory for the data
+        // allocate memory for the data
+        try {
+            data = (void**)malloc(outerDim * sizeof(void*));
+            endPointers = (void**)malloc(outerDim * sizeof(void*));
+        }
+        catch (std::bad_alloc& e) {
+            std::cerr << "Error: Could not allocate memory for IVSparse matrix"
+                << std::endl;
+            exit(1);
+        }
+
+        // set all data and endpointers to the nullptr
+        for (size_t i = 0; i < outerDim; i++) {
+            data[i] = nullptr;
+            endPointers[i] = nullptr;
+        }
+
+        // sort the tuples by first by column then by row
+        std::sort(entries.begin(), entries.end(),
+                  [](const std::tuple<indexT, indexT, T2>& a,
+                     const std::tuple<indexT, indexT, T2>& b) {
+            if (std::get<1>(a) == std::get<1>(b)) {
+                return std::get<0>(a) < std::get<0>(b);
+            }
+            else {
+                return std::get<1>(a) < std::get<1>(b);
+            }
+        });
+
+        std::map<T2, std::vector<indexT>> maps[outerDim];
+
+        // loop through the tuples
+        for (size_t i = 0; i < nnz; i++) {
+            // get the column
+            indexT row = std::get<0>(entries[i]);
+            indexT col = std::get<1>(entries[i]);
+            T2 val = std::get<2>(entries[i]);
+
+            // check if the value is already in the map
+            if (maps[col].find(val) != maps[col].end()) {
+                // value found positive delta encode it
+                maps[col][val].push_back(row - maps[col][val][1]);
+
+                // update the last index
+                maps[col][val][1] = row;
+
+                // update the maximum delta
+                if (maps[col][val][maps[col][val].size() - 1] > maps[col][val][0])
+                    maps[col][val][0] = maps[col][val][maps[col][val].size() - 1];
+            }
+            else {
+                // value not found
+                maps[col][val] = std::vector<indexT>{ row };
+
+                // add maximum delta and last index placeholders
+                maps[col][val].push_back(row);
+                maps[col][val].push_back(row);
+            }
+        }  // end of loop through tuples
+
+        // loop through the maps
+        #ifdef IVSPARSE_HAS_OPENMP
+        #pragma omp parallel for
+        #endif
+        for (uint32_t i = 0; i < outerDim; i++) {
+            size_t outerByteSize = 0;
+
+            for (auto& pair : maps[i]) {
+                // change first value to be byte width of the maximum delta
+                pair.second[0] = byteWidth(pair.second[0]);
+
+                // add the size of the run to the size of the column
+                //* value + index width + indices * index width + delimiter (index width)
+                outerByteSize += sizeof(T) + 1 +
+                    (pair.second[0] * (pair.second.size() - 2)) +
+                    pair.second[0];
+            }
+
+            // if column is empty set the data and endpointer to nullptr
+            if (outerByteSize == 0) {
+                data[i] = nullptr;
+                endPointers[i] = nullptr;
+                continue;
+            }
+
+            // allocate space for the column
             try {
-                data = (void**)malloc(outerDim * sizeof(void*));
-                endPointers = (void**)malloc(outerDim * sizeof(void*));
+                data[i] = malloc(outerByteSize);
             }
             catch (std::bad_alloc& e) {
-                std::cerr << "Error: Could not allocate memory for IVSparse matrix"
-                    << std::endl;
+                std::cout << "Error: " << e.what() << std::endl;
                 exit(1);
             }
 
-            // set all data and endpointers to the nullptr
-            for (size_t i = 0; i < outerDim; i++) {
-                data[i] = nullptr;
-                endPointers[i] = nullptr;
-            }
+            // get a help pointer for moving through raw memory
+            void* helpPtr = data[i];
 
-            // sort the tuples by first by column then by row
-            std::sort(entries.begin(), entries.end(),
-                      [](const std::tuple<indexT, indexT, T2>& a,
-                         const std::tuple<indexT, indexT, T2>& b) {
-                             if (std::get<1>(a) == std::get<1>(b)) {
-                                 return std::get<0>(a) < std::get<0>(b);
-                             }
-                             else {
-                                 return std::get<1>(a) < std::get<1>(b);
-                             }
-                      });
+            // loop through the dictionary and write to memory
+            for (auto& pair : maps[i]) {
+                // Write the value to memory
+                *(T*)helpPtr = (T)pair.first;
+                helpPtr = (T*)helpPtr + 1;
 
-            std::map<T2, std::vector<indexT>> maps[outerDim];
+                // also write the index width
+                *(uint8_t*)helpPtr = (uint8_t)pair.second[0];
+                helpPtr = (uint8_t*)helpPtr + 1;
 
-            // loop through the tuples
-            for (size_t i = 0; i < nnz; i++) {
-                // get the column
-                indexT row = std::get<0>(entries[i]);
-                indexT col = std::get<1>(entries[i]);
-                T2 val = std::get<2>(entries[i]);
-
-                // check if the value is already in the map
-                if (maps[col].find(val) != maps[col].end()) {
-                    // value found positive delta encode it
-                    maps[col][val].push_back(row - maps[col][val][1]);
-
-                    // update the last index
-                    maps[col][val][1] = row;
-
-                    // update the maximum delta
-                    if (maps[col][val][maps[col][val].size() - 1] > maps[col][val][0])
-                        maps[col][val][0] = maps[col][val][maps[col][val].size() - 1];
-                }
-                else {
-                    // value not found
-                    maps[col][val] = std::vector<indexT>{ row };
-
-                    // add maximum delta and last index placeholders
-                    maps[col][val].push_back(row);
-                    maps[col][val].push_back(row);
-                }
-            }  // end of loop through tuples
-
-            // loop through the maps
-            #ifdef IVSPARSE_HAS_OPENMP
-            #pragma omp parallel for
-            #endif
-            for (uint32_t i = 0; i < outerDim; i++) {
-                size_t outerByteSize = 0;
-
-                for (auto& pair : maps[i]) {
-                    // change first value to be byte width of the maximum delta
-                    pair.second[0] = byteWidth(pair.second[0]);
-
-                    // add the size of the run to the size of the column
-                    //* value + index width + indices * index width + delimiter (index width)
-                    outerByteSize += sizeof(T) + 1 +
-                        (pair.second[0] * (pair.second.size() - 2)) +
-                        pair.second[0];
-                }
-
-                // if column is empty set the data and endpointer to nullptr
-                if (outerByteSize == 0) {
-                    data[i] = nullptr;
-                    endPointers[i] = nullptr;
-                    continue;
-                }
-
-                // allocate space for the column
-                try {
-                    data[i] = malloc(outerByteSize);
-                }
-                catch (std::bad_alloc& e) {
-                    std::cout << "Error: " << e.what() << std::endl;
-                    exit(1);
-                }
-
-                // get a help pointer for moving through raw memory
-                void* helpPtr = data[i];
-
-                // loop through the dictionary and write to memory
-                for (auto& pair : maps[i]) {
-                    // Write the value to memory
-                    *(T*)helpPtr = (T)pair.first;
-                    helpPtr = (T*)helpPtr + 1;
-
-                    // also write the index width
-                    *(uint8_t*)helpPtr = (uint8_t)pair.second[0];
-                    helpPtr = (uint8_t*)helpPtr + 1;
-
-                    // loop through the indices and write them to memory
-                    for (size_t k = 2; k < pair.second.size(); k++) {
-                        // if compression level 3 skip the first two indices and cast the index
+                // loop through the indices and write them to memory
+                for (size_t k = 2; k < pair.second.size(); k++) {
+                    // if compression level 3 skip the first two indices and cast the index
 
 
-                        // create a type of the correct width
-                        switch (pair.second[0]) {
-                        case 1:
-                            *(uint8_t*)helpPtr = (uint8_t)pair.second[k];
-                            helpPtr = (uint8_t*)helpPtr + 1;
-                            break;
-                        case 2:
-                            *(uint16_t*)helpPtr = (uint16_t)pair.second[k];
-                            helpPtr = (uint16_t*)helpPtr + 1;
-                            break;
-                        case 3:
-                            *(uint32_t*)helpPtr = (uint32_t)pair.second[k] & 0xFFFFFF;
-                            helpPtr = (uint8_t*)helpPtr + 3;
-                            break;
-                        case 4:
-                            *(uint32_t*)helpPtr = (uint32_t)pair.second[k];
-                            helpPtr = (uint32_t*)helpPtr + 1;
-                            break;
-                        case 5:
-                            *(uint64_t*)helpPtr = (uint64_t)pair.second[k] & 0xFFFFFFFFFF;
-                            helpPtr = (uint8_t*)helpPtr + 5;
-                            break;
-                        case 6:
-                            *(uint64_t*)helpPtr = (uint64_t)pair.second[k] & 0xFFFFFFFFFFFF;
-                            helpPtr = (uint8_t*)helpPtr + 6;
-                            break;
-                        case 7:
-                            *(uint64_t*)helpPtr = (uint64_t)pair.second[k] & 0xFFFFFFFFFFFFFF;
-                            helpPtr = (uint8_t*)helpPtr + 7;
-                            break;
-                        case 8:
-                            *(uint64_t*)helpPtr = (uint64_t)pair.second[k];
-                            helpPtr = (uint64_t*)helpPtr + 1;
-                            break;
-                        }
+                    // create a type of the correct width
+                    switch (pair.second[0]) {
+                    case 1:
+                        *(uint8_t*)helpPtr = (uint8_t)pair.second[k];
+                        helpPtr = (uint8_t*)helpPtr + 1;
+                        break;
+                    case 2:
+                        *(uint16_t*)helpPtr = (uint16_t)pair.second[k];
+                        helpPtr = (uint16_t*)helpPtr + 1;
+                        break;
+                    case 3:
+                        *(uint32_t*)helpPtr = (uint32_t)pair.second[k] & 0xFFFFFF;
+                        helpPtr = (uint8_t*)helpPtr + 3;
+                        break;
+                    case 4:
+                        *(uint32_t*)helpPtr = (uint32_t)pair.second[k];
+                        helpPtr = (uint32_t*)helpPtr + 1;
+                        break;
+                    case 5:
+                        *(uint64_t*)helpPtr = (uint64_t)pair.second[k] & 0xFFFFFFFFFF;
+                        helpPtr = (uint8_t*)helpPtr + 5;
+                        break;
+                    case 6:
+                        *(uint64_t*)helpPtr = (uint64_t)pair.second[k] & 0xFFFFFFFFFFFF;
+                        helpPtr = (uint8_t*)helpPtr + 6;
+                        break;
+                    case 7:
+                        *(uint64_t*)helpPtr = (uint64_t)pair.second[k] & 0xFFFFFFFFFFFFFF;
+                        helpPtr = (uint8_t*)helpPtr + 7;
+                        break;
+                    case 8:
+                        *(uint64_t*)helpPtr = (uint64_t)pair.second[k];
+                        helpPtr = (uint64_t*)helpPtr + 1;
+                        break;
+                    }
 
-                    }  // End of index loop
+                }  // End of index loop
 
-                    // write a delimiter of the correct width
-                    memset(helpPtr, 0, pair.second[0]);
-                    helpPtr = (uint8_t*)helpPtr + pair.second[0];
+                // write a delimiter of the correct width
+                memset(helpPtr, 0, pair.second[0]);
+                helpPtr = (uint8_t*)helpPtr + pair.second[0];
 
-                    // Set a pointer to the end of the data
-                    endPointers[i] = helpPtr;
+                // Set a pointer to the end of the data
+                endPointers[i] = helpPtr;
 
-                }  // End of dictionary loop
-            }
+            }  // End of dictionary loop
+        }
 
-            // calculate the compression size
-            calculateCompSize();
+        // calculate the compression size
+        calculateCompSize();
     }
 
     // File Constructor
+    #ifndef IVSPARSE_HAS_OPENMP // Single Threaded File Constructor
     template <typename T, bool columnMajor>
     IVCSC<T, columnMajor>::IVCSC(char* filename) {
 
@@ -510,7 +511,117 @@ namespace IVSparse {
         #endif
 
     }  // end of file constructor
+    #endif
 
+    #ifdef IVSPARSE_HAS_OPENMP // Multithreaded File Constructor
+    template <typename T, bool columnMajor>
+    IVCSC<T, columnMajor>::IVCSC(char* filename) {
+
+        assert(strcasestr(filename, ".ivcsc") != NULL && "The file must be of type .ivcsc");
+
+        FILE* fp = fopen(filename, "rb");
+
+        #ifdef IVSPARSE_DEBUG
+        if (fp == NULL) {
+            throw std::runtime_error("Error: Could not open file");
+        }
+        #endif
+
+        // read the metadata
+        metadata = new uint32_t[NUM_META_DATA];
+        // fread(metadata, sizeof(uint32_t), NUM_META_DATA, fp);
+        if (pread(fileno(fp), metadata, META_DATA_SIZE, 0) == -1) [[unlikely]] {
+            throw std::runtime_error("Error: Could not read .ivcsc file!");
+        }
+
+            // set the matrix info
+        innerDim = metadata[1];
+        outerDim = metadata[2];
+        nnz = metadata[3];
+        val_t = metadata[4];
+        index_t = metadata[5];
+
+        numRows = columnMajor ? innerDim : outerDim;
+        numCols = columnMajor ? outerDim : innerDim;
+
+        #ifdef IVSPARSE_DEBUG
+        // if the compression level of the file is different than the compression
+        // level of the class
+        if (metadata[0] != 3) {
+            // throw an error
+            throw std::runtime_error(
+                "Error: Compression level of file does not match compression level of "
+                "class");
+        }
+        #endif
+
+        // allocate the memory
+        uint64_t* sizeDelta;
+        try {
+            data = (void**)malloc(outerDim * sizeof(void*));
+            endPointers = (void**)malloc(outerDim * sizeof(void*));
+            sizeDelta = (uint64_t*)malloc((outerDim + 1) * sizeof(uint64_t));
+        }
+        catch (std::bad_alloc& e) {
+            std::cerr << "Error: Could not allocate memory for IVSparse matrix"
+                << std::endl;
+            exit(1);
+        }
+
+        // get the vector sizes 
+        if (pread(fileno(fp), sizeDelta, (outerDim + 1) * sizeof(uint64_t), META_DATA_SIZE) == -1) [[unlikely]] {
+            throw std::runtime_error("Error: Could not read .ivcsc file!");
+        }
+
+        #pragma omp parallel for
+        for (size_t i = 0; i < outerDim; i++) {
+
+            // get the size of the column
+            uint64_t offset = META_DATA_SIZE + (outerDim * sizeof(uint64_t));
+
+            #pragma omp simd reduction(+:offset)
+            for (int j = 0; j <= i - 1; ++j) {
+                offset += sizeDelta[j];
+            }
+
+            // if the size is 0, set the data and endpointer to nullptr
+            if (sizeDelta[i] == 0) {
+                data[i] = nullptr;
+                endPointers[i] = nullptr;
+                continue;
+            }
+
+            // malloc the column
+            try {
+                data[i] = malloc(sizeDelta[i]);
+                endPointers[i] = (char*)data[i] + sizeDelta[i];
+            }
+            catch (std::bad_alloc& e) {
+                throw std::bad_alloc();
+            }
+
+            // read the data
+            if (pread(fileno(fp), data[i], sizeDelta[i], offset) == -1) [[unlikely]] {
+                throw std::runtime_error("Error: Could not read .ivcsc file!");
+            }
+
+        }
+
+
+        // close the file
+        free(sizeDelta);
+        fclose(fp);
+
+        // calculate the compresssion size
+        calculateCompSize();
+
+        // run the user checks
+        #ifdef IVSPARSE_DEBUG
+        userChecks();
+        #endif
+
+    }  // end of file constructor
+    #endif
     //* Private Constructors *//
 
     // Private Tranpose Constructor
@@ -560,7 +671,7 @@ namespace IVSparse {
                 data[i] = nullptr;
                 endPointers[i] = nullptr;
                 continue;
-                }
+            }
 
             size_t byteSize = 0;
 
