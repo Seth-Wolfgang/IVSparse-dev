@@ -420,7 +420,7 @@ namespace IVSparse {
     }
 
     // File Constructor
-    #ifndef IVSPARSE_HAS_OPENMP // Single Threaded File Constructor
+    // #ifndef IVSPARSE_HAS_OPENMP // Single Threaded File Constructor
     template <typename T, bool columnMajor>
     IVCSC<T, columnMajor>::IVCSC(char* filename) {
 
@@ -511,117 +511,117 @@ namespace IVSparse {
         #endif
 
     }  // end of file constructor
-    #endif
+    // #endif
 
-    #ifdef IVSPARSE_HAS_OPENMP // Multithreaded File Constructor
-    template <typename T, bool columnMajor>
-    IVCSC<T, columnMajor>::IVCSC(char* filename) {
+    // #ifdef IVSPARSE_HAS_OPENMP // Multithreaded File Constructor
+    // template <typename T, bool columnMajor>
+    // IVCSC<T, columnMajor>::IVCSC(char* filename) {
 
-        assert(strcasestr(filename, ".ivcsc") != NULL && "The file must be of type .ivcsc");
+    //     assert(strcasestr(filename, ".ivcsc") != NULL && "The file must be of type .ivcsc");
 
-        FILE* fp = fopen(filename, "rb");
+    //     FILE* fp = fopen(filename, "rb");
 
-        #ifdef IVSPARSE_DEBUG
-        if (fp == NULL) {
-            throw std::runtime_error("Error: Could not open file");
-        }
-        #endif
+    //     #ifdef IVSPARSE_DEBUG
+    //     if (fp == NULL) {
+    //         throw std::runtime_error("Error: Could not open file");
+    //     }
+    //     #endif
 
-        // read the metadata
-        metadata = new uint32_t[NUM_META_DATA];
-        // fread(metadata, sizeof(uint32_t), NUM_META_DATA, fp);
-        if (pread(fileno(fp), metadata, META_DATA_SIZE, 0) == -1) [[unlikely]] {
-            throw std::runtime_error("Error: Could not read .ivcsc file!");
-        }
+    //     // read the metadata
+    //     metadata = new uint32_t[NUM_META_DATA];
+    //     // fread(metadata, sizeof(uint32_t), NUM_META_DATA, fp);
+    //     if (pread(fileno(fp), metadata, META_DATA_SIZE, 0) == -1) [[unlikely]] {
+    //         throw std::runtime_error("Error: Could not read .ivcsc file!");
+    //     }
 
-            // set the matrix info
-        innerDim = metadata[1];
-        outerDim = metadata[2];
-        nnz = metadata[3];
-        val_t = metadata[4];
-        index_t = metadata[5];
+    //         // set the matrix info
+    //     innerDim = metadata[1];
+    //     outerDim = metadata[2];
+    //     nnz = metadata[3];
+    //     val_t = metadata[4];
+    //     index_t = metadata[5];
 
-        numRows = columnMajor ? innerDim : outerDim;
-        numCols = columnMajor ? outerDim : innerDim;
+    //     numRows = columnMajor ? innerDim : outerDim;
+    //     numCols = columnMajor ? outerDim : innerDim;
 
-        #ifdef IVSPARSE_DEBUG
-        // if the compression level of the file is different than the compression
-        // level of the class
-        if (metadata[0] != 3) {
-            // throw an error
-            throw std::runtime_error(
-                "Error: Compression level of file does not match compression level of "
-                "class");
-        }
-        #endif
+    //     #ifdef IVSPARSE_DEBUG
+    //     // if the compression level of the file is different than the compression
+    //     // level of the class
+    //     if (metadata[0] != 3) {
+    //         // throw an error
+    //         throw std::runtime_error(
+    //             "Error: Compression level of file does not match compression level of "
+    //             "class");
+    //     }
+    //     #endif
 
-        // allocate the memory
-        uint64_t* sizeDelta;
-        try {
-            data = (void**)malloc(outerDim * sizeof(void*));
-            endPointers = (void**)malloc(outerDim * sizeof(void*));
-            sizeDelta = (uint64_t*)malloc((outerDim + 1) * sizeof(uint64_t));
-        }
-        catch (std::bad_alloc& e) {
-            std::cerr << "Error: Could not allocate memory for IVSparse matrix"
-                << std::endl;
-            exit(1);
-        }
+    //     // allocate the memory
+    //     uint64_t* sizeDelta;
+    //     try {
+    //         data = (void**)malloc(outerDim * sizeof(void*));
+    //         endPointers = (void**)malloc(outerDim * sizeof(void*));
+    //         sizeDelta = (uint64_t*)malloc((outerDim + 1) * sizeof(uint64_t));
+    //     }
+    //     catch (std::bad_alloc& e) {
+    //         std::cerr << "Error: Could not allocate memory for IVSparse matrix"
+    //             << std::endl;
+    //         exit(1);
+    //     }
 
-        // get the vector sizes 
-        if (pread(fileno(fp), sizeDelta, (outerDim + 1) * sizeof(uint64_t), META_DATA_SIZE) == -1) [[unlikely]] {
-            throw std::runtime_error("Error: Could not read .ivcsc file!");
-        }
+    //     // get the vector sizes 
+    //     if (pread(fileno(fp), sizeDelta, (outerDim + 1) * sizeof(uint64_t), META_DATA_SIZE) == -1) [[unlikely]] {
+    //         throw std::runtime_error("Error: Could not read .ivcsc file!");
+    //     }
 
-        #pragma omp parallel for
-        for (size_t i = 0; i < outerDim; i++) {
+    //     #pragma omp parallel for
+    //     for (size_t i = 0; i < outerDim; i++) {
 
-            // get the size of the column
-            uint64_t offset = META_DATA_SIZE + (outerDim * sizeof(uint64_t));
+    //         // get the size of the column
+    //         uint64_t offset = META_DATA_SIZE + (outerDim * sizeof(uint64_t));
 
-            #pragma omp simd reduction(+:offset) 
-            for (int j = 0; j <= i - 1; ++j) {
-                offset += sizeDelta[j];
-            }
+    //         #pragma omp simd reduction(+:offset) 
+    //         for (int j = 0; j <= i - 1; ++j) {
+    //             offset += sizeDelta[j];
+    //         }
 
-            // if the size is 0, set the data and endpointer to nullptr
-            if (sizeDelta[i] == 0) {
-                data[i] = nullptr;
-                endPointers[i] = nullptr;
-                continue;
-            }
+    //         // if the size is 0, set the data and endpointer to nullptr
+    //         if (sizeDelta[i] == 0) {
+    //             data[i] = nullptr;
+    //             endPointers[i] = nullptr;
+    //             continue;
+    //         }
 
-            // malloc the column
-            try {
-                data[i] = malloc(sizeDelta[i]);
-                endPointers[i] = (char*)data[i] + sizeDelta[i];
-            }
-            catch (std::bad_alloc& e) {
-                throw std::bad_alloc();
-            }
+    //         // malloc the column
+    //         try {
+    //             data[i] = malloc(sizeDelta[i]);
+    //             endPointers[i] = (char*)data[i] + sizeDelta[i];
+    //         }
+    //         catch (std::bad_alloc& e) {
+    //             throw std::bad_alloc();
+    //         }
 
-            // read the data
-            if (pread(fileno(fp), data[i], sizeDelta[i], offset) == -1) [[unlikely]] {
-                throw std::runtime_error("Error: Could not read .ivcsc file!");
-            }
+    //         // read the data
+    //         if (pread(fileno(fp), data[i], sizeDelta[i], offset) == -1) [[unlikely]] {
+    //             throw std::runtime_error("Error: Could not read .ivcsc file!");
+    //         }
 
-        }
+    //     }
 
 
-        // close the file
-        free(sizeDelta);
-        fclose(fp);
+    //     // close the file
+    //     free(sizeDelta);
+    //     fclose(fp);
 
-        // calculate the compresssion size
-        calculateCompSize();
+    //     // calculate the compresssion size
+    //     calculateCompSize();
 
-        // run the user checks
-        #ifdef IVSPARSE_DEBUG
-        userChecks();
-        #endif
+    //     // run the user checks
+    //     #ifdef IVSPARSE_DEBUG
+    //     userChecks();
+    //     #endif
 
-    }  // end of file constructor
-    #endif
+    // }  // end of file constructor
+    // #endif
     //* Private Constructors *//
 
     // Private Tranpose Constructor

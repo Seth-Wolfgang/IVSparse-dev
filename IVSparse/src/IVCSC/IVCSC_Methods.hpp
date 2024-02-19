@@ -58,7 +58,7 @@ namespace IVSparse {
     //* Utility Methods *//
 
     // Writes the matrix to file
-    #ifndef IVSPARSE_HAS_OPENMP // SINGLE THREADED VERSION
+    // #ifndef IVSPARSE_HAS_OPENMP // SINGLE THREADED VERSION
     template<typename T, bool columnMajor>
     void IVCSC<T, columnMajor>::write(char* filename) {
 
@@ -88,55 +88,55 @@ namespace IVSparse {
         // close the file
         fclose(fp);
     }
-    #endif
+    // #endif
 
-    #ifdef IVSPARSE_HAS_OPENMP // MULTI THREADED VERSION
-    template<typename T, bool columnMajor>
-    void IVCSC<T, columnMajor>::write(char* filename) {
+    // #ifdef IVSPARSE_HAS_OPENMP // MULTI THREADED VERSION
+    // template<typename T, bool columnMajor>
+    // void IVCSC<T, columnMajor>::write(char* filename) {
 
-        std::string file = std::string(filename);
-        if (strcasestr(filename, ".ivcsc") == NULL) {
-            file += std::string(".ivcsc");
-            // strcat(filename, ".vcsc");
-        }
-        FILE* fp = fopen(file.c_str(), "wb+");
+    //     std::string file = std::string(filename);
+    //     if (strcasestr(filename, ".ivcsc") == NULL) {
+    //         file += std::string(".ivcsc");
+    //         // strcat(filename, ".vcsc");
+    //     }
+    //     FILE* fp = fopen(file.c_str(), "wb+");
 
-        // Write the metadata
-        if(pwrite(fileno(fp), metadata, META_DATA_SIZE, 0) == -1) {
-            throw std::runtime_error("Error writing to " + file);
-        }
+    //     // Write the metadata
+    //     if(pwrite(fileno(fp), metadata, META_DATA_SIZE, 0) == -1) {
+    //         throw std::runtime_error("Error writing to " + file);
+    //     }
         
 
-        uint64_t* sizes = (uint64_t*)malloc((outerDim + 1) * sizeof(uint64_t));
-        uint64_t* sizeDelta = (uint64_t*)malloc(outerDim * sizeof(uint64_t));
+    //     uint64_t* sizes = (uint64_t*)malloc((outerDim + 1) * sizeof(uint64_t));
+    //     uint64_t* sizeDelta = (uint64_t*)malloc(outerDim * sizeof(uint64_t));
 
-        // Calculate the size of each vector and write the size of each vector
-        #pragma omp parallel for 
-        for (uint32_t i = 0; i < outerDim; i++) {
-            sizeDelta[i] = (uint8_t*)endPointers[i] - (uint8_t*)data[i];
-            pwrite(fileno(fp), &sizeDelta[i], sizeof(uint64_t), META_DATA_SIZE + (i * 8)); // axis pointer (size of axis for parallel read)
-        }
+    //     // Calculate the size of each vector and write the size of each vector
+    //     #pragma omp parallel for 
+    //     for (uint32_t i = 0; i < outerDim; i++) {
+    //         sizeDelta[i] = (uint8_t*)endPointers[i] - (uint8_t*)data[i];
+    //         pwrite(fileno(fp), &sizeDelta[i], sizeof(uint64_t), META_DATA_SIZE + (i * 8)); // axis pointer (size of axis for parallel read)
+    //     }
 
-        // calculate the start of each vector from the beginning of the file
-        sizes[0] = META_DATA_SIZE + (outerDim * 8);
+    //     // calculate the start of each vector from the beginning of the file
+    //     sizes[0] = META_DATA_SIZE + (outerDim * 8);
 
-        for (uint32_t i = 0; i < outerDim; i++) {
-            sizes[i+1] = sizes[i] + sizeDelta[i];
-        }
-        free(sizeDelta);
+    //     for (uint32_t i = 0; i < outerDim; i++) {
+    //         sizes[i+1] = sizes[i] + sizeDelta[i];
+    //     }
+    //     free(sizeDelta);
 
 
-        // write the size of each vector
-        #pragma omp parallel for
-        for (uint32_t i = 0; i < outerDim; i++) {
-            pwrite(fileno(fp), data[i], (uint8_t*)endPointers[i] - (uint8_t*)data[i], sizes[i]); // data
-        }
+    //     // write the size of each vector
+    //     #pragma omp parallel for
+    //     for (uint32_t i = 0; i < outerDim; i++) {
+    //         pwrite(fileno(fp), data[i], (uint8_t*)endPointers[i] - (uint8_t*)data[i], sizes[i]); // data
+    //     }
 
-        // close the file
-        fclose(fp);
-        free(sizes);
-    }
-    #endif
+    //     // close the file
+    //     fclose(fp);
+    //     free(sizes);
+    // }
+    // #endif
 
     template <typename T, bool columnMajor>
     void IVCSC<T, columnMajor>::read(char* filename) {

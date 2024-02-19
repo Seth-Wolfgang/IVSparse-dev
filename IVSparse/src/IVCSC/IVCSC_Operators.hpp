@@ -152,11 +152,11 @@ namespace IVSparse {
     // Matrix Vector Multiplication (IVSparse Eigen -> Eigen)
     template <typename T, bool columnMajor>
     Eigen::Matrix<T, -1, 1> IVCSC<T, columnMajor>::operator*(Eigen::Matrix<T, -1, 1>& vec) {
-
         return vectorMultiply(vec);
     }
 
     // Matrix Matrix Multiplication (IVSparse Eigen -> Eigen)
+    // #ifndef IVSPARSE_HAS_OPENMP
     template <typename T, bool columnMajor>
     Eigen::Matrix<T, -1, -1> IVCSC<T, columnMajor>::operator*(Eigen::Matrix<T, -1, -1>& mat) {
 
@@ -181,6 +181,35 @@ namespace IVSparse {
         }
         return newMatrix.transpose();
     }
+    // #endif
+
+    // #ifdef IVSPARSE_HAS_OPENMP
+    // template <typename T, bool columnMajor>
+    // Eigen::Matrix<T, -1, -1> IVCSC<T, columnMajor>::operator*(Eigen::Matrix<T, -1, -1>& mat) {
+
+    //     #ifdef IVSPARSE_DEBUG
+    //     // check that the matrix is the correct size
+    //     if (mat.rows() != numCols)
+    //         throw std::invalid_argument(
+    //             "The left matrix must have the same # of rows as columns in the right "
+    //             "matrix!");
+    //     #endif
+
+    //     Eigen::Matrix<T, -1, -1> newMatrix = Eigen::Matrix<T, -1, -1>::Zero(mat.cols(), numRows);
+    //     Eigen::Matrix<T, -1, -1> matTranspose = mat.transpose();
+
+    //     // #ifdef IVSPARSE_HAS_OPENMP
+    //     // #pragma omp parallel for
+    //     // #endif
+    //     for (uint32_t col = 0; col < numCols; col++) {
+    //         for (typename IVCSC<T, columnMajor>::InnerIterator matIter(*this, col); matIter; ++matIter) {
+    //             newMatrix.col(matIter.row()) += matTranspose.col(col) * matIter.value();
+    //         }
+    //     }
+    //     return newMatrix.transpose();
+    // }
+    // #endif
+
 
     template <typename T, bool columnMajor>
     Eigen::Matrix<T, -1, -1>  IVCSC<T, columnMajor>::operator* (const Eigen::Ref<const Eigen::Matrix<T, -1, -1>>& mat) {

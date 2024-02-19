@@ -236,6 +236,7 @@ namespace IVSparse {
     }
 
 
+    #ifndef IVSPARSE_HAS_OPENMP
     template <typename T, typename indexT, bool columnMajor>
     Eigen::Matrix<T, -1, -1>  VCSC<T, indexT, columnMajor>::operator* (const Eigen::Ref<const Eigen::Matrix<T, -1, -1>>& mat) {
 
@@ -259,6 +260,57 @@ namespace IVSparse {
         }
         return newMatrix.transpose();
     }
+    #endif
+
+
+    #ifdef IVSPARSE_HAS_OPENMP
+    template <typename T, typename indexT, bool columnMajor>
+    Eigen::Matrix<T, -1, -1>  VCSC<T, indexT, columnMajor>::operator* (const Eigen::Ref<const Eigen::Matrix<T, -1, -1>>& mat) {
+
+        #ifdef IVSPARSE_DEBUG
+        // check that the matrix is the correct size
+        if (mat.rows() != numCols)
+            throw std::invalid_argument(
+                "The left matrix must have the same # of rows as columns in the right "
+                "matrix!");
+        #endif
+
+        Eigen::Matrix<T, -1, -1> newMatrix;
+        Eigen::Matrix<T, -1, -1> matTranspose;
+
+        #pragma omp parallel sections
+        {
+            #pragma omp section
+            {
+                newMatrix = Eigen::Matrix<T, -1, -1>::Zero(mat.cols(), numRows);
+            }
+
+            #pragma omp section
+            {
+                matTranspose = mat.transpose();
+            }
+        }
+
+
+        // Fix Parallelism issue (race condition because of partial sums and
+        // orientation of Sparse * Dense)
+
+        #pragma omp parallel for reduction (+:newMatrix)
+        for (uint32_t col = 0; col < numCols; col++) {
+            
+            for (typename VCSC<T, indexT, columnMajor>::InnerIterator matIter(*this, col); matIter; ++matIter) {
+                newMatrix.col(matIter.row()) += matTranspose.col(col) * matIter.value();
+            }    
+            
+        }
+
+        return newMatrix.transpose();
+    
+    }
+    #endif
+
+
+
 
     template <typename T, typename indexT, bool columnMajor>
     inline Eigen::Matrix<T, -1, 1> VCSC<T, indexT, columnMajor>::operator*(const Eigen::Ref<const Eigen::Matrix<T, -1, 1>>& vec) {
