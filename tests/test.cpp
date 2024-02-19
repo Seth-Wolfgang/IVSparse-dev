@@ -353,13 +353,15 @@ void test4(IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc1,
 
     ivcsc4.write("test");
     IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc5("test.ivcsc");
-    std::cout << "ivcsc4 sum: " << ivcsc4.sum() << std::endl;
-    std::cout << "ivcsc5 sum: " << ivcsc5.sum() << std::endl;
+    // std::cout << "ivcsc4 sum: " << ivcsc4.sum() << std::endl;
+    // std::cout << "ivcsc5 sum: " << ivcsc5.sum() << std::endl;
     assert(ivcsc4.sum() == ivcsc5.sum());
 
     vcsc4.write("test2.vcsc");
     IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc5("test2.vcsc");
 
+    std::cout << "vcsc4 sum: " << vcsc4.sum() << std::endl;
+    std::cout << "vcsc5 sum: " << vcsc5.sum() << std::endl;
     assert(vcsc4.sum() == vcsc5.sum());
 
     // delete test and test2
@@ -377,6 +379,8 @@ void test4(IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc1,
     IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc6("test3.ivcsc");
     IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc6("test4.vcsc");
 
+    std::cout << "vcsc4 sum: " << vcsc4.sum() << std::endl;
+    std::cout << "vcsc6 sum: " << vcsc6.sum() << std::endl;
     assert(ivcsc4.sum() == ivcsc6.sum());
     assert(vcsc4.sum() == vcsc6.sum());
 

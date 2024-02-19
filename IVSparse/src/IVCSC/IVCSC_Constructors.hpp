@@ -579,7 +579,7 @@ namespace IVSparse {
             // get the size of the column
             uint64_t offset = META_DATA_SIZE + (outerDim * sizeof(uint64_t));
 
-            #pragma omp simd reduction(+:offset)
+            #pragma omp simd reduction(+:offset) 
             for (int j = 0; j <= i - 1; ++j) {
                 offset += sizeDelta[j];
             }

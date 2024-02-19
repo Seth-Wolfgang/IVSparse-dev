@@ -201,13 +201,13 @@ namespace IVSparse {
         std::sort(entries.begin(), entries.end(),
                   [](const std::tuple<indexT2, indexT2, T2>& a,
                      const std::tuple<indexT2, indexT2, T2>& b) {
-                         if (std::get<1>(a) == std::get<1>(b)) {
-                             return std::get<0>(a) < std::get<0>(b);
-                         }
-                         else {
-                             return std::get<1>(a) < std::get<1>(b);
-                         }
-                  });
+            if (std::get<1>(a) == std::get<1>(b)) {
+                return std::get<0>(a) < std::get<0>(b);
+            }
+            else {
+                return std::get<1>(a) < std::get<1>(b);
+            }
+        });
 
         std::map<T2, std::vector<indexT2>> maps[outerDim];
 
@@ -293,6 +293,7 @@ namespace IVSparse {
     }
 
     // File Constructor
+    #ifndef IVSPARSE_HAS_OPENMP // if openmp is not enabled
     template <typename T, typename indexT, bool columnMajor>
     VCSC<T, indexT, columnMajor>::VCSC(char* filename) {
 
@@ -312,7 +313,7 @@ namespace IVSparse {
         metadata = new uint32_t[NUM_META_DATA];
         fread(metadata, sizeof(uint32_t), NUM_META_DATA, fp);
 
-            // set the matrix info
+        // set the matrix info
         innerDim = metadata[1];
         outerDim = metadata[2];
         nnz = metadata[3];
@@ -402,6 +403,158 @@ namespace IVSparse {
         userChecks();
         #endif
     }  // end of File Constructor
+    #endif
+
+    #ifdef IVSPARSE_HAS_OPENMP // if openmp is enabled
+    template <typename T, typename indexT, bool columnMajor>
+    VCSC<T, indexT, columnMajor>::VCSC(char* filename) {
+
+        assert(strcasestr(filename, ".vcsc") != NULL && "Error: File must be a .vcsc file");
+
+        // open the file
+        FILE* fp = fopen(filename, "rb");
+
+        #ifdef IVSPARSE_DEBUG
+        // check if the file was opened
+        if (fp == nullptr) {
+            throw std::runtime_error("Error: Could not open file");
+        }
+        #endif
+
+        // read the metadata
+        metadata = new uint32_t[NUM_META_DATA];
+        uint64_t offset = META_DATA_SIZE;
+
+        if (pread(fileno(fp), metadata, META_DATA_SIZE, 0) == -1) [[unlikely]] {
+            std::cerr << "Error: Could not read " << filename << std::endl;
+            exit(1);
+        }
+
+            // set the matrix info
+        outerDim = metadata[2];
+
+        try {
+            valueSizes = (indexT*)malloc(sizeof(indexT) * outerDim);
+            indexSizes = (indexT*)malloc(sizeof(indexT) * outerDim);
+        }
+        catch (std::bad_alloc& ba) {
+            std::cerr << "bad_alloc caught: " << ba.what() << '\n';
+            throw std::runtime_error("Error: Could not allocate memory");
+        }
+
+        #pragma omp parallel sections 
+        {
+            #pragma omp section 
+            {
+                // read in the value sizes
+                if (pread(fileno(fp), valueSizes, sizeof(indexT) * outerDim, offset) == -1) [[unlikely]] {
+                    std::cerr << "Error: Could not read " << filename << std::endl;
+                    exit(1);
+                }
+            }
+            #pragma omp section 
+            {
+                // read in the index sizes
+                if (pread(fileno(fp), indexSizes, sizeof(indexT) * outerDim, offset + sizeof(indexT) * outerDim) == -1) [[unlikely]] {
+                    std::cerr << "Error: Could not read " << filename << std::endl;
+                    exit(1);
+                }
+            }
+            #pragma omp section 
+            {
+
+                #ifdef IVSPARSE_DEBUG
+                // if the compression level of the file is different than the compression
+                // level of the class
+                if (metadata[0] != 2) {
+                    // throw an error
+                    throw std::runtime_error(
+                        "Error: Compression level of file does not match compression level of "
+                        "class");
+                }
+                #endif
+
+                innerDim = metadata[1];
+                nnz = metadata[3];
+                val_t = metadata[4];
+                index_t = metadata[5];
+                numRows = columnMajor ? innerDim : outerDim;
+                numCols = columnMajor ? outerDim : innerDim;
+
+                // allocate the vectors
+                try {
+                    values = (T**)malloc(sizeof(T*) * outerDim);
+                    counts = (indexT**)malloc(sizeof(indexT*) * outerDim);
+                    indices = (indexT**)malloc(sizeof(indexT*) * outerDim);
+                }
+                catch (std::bad_alloc& ba) {
+                    std::cerr << "bad_alloc caught: " << ba.what() << '\n';
+                    throw std::runtime_error("Error: Could not allocate memory");
+                }
+            }
+        }
+
+        offset += sizeof(indexT) * outerDim * 2;
+
+        #pragma omp parallel for
+        for (uint32_t i = 0; i < outerDim; i++) {
+            try {
+                values[i] = (T*)malloc(sizeof(T) * valueSizes[i]);
+                counts[i] = (indexT*)malloc(sizeof(indexT) * valueSizes[i]);
+                indices[i] = (indexT*)malloc(sizeof(indexT) * indexSizes[i]);
+            }
+            catch (std::bad_alloc& ba) {
+                std::cerr << "bad_alloc caught: " << ba.what() << '\n';
+                throw std::runtime_error("Error: Could not allocate memory");
+            }
+        }
+
+        uint64_t countsStart = offset;
+        uint64_t indicesStart = 0;
+
+        #pragma omp parallel for reduction(+:countsStart, indicesStart)
+        for (uint32_t i = 0; i < outerDim; i++) {
+            countsStart += valueSizes[i] * sizeof(T);
+            indicesStart += indexSizes[i] * sizeof(indexT);
+        }
+        indicesStart += countsStart;
+
+
+        #pragma omp parallel for 
+        for (uint32_t i = 0; i < outerDim; ++i) {
+
+            uint64_t tempOffset = offset;
+            uint64_t tempCountsStart = countsStart;
+            uint64_t tempIndicesStart = indicesStart;
+
+            #pragma omp simd
+            for (int j = 1; j <= i; ++j) {
+                tempOffset += valueSizes[j - 1] * sizeof(T);
+                tempCountsStart += valueSizes[j - 1] * sizeof(indexT);
+                tempIndicesStart += indexSizes[j - 1] * sizeof(indexT);
+            }
+
+            if (pread(fileno(fp), values[i], valueSizes[i] * sizeof(T), tempOffset) == -1 ||
+                pread(fileno(fp), counts[i], valueSizes[i] * sizeof(indexT), tempCountsStart) == -1 ||
+                pread(fileno(fp), indices[i], indexSizes[i] * sizeof(indexT), tempIndicesStart) == -1) [[unlikely]] {
+                throw std::runtime_error("Error writing to " + std::string(filename));
+            }
+
+        }
+        // close the file
+        fclose(fp);
+
+        // calculate the compresssion size
+        calculateCompSize();
+
+        // run the user checks
+        #ifdef IVSPARSE_DEBUG
+        userChecks();
+        #endif
+    }  // end of File Constructor
+    #endif
+
+
 
     //* Private Constructors *//
 
@@ -450,7 +603,7 @@ namespace IVSparse {
                 valueSizes[i] = 0;
                 indexSizes[i] = 0;
                 continue;
-                }
+            }
             size_t byteSize = 0;
             size_t numInidces = 0;
 

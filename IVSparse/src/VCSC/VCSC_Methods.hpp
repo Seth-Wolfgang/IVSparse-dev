@@ -66,21 +66,23 @@ namespace IVSparse {
     //* Utility Methods *//
 
     // Writes the matrix to file
-    // #ifndef IVSPARSE_HAS_OPENMP
+
+
+    #ifndef IVSPARSE_HAS_OPENMP // Singlethreaded write
     template <typename T, typename indexT, bool columnMajor>
     void VCSC<T, indexT, columnMajor>::write(char* filename) {
 
         std::string file = std::string(filename);
         if (strcasestr(filename, ".vcsc") == NULL) {
             file += std::string(".vcsc");
-            // strcat(filename, ".vcsc");
         }
 
         // Open the file
         FILE* fp = fopen(file.c_str(), "wb+");
 
         // Write the metadata
-        fwrite(metadata, 1, NUM_META_DATA * sizeof(uint32_t), fp);
+        fwrite(metadata, 1, META_DATA_SIZE, fp);
+
 
         // write the lengths of the vectors
         for (uint32_t i = 0; i < outerDim; ++i) {
@@ -104,57 +106,90 @@ namespace IVSparse {
         for (uint32_t i = 0; i < outerDim; ++i) {
             fwrite(indices[i], 1, indexSizes[i] * sizeof(indexT), fp);
         }
+        // close the file
+        fclose(fp);
+    }
+    #endif
+    #ifdef IVSPARSE_HAS_OPENMP // Multithreaded version of write
+    template <typename T, typename indexT, bool columnMajor>
+    void VCSC<T, indexT, columnMajor>::write(char* filename) {
+
+        std::string file = std::string(filename);
+        if (strcasestr(filename, ".vcsc") == NULL) {
+            file += std::string(".vcsc");
+        }
+
+        // Open the file
+        FILE* fp = fopen(file.c_str(), "wb+");
+        if (fp == NULL) [[unlikely]] {
+            throw std::runtime_error("Error opening " + file);
+        }
+   
+        // This is the size of what is going to be written
+        // and the size of valueSizes and indexSizes
+        uint64_t offset = outerDim * sizeof(indexT);
+
+        // write the metadata and lengths of the vectors
+        #pragma omp parallel sections
+        {
+            #pragma omp section
+            {
+                if (pwrite(fileno(fp), metadata, META_DATA_SIZE, 0) == -1) [[unlikely]] {
+                    throw std::runtime_error("Error writing to " + file);
+                }
+            }
+            #pragma omp section
+            {
+                if (pwrite(fileno(fp), valueSizes, offset, META_DATA_SIZE) == -1) [[unlikely]] {
+                    throw std::runtime_error("Error writing to " + file);
+                }
+            }
+            #pragma omp section
+            {
+                if (pwrite(fileno(fp), indexSizes, offset, META_DATA_SIZE + offset) == -1) [[unlikely]] {
+                    throw std::runtime_error("Error writing to " + file);
+                }
+            }
+        }
+
+        offset = (offset * 2) + META_DATA_SIZE;
+        uint64_t countsStart = offset;
+        uint64_t indicesStart = 0; // zero becaue offset is added after loop
+
+        #pragma omp parallel for reduction(+: countsStart, indicesStart)
+        for (int i = 0; i < outerDim; ++i) {
+            countsStart += valueSizes[i] * sizeof(T);
+            indicesStart += valueSizes[i] * sizeof(indexT);
+        }
+        indicesStart += countsStart;
+
+        #pragma omp parallel for 
+        for (uint32_t i = 0; i < outerDim; ++i) {
+
+            uint64_t tempOffset = offset;
+            uint64_t tempCountsStart = countsStart;
+            uint64_t tempIndicesStart = indicesStart;
+
+            #pragma omp simd
+            for (int j = 1; j <= i; ++j) {
+                // std::cout << "j: " << j << std::endl;
+                tempOffset += valueSizes[j - 1] * sizeof(T);
+                tempCountsStart += valueSizes[j - 1] * sizeof(indexT);
+                tempIndicesStart += indexSizes[j - 1] * sizeof(indexT);
+            }
+
+            if (pwrite(fileno(fp), values[i], valueSizes[i] * sizeof(T), tempOffset) == -1 ||
+                pwrite(fileno(fp), counts[i], valueSizes[i] * sizeof(indexT), tempCountsStart) == -1 ||
+                pwrite(fileno(fp), indices[i], indexSizes[i] * sizeof(indexT), tempIndicesStart) == -1) [[unlikely]] {
+                throw std::runtime_error("Error writing to " + file);
+            }
+
+        }
 
         // close the file
         fclose(fp);
     }
-    // #endif
-
-    // #ifdef IVSPARSE_HAS_OPENMP
-    // template <typename T, typename indexT, bool columnMajor>
-    // void VCSC<T, indexT, columnMajor>::write(char* filename) {
-
-    //     std::string file = std::string(filename);
-    //     if (strcasestr(filename, ".vcsc") == NULL) {
-    //         file += std::string(".vcsc");
-    //     }
-
-    //     // Open the file
-    //     FILE* fp = fopen(file.c_str(), "wb+");
-
-    //     // Write the metadata
-    //     fwrite(metadata, 1, NUM_META_DATA * sizeof(uint32_t), fp);
-
-        
-
-    //     // write the lengths of the vectors
-    //     for (uint32_t i = 0; i < outerDim; ++i) {
-    //         fwrite(&valueSizes[i], 1, sizeof(indexT), fp);
-    //     }
-    //     for (uint32_t i = 0; i < outerDim; ++i) {
-    //         fwrite(&indexSizes[i], 1, sizeof(indexT), fp);
-    //     }
-
-    //     // write the values
-    //     for (uint32_t i = 0; i < outerDim; ++i) {
-    //         fwrite(values[i], 1, valueSizes[i] * sizeof(T), fp);
-    //     }
-
-    //     // write the counts
-    //     for (uint32_t i = 0; i < outerDim; ++i) {
-    //         fwrite(counts[i], 1, valueSizes[i] * sizeof(indexT), fp);
-    //     }
-
-    //     // write the indices
-    //     for (uint32_t i = 0; i < outerDim; ++i) {
-    //         fwrite(indices[i], 1, indexSizes[i] * sizeof(indexT), fp);
-    //     }
-
-    //     // close the file
-    //     fclose(fp);
-    // }
-    // #endif
-
+    #endif
 
     template <typename T, typename indexT, bool columnMajor>
     void VCSC<T, indexT, columnMajor>::read(char* filename) {

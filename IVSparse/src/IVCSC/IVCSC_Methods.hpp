@@ -72,7 +72,7 @@ namespace IVSparse {
         FILE* fp = fopen(file.c_str(), "wb+");
 
         // Write the metadata
-        fwrite(metadata, 1, NUM_META_DATA * sizeof(uint32_t), fp);
+        fwrite(metadata, 1, META_DATA_SIZE, fp);
 
         // write the size of each vector
         for (uint32_t i = 0; i < outerDim; i++) {
@@ -102,7 +102,10 @@ namespace IVSparse {
         FILE* fp = fopen(file.c_str(), "wb+");
 
         // Write the metadata
-        fwrite(metadata, 1, NUM_META_DATA * sizeof(uint32_t), fp);
+        if(pwrite(fileno(fp), metadata, META_DATA_SIZE, 0) == -1) {
+            throw std::runtime_error("Error writing to " + file);
+        }
+        
 
         uint64_t* sizes = (uint64_t*)malloc((outerDim + 1) * sizeof(uint64_t));
         uint64_t* sizeDelta = (uint64_t*)malloc(outerDim * sizeof(uint64_t));
