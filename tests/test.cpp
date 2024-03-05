@@ -43,24 +43,60 @@ int main() {
 
     for (int i = 0; i < eigen1.cols(); i++) {
         for (int j = 0; j < eigen1.rows(); j++) {
-            eigen1(j, i) = rand() % 10 + 1;
+            eigen1(j, i) = rand() % 10;
         }
     }
     for (int i = 0; i < eigen2.cols(); i++) {
         for (int j = 0; j < eigen2.rows(); j++) {
-            eigen2(j, i) = rand() % 10 + 1;
+            eigen2(j, i) = rand() % 10;
         }
     }
     for (int i = 0; i < eigen3.cols(); i++) {
         for (int j = 0; j < eigen3.rows(); j++) {
-            eigen3(j, i) = rand() % 10 + 1;
+            eigen3(j, i) = rand() % 10;
         }
     }
     for (int i = 0; i < eigen4.cols(); i++) {
         for (int j = 0; j < eigen4.rows(); j++) {
-            eigen4(j, i) = rand() % 10 + 1;
+            eigen4(j, i) = rand() % 10;
         }
     }
+
+
+    // Introduce sparsity
+    for (int i = 0; i < eigen1.cols(); i++) {
+        for (int j = 0; j < eigen1.rows(); j++) {
+            if (eigen1(j, i) > 1) {
+                eigen1(j, i) = 0;
+            }
+        }
+    }
+
+    for (int i = 0; i < eigen2.cols(); i++) {
+        for (int j = 0; j < eigen2.rows(); j++) {
+            if (eigen2(j, i) > 1) {
+                eigen2(j, i) = 0;
+            }
+        }
+    }
+
+    for (int i = 0; i < eigen3.cols(); i++) {
+        for (int j = 0; j < eigen3.rows(); j++) {
+            if (eigen3(j, i) > 1) {
+                eigen3(j, i) = 0;
+            }
+        }
+    }
+
+    for (int i = 0; i < eigen4.cols(); i++) {
+        for (int j = 0; j < eigen4.rows(); j++) {
+            if (eigen4(j, i) > 1) {
+                eigen4(j, i) = 0;
+            }
+        }
+    }
+    
+
 
     Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen_sparse1 = eigen1.sparseView();
     Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen_sparse2 = eigen2.sparseView();
@@ -83,11 +119,11 @@ int main() {
     // std::cout << "test1 passed" << std::endl;
     // test2(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4);
     // std::cout << "test2 passed" << std::endl;
-    // test3(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4, eigen_sparse1, eigen_sparse2, eigen_sparse3, eigen_sparse4);
+    test3(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4, eigen_sparse1, eigen_sparse2, eigen_sparse3, eigen_sparse4);
     // std::cout << "test3 passed" << std::endl;
-    test4(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4);
+    // test4(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4);
     // test5(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4);
-    // test6(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4);
+    test6(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4);
     // test7(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4, eigen_sparse1, eigen_sparse2, eigen_sparse3, eigen_sparse4);
     // test8(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4, eigen_sparse1, eigen_sparse2, eigen_sparse3, eigen_sparse4);
     // test9(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4, eigen_sparse1, eigen_sparse2, eigen_sparse3, eigen_sparse4);
@@ -99,6 +135,7 @@ int main() {
     // test15(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4, eigen_sparse1, eigen_sparse2, eigen_sparse3, eigen_sparse4);
     // test16(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4, eigen_sparse1, eigen_sparse2, eigen_sparse3, eigen_sparse4);
     // test17(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4, eigen_sparse1, eigen_sparse2, eigen_sparse3, eigen_sparse4);
+    test18(vcsc1, vcsc2, vcsc3, vcsc4, ivcsc1, ivcsc2, ivcsc3, ivcsc4);
 
 
     return 0;
@@ -320,6 +357,9 @@ void test3(IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc1,
     IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc6 = vcsc4.transpose();
     IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc6 = ivcsc4.transpose();
 
+    std::cout << "ivcsc4 sum: " << ivcsc4.sum() << std::endl;
+    std::cout << "ivcsc6 sum: " << ivcsc6.sum() << std::endl;
+    
     assert(vcsc6.sum() == vcsc4.sum());
     assert(ivcsc6.sum() == ivcsc4.sum());
 
@@ -1416,4 +1456,60 @@ void test17(IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc1,
     assert(vcsc_sum4 == ivcsc_sum4);
     assert(vcsc_sum4 == denseMat_sum4);
 
+}
+
+
+void test18(IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc1,
+            IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc2,
+            IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc3,
+            IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc4,
+            IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc1,
+            IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc2,
+            IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc3,
+            IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc4) {
+
+
+    TYPE sum1 = vcsc1.sum();
+    vcsc1.inPlaceTranspose();
+    TYPE sum2 = vcsc1.sum();
+    assert(sum1 == sum2);
+
+    //time this
+    size_t start = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+    sum1 = ivcsc1.sum();
+    ivcsc1.inPlaceTranspose();
+    sum2 = ivcsc1.sum();
+    assert(sum1 == sum2);
+    size_t end = std::chrono::duration_cast<std::chrono::microseconds>(std::chrono::system_clock::now().time_since_epoch()).count();
+    std::cout << "ivcsc inPlaceTranspose: " << end - start << std::endl;
+
+    sum1 = vcsc2.sum();
+    vcsc2.inPlaceTranspose();
+    sum2 = vcsc2.sum();
+    assert(sum1 == sum2);
+
+    sum1 = ivcsc2.sum();
+    ivcsc2.inPlaceTranspose();
+    sum2 = ivcsc2.sum();
+    assert(sum1 == sum2);
+
+    sum1 = vcsc3.sum();
+    vcsc3.inPlaceTranspose();
+    sum2 = vcsc3.sum();
+    assert(sum1 == sum2);
+
+    sum1 = ivcsc3.sum();
+    ivcsc3.inPlaceTranspose();
+    sum2 = ivcsc3.sum();
+    assert(sum1 == sum2);
+
+    sum1 = vcsc4.sum();
+    vcsc4.inPlaceTranspose();
+    sum2 = vcsc4.sum();
+    assert(sum1 == sum2);
+
+    sum1 = ivcsc4.sum();
+    ivcsc4.inPlaceTranspose();
+    sum2 = ivcsc4.sum();
+    assert(sum1 == sum2);
 }

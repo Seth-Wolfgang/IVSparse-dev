@@ -653,11 +653,14 @@ namespace IVSparse {
             std::cerr << e.what() << '\n';
         }
 
-        // set all data and endpointers to the nullptr
-        for (size_t i = 0; i < outerDim; i++) {
-            data[i] = nullptr;
-            endPointers[i] = nullptr;
-        }
+        // // set all data and endpointers to the nullptr
+        // #ifdef IVSPARSE_HAS_OPENMP
+        // #pragma omp parallel for
+        // #endif
+        // for (size_t i = 0; i < outerDim; i++) {
+        //     data[i] = nullptr;
+        //     endPointers[i] = nullptr;
+        // }
 
         //* logic here
 

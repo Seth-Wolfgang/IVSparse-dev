@@ -24,6 +24,7 @@
 #include <Eigen/Core>
 #include <atomic>
 #include <omp.h>
+#include <mutex>
 #endif
 
 // Debugging Directives (Off by default)
