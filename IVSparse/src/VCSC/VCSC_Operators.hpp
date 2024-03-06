@@ -212,6 +212,7 @@ namespace IVSparse {
 
 
     // Matrix Matrix Multiplication (IVSparse Eigen -> Eigen)
+    #ifndef IVSPARSE_HAS_OPENMP
     template <typename T, typename indexT, bool columnMajor>
     Eigen::Matrix<T, -1, -1> VCSC<T, indexT, columnMajor>::operator* (Eigen::Matrix<T, -1, -1>& mat) {
         #ifdef IVSPARSE_DEBUG
@@ -227,14 +228,50 @@ namespace IVSparse {
 
         // Fix Parallelism issue (race condition because of partial sums and
         // orientation of Sparse * Dense)
-        for (uint32_t col = 0; col < numCols; col++) {
-            for (typename VCSC<T, indexT, columnMajor>::InnerIterator matIter(*this, col); matIter; ++matIter) {
-                newMatrix.col(matIter.row()) += matTranspose.col(col) * matIter.value();
+        for (uint32_t i = 0; i < outerDim; ++i) {
+            for (typename VCSC<T, indexT, columnMajor>::InnerIterator matIter(*this, i); matIter; ++matIter) {
+                if constexpr (columnMajor) {
+                    newMatrix.col(matIter.getIndex()) += matTranspose.col(i) * matIter.value();
+                }
+                else {
+                    newMatrix.col(i) += matTranspose.col(matIter.getIndex()) * matIter.value();
+                }
             }
         }
         return newMatrix.transpose();
     }
+    #else
+    template <typename T, typename indexT, bool columnMajor>
+    Eigen::Matrix<T, -1, -1> VCSC<T, indexT, columnMajor>::operator* (Eigen::Matrix<T, -1, -1>& mat) {
+        #ifdef IVSPARSE_DEBUG
+        // check that the matrix is the correct size
+        if (mat.rows() != numCols)
+            throw std::invalid_argument(
+                "The left matrix must have the same # of rows as columns in the right "
+                "matrix!");
+        #endif
 
+        Eigen::Matrix<T, -1, -1> newMatrix = Eigen::Matrix<T, -1, -1>::Zero(mat.cols(), numRows);
+        Eigen::Matrix<T, -1, -1> matTranspose = mat.transpose();
+        std::vector<std::mutex> mutexList(innerDim);
+
+        // orientation of Sparse * Dense)
+        #pragma omp parallel for
+        for (uint32_t i = 0; i < outerDim; ++i) {
+            for (typename VCSC<T, indexT, columnMajor>::InnerIterator matIter(*this, i); matIter; ++matIter) {
+                std::lock_guard<std::mutex> lock(mutexList[matIter.getIndex()]);
+                if constexpr (columnMajor) {
+                    newMatrix.col(matIter.getIndex()) += matTranspose.col(i) * matIter.value();
+                }
+                else {
+                    newMatrix.col(i) += matTranspose.col(matIter.getIndex()) * matIter.value();
+                }
+            }
+        }
+
+        return newMatrix.transpose();
+    }
+    #endif
 
     #ifndef IVSPARSE_HAS_OPENMP
     template <typename T, typename indexT, bool columnMajor>
@@ -260,13 +297,9 @@ namespace IVSparse {
         }
         return newMatrix.transpose();
     }
-    #endif
-
-
-    #ifdef IVSPARSE_HAS_OPENMP
+    #else
     template <typename T, typename indexT, bool columnMajor>
     Eigen::Matrix<T, -1, -1>  VCSC<T, indexT, columnMajor>::operator* (const Eigen::Ref<const Eigen::Matrix<T, -1, -1>>& mat) {
-
         #ifdef IVSPARSE_DEBUG
         // check that the matrix is the correct size
         if (mat.rows() != numCols)
@@ -275,37 +308,25 @@ namespace IVSparse {
                 "matrix!");
         #endif
 
-        Eigen::Matrix<T, -1, -1> newMatrix;
-        Eigen::Matrix<T, -1, -1> matTranspose;
+        Eigen::Matrix<T, -1, -1> newMatrix = Eigen::Matrix<T, -1, -1>::Zero(mat.cols(), numRows);
+        Eigen::Matrix<T, -1, -1> matTranspose = mat.transpose();
+        std::vector<std::mutex> mutexList(innerDim);
 
-        #pragma omp parallel sections
-        {
-            #pragma omp section
-            {
-                newMatrix = Eigen::Matrix<T, -1, -1>::Zero(mat.cols(), numRows);
-            }
-
-            #pragma omp section
-            {
-                matTranspose = mat.transpose();
-            }
-        }
-
-
-        // Fix Parallelism issue (race condition because of partial sums and
         // orientation of Sparse * Dense)
-
-        #pragma omp parallel for reduction (+:newMatrix)
-        for (uint32_t col = 0; col < numCols; col++) {
-            
-            for (typename VCSC<T, indexT, columnMajor>::InnerIterator matIter(*this, col); matIter; ++matIter) {
-                newMatrix.col(matIter.row()) += matTranspose.col(col) * matIter.value();
-            }    
-            
+        #pragma omp parallel for
+        for (uint32_t i = 0; i < outerDim; ++i) {
+            for (typename VCSC<T, indexT, columnMajor>::InnerIterator matIter(*this, i); matIter; ++matIter) {
+                std::lock_guard<std::mutex> lock(mutexList[matIter.getIndex()]);
+                if constexpr (columnMajor) {
+                    newMatrix.col(matIter.getIndex()) += matTranspose.col(i) * matIter.value();
+                }
+                else {
+                    newMatrix.col(i) += matTranspose.col(matIter.getIndex()) * matIter.value();
+                }
+            }
         }
 
         return newMatrix.transpose();
-    
     }
     #endif
 

@@ -6,7 +6,7 @@
 
 
 #define TYPE int16_t
-#define IVSparseMAJOR 0 // 1 = col major, 0 = row major
+#define IVSparseMAJOR 0// 1 = col major, 0 = row major
 #define EIGENMAJOR !IVSparseMAJOR    // IVSparse -> col major, Eigen -> row major
 #define INDEX_TYPE int
 #define IVSPARSE_DEBUG
@@ -240,3 +240,17 @@ void test18(IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc1,
             IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc2,
             IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc3,
             IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc4);
+
+
+void test19(IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc1,
+            IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc2,
+            IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc3,
+            IVSparse::VCSC<TYPE, INDEX_TYPE, IVSparseMAJOR> vcsc4,
+            IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc1,
+            IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc2,
+            IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc3,
+            IVSparse::IVCSC<TYPE, IVSparseMAJOR> ivcsc4,
+            Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen1,
+            Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen2,
+            Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen3,
+            Eigen::SparseMatrix<TYPE, EIGENMAJOR> eigen4);
