@@ -44,7 +44,7 @@
 #include <unistd.h>
 
 namespace IVSparse {
- 
+
     const int RowMajor = 0;
     const int ColMajor = 1;
 
@@ -60,11 +60,22 @@ namespace IVSparse {
 #include "src/VCSC/VCSC_SparseMatrix.hpp"
 #include "src/IVCSC/IVCSC_SparseMatrix.hpp"
 
+
+#ifdef IVSPARSE_HAS_OPENMP // multithreaded versions of (some) algorithms
+#include "src/IVCSC/Parallel/IVCSC_Parallel_Methods.hpp"
+#include "src/IVCSC/Parallel/IVCSC_Parallel_Operators.hpp"
+#include "src/IVCSC/Parallel/IVCSC_Parallel_BLAS.hpp"
+
+#include "src/VCSC/Parallel/VCSC_Parallel_Methods.hpp"
+#include "src/VCSC/Parallel/VCSC_Parallel_Operators.hpp"
+#include "src/VCSC/Parallel/VCSC_Parallel_BLAS.hpp"
+#endif
+
 // IVCSC Files
-#include "src/IVCSC/IVCSC_Operators.hpp"
 #include "src/IVCSC/IVCSC_Private_Methods.hpp"
-#include "src/IVCSC/IVCSC_Methods.hpp"
 #include "src/IVCSC/IVCSC_Constructors.hpp"
+#include "src/IVCSC/IVCSC_Methods.hpp"
+#include "src/IVCSC/IVCSC_Operators.hpp"
 #include "src/IVCSC/IVCSC_BLAS.hpp"
 
 // IVCSC Iterator Files
@@ -72,10 +83,10 @@ namespace IVSparse {
 #include "src/InnerIterators/IVCSC_Iterator_Methods.hpp"
 
 // VCSC Files
-#include "src/VCSC/VCSC_Operators.hpp"
 #include "src/VCSC/VCSC_Private_Methods.hpp"
-#include "src/VCSC/VCSC_Methods.hpp"
 #include "src/VCSC/VCSC_Constructors.hpp"
+#include "src/VCSC/VCSC_Methods.hpp"
+#include "src/VCSC/VCSC_Operators.hpp"
 #include "src/VCSC/VCSC_BLAS.hpp"
 
 // VCSC Iterator Files

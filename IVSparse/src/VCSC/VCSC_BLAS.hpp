@@ -18,7 +18,6 @@ namespace IVSparse {
         // Deep copy the matrix
         IVSparse::VCSC<T, indexT, columnMajor> newMatrix(*this);
 
-        // If performance vectors are active use them for the scalar multiplication
         #ifdef IVSPARSE_HAS_OPENMP
         #pragma omp parallel for
         #endif
@@ -33,7 +32,7 @@ namespace IVSparse {
     // In Place Scalar Multiply
     template <typename T, typename indexT, bool columnMajor>
     inline void VCSC<T, indexT, columnMajor>::inPlaceScalarMultiply(T scalar) {
-        // if performance vectors are active use them for the scalar multiplication
+
         #ifdef IVSPARSE_HAS_OPENMP
         #pragma omp parallel for
         #endif
